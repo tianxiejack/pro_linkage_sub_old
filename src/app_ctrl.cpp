@@ -16,7 +16,6 @@ void getMmtTg(unsigned char index,int *x,int *y);
 void getMtdxy(int *x,int *y,int *w,int *h);
 #endif
 
-#if LINKAGE_FUNC
 void app_ctrl_setLinkagePos(int panPos,int tilPos,int zoom)
 {
 	linkagePos.panPos = panPos ; 
@@ -24,7 +23,6 @@ void app_ctrl_setLinkagePos(int panPos,int tilPos,int zoom)
 	linkagePos.zoom = zoom ;
 	MSGDRIV_send(MSGID_EXT_SETCURPOS, 0);
 }
-#endif
 
 void  app_ctrl_getSysData(CMD_EXT * exthandle)
 {
@@ -325,9 +323,7 @@ void app_ctrl_setReset(CMD_EXT * pInCmd)
 void app_ctrl_setSensor(CMD_EXT * pInCmd)
 {
 	
-	#if LINKAGE_FUNC
 		return ;
-	#endif
 
 	if(msgextInCtrl==NULL)
 		return ;

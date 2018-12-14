@@ -25,11 +25,9 @@ int glosttime = 3000;
 OSA_SemHndl g_linkage_getPos;
 
 SENDST trkmsg={0};
-#if LINKAGE_FUNC
 	extern CamParameters g_camParams;
 	Point dest_ballPoint = Point(-100,-100);
 	extern SingletonSysParam* g_sysParam;
-#endif
 void inputtmp(unsigned char cmdid)
 {
 	plat->OnKeyDwn(cmdid);
@@ -51,11 +49,7 @@ void getMtdxy(int *x,int *y,int *w,int *h)
 }
 #endif
 
-#if LINKAGE_FUNC
 CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6200),m_cofy(6320)
-#else
-CProcess::CProcess()
-#endif
 {
 	memset(rcTrackBak, 0, sizeof(rcTrackBak));
 	memset(tgBak, 0, sizeof(tgBak));
@@ -151,8 +145,6 @@ CProcess::CProcess()
 	chooseDetect = 0;
 #endif
 	forwardflag = backflag = false;
-
-#if LINKAGE_FUNC
 	
 	key_point1_cnt =0;
 	key_point2_cnt =0;
@@ -185,7 +177,6 @@ CProcess::CProcess()
 		m_camCalibra->key_points1.clear();
 		m_camCalibra->key_points2.clear();
 	}
-#endif
 
 	OSA_semCreate(&g_linkage_getPos, 1, 0);
 
@@ -395,7 +386,6 @@ void CProcess::OnCreate()
 {
 	MSGAPI_initial();
 
-	#if LINKAGE_FUNC
 
 		//OnKeyDwn('b');	
 		bool ret = false;
@@ -421,10 +411,8 @@ void CProcess::OnCreate()
 		if(ret == true) {
 			this->Init_CameraMatrix();
 		}
-	#endif
 }
 
-#if LINKAGE_FUNC
 void CProcess::Init_CameraMatrix()
 {	
     initUndistortRectifyMap(g_camParams.cameraMatrix_gun, g_camParams.distCoeffs_gun, Mat(),
@@ -457,8 +445,6 @@ bool CProcess::readParams(const char* filename)
     fs2.release();
     return ret;
 }
-
-#endif
 	
 void CProcess::OnDestroy(){};
 void CProcess::OnInit()
@@ -1563,36 +1549,6 @@ osdindex++;	//cross aim
 			Osdflag[osdindex]=0;
  		}
 
-		#if !LINKAGE_FUNC
-		
-			if(!m_bMoveDetect)
-			{
-				if(extInCtrl->DispGrp[extInCtrl->SensorStat] <= 3  &&  !changesensorCnt)
-				{
-					recIn.x=PiexltoWindowsx(extInCtrl->AxisPosX[extInCtrl->SensorStat],extInCtrl->SensorStat);
-			 		recIn.y=PiexltoWindowsy(extInCtrl->AxisPosY[extInCtrl->SensorStat],extInCtrl->SensorStat);
-					recIn.width = extInCtrl->crossAxisWidth[extInCtrl->SensorStat];
-					recIn.height= extInCtrl->crossAxisHeight[extInCtrl->SensorStat];		
-					crossBak.x = recIn.x;
-					crossBak.y = recIn.y;
-					crossWHBak.x = recIn.width;
-					crossWHBak.y = recIn.height;
-
-					if(extInCtrl->AvtTrkStat == eTrk_mode_acq)
-					{
-						if(m_display.m_crossOsd)
-							DrawCross(recIn,frcolor,extInCtrl->SensorStat,true);
-						Osdflag[osdindex]=1;
-					}
-					else if(extInCtrl->AvtTrkStat == eTrk_mode_search)
-					{
-						frcolor = 3;
-						DrawCross(recIn,frcolor,extInCtrl->SensorStat,true);
-						Osdflag[osdindex]=1;
-					}
-				}
-			}	
-		#endif
 	}
 
 
@@ -1613,26 +1569,6 @@ osdindex++;	//acqRect
 			Osdflag[osdindex]=0;
  		}
 
-		#if !LINKAGE_FUNC
-			if(!m_bMoveDetect)
-			{
-				if(extInCtrl->AvtTrkStat == eTrk_mode_acq  && !changesensorCnt){
-					recIn.x  = PiexltoWindowsx(extInCtrl->AxisPosX[extInCtrl->SensorStat],extInCtrl->SensorStat);
-			 		recIn.y  = PiexltoWindowsy(extInCtrl->AxisPosY[extInCtrl->SensorStat],extInCtrl->SensorStat);
-					recIn.width  = extInCtrl->AcqRectW[extInCtrl->SensorStat];
-					recIn.height = extInCtrl->AcqRectH[extInCtrl->SensorStat]; 
-					if(recIn.width%2 == 1)
-						recIn.width++;
-					if(recIn.height%2 == 1)
-						recIn.height++;
-					recIn.x = recIn.x  - recIn.width/2;
-					recIn.y = recIn.y  + recIn.height/2;
-					DrawAcqRect(m_display.m_imgOsd[extInCtrl->SensorStat],recIn,frcolor,true);
-					acqRectBak = recIn;
-					Osdflag[osdindex]=1;
-				}
-			}
-		#endif
 	}
 
 	
@@ -1642,7 +1578,6 @@ osdindex++;	//acqRect
 		unsigned int mtd_warningbox_Id;
 		Osd_cvPoint startwarnpoly,endwarnpoly;
 		int polwarn_flag = 0;
-#if LINKAGE_FUNC
 		if(m_display.g_CurDisplayMode == PIC_IN_PIC)
 		{			
 				mtd_warningbox_Id = 0;
@@ -1651,9 +1586,6 @@ osdindex++;	//acqRect
 		{
 				mtd_warningbox_Id = extInCtrl->SensorStat;
 		}
-#else
-		mtd_warningbox_Id = extInCtrl->SensorStat;
-#endif
 		if(Osdflag[osdindex])
 		{
 			for(int i = 0; i < polwarn_count_bak[mtd_warningbox_Id]; i++)
@@ -1670,7 +1602,6 @@ osdindex++;	//acqRect
 			mouserect recttmp;
 			for(std::vector<TRK_RECT_INFO>::iterator plist = mvList.begin(); plist != mvList.end(); ++plist)
 			{		
-				#if LINKAGE_FUNC
 					recttmp.x = (*plist).targetRect.x;
 					recttmp.y = (*plist).targetRect.y;
 					recttmp.w = (*plist).targetRect.width;
@@ -1680,9 +1611,6 @@ osdindex++;	//acqRect
 					tmp.y = recttmp.y;
 					tmp.width = recttmp.w;
 					tmp.height = recttmp.h;
-				#else
-					memcpy(&tmp,&(*plist).targetRect,sizeof(cv::Rect));
-				#endif
 
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);
 			}
@@ -1737,15 +1665,12 @@ osdindex++;	//acqRect
 					color = 3;
 
 				
-				#if LINKAGE_FUNC
 					if(color == 6)
 					{
 						reMapCoords(((*plist).targetRect.x + (*plist).targetRect.width/2) + 480,
 										((*plist).targetRect.y - (*plist).targetRect.height/2) - 270 ,false);
 					}
-				#endif	
 
-				#if LINKAGE_FUNC
 					recttmp.x = (*plist).targetRect.x;
 					recttmp.y = (*plist).targetRect.y;
 					recttmp.w = (*plist).targetRect.width;
@@ -1755,10 +1680,6 @@ osdindex++;	//acqRect
 					tmp.y = recttmp.y;
 					tmp.width = recttmp.w;
 					tmp.height = recttmp.h;
-				#else
-					memcpy(&tmp,&(*plist).targetRect,sizeof(cv::Rect));
-				
-				#endif
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 			}
 			Osdflag[osdindex]=1;
@@ -1766,7 +1687,6 @@ osdindex++;	//acqRect
 	}
 #endif
 
-#if LINKAGE_FUNC
 	osdindex++;
 	{		
 		if( open_handleCalibra == true || g_sysParam->isEnable_HandleCalibrate()){  
@@ -1864,7 +1784,6 @@ osdindex++;	//acqRect
 	else {
 		cv::circle(m_display.m_imgOsd[1],dest_ballPoint,3 ,cvScalar(0,0,0,0),2,8,0);
 	}
-#endif
 
 
 	//center.x = vdisWH[extInCtrl->SensorStat][0]/2;
@@ -1879,17 +1798,12 @@ osdindex++;	//acqRect
 	unsigned int drawRectId ;
 	if(m_draw)
 	{    
-#if LINKAGE_FUNC
 		if(m_display.g_CurDisplayMode == PIC_IN_PIC){			
 				drawRectId = 0;
 		}
 		else{
 				drawRectId = extInCtrl->SensorStat;
 		}
-#else
-
-		drawRectId = extInCtrl->SensorStat;
-#endif
 
 		for(int k = 0; k <= m_rectnbak[drawRectId]; k++)
 		{
@@ -1928,7 +1842,6 @@ osdindex++;	//acqRect
 	}
 //polygon mtd area
 unsigned int drawpolyRectId ;   
-#if LINKAGE_FUNC
 	if(m_display.g_CurDisplayMode == PIC_IN_PIC)
 	{			
 		drawpolyRectId = 0;
@@ -1937,9 +1850,6 @@ unsigned int drawpolyRectId ;
 	{
 		drawpolyRectId = extInCtrl->SensorStat;
 	}
-#else
-	drawpolyRectId = extInCtrl->SensorStat;
-#endif
 	if(pol_draw)
 	{
 		Osd_cvPoint start;
@@ -2006,7 +1916,6 @@ unsigned int drawpolyRectId ;
 		pol_draw = 0;
 	}
 	
-#if LINKAGE_FUNC
 //time
 	if(m_time_flag)
 	{
@@ -2027,8 +1936,6 @@ unsigned int drawpolyRectId ;
 			m_time_flag = 0;
 		}
 	}
-	
-#endif
 
 	static unsigned int count = 0;
 	if((count & 1) == 1)
@@ -2054,7 +1961,6 @@ static inline void my_rotate(GLfloat result[16], float theta)
 }
 
 
-#if LINKAGE_FUNC
 
 void CProcess::manualHandleKeyPoints(int &x,int &y)
 {
@@ -2410,7 +2316,6 @@ void CProcess::moveToDest( )
 			break;
 		*/
 		case PIC_IN_PIC:
-		#if LINKAGE_FUNC
 			if( (g_sysParam->getGunPosition(SingletonSysParam::RU) == 1) &&
 				( g_sysParam->getGunSize(SingletonSysParam::ONE_4) == 1) ) {
 				offset_x =1440;
@@ -2419,7 +2324,6 @@ void CProcess::moveToDest( )
 				LeftPoint.y *=2;
 				RightPoint.y *= 2;
 			}
-		#endif
 			break;			
 		default:
 			break;
@@ -2535,12 +2439,10 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	int point_X , point_Y , offset_x , zoomPos; 
 	int delta_X ;
 	Point opt;
-#if LINKAGE_FUNC
 	if(g_sysParam->isEnable_AutoDetectMoveTargets()){
 		opt = Point(x,y);
 	}
 	else{
-#endif
 
 	switch(m_display.g_CurDisplayMode) 
 	{
@@ -2606,9 +2508,7 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	//cout << "g_camParams.distCoeffs_gun = " << g_camParams.distCoeffs_gun << endl;
 	//cout << "g_camParams.cameraMatrix_ball = " << g_camParams.cameraMatrix_ball << endl;
 	//cout << "g_camParams.homography = " << g_camParams.homography << endl;
-#if LINKAGE_FUNC
 	}
-#endif
 	std::vector<cv::Point2d> distorted, normalizedUndistorted;
 	distorted.push_back(cv::Point2d(opt.x, opt.y));
 	undistortPoints(distorted,normalizedUndistorted,g_camParams.cameraMatrix_gun,g_camParams.distCoeffs_gun);
@@ -2734,21 +2634,17 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
 	//printf("%s   LINE:%d   Send Position = < %d, %d >,zoom = %d \r\n",__func__,__LINE__, DesPanPos , DesTilPos ,zoomPos);
 }
-#endif
 
 void CProcess::OnMouseLeftDwn(int x, int y)
 {
-	#if LINKAGE_FUNC
 		manualHandleKeyPoints(x,y);
 		//reMapCoords(x,y, false);  // add by swj
-	#endif
 };
 void CProcess::OnMouseLeftUp(int x, int y){};
 void CProcess::OnMouseRightDwn(int x, int y){};
 void CProcess::OnMouseRightUp(int x, int y){};
 void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 {
-#if LINKAGE_FUNC
 	switch( key ) {
 		case 1:
 			m_bMarkCircle = true;
@@ -2761,7 +2657,6 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		default :
 			break;
 	}
-#endif
 }
 
 void CProcess::OnKeyDwn(unsigned char key)
@@ -2869,7 +2764,6 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 
 
-	#if LINKAGE_FUNC
 	
 		if(key == 'v' || key == 'V') {
 			m_camCalibra->start_cloneVideoSrc = true;
@@ -2914,14 +2808,11 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 		if(key =='n' || key == 'N') {
 
-#if LINKAGE_FUNC
 			m_display.savePic_once = true;
-#endif
 
 		}
 		
 		
-	#endif
 
 	
 }
@@ -3569,7 +3460,6 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 		}
 	}
 #if __MOVE_DETECT__
-#if LINKAGE_FUNC
 	if(msgId == MSGID_EXT_MVDETECT)
 	{	
 		int Mtdstatus = (pIStuts->MtdState[pIStuts->SensorStat]&0x01) ;
@@ -3601,39 +3491,6 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 			}	
 		}
 	}
-#else
-    if(msgId == MSGID_EXT_MVDETECT)
-    {
-        int Mtdstatus = (pIStuts->MtdState[pIStuts->SensorStat]&0x01) ;
-        if(Mtdstatus)
-        {
-            struct timeval tv;
-            while(!m_pMovDetector->isWait(pIStuts->SensorStat))
-            {
-                tv.tv_sec = 0;
-                tv.tv_usec = (10%1000)*1000;
-                select(0, NULL, NULL, NULL, &tv);
-            }
-            if(m_pMovDetector->isWait(pIStuts->SensorStat))
-            {
-                m_pMovDetector->mvOpen(pIStuts->SensorStat);
-                dynamic_config(VP_CFG_MvDetect, 1,NULL);
-                tmpCmd.MtdState[pIStuts->SensorStat] = 1;
-            }
-        }
-        else
-        {
-            if(m_pMovDetector->isRun(pIStuts->SensorStat))
-            {
-                dynamic_config(VP_CFG_MvDetect, 0,NULL);
-                tmpCmd.MtdState[pIStuts->SensorStat] = 0;
-                //app_ctrl_setMtdStat(&tmpCmd);
-                m_pMovDetector->mvClose(pIStuts->SensorStat);
-                chooseDetect = 0;
-            }
-        }
-    }
-#endif
 	if(msgId == MSGID_EXT_MVDETECTSELECT)
 	{
 		int MtdSelect = (pIStuts->MtdSelect[pIStuts->SensorStat]);
@@ -3697,11 +3554,9 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UPDATE_CAMERA,            MSGAPI_update_camera,           0);	
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_INPUT_ALGOSDRECT,         MSGAPI_input_algosdrect,        0);	
 
-#if LINKAGE_FUNC
 
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SETCURPOS,     MSGAPI_update_ballPos,        	0);	
 
-#endif
 
     return 0;
 }
@@ -4497,7 +4352,6 @@ void CProcess::MSGAPI_update_camera(long lParam)
 {
 }
 
-#if LINKAGE_FUNC
 void CProcess::MSGAPI_update_ballPos(long lParam)
 {
 	m_camCalibra->setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);
@@ -4507,7 +4361,6 @@ void CProcess::MSGAPI_update_ballPos(long lParam)
 	//printf("[%s]: ----------------->>>>>>>    OSA_semSignal  (&g_linkage_getPos )\r\n\r\n\r\n",__FUNCTION__);
 }
 
-#endif
 
 void CProcess::MSGAPI_input_algosdrect(long lParam)
 {

@@ -35,10 +35,8 @@ OSA_BufHndl msgSendBuf;
 OSA_ThrHndl thrHandleDataIn_recv;
 OSA_ThrHndl thrHandleDataIn_send;
 
-#if LINKAGE_FUNC
 	extern SingletonSysParam* g_sysParam;
 
-#endif
 void initmessage()
 {
     int status;
@@ -186,49 +184,6 @@ void* recv_msg(SENDST *RS422)
 			
 			app_ctrl_setBoresightPos(pMsg);
 			break;
-	#if !LINKAGE_FUNC
-		case AcqPos:
-			memcpy(&Racqpos, RS422->param, sizeof(Racqpos));
-			imgID6 = Racqpos.AcqStat;
-			if(2 == imgID6){
-				pMsg->AxisPosX[pMsg->SensorStat] = Racqpos.BoresightPos_x;
-				pMsg->AxisPosY[pMsg->SensorStat] = Racqpos.BoresightPos_y;
-				pMsg->AvtTrkStat = eTrk_mode_search;
-				int width = 0,height = 0;
-				if((pMsg->SensorStat == video_pal)||(pMsg->SensorStat == video_gaoqing0)||(pMsg->SensorStat == video_gaoqing)||(pMsg->SensorStat == video_gaoqing2)||(pMsg->SensorStat == video_gaoqing3)){
-					width  = vdisWH[pMsg->SensorStat][0];
-					height = vdisWH[pMsg->SensorStat][1];
-				}
-				if(pMsg->AxisPosX[pMsg->SensorStat] + pMsg->crossAxisWidth[pMsg->SensorStat]/2 > width)
-					pMsg->AxisPosX[pMsg->SensorStat] = width - pMsg->crossAxisWidth[pMsg->SensorStat]/2;
-				if(pMsg->AxisPosY[pMsg->SensorStat] + pMsg->crossAxisHeight[pMsg->SensorStat]/2 > height)
-					pMsg->AxisPosY[pMsg->SensorStat] = height - pMsg->crossAxisHeight[pMsg->SensorStat]/2;
-
-				if(pMsg->AxisPosX[pMsg->SensorStat] <  pMsg->crossAxisWidth[pMsg->SensorStat]/2)
-					pMsg->AxisPosX[pMsg->SensorStat] =  pMsg->crossAxisWidth[pMsg->SensorStat]/2;
-				if(pMsg->AxisPosY[pMsg->SensorStat]  <  pMsg->crossAxisHeight[pMsg->SensorStat]/2)
-					pMsg->AxisPosY[pMsg->SensorStat] =  pMsg->crossAxisHeight[pMsg->SensorStat]/2;
-				app_ctrl_setAxisPos(pMsg);
-
-			}
-			else if(1 == imgID6){
-				pMsg->AvtTrkStat = eTrk_mode_acqmove;
-				pMsg->AvtPosX[pMsg->SensorStat] = Racqpos.BoresightPos_x;
-				pMsg->AvtPosY[pMsg->SensorStat] = Racqpos.BoresightPos_y;
-				app_ctrl_setTrkStat(pMsg);
-				pMsg->AxisPosX[pMsg->SensorStat] = pMsg->opticAxisPosX[pMsg->SensorStat];
-				pMsg->AxisPosY[pMsg->SensorStat] = pMsg->opticAxisPosY[pMsg->SensorStat];
-				app_ctrl_setAxisPos(pMsg);
-				MSGAPI_msgsend(sectrk);
-			}
-			else if(0 == imgID6){
-				pMsg->AxisPosX[pMsg->SensorStat] = Racqpos.BoresightPos_x;
-				pMsg->AxisPosY[pMsg->SensorStat] = Racqpos.BoresightPos_y;
-				pMsg->AvtTrkStat = eTrk_mode_acq;
-				app_ctrl_setAxisPos(pMsg);
-			}
-			break;
-	#endif
 
 		case osdbuffer:
 			memcpy(&disOsdBuf[imgID1],RS422->param,sizeof(osdbuffer_t));
@@ -310,32 +265,6 @@ void* recv_msg(SENDST *RS422)
 			memcpy(&losttime,RS422->param,4);
 			glosttime = losttime;
 			break;
-
-	#if !LINKAGE_FUNC
-		case trk:				
-			memcpy(&Rtrk,RS422->param,sizeof(Rtrk));
-			imgID1 = Rtrk.AvtTrkStat;
-			//printf("recv TRK : imgID1 : %d\n",imgID1);
-			if(imgID1 == 0x1)
-				pMsg->AvtTrkStat =eTrk_mode_target;
-			else
-				pMsg->AvtTrkStat = eTrk_mode_acq;
-
-			if(pMsg->AvtTrkStat == eTrk_mode_acq)
-			{
-				pMsg->AxisPosX[pMsg->SensorStat] = pMsg->opticAxisPosX[pMsg->SensorStat];
-				pMsg->AxisPosY[pMsg->SensorStat] = pMsg->opticAxisPosY[pMsg->SensorStat];
-				pMsg->AvtPosX[pMsg->SensorStat]  = pMsg->AxisPosX[pMsg->SensorStat];
-				pMsg->AvtPosY[pMsg->SensorStat]  = pMsg->AxisPosY[pMsg->SensorStat];
-				
-				app_ctrl_setAimPos(pMsg);
-				app_ctrl_setAxisPos(pMsg);
-			}
-
-			app_ctrl_setTrkStat(pMsg); 
-			MSGAPI_msgsend(trk);
-			break;
-	#endif	
 	
 		case mmt:
 			memcpy(&Rmtd,RS422->param,sizeof(Rmtd));
@@ -398,18 +327,6 @@ void* recv_msg(SENDST *RS422)
 			app_ctrl_setMtdStat(pMsg);
 			MSGAPI_msgsend(mtd);
 			break;
-
-	#if !LINKAGE_FUNC
-		case mtdSelect:		
-			memcpy(&Rmmtselect,RS422->param,sizeof(Rmmtselect));
-			pMsg->MtdSelect[pMsg->SensorStat] = Rmmtselect.ImgMmtSelect;
-			app_ctrl_setMtdSelect(pMsg);
-			if(ipc_eMMT_Select == Rmmtselect.ImgMmtSelect)
-			{
-				MSGAPI_msgsend(mtd);
-			}
-			break;
-	#endif
 			
 #endif
 		case sectrk:
@@ -573,10 +490,8 @@ void* recv_msg(SENDST *RS422)
 						vcapWH[i][1] = 1080;
 						vdisWH[i][0] = 1920;
 						vdisWH[i][1] = 1080;
-						#if LINKAGE_FUNC
 						g_sysParam->getSysParam().gun_camera.raw = vdisWH[i][1];
 						g_sysParam->getSysParam().gun_camera.col  = vdisWH[i][0];
-						#endif
 					}
 					else if((2 == Rresolution.resolution[i])||(3 == Rresolution.resolution[i]))
 					{
@@ -596,12 +511,9 @@ void* recv_msg(SENDST *RS422)
 			break;
 			
 		case querypos:
-			#if LINKAGE_FUNC
 				memcpy(&posOfLinkage,RS422->param,sizeof(posOfLinkage));
 				//printf("[%s]:Query IPC Rcv :>> panPos ,tilPos , zoom = (%d ,%d ,%d) \n",__FUNCTION__,posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
 				app_ctrl_setLinkagePos(posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
-				
-			#endif
 			break;
 		case switchtarget:
 			pMsg->MtdSelect[pMsg->SensorStat] = ipc_eMTD_Next;

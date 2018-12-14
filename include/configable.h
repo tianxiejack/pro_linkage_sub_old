@@ -7,10 +7,7 @@
 
 #define AVT_TRK_AIM_SIZE			2
 
-//#define LINKAGE_FUNC				1
 
-
-#if LINKAGE_FUNC
 
 typedef struct _Resolution{
 	int raw, col ;
@@ -194,9 +191,7 @@ class SingletonSysParam {
 		virtual ~SingletonSysParam(){};
 };
 
-#endif
 
-#if LINKAGE_FUNC 
 	typedef enum _MenuDisplay{
 		MENU_PIP=0,
 		MENU_SBS=1,
@@ -208,7 +203,6 @@ class SingletonSysParam {
 	}MenuDisplay;
 
 
-#endif
 
 enum devvideo{
 	video_gaoqing0=0,

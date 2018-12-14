@@ -26,12 +26,10 @@ int CVideoProcess::m_iTrackLostCnt = 0;
 int64 CVideoProcess::tstart = 0;
 static int count=0;
 int ScalerLarge,ScalerMid,ScalerSmall;
-#if LINKAGE_FUNC
 	extern SingletonSysParam* g_sysParam;
 	extern osdbuffer_t disOsdBuf[32];
 	extern osdbuffer_t disOsdBufbak[32];
 	extern wchar_t disOsd[32][33];
-#endif
 
 int CVideoProcess::MAIN_threadCreate(void)
 {
@@ -143,13 +141,8 @@ void CVideoProcess::main_proc_func()
 			continue;
 		}
 
-	#if LINKAGE_FUNC
 		if(chId != m_curSubChId)
 			continue;
-	#else
-		if(chId != m_curChId)
-			continue;
-	#endif
 	
 		frame_gray = Mat(frame.rows, frame.cols, CV_8UC1);
 
@@ -291,11 +284,7 @@ void CVideoProcess::main_proc_func()
 		#if __MOVE_DETECT__
 			if(m_pMovDetector != NULL)
 			{
-#if LINKAGE_FUNC
 				m_pMovDetector->setFrame(frame_gray,0,2,minsize,maxsize,16);
-#else
-				m_pMovDetector->setFrame(frame_gray,chId,2,minsize,maxsize,16);
-#endif
 			}
 		#endif
 		}
@@ -323,7 +312,6 @@ int CVideoProcess::MAIN_threadDestroy(void)
 	return iRet;
 }
 
-#if LINKAGE_FUNC
 void CVideoProcess::linkage_init()
 {
 	m_GrayMat.create(1080,1920,CV_8UC1);
@@ -360,7 +348,6 @@ void CVideoProcess::linkage_init()
 
 CcCamCalibra* CVideoProcess::m_camCalibra = new CcCamCalibra();
 
-#endif
 
 CVideoProcess::CVideoProcess()
 	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40)		
@@ -388,9 +375,6 @@ CVideoProcess::CVideoProcess()
 	preAcpSR	={0};
 	algOsdRect = false;
 
-#if (!LINKAGE_FUNC)
-	mptz_click = mptz_originX = mptz_originY = 0;
-#endif
 	
 #if __MOVE_DETECT__
 	m_pMovDetector	=NULL;
@@ -406,13 +390,11 @@ CVideoProcess::CVideoProcess()
 	minsize = 1000;
 #endif
 
-#if LINKAGE_FUNC
 	m_curChId = video_gaoqing ;
 	m_curSubChId = video_gaoqing0 ;
 	Set_SelectByRect = false ;
 	open_handleCalibra = false ;
 	linkage_init();
-#endif
 	m_click = m_draw = m_tempX = m_tempY = 0;
 	memset(m_rectn, 0, sizeof(m_rectn));
 	memset(mRect, 0, sizeof(mRect));
@@ -476,7 +458,6 @@ int CVideoProcess::destroy()
 	return 0;
 }
 
-#if LINKAGE_FUNC	
 void CVideoProcess::processtimeMenu(int value)
 {
 	if(0 == value)
@@ -958,25 +939,6 @@ int CVideoProcess::maprect_point(int *x, int *y, mouserect rectsrc,mouserect rec
 	return 0;
 }
 
-#else
-
-void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
-{
-	SENDST test;
-	CMD_MOUSEPTZ mptz;
-
-	test.cmd_ID = mouseptz;
-	if(pThis->mptz_click == 1)
-	{
-		mptz.mptzx = xMouse - pThis->mptz_originX;
-		mptz.mptzy = pThis->mptz_originY - yMouse;
-		memcpy(test.param, &mptz, sizeof(mptz));
-		ipc_sendmsg(&test, IPC_FRIMG_MSG);
-	}
-}
-
-#endif
-
 int CVideoProcess::map1080p2normal_point(float *x, float *y)
 {
 	if(NULL != x)
@@ -1030,19 +992,14 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 
 	int Critical_Point;	
 
-#if LINKAGE_FUNC
 	if(pThis->m_display.g_CurDisplayMode == PIC_IN_PIC) {
 		curId = 0;	
 	}else{
 		curId = pThis->m_curChId;
 	}
-#else
-		curId = pThis->m_curChId;
-#endif	
 
 	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
-#if LINKAGE_FUNC
 
 		//pThis->OnMouseLeftDwn(x, y);   // add by swj
 		
@@ -1051,7 +1008,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			pThis->OnMouseLeftDwn(x, y);
 		}
 		else
-#endif
 		{
 			if( pThis->setrigon_flag && !m_bMoveDetect)
 			{
@@ -1112,9 +1068,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					pThis->polWarnRect[curId][3].y = rectsrcf.y+rectsrcf.h;
 					pThis->polwarn_count[curId] = 4;
 					
-#if LINKAGE_FUNC
-					rectsrcf = pThis->mapgun2fullscreen(rectsrcf);
-#endif				
+					rectsrcf = pThis->mapgun2fullscreen(rectsrcf);			
 					std::vector<cv::Point> polyWarnRoi ;
 					polyWarnRoi.resize(4);		
 					polyWarnRoi[0] = cv::Point(rectsrcf.x, rectsrcf.y);
@@ -1122,11 +1076,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					polyWarnRoi[2] = cv::Point(rectsrcf.x+rectsrcf.w, rectsrcf.y+rectsrcf.h);
 					polyWarnRoi[3] = cv::Point(rectsrcf.x, rectsrcf.y+rectsrcf.h);
 
-#if LINKAGE_FUNC
 					pThis->m_pMovDetector->setWarningRoi( polyWarnRoi,	0);
-#else
-					pThis->m_pMovDetector->setWarningRoi( polyWarnRoi,	curId);		
-#endif
 					pThis->m_rectn[curId]++;
 					if(pThis->m_rectn[curId]>=sizeof(pThis->mRect[0]))
 					{
@@ -1153,7 +1103,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			}
 			else
 			{
-				#if LINKAGE_FUNC
 					if(pThis->m_click == 0)
 					{
 						if(pThis->click_legal(x,y))
@@ -1235,7 +1184,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 							printf("move illegal!!!\n");
 					}
 					
-				#endif
 			}
 		}
 		
@@ -1260,56 +1208,24 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			{
 				setx = pThis->polRect[curId][i].x;
 				sety = pThis->polRect[curId][i].y;
-#if LINKAGE_FUNC
 				pThis->mapgun2fullscreen_point(&setx, &sety);
-#endif	
 				polyWarnRoi[i] = cv::Point(setx, sety);
 			}
-#if LINKAGE_FUNC
 			pThis->m_pMovDetector->setWarningRoi( polyWarnRoi,	0);
-#else			
-			pThis->m_pMovDetector->setWarningRoi( polyWarnRoi,	curId);
-#endif
 			pThis->setrigon_polygon = 0;
 			pThis->pol_rectn[curId] = 0;
 			pThis->pol_draw = 1;
 		}
 	}
-	
-#if (!LINKAGE_FUNC)
-	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
-		pThis->mptz_click = 1;
-		pThis->mptz_originX = x;
-		pThis->mptz_originY = y;
-	}
-	else if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
-	{
-		SENDST test;
-		CMD_MOUSEPTZ mptz;
-		
-		pThis->mptz_click = 0;
-		test.cmd_ID = mouseptz;
-		mptz.mptzx = 0;
-		mptz.mptzy = 0;
-		memcpy(test.param, &mptz, sizeof(mptz));
-		ipc_sendmsg(&test, IPC_FRIMG_MSG);
-
-	}
-#endif
 }
 
 void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
 {
 	unsigned int curId;
-#if LINKAGE_FUNC
 	if(pThis->m_display.g_CurDisplayMode == PIC_IN_PIC)
 		curId = 0;
 	else
 		curId = pThis->m_curChId;
-#else
-		curId = pThis->m_curChId;
-#endif
 
 	float floatx,floaty;
 	floatx = xMouse;
@@ -1416,13 +1332,9 @@ int CVideoProcess::init()
 {
 	DS_InitPrm dsInit;
 	memset(&dsInit, 0, sizeof(DS_InitPrm));
-#if LINKAGE_FUNC
 	dsInit.timefunc = processtimeMenu;	
 	dsInit.manualcarli = processsmanualcarliMenu;
 	dsInit.autocarli = processsautocarliMenu;	
-#else
-	dsInit.motionfunc = mousemotion_event;
-#endif
 	dsInit.menufunc = menu_event;
 	dsInit.mousefunc = mouse_event;
 	dsInit.passivemotionfunc = mousemove_event;
@@ -1798,9 +1710,7 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 //	tstart = getTickCount();
 	int  channel= frame.channels();
 
-#if LINKAGE_FUNC
 	static bool copy_once = true;
-#endif
 	
 
 #ifdef TM
@@ -1826,11 +1736,7 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 	OSA_mutexLock(&m_mutex);
 
 
-#if LINKAGE_FUNC
 	if(chId == m_curSubChId)
-#else
-	if(chId == m_curChId)
-#endif
 	{
 		if((chId==video_pal) && (virchId!= PAL_VIRCHID))
 			;
@@ -1855,7 +1761,6 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 		}
 	}
 
-	#if LINKAGE_FUNC	
 			if(	m_camCalibra->start_cloneVideoSrc == true || g_sysParam->isEnable_cloneSrcImage() ) 
 			{
 				//m_camCalibra->start_cloneVideoSrc = false;
@@ -1879,7 +1784,6 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 					copy_once = false;
 				}
 			}
-	#endif
 	
 		
 	//OSA_printf("chid =%d  m_curChId=%d m_curSubChId=%d\n", chId,m_curChId,m_curSubChId);
@@ -2045,9 +1949,7 @@ void	CVideoProcess::initMvDetect()
 		recttmp.w = vdisWH[i][0] * (max_width_ratio - min_width_ratio);
 		recttmp.h = vdisWH[i][1] * (max_height_ratio - min_height_ratio); 
 
-#if LINKAGE_FUNC
 		recttmp = mapfullscreen2gun(recttmp);
-#endif
 		pThis->polWarnRect[i][0].x = recttmp.x;
 		pThis->polWarnRect[i][0].y = recttmp.y;
 		pThis->polWarnRect[i][1].x = recttmp.x+recttmp.w;
@@ -2058,9 +1960,7 @@ void	CVideoProcess::initMvDetect()
 		pThis->polWarnRect[i][3].y = recttmp.y+recttmp.h;
 		pThis->polwarn_count[i] = 4;
 
-#if LINKAGE_FUNC
 		recttmp = mapgun2fullscreen(recttmp);
-#endif
 		polyWarnRoi[0]	= cv::Point(recttmp.x,recttmp.y);
 	    polyWarnRoi[1]	= cv::Point(recttmp.x+recttmp.w,recttmp.y);
 	    polyWarnRoi[2]	= cv::Point(recttmp.x+recttmp.w,recttmp.y+recttmp.h);
@@ -2082,21 +1982,8 @@ void CVideoProcess::NotifyFunc(void *context, int chId)
 {
 	CVideoProcess *pParent = (CVideoProcess*)context;
 	pThis->detect_vect.clear();
-#if LINKAGE_FUNC
 	pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect,0);
-#else
-	pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect,chId);
-#endif
 
-#if !LINKAGE_FUNC
-	SENDST test;
-	test.cmd_ID = mtdnum;
-	if(0 == pThis->detect_vect.size())
-		test.param[0] = 0;
-	else
-		test.param[0] = 1;
-	ipc_sendmsg(&test, IPC_FRIMG_MSG);
-#endif
 	
 	//pParent->m_display.m_bOsd = true;
 	//pThis->m_display.UpDateOsd(0);

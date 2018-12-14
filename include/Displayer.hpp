@@ -75,14 +75,10 @@ typedef struct _ds_init_param{
 	int initloyerId;
 	//void (*displayfunc)(void);
 	
-#if LINKAGE_FUNC
 	void (*timefunc)(int value);
 	void (*manualcarli)(int value);
 	void (*autocarli)(int value);
 	void (*closecarli)(int value);
-#else
-	void (*motionfunc)(GLint xMouse, GLint yMouse);
-#endif
 	void (*passivemotionfunc)(GLint xMouse, GLint yMouse);
 	void (*mousefunc)(int button, int state, int x, int y);
 	void (*menufunc)(int value);
@@ -107,7 +103,6 @@ typedef struct _ds_init_param{
 }DS_InitPrm;
 
 
-#if LINKAGE_FUNC
 	typedef enum _DISPLAYMODE {
 		PREVIEW_MODE = 0,
 		PIC_IN_PIC,
@@ -121,13 +116,11 @@ typedef struct _ds_init_param{
 	const int osdID_time = 30;
 	const int osdID_name = 31;
 
-#endif
 
 
 class CDisplayer 
 {
 
-#if LINKAGE_FUNC
 public:
 	cv::Mat gun_UndistorMat;
 	cv::Mat gun_BMP;
@@ -161,7 +154,6 @@ private:
 	void sendIPC_Videoname(int value);
 	void sendIPC_VideoName_pos();
 	void sendIPC_Time_pos();
-#endif
 
 public:
 	CDisplayer();
@@ -205,9 +197,7 @@ public:
 	bool m_bOsd;
 	bool m_crossOsd;
 
-#if LINKAGE_FUNC
 	bool savePic_once;
-#endif
 	Mat m_disOsd[DS_DC_CNT];
 	Mat m_imgOsd[DS_DC_CNT];
 	DS_Size m_videoSize[DS_CHAN_MAX];
@@ -273,7 +263,6 @@ protected:
 	static void _display(void);
 	static void _timeFunc(int value);
 	static void _reshape(int width, int height);
-#if LINKAGE_FUNC
 	static void processLinkageMenu(int value);
 	static void processDMMenu(int value);
 	static void processgunResMenu(int value);
@@ -289,7 +278,6 @@ protected:
 	static void processparityMenu(int value);
 	static void processaddressMenu(int value);
 	static void processprotocolMenu(int value);
-#endif
 	static void processSenMenu(int value);
 	static void processtargetspeedMenu(int value);
 	static void processtargetdircMenu(int value);

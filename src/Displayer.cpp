@@ -27,12 +27,10 @@
 #include "Ipcctl.h"
 #include "arm_neon.h"
 
-#if LINKAGE_FUNC
 #include "CcCamCalibra.h"
 MenuDisplay g_displayMode = MENU_SBS;
 SingletonSysParam* SingletonSysParam::m_uniqueInstance = SingletonSysParam::getInstance();
 SingletonSysParam* g_sysParam = SingletonSysParam::getInstance();
-#endif
 
 #define HISTEN 0
 #define CLAHEH 1
@@ -44,10 +42,8 @@ extern CMD_triangle cmd_triangle;
 extern OSD_param m_osd;
 extern CProcess* plat;
 
-#if LINKAGE_FUNC
 extern CamParameters g_camParams;
 
-#endif
 
 double capTime = 0;
 
@@ -80,7 +76,6 @@ osdbuffer_t disOsdBuf[32]={0};
 osdbuffer_t disOsdBufbak[32] = {0};
 wchar_t disOsd[32][33];
 
-#if LINKAGE_FUNC
 
 void CDisplayer::linkage_init()
 {
@@ -108,7 +103,6 @@ void CDisplayer::linkage_init()
 	timey = disOsdBuf[osdID_time].posy;
 	videonamefs = 2;
 }
-#endif
 
 CDisplayer::CDisplayer()
 :m_renderCount(0),m_bRun(false),m_bFullScreen(false),m_bOsd(false),
@@ -136,7 +130,6 @@ CDisplayer::CDisplayer()
 	frameCount = 0;
 	frameRate = 0.0;
 
-#if LINKAGE_FUNC
 	linkage_init();
 	g_sysParam->getSysParam().gunposition.leftUp.x = 1440;
 	g_sysParam->getSysParam().gunposition.leftUp.y = 810;
@@ -147,7 +140,6 @@ CDisplayer::CDisplayer()
 	g_sysParam->setGunSize(SingletonSysParam::ONE_4);
 	g_sysParam->setGunPosition(SingletonSysParam::RU);
 	savePic_once = false;
-#endif
 
 }
 
@@ -291,7 +283,6 @@ int CDisplayer::initRender(bool bInitBind)
 		m_renders[chId].bFreeze=0;
 	}
 
-#if LINKAGE_FUNC
 
 	m_renders[0].video_chId = video_gaoqing;
 	m_renders[0].displayrect.x = 0;
@@ -307,32 +298,6 @@ int CDisplayer::initRender(bool bInitBind)
 	m_renders[1].displayrect.h = 540;	
 	m_renders[1].videodect=1;
 	
-#else
-
-	m_renders[0].croprect.x=0;
-	m_renders[0].croprect.y=0;
-	m_renders[0].croprect.w=0;
-	m_renders[0].croprect.h=0;
-	
-	m_renders[0].video_chId = MAIN_CHID;
-	m_renders[0].displayrect.x = 0;
-	m_renders[0].displayrect.y = 0;
-	m_renders[0].displayrect.w = VIDEO_DIS_WIDTH;
-	m_renders[0].displayrect.h = VIDEO_DIS_HEIGHT;
-	m_renders[0].videodect=1;
-
-	m_renders[1].video_chId = -1;
-	m_renders[1].displayrect.x = VIDEO_DIS_WIDTH*2/3;
-	m_renders[1].displayrect.y = VIDEO_DIS_HEIGHT*2/3;
-	m_renders[1].displayrect.w = VIDEO_DIS_WIDTH/3;
-	m_renders[1].displayrect.h = VIDEO_DIS_HEIGHT/3;
-	m_renders[1].videodect=1;
-
-	m_renders[2].videodect=1;
-	m_renders[3].videodect=1;
-	m_renders[4].videodect=1;
-
-#endif
 	
 	m_img_novideo.cols=0;
 	m_img_novideo.rows=0;
@@ -382,7 +347,6 @@ void CDisplayer::_reshape(int width, int height)
 	gThis->gl_resize();
 }
 
-#if LINKAGE_FUNC
 void CDisplayer::processLinkageMenu(int value)
 {
 	//printf("%s start, value=%d\n", __FUNCTION__, value);
@@ -930,7 +894,6 @@ void CDisplayer::processprotocolMenu(int value)
 	}
 }
 
-#endif
 void CDisplayer::processSenMenu(int value)
 {
 	printf("%s start, value=%d\n", __FUNCTION__, value);
@@ -1117,7 +1080,6 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 	if(m_initPrm.passivemotionfunc != NULL)
 		glutPassiveMotionFunc(m_initPrm.passivemotionfunc);
 	
-#if LINKAGE_FUNC
 	if(m_initPrm.menufunc != NULL)
 	{
 		int sub_menu = glutCreateMenu(processLinkageMenu);
@@ -1309,68 +1271,6 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 		glutAddSubMenu("Setup",sub_menu3);
 		glutAttachMenu(GLUT_RIGHT_BUTTON);
 	}
-	
-#else
-	if(m_initPrm.motionfunc != NULL)
-		glutMotionFunc(m_initPrm.motionfunc);
-	
-	if(m_initPrm.menufunc != NULL)
-	{
-		int t_sub_menu2 = glutCreateMenu(processmtdmodeMenu);
-		glutAddMenuEntry("Prohibit",0);
-		glutAddMenuEntry("Allow",1);
-		int t_maxnum_submenu = glutCreateMenu(m_initPrm.maxnum);
-		glutAddMenuEntry("5",0);
-		glutAddMenuEntry("10",1);
-		int t_minsi_submenu = glutCreateMenu(m_initPrm.minsize);
-		glutAddMenuEntry("100",0);
-		glutAddMenuEntry("1000",1);
-		int t_maxsi_submenu = glutCreateMenu(m_initPrm.maxsize);
-		glutAddMenuEntry("40000",0);
-		glutAddMenuEntry("50000",1);
-		int t_rig_submenu = glutCreateMenu(m_initPrm.setrigion);
-		glutAddMenuEntry("Rigion1",0);
-		int t_rigsel_submenu = glutCreateMenu(m_initPrm.rigionsel);
-		glutAddMenuEntry("Rigion1",0);
-		int t_rigpolygon_submenu = glutCreateMenu(m_initPrm.rigionpolygon);
-		glutAddMenuEntry("Rigion1",0);
-		int t_dc_submenu = glutCreateMenu(processdetectcondMenu);
-		glutAddMenuEntry("Condition1",0);
-		glutAddMenuEntry("Condition2",1);
-		int t_redetect_submenu = glutCreateMenu(processredetectMenu);
-		glutAddMenuEntry("Disable",0);
-		glutAddMenuEntry("Enable",1);
-		int t_output_submenu = glutCreateMenu(processalarmputMenu);
-		glutAddMenuEntry("Disable",0);
-		glutAddMenuEntry("Enable",1);
-		int t_polar_submenu = glutCreateMenu(processpolarMenu);
-		glutAddMenuEntry("+",0);
-		glutAddMenuEntry("-",1);
-		int t_dur_submenu = glutCreateMenu(processdurationMenu);
-		glutAddMenuEntry("1s",0);
-		glutAddMenuEntry("3s",1);
-		glutAddMenuEntry("5s",2);
-		glutAddMenuEntry("7s",3);
-		glutAddMenuEntry("9s",4);
-		
-		glutCreateMenu(NULL);
-		glutAddSubMenu("Auto Detect Enable",t_sub_menu2);
-		glutAddSubMenu("Rigion Set",t_rig_submenu);
-		glutAddSubMenu("Rigion Select",t_rigsel_submenu);
-		glutAddSubMenu("Rigion Set Polygon",t_rigpolygon_submenu);
-		glutAddSubMenu("Detect Condition",t_dc_submenu);
-		glutAddSubMenu("Redetect after lost",t_redetect_submenu);
-#if __MOVE_DETECT__
-		glutAddSubMenu("Max Num",t_maxnum_submenu);
-		glutAddSubMenu("Minimum Target Size",t_minsi_submenu);
-		glutAddSubMenu("Maximum Target Size",t_maxsi_submenu);
-#endif
-		glutAddSubMenu("Alarm Output",t_output_submenu);
-		glutAddSubMenu("Output Polar",t_polar_submenu);
-		glutAddSubMenu("Duration",t_dur_submenu);
-		glutAttachMenu(GLUT_RIGHT_BUTTON);
-	}
-#endif
 
 	if(m_initPrm.visibilityfunc != NULL)
 		glutVisibilityFunc(m_initPrm.visibilityfunc);
@@ -1641,7 +1541,6 @@ void CDisplayer::display(Mat frame, int chId, int code)
 	cv::waitKey(1);
 */
 
-#if LINKAGE_FUNC
 if(chId == 0 && savePic_once == true){
 		savePic_once = false;
 		memset(savePicName, 0, 20);
@@ -1651,7 +1550,6 @@ if(chId == 0 && savePic_once == true){
 		cvtColor(frame,Dst,CV_YUV2BGR_YUYV);		
 		imwrite(savePicName,Dst);
 }
-#endif
 	if(nChannel == 1 || code == -1){
 		cudaMalloc_share((void**)&d_src_rgb, byteCount, chId + DS_CHAN_MAX);
 		firbuffer= OSA_bufGetEmpty(&(tskSendBuffir), &bufId, OSA_TIMEOUT_NONE);
@@ -2271,13 +2169,11 @@ void CDisplayer::gl_textureLoad(void)
 				}
 
 	
-			#if LINKAGE_FUNC
 				if( (chId == 0 )&& (plat->m_camCalibra->Set_Handler_Calibra == true || g_sysParam->isEnable_Undistortion())) {
 					memcpy(gun_UndistorMat.data, x11disbuffer, 1080*1920*3);
 					remap(gun_UndistorMat, gun_UndistorMat, g_camParams.map1, g_camParams.map2, INTER_LINEAR);
 					memcpy( x11disbuffer,gun_UndistorMat.data, 1080*1920*3);
 				}
-			#endif
 
 				if((disbuffer==0)&&(chId==video_gaoqing0))
 					OSA_bufPutEmpty(&tskSendBuftv0, bufid);
@@ -2349,7 +2245,6 @@ void CDisplayer::disp_fps(){
     frames++;
 }
 
-#if LINKAGE_FUNC
 DISPLAYMODE CDisplayer::getDisplayMode()
 {
 	return displayMode;
@@ -2533,7 +2428,6 @@ void CDisplayer::linkageSwitchMode(void)
 	}
 }
 
-#endif
 
 void CDisplayer::gl_display(void)
 {	
@@ -2550,9 +2444,7 @@ void CDisplayer::gl_display(void)
 	Uniform_font_color = glGetUniformLocation(m_fontProgram,"fontColor");
 
 
-	#if LINKAGE_FUNC
 		linkageSwitchMode();
-	#endif
 
 	for(winId=0; winId<m_renderCount; winId++)
 	{			

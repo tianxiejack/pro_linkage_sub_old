@@ -37,7 +37,6 @@ class CProcess : public CVideoProcess
 	char timedisplay[128];
 	bool forwardflag,backflag;
 
-#if LINKAGE_FUNC
 	int key_point1_cnt ;
 	int key_point2_cnt ;
 	int AllPoints_Num  ;
@@ -85,7 +84,6 @@ public:
 	void manualHandleKeyPoints(int &x,int &y);
 	
 	int checkZoomPosTable(int delta);
-#endif
 
 public:
 	CProcess();
@@ -169,9 +167,7 @@ protected:
 	 static void MSGAPI_input_algosdrect(long lParam);
 	 static void MSGAPI_setMtdSelect(long lParam );
 
-#if LINKAGE_FUNC
 	 static void MSGAPI_update_ballPos(long lParam );
-#endif
 
 private:
 	ACK_EXT extOutAck;

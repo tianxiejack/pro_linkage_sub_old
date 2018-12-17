@@ -68,10 +68,11 @@ typedef enum
     mtdoutput,
     mtdpolar,
     mtdtrktime,
-    setconfig,	/*50*/
+    setconfig,/*50*/
     querypos,
     speedloop,
     acqPosAndZoom,
+    reset_swtarget_timer,
     invalid
 }CMD_ID;
 

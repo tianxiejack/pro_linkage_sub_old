@@ -1550,6 +1550,8 @@ if(chId == 0 && savePic_once == true){
 		cvtColor(frame,Dst,CV_YUV2BGR_YUYV);		
 		imwrite(savePicName,Dst);
 }
+
+
 	if(nChannel == 1 || code == -1){
 		cudaMalloc_share((void**)&d_src_rgb, byteCount, chId + DS_CHAN_MAX);
 		firbuffer= OSA_bufGetEmpty(&(tskSendBuffir), &bufId, OSA_TIMEOUT_NONE);

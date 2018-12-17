@@ -2154,6 +2154,9 @@ int CProcess::checkZoomPosTable(int delta)
 	else  if(26 < Delta_X ){
 		setZoom = 65535;
 	}
+	else{ // add 201812
+		setZoom = 65535;
+	}
 	return setZoom;
 }
 
@@ -2232,6 +2235,11 @@ void CProcess::Set_K_ByDeltaX( int delta_x)
 		 tmpcofx =600 ;
 		 tmpcofy =610 ;
 	}
+	else{
+		 tmpcofx =600 ;
+		 tmpcofy =610 ;
+	}
+	#if 0 // modify 20181217
 	else  if(44 < Delta_X){
 		  tmpcofx =600 ;
 		 tmpcofy =610 ;
@@ -2248,7 +2256,7 @@ void CProcess::Set_K_ByDeltaX( int delta_x)
 		 tmpcofx =600 ;
 		 tmpcofy =610 ;
 	}
-	
+	#endif
 	m_cofx = tmpcofx;
 	m_cofy = tmpcofy;
 

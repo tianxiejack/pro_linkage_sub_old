@@ -1238,7 +1238,17 @@ void CProcess::mvIndexHandle(std::vector<TRK_RECT_INFO> &mvList,std::vector<TRK_
 			}	
 
 			if(!flag)
+			{
+				SENDST	tmp;
+				tmp.cmd_ID = reset_swtarget_timer;
+
+				if(pMvList == mvList.begin() + chooseDetect )
+				{
+					ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+				}
+				
 				mvList.erase(pMvList);
+			}
 			else
 				++pMvList;
 		

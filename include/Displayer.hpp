@@ -19,11 +19,21 @@
 #include "osa_buf.h"
 #include "osa_sem.h"
 #include "app_status.h"
+//#include "../src/CcCamCalibra.h"
+#include <math.h>
 #include "configable.h"
 
 using namespace std;
 using namespace cv;
 
+struct Vertex3F {
+	float x, y, z;
+	float u,v ;
+};
+struct RectColor{
+	float x, y, z;
+	float r, g, b;
+};
 typedef struct _ds_size{
 	int w;
 	int h;
@@ -74,6 +84,10 @@ typedef struct _ds_init_param{
 	char szScriptFile[256];
 	int initloyerId;
 	//void (*displayfunc)(void);
+	
+	int disFPS;      // Add 20181219
+	float disSched;  // Add 20181219
+	
 	
 	void (*timefunc)(int value);
 	void (*manualcarli)(int value);
@@ -149,6 +163,13 @@ public:
 	DISPLAYMODE getDisplayMode( );
 	void linkage_init();
 	void linkageSwitchMode(void);
+	GLbyte* gltReadBMPBits(const char *szFileName, int *nWidth, int *nHeight);
+	bool LoadBMPTexture(const char *szFileName, GLenum minFilter, GLenum magFilter, GLenum wrapMode);	
+private:
+	GLuint _textureId[100];
+	char BMPName[100][20];
+public:
+	unsigned char Cur_BMPIndex;
 
 private:
 	void sendIPC_Videoname(int value);
@@ -185,6 +206,8 @@ public:
 	int dynamic_config(DS_CFG type, int iPrm, void* pPrm);
 	int get_videoSize(int chId, DS_Size &size);
 	void display(Mat frame, int chId, int code = -1);/*CV_YUV2BGR_UYVY*/
+	void transfer();// add 20181219
+	int setFPS(float fps); // add 20181219
 	GLuint async_display(int chId, int width, int height, int channels);
 	int setFullScreen(bool bFull);
 	void reDisplay(void);
@@ -258,6 +281,28 @@ protected:
 	unsigned char *x11disbuffer;
 	int initRender(bool bInitBind = true);
 	void uninitRender();
+/******************************Add 20181219 Belows**********************************/
+protected:
+	Mat  m_frame[DS_CHAN_MAX][2];
+	int	 m_code[DS_CHAN_MAX];
+	int	pp[DS_CHAN_MAX];
+
+	uint64  m_interval;
+	double m_telapse;
+	uint64  m_tmBak[DS_CHAN_MAX];
+	int64   m_tmRender;
+	bool m_waitSync;
+
+	pthread_mutex_t render_lock;    /**< Used for synchronization. */
+	pthread_cond_t render_cond;     /**< Used for synchronization. */
+	uint64_t render_time_sec;       /**< Seconds component of the time for which a
+										 frame should be displayed. */
+	uint64_t render_time_nsec;      /**< Nanoseconds component of the time for which
+										 a frame should be displayed. */
+	struct timespec last_render_time;   /**< Rendering time for the last buffer. */
+	int m_nSwapTimeOut;
+	int64 tStamp[10];
+/**************************************************************************************/
 
 protected:
 	static void _display(void);

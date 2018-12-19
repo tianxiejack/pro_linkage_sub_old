@@ -28,10 +28,78 @@
 #include "arm_neon.h"
 
 #include "CcCamCalibra.h"
+#include "freetype.hpp"
+
 MenuDisplay g_displayMode = MENU_SBS;
 SingletonSysParam* SingletonSysParam::m_uniqueInstance = SingletonSysParam::getInstance();
 SingletonSysParam* g_sysParam = SingletonSysParam::getInstance();
+#if 1
+#pragma pack(1)
+struct RGB { 
+  GLbyte blue;
+  GLbyte green;
+  GLbyte red;
+  GLbyte alpha;
+};
 
+struct BMPInfoHeader {
+  GLuint	size;
+  GLuint	width;
+  GLuint	height;
+  GLushort  planes;
+  GLushort  bits;
+  GLuint	compression;
+  GLuint	imageSize;
+  GLuint	xScale;
+  GLuint	yScale;
+  GLuint	colors;
+  GLuint	importantColors;
+};
+
+struct BMPHeader {
+  GLushort	type; 
+  GLuint	size; 
+  GLushort	unused; 
+  GLushort	unused2; 
+  GLuint	offset; 
+}; 
+
+struct BMPInfo {
+  BMPInfoHeader		header;
+  RGB				colors[1];
+};
+#pragma pack(8)
+#endif
+
+Vertex3F BMPVertex[] = {
+		{ -1.0f, -1.0f, 1.0f , 0, 0 },
+		{ -1.0f, 1.0f, 1.0f , 0, 1 },
+		{ 1.0f, 1.0f, 1.0f  , 1, 1 },
+		{ 1.0f, -1.0f, 1.0f  , 1, 0 },			
+};
+RectColor SelectRect[] ={
+	{ 10, 10,  0.0f,  0.0f, 1.0f, 1.0f },
+    { 110, 10, 0.0f,  0.0f, 1.0f, 1.0f },
+    { 10, 110, 0.0f,  0.0f, 1.0f, 1.0f },
+    { 110, 110,0.0f,  0.0f, 1.0f, 1.0f }
+};
+
+void PrintMsDISPLAY( const char* text="" )
+{
+	static long long last = 0;
+	long long Cur = getTickCount();
+	if(last == 0){
+		last = Cur;
+		return ;
+	}
+	long long ms = 0;
+	ms = ( (double)(Cur-last)/getTickFrequency() ) * 1000;
+	if(*text != 0){
+		printf("\r\n\r\n[RunTimme]++++++++++++++++++++ [%s] = %d ms\r\n\r\n", text, ms);
+	}
+	last = getTickCount();
+
+}
 #define HISTEN 0
 #define CLAHEH 1
 #define DARKEN 0
@@ -106,7 +174,8 @@ void CDisplayer::linkage_init()
 
 CDisplayer::CDisplayer()
 :m_renderCount(0),m_bRun(false),m_bFullScreen(false),m_bOsd(false),
- m_glProgram(0), m_bUpdateVertex(false)
+ m_glProgram(0), m_bUpdateVertex(false),m_tmRender(0ul),m_waitSync(false),
+ m_telapse(5.0), m_nSwapTimeOut(0)
 {
 	int i;
 	gThis = this;
@@ -140,7 +209,14 @@ CDisplayer::CDisplayer()
 	g_sysParam->setGunSize(SingletonSysParam::ONE_4);
 	g_sysParam->setGunPosition(SingletonSysParam::RU);
 	savePic_once = false;
+/************************************Add 20181219**************************/
+	for(i=0; i<DS_DC_CNT;	i++){
+		pp[i] = 0;
+		m_code[i] = -1;
+	}
 
+	m_initPrm.disSched = 3.5;
+/*************************************************************************/
 }
 
 CDisplayer::~CDisplayer()
@@ -243,6 +319,14 @@ int CDisplayer::destroy()
 		}
 	}
 
+/*******************************************************/
+	pthread_mutex_lock(&render_lock);
+	pthread_cond_broadcast(&render_cond);
+	pthread_mutex_unlock(&render_lock);
+
+	pthread_mutex_destroy(&render_lock);
+	pthread_cond_destroy(&render_cond);
+/*******************************************************/
 	return 0;
 }
 
@@ -1000,17 +1084,16 @@ void CDisplayer::_close(void)
 
 int CDisplayer::init(DS_InitPrm *pPrm)
 {
-
-	//for tv buffer
-	tskSendBufCreatetv0.numBuf = PICBUFFERCOUNT;
+#if 0   // Removed By swj 20181219
+		//for tv buffer
+	   tskSendBufCreatetv0.numBuf = PICBUFFERCOUNT;
        for (int i = 0; i < tskSendBufCreatetv0.numBuf; i++)
        {
            cudaMalloc((void **)&tskSendBufCreatetv0.bufVirtAddr[i],mallocwidth*mallocheight*3);
            OSA_assert(tskSendBufCreatetv0.bufVirtAddr[i] != NULL);
        }
        OSA_bufCreate(&tskSendBuftv0, &tskSendBufCreatetv0);
-
-	tskSendBufCreatetv1.numBuf = PICBUFFERCOUNT;
+       tskSendBufCreatetv1.numBuf = PICBUFFERCOUNT;
        for (int i = 0; i < tskSendBufCreatetv1.numBuf; i++)
        {
            cudaMalloc((void **)&tskSendBufCreatetv1.bufVirtAddr[i],mallocwidth*mallocheight*3);
@@ -1018,7 +1101,7 @@ int CDisplayer::init(DS_InitPrm *pPrm)
        }
        OSA_bufCreate(&tskSendBuftv1, &tskSendBufCreatetv1);
 
-	tskSendBufCreatetv2.numBuf = PICBUFFERCOUNT;
+	   tskSendBufCreatetv2.numBuf = PICBUFFERCOUNT;
        for (int i = 0; i < tskSendBufCreatetv2.numBuf; i++)
        {
            cudaMalloc((void **)&tskSendBufCreatetv2.bufVirtAddr[i],mallocwidth*mallocheight*3);
@@ -1026,7 +1109,7 @@ int CDisplayer::init(DS_InitPrm *pPrm)
        }
        OSA_bufCreate(&tskSendBuftv2, &tskSendBufCreatetv2);
 
-	tskSendBufCreatetv3.numBuf = PICBUFFERCOUNT;
+	   tskSendBufCreatetv3.numBuf = PICBUFFERCOUNT;
        for (int i = 0; i < tskSendBufCreatetv3.numBuf; i++)
        {
            cudaMalloc((void **)&tskSendBufCreatetv3.bufVirtAddr[i],mallocwidth*mallocheight*3);
@@ -1035,7 +1118,7 @@ int CDisplayer::init(DS_InitPrm *pPrm)
        OSA_bufCreate(&tskSendBuftv3, &tskSendBufCreatetv3);
 	   
 
-	tskSendBufCreatefir.numBuf = PICBUFFERCOUNT;
+	   tskSendBufCreatefir.numBuf = PICBUFFERCOUNT;
        for (int i = 0; i < tskSendBufCreatefir.numBuf; i++)
        {
            cudaMalloc((void **)&tskSendBufCreatefir.bufVirtAddr[i],mallocwidth*mallocheight*3);
@@ -1043,7 +1126,7 @@ int CDisplayer::init(DS_InitPrm *pPrm)
        }
        OSA_bufCreate(&tskSendBuffir, &tskSendBufCreatefir);
 
-	tskSendBufCreatepal.numBuf = PICBUFFERCOUNT;
+	   tskSendBufCreatepal.numBuf = PICBUFFERCOUNT;
        for (int i = 0; i < tskSendBufCreatepal.numBuf; i++)
        {
            cudaMalloc((void **)&tskSendBufCreatepal.bufVirtAddr[i],mallocwidth*mallocheight*3);
@@ -1051,14 +1134,21 @@ int CDisplayer::init(DS_InitPrm *pPrm)
           
        }
        OSA_bufCreate(&tskSendBufpal, &tskSendBufCreatepal);
-
+#endif
 
 	if(pPrm != NULL)
 		memcpy(&m_initPrm, pPrm, sizeof(DS_InitPrm));
 	
 	if(m_initPrm.timerInterval<=0)
 		m_initPrm.timerInterval = 40;
+/*******************************************************Add 20181219*****************/
+	if(m_initPrm.disFPS<=0)
+		m_initPrm.disFPS = 25;
+	pthread_mutex_init(&render_lock, NULL);
+	pthread_cond_init(&render_cond, NULL);
+	setFPS(m_initPrm.disFPS);
 
+/*************************************************************************************/
     //glutInitWindowPosition(m_initPrm.winPosX, m_initPrm.winPosY);
     glutInitWindowSize(VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
     glutCreateWindow("DSS");
@@ -1288,6 +1378,15 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 	gl_init();
 
 	gl_Loadinit();
+for(int i =0; i<100;i++) {
+		memset(&BMPName[i], 0, sizeof(BMPName[i]));
+	}
+	for(int i =1; i<51;i++) {
+		sprintf(BMPName[i],"%02d.bmp",i);
+		glGenTextures(1, &_textureId[i]);
+		glBindTexture(GL_TEXTURE_2D, _textureId[i]);
+		LoadBMPTexture(BMPName[i],GL_LINEAR, GL_LINEAR, GL_CLAMP);
+	}	
 
 	return 0;
 }
@@ -1499,7 +1598,7 @@ void extractUYVY2Gray1(Mat src, Mat dst)
 		pDst8_t[y] = pSrc8_t[y*2+1];
 	}
 }
-
+#if 0
 void CDisplayer::display(Mat frame, int chId, int code)
 {
 	static int saveCount = 0;
@@ -1549,6 +1648,7 @@ if(chId == 0 && savePic_once == true){
 		Mat Dst(1080,1920,CV_8UC3);
 		cvtColor(frame,Dst,CV_YUV2BGR_YUYV);		
 		imwrite(savePicName,Dst);
+		saveImageList.push_back(Dst);
 }
 
 
@@ -1658,6 +1758,98 @@ if(chId == 0 && savePic_once == true){
 		cudaFree_share(d_src_rgb, chId + DS_CHAN_MAX);
 	}
 
+}
+#else
+
+
+void CDisplayer::display(Mat frame, int chId, int code)
+{
+	assert(chId>=0 && chId<DS_CHAN_MAX);
+
+	OSA_mutexLock(&m_mutex);
+
+	m_frame[chId][pp[chId]] = frame;
+	m_code[chId] = code;
+
+	OSA_mutexUnlock(&m_mutex);
+}
+#endif
+
+void CDisplayer::transfer()
+{
+	int winId, chId, nChannel,code;
+	unsigned char *d_src = NULL;
+	unsigned char *d_src_rgb = NULL;
+	unsigned int byteCount;// = frame.rows * frame.cols * nChannel * sizeof(unsigned char);
+	unsigned int byteBlock ;//= byteCount/DS_CUSTREAM_CNT;
+	int mask = 0;
+
+	for(winId=0; winId<m_renderCount; winId++)
+	{
+		chId = m_renders[winId].video_chId;
+
+		if(chId < 0 || chId >= DS_CHAN_MAX)
+		{
+			continue;
+		}
+
+		OSA_mutexLock(&m_mutex);
+		dism_img[chId]=	m_frame[chId][pp[chId]];
+		code = m_code[chId];
+		OSA_mutexUnlock(&m_mutex);
+
+		if(dism_img[chId].cols <=0 || dism_img[chId].rows <=0 || dism_img[chId].channels() == 0)
+		{
+			continue;
+		}
+		nChannel = dism_img[chId].channels();
+		byteCount = dism_img[chId].rows * dism_img[chId].cols * nChannel * sizeof(unsigned char);
+		byteBlock = byteCount/DS_CUSTREAM_CNT;
+
+		if(!((mask >> chId)&1))
+		{
+			if(nChannel == 1|| code == -1)
+			{
+				cudaMalloc_share((void**)&d_src_rgb, byteCount, chId + DS_CHAN_MAX);
+				cudaMemcpyAsync(d_src_rgb, dism_img[chId].data, byteCount, cudaMemcpyHostToDevice,  m_cuStream[0]);
+				m_img[chId] = cv::Mat(dism_img[chId].rows, dism_img[chId].cols, CV_MAKETYPE(CV_8U,nChannel), d_src_rgb);
+			}
+			else
+			{
+				unsigned int byteCount_rgb = dism_img[chId].rows * dism_img[chId].cols * 3* sizeof(unsigned char);
+				unsigned int byteBlock_rgb = byteCount_rgb/DS_CUSTREAM_CNT;
+				unsigned char *d_src_gray = NULL;
+
+				cudaMalloc_share((void**)&d_src, byteCount, chId);
+				cudaMalloc_share((void**)&d_src_rgb, byteCount_rgb, chId + DS_CHAN_MAX);
+
+				for(int i = 0; i<DS_CUSTREAM_CNT; i++)
+					cudaMemcpyAsync(d_src + byteBlock*i, dism_img[chId].data + byteBlock*i, byteBlock, cudaMemcpyHostToDevice, m_cuStream[i]);
+
+				if(code == CV_YUV2BGR_YUYV)
+				{
+					for(int i = 0; i<DS_CUSTREAM_CNT; i++)
+					{
+						yuyv2bgr_(d_src_rgb + byteBlock_rgb*i, d_src + byteBlock*i, dism_img[chId].cols, (dism_img[chId].rows/DS_CUSTREAM_CNT), m_cuStream[i]);
+					}
+				}
+
+				if(code == CV_YUV2BGR_UYVY)
+				{
+					for(int i = 0; i<DS_CUSTREAM_CNT; i++)
+					{
+						uyvy2bgr_(d_src_rgb + byteBlock_rgb*i, d_src + byteBlock*i, dism_img[chId].cols, (dism_img[chId].rows/DS_CUSTREAM_CNT), m_cuStream[i]);
+					}
+				}
+
+				m_img[chId] = cv::Mat(dism_img[chId].rows, dism_img[chId].cols, CV_8UC3, d_src_rgb);
+
+				cudaFree_share(d_src, chId);
+				cudaFree_share(d_src_rgb, chId + DS_CHAN_MAX);
+			}
+			mask |= (1<<chId);
+		}
+	}
 }
 
 GLuint CDisplayer::async_display(int chId, int width, int height, int channels)
@@ -1975,6 +2167,7 @@ static unsigned int firdupcount=800;
 
 static unsigned int tvclearbuffer=1;
 static unsigned int firclearbuffer=1;
+#if 0
 void CDisplayer::gl_textureLoad(void)
 {
 		
@@ -2227,6 +2420,151 @@ void CDisplayer::gl_textureLoad(void)
 
 	float telapse = ( (getTickCount() - tstart)/getTickFrequency());
 }
+
+#else
+static int64  tend = 0ul;
+void CDisplayer::gl_textureLoad(void)
+{
+	int winId, chId;
+	unsigned int mask = 0;
+	unsigned int byteCount=0;
+
+	tStamp[0] = getTickCount();
+	tstart = tStamp[0];
+	if(tend == 0ul)
+		tend = tstart;
+	if(1)
+	{
+		double wms = m_interval*0.000001 - m_telapse;
+		double wmsl = (m_tmRender == 0ul) ? 0.f : ((tStamp[0] - m_tmRender)*0.000001f);
+		wms -= wmsl;
+		if(m_waitSync && wms>2.0){
+			struct timeval timeout;
+			timeout.tv_sec = 0;
+			timeout.tv_usec = wms*1000.0;
+			select( 0, NULL, NULL, NULL, &timeout );
+		}else{
+			wms = 0.0;
+		}
+	}
+	tStamp[1] = getTickCount();
+
+	transfer();
+
+	tStamp[2] = getTickCount();
+
+	for(winId=0; winId<m_renderCount; winId++)
+	{
+		chId = m_renders[winId].video_chId;
+
+		if(chId < 0 || chId >= DS_CHAN_MAX)
+		{
+			continue;
+		}
+		dism_img[chId]=m_img[chId];
+
+		if(dism_img[chId].cols <=0 || dism_img[chId].rows <=0 || dism_img[chId].channels() == 0)
+		{
+			continue;
+		}
+
+		if(!((mask >> chId)&1))
+		{
+			if(!m_renders[winId].bFreeze)
+			{
+				GLuint pbo = async_display(chId, dism_img[chId].cols, dism_img[chId].rows, dism_img[chId].channels());
+				byteCount = dism_img[chId].cols*dism_img[chId].rows*dism_img[chId].channels()*sizeof(unsigned char);
+				unsigned char *dev_pbo = NULL;
+				size_t tmpSize;
+				freezeonece=1;
+				OSA_assert(pbo == buffId_input[chId]);
+
+				cudaResource_RegisterBuffer(chId, pbo, byteCount);
+				cudaResource_mapBuffer(chId, (void **)&dev_pbo, &tmpSize);
+				if(tmpSize != byteCount)
+				{
+					OSA_printf("%s: WARNING!!! %d - %d \n", __func__, (unsigned int)tmpSize, byteCount);
+				}
+
+				if( (chId == 0 )&& (plat->m_camCalibra->Set_Handler_Calibra == true || g_sysParam->isEnable_Undistortion())) {
+					if(m_renders[chId].videodect)
+						cudaMemcpy(x11disbuffer, dism_img[chId].data,byteCount, cudaMemcpyDeviceToHost);
+					else
+						cudaMemcpy(x11disbuffer, m_img_novideo.data,byteCount, cudaMemcpyDeviceToHost);
+
+					cv::Mat undistorMat = cv::Mat(dism_img[chId].rows, dism_img[chId].cols, CV_8UC3, x11disbuffer);
+					remap(undistorMat, undistorMat, g_camParams.map1, g_camParams.map2, INTER_LINEAR);
+
+				}else{
+					if(m_renders[chId].videodect)
+						cudaMemcpy(dev_pbo, dism_img[chId].data, byteCount, cudaMemcpyDeviceToDevice);
+					else
+						cudaMemcpy(dev_pbo, m_img_novideo.data, byteCount, cudaMemcpyDeviceToDevice);
+				}
+				cudaResource_unmapBuffer(chId);
+				cudaResource_UnregisterBuffer(chId);
+			}
+
+			if( (chId == 0 )&& (plat->m_camCalibra->Set_Handler_Calibra == true || g_sysParam->isEnable_Undistortion())) {
+				glBindTexture(GL_TEXTURE_2D, textureId_input[chId]);
+				if(dism_img[chId].channels() == 1){
+//glTexImage2D(GL_TEXTURE_2D, 0, m_videoSize[chId].c, m_videoSize[chId].w, m_videoSize[chId].h, 0, GL_RED, GL_UNSIGNED_BYTE, x11disbuffer);
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoSize[chId].w, m_videoSize[chId].h, GL_RED, GL_UNSIGNED_BYTE, x11disbuffer);
+				}else{
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoSize[chId].w, m_videoSize[chId].h, GL_BGR_EXT, GL_UNSIGNED_BYTE, x11disbuffer);
+				}
+			}else{
+				glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffId_input[chId]);
+				glBindTexture(GL_TEXTURE_2D, textureId_input[chId]);
+				if(dism_img[chId].channels() == 1){
+//glTexImage2D(GL_TEXTURE_2D, 0, m_videoSize[chId].c, m_videoSize[chId].w, m_videoSize[chId].h, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoSize[chId].w, m_videoSize[chId].h, GL_RED, GL_UNSIGNED_BYTE, NULL);
+				}else{
+//glTexImage2D(GL_TEXTURE_2D, 0, m_videoSize[chId].c, m_videoSize[chId].w, m_videoSize[chId].h, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, NULL);
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoSize[chId].w, m_videoSize[chId].h, GL_BGR_EXT, GL_UNSIGNED_BYTE, NULL);
+				}
+				glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+			}
+
+			mask |= (1<<chId);
+		}
+	}
+
+	if(m_bOsd)
+	{
+		for(int i=0; i<DS_DC_CNT;  i++)
+		{
+			if(updata_osd[i])
+			{
+//				glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffId_osd[i]);
+				glBindTexture(GL_TEXTURE_2D, textureId_osd[i]);
+				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_disOsd[i].cols, m_disOsd[i].rows, GL_BGRA_EXT, GL_UNSIGNED_BYTE, m_disOsd[i].data);
+				updata_osd[i] = false;
+//				glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+			}
+		}
+	}
+}
+
+#endif
+
+int CDisplayer::setFPS(float fps)
+{
+    if (fps == 0)
+    {
+        OSA_printf("[Render]Fps 0 is not allowed. Not changing fps");
+        return -1;
+    }
+    pthread_mutex_lock(&render_lock);
+    m_initPrm.disFPS = fps;
+    m_interval = (1000000000ul)/(uint64)m_initPrm.disFPS;
+    render_time_sec = m_interval / 1000000000ul;
+    render_time_nsec = (m_interval % 1000000000ul);
+    memset(&last_render_time, 0, sizeof(last_render_time));
+    pthread_mutex_unlock(&render_lock);
+    return 0;
+}
+
 void CDisplayer::disp_fps(){
     static GLint frames = 0;
     static GLint t0 = 0;
@@ -2446,7 +2784,25 @@ void CDisplayer::gl_display(void)
 	Uniform_font_color = glGetUniformLocation(m_fontProgram,"fontColor");
 
 
-		linkageSwitchMode();
+	linkageSwitchMode();
+	for(int Index =0; Index< 50; Index++)	
+	{			
+		int raw = 5;
+		int col = 10;
+		glViewport( 192.0*(Index%col), 540.0-108.0*((Index/col)+1), 192.0,108.0 );
+		glPushMatrix();
+		glLoadIdentity();
+		glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);	
+		glUniform1i(Uniform_tex_in, 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _textureId[Index+1]);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glVertexPointer(3,GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].x);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].u);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glPopMatrix();	
+	}	
 
 	for(winId=0; winId<m_renderCount; winId++)
 	{			
@@ -2500,20 +2856,73 @@ void CDisplayer::gl_display(void)
 			glViewport(0, 0, m_mainWinWidth_new[i], m_mainWinHeight_new[i]);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		}
-		glDisable(GL_BLEND);
-
-		
+		glDisable(GL_BLEND);		
 		IrisAndFocus();
 		OSDFunc();
-	}
+	}	
 	
 	glUseProgram(0);
-
-
+/****************************************************************************/	
+	tStamp[5] = getTickCount();
+	m_waitSync = true;
+	int64 tcur = tStamp[5];
+	m_telapse = (tStamp[5] - tStamp[1])*0.000001f + m_initPrm.disSched;
+#if 1
+	if (last_render_time.tv_sec != 0)
+	{
+		pthread_mutex_lock(&render_lock);
+		last_render_time.tv_sec += render_time_sec;
+		last_render_time.tv_nsec += render_time_nsec;
+		last_render_time.tv_sec += last_render_time.tv_nsec / 1000000000UL;
+		last_render_time.tv_nsec %= 1000000000UL;
+		pthread_cond_timedwait(&render_cond, &render_lock,	&last_render_time);
+		pthread_mutex_unlock(&render_lock);
+	}
+#endif
+	int64 tSwap = getTickCount();
+/******************************************************************************/
 
 
 	
 	glutSwapBuffers();
+
+tStamp[6] = getTickCount();
+#if 1
+	if(tStamp[6]-tSwap>5000000UL)
+		m_nSwapTimeOut++;
+	else
+		m_nSwapTimeOut = 0;
+	if (last_render_time.tv_sec == 0 || m_nSwapTimeOut>3)
+	{
+		struct timeval now;
+		gettimeofday(&now, NULL);
+		last_render_time.tv_sec = now.tv_sec;
+		last_render_time.tv_nsec = now.tv_usec * 1000L;
+		printf("\r\nReset render timer. fps(%d) swp(%ld)", m_initPrm.disFPS, tStamp[6]-tSwap);
+		fflush(stdout);
+	}
+#endif
+	tend = tStamp[6];
+	float renderIntv = (tend - m_tmRender)/getTickFrequency();
+#if 1
+	static unsigned long rCount = 0;
+	if(rCount%(m_initPrm.disFPS*100) == 0){
+		printf("\r\n[%d] %.4f (ws%.4f,cu%.4f,tv%.4f,to%.4f,rd%.4f,wp%.4f) %.4f(%.4f)",
+			OSA_getCurTimeInMsec(),renderIntv,
+			(tStamp[1]-tStamp[0])/getTickFrequency(),
+			(tStamp[2]-tStamp[1])/getTickFrequency(),
+			(tStamp[3]-tStamp[2])/getTickFrequency(),
+			(tStamp[4]-tStamp[3])/getTickFrequency(),
+			(tStamp[5]-tStamp[4])/getTickFrequency(),
+			(tStamp[6]-tStamp[5])/getTickFrequency(),
+			m_telapse, m_initPrm.disSched
+			);
+		fflush(stdout);
+	}
+	rCount ++;
+#endif
+	m_tmRender = tend;
+
 	glutPostRedisplay();
 	GetFPS();
 }
@@ -2827,5 +3236,92 @@ void CDisplayer::chinese_osd(int x,int y,wchar_t* text,char font,char fontsize,u
 	OSDdrawText(x,y,text,font,fontsize,win_width,win_height);
 	glUseProgram(0);
 }
+GLbyte* CDisplayer::gltReadBMPBits(const char *szFileName, int *nWidth, int *nHeight)
+{
+	FILE*	pFile;
+	BMPInfo *pBitmapInfo = NULL;
+	unsigned long lInfoSize = 0;
+	unsigned long lBitSize = 0;
+	GLbyte *pBits = NULL;					// Bitmaps bits
+	BMPHeader	bitmapHeader;
+
+    // Attempt to open the file
+    pFile = fopen(szFileName, "rb");
+    if(pFile == NULL)
+        return NULL;
+
+	// File is Open. Read in bitmap header information
+    fread(&bitmapHeader, sizeof(BMPHeader), 1, pFile);
+
+	// Read in bitmap information structure
+	lInfoSize = bitmapHeader.offset - sizeof(BMPHeader);
+	pBitmapInfo = (BMPInfo *) malloc(sizeof(GLbyte)*lInfoSize);
+	if(fread(pBitmapInfo, lInfoSize, 1, pFile) != 1)
+	{
+	free(pBitmapInfo);
+	fclose(pFile);
+	return false;
+	}
+
+	// Save the size and dimensions of the bitmap
+	*nWidth = pBitmapInfo->header.width;
+	*nHeight = pBitmapInfo->header.height;
+	lBitSize = pBitmapInfo->header.imageSize;
+
+	// If the size isn't specified, calculate it anyway	
+	if(pBitmapInfo->header.bits != 24)
+	{
+	free(pBitmapInfo);
+	return false;
+	}
+
+	if(lBitSize == 0)
+		lBitSize = (*nWidth *
+           pBitmapInfo->header.bits + 7) / 8 *
+  		  abs(*nHeight);
+
+	// Allocate space for the actual bitmap
+	free(pBitmapInfo);
+	pBits = (GLbyte*)malloc(sizeof(GLbyte)*lBitSize);
+
+	// Read in the bitmap bits, check for corruption
+	if(fread(pBits, lBitSize, 1, pFile) != 1)
+		{
+		free(pBits);
+		pBits = NULL;
+		}
+
+	// Close the bitmap file now that we have all the data we need
+	fclose(pFile);
+
+	return pBits;
+	}
+bool CDisplayer::LoadBMPTexture(const char *szFileName, GLenum minFilter, GLenum magFilter, GLenum wrapMode)	
+{
+	GLbyte *pBits;
+	GLint iWidth, iHeight;
+	cv::Mat bmpImage;
+
+	pBits = gltReadBMPBits(szFileName, &iWidth, &iHeight);
+	if(pBits == NULL)
+		return false;
+	bmpImage = cv::Mat(iHeight, iWidth, CV_8UC3, pBits);
+	cv::flip(bmpImage, bmpImage, 0);
+
+	// Set Wrap modes
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, iWidth, iHeight, 0, GL_BGR, GL_UNSIGNED_BYTE, pBits);
+
+    // Do I need to generate mipmaps?
+	if(minFilter == GL_LINEAR_MIPMAP_LINEAR || minFilter == GL_LINEAR_MIPMAP_NEAREST || minFilter == GL_NEAREST_MIPMAP_LINEAR || minFilter == GL_NEAREST_MIPMAP_NEAREST)
+		glGenerateMipmap(GL_TEXTURE_2D);    
+
+	return true;
+}
+
 
 

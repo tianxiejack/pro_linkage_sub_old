@@ -1239,6 +1239,7 @@ void CProcess::mvIndexHandle(std::vector<TRK_RECT_INFO> &mvList,std::vector<TRK_
 
 			if(!flag)
 			{
+			/*
 				SENDST	tmp;
 				tmp.cmd_ID = reset_swtarget_timer;
 
@@ -1246,7 +1247,7 @@ void CProcess::mvIndexHandle(std::vector<TRK_RECT_INFO> &mvList,std::vector<TRK_
 				{
 					ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
 				}
-				
+			*/
 				mvList.erase(pMvList);
 			}
 			else
@@ -2090,73 +2091,74 @@ int CProcess::checkZoomPosTable(int delta)
 		setZoom = 65535;
 	}
 #endif
-
-	if( 420 < Delta_X && Delta_X<960){		
+	if(Delta_X >= 960){
 		setZoom = 2849;
 	}
-	else if(320 < Delta_X ){ 
+	else if( 420 <= Delta_X && Delta_X<960){		
+		setZoom = 2849;
+	}
+	else if(320 <= Delta_X && Delta_X < 420){ 
 		setZoom = 6268;
 	}
-	else if(240 < Delta_X ){
+	else if(240 <= Delta_X && Delta_X <320){
 		setZoom = 9117;
 	}
-	else if(200 < Delta_X ){
+	else if(200 <= Delta_X && Delta_X <240){
 		setZoom = 11967;
 	}
-	else if(170 < Delta_X){
+	else if(170 <= Delta_X && Delta_X <200){
 		setZoom = 15101;
 	}
-	else  if(145 < Delta_X ){
+	else  if(145 <= Delta_X && Delta_X <170){
 		setZoom = 18520;
 	}
-	else  if(140 < Delta_X ){
+	else  if(140 <= Delta_X && Delta_X <145){
 		setZoom = 21058;
 	}
-	else  if(112 < Delta_X ){
+	else  if(112 <= Delta_X && Delta_X <140){
 		setZoom = 24504;
 	}
-	else  if(104 < Delta_X ){
+	else  if(104 <= Delta_X && Delta_X <112){
 		setZoom = 28208;
 	}
-	else  if(96 < Delta_X ){
+	else  if(96 <= Delta_X && Delta_X <104){
 		setZoom = 33330;
 	}
-	else  if(90 < Delta_X ){
+	else  if(90 <= Delta_X && Delta_X <96){
 		setZoom = 36750;
 	}
-	else  if(84 < Delta_X){
+	else  if(84 <= Delta_X && Delta_X <90){
 		setZoom = 39320;
 	}
-	else  if(76 < Delta_X ){
+	else  if(76 <= Delta_X && Delta_X <84){
 		setZoom = 43870;
 	}
-	else  if(68 < Delta_X ){
+	else  if(68 <= Delta_X && Delta_X <76){
 		setZoom = 46440;
 	}
-	else  if(62 < Delta_X ){
+	else  if(62 <= Delta_X && Delta_X <68){
 		setZoom = 49230;
 	}
-	else  if(56< Delta_X ){
+	else  if(56<= Delta_X && Delta_X <62 ){
 		setZoom = 52265;
 	}
-	else  if(50 < Delta_X ){
+	else  if(50 <= Delta_X && Delta_X < 56){
 		setZoom = 55560;
 	}
-	else  if(44 < Delta_X){
+	else  if(44 <= Delta_X && Delta_X <50){
 		setZoom = 58520;
 	}
-	else  if(38 < Delta_X ){
+	else  if(38 <= Delta_X && Delta_X < 44){
 		setZoom = 61240;
 	}
-	else  if(32 < Delta_X){
+	else  if(32 <= Delta_X && Delta_X < 38){
 		setZoom = 63890;
 	}
-	else  if(26 < Delta_X ){
+	else  if(0 <= Delta_X && Delta_X <32){
 		setZoom = 65535;
 	}
-	else{ // add 201812
-		setZoom = 65535;
-	}
+	
+	
 	return setZoom;
 }
 
@@ -2166,80 +2168,80 @@ void CProcess::Set_K_ByDeltaX( int delta_x)
 	int  tmpcofx   ;		
 	int  tmpcofy    ;
 	int Delta_X = delta_x;
-	
-	if( 420 < Delta_X && Delta_X<960){		
+	if(Delta_X >= 960){
 		 tmpcofx =6200 ;
 		 tmpcofy =6320 ;
 	}
-	else if(Delta_X > 320 ) { 
+	else if(  Delta_X >= 420  && Delta_X < 960){
+		 tmpcofx =6200 ;
+		 tmpcofy =6320 ;
+	}
+	else if(Delta_X >= 320 && Delta_X <420) { 
 		 tmpcofx =3300 ;
 		 tmpcofy =3400 ;
 	}
-	else if(240 < Delta_X ){
+	else if(240 <= Delta_X && Delta_X <320){
 		 tmpcofx =2400 ;
 		 tmpcofy =2400 ;
 	}
-	else if(200 < Delta_X ){
+	else if(200 <= Delta_X && Delta_X <240){
 		 tmpcofx =1850 ;
 		 tmpcofy =1880 ;
 	}
-	else if(170 < Delta_X){
+	else if(170 <= Delta_X && Delta_X <200 ){
 		 tmpcofx =1500 ;
 		 tmpcofy =1540 ;
 	}
-	else  if(145 < Delta_X ){
+	else  if(145 <= Delta_X && Delta_X < 170){
 		 tmpcofx =1350 ;
 		 tmpcofy =1360 ;
 	}
-	else  if(140 < Delta_X ){
+	else  if(140 <= Delta_X && Delta_X <145){
 		 tmpcofx =1160 ;
 		 tmpcofy =1230 ;
 	}
-	else  if(112 < Delta_X ){
+	else  if(112 < Delta_X && Delta_X <140){
 		 tmpcofx =1000 ;
 		 tmpcofy =1020 ;
 	}
-	else  if(104 < Delta_X ){
+	else  if(104 <= Delta_X && Delta_X <112){
 		 tmpcofx =900 ;
 		 tmpcofy =920 ;
 	}
-	else  if(96 < Delta_X ){
+	else  if(96 <= Delta_X && Delta_X <104){
 		 tmpcofx =820 ;
 		 tmpcofy =830 ;
 	}
-	else  if(90 < Delta_X ){
+	else  if(90 <= Delta_X && Delta_X <96){
 		 tmpcofx =760 ;
 		 tmpcofy =750 ;
 	}
-	else  if(84 < Delta_X){
+	else  if(84 <= Delta_X && Delta_X <90){
 		 tmpcofx =700 ;
 		 tmpcofy =710 ;
 	}
-	else  if(76 < Delta_X ){
+	else  if(76 <= Delta_X && Delta_X <84){
 		 tmpcofx =670 ;
 		 tmpcofy =680 ;
 	}
-	else  if(68 < Delta_X ){
+	else  if(68 <= Delta_X && Delta_X <76){
 		 tmpcofx =650 ;
 		 tmpcofy =660 ;
 	}
-	else  if(62 < Delta_X ){
+	else  if(62 <= Delta_X && Delta_X < 68){
 		 tmpcofx =630 ;
 		 tmpcofy =635 ;
 	}
-	else  if(56< Delta_X ){
+	else  if(56<= Delta_X && Delta_X < 62){
 		 tmpcofx =620 ;
 		 tmpcofy =620 ;
 	}
-	else  if(50 < Delta_X ){
+	else  if(0 <= Delta_X && Delta_X < 56){
 		 tmpcofx =600 ;
 		 tmpcofy =610 ;
 	}
-	else{
-		 tmpcofx =600 ;
-		 tmpcofy =610 ;
-	}
-	#if 0 // modify 20181217
+	
+	#if 0 
 	else  if(44 < Delta_X){
 		  tmpcofx =600 ;
 		 tmpcofy =610 ;
@@ -2376,9 +2378,9 @@ void CProcess::moveToDest( )
 	int  inputY = point_Y;	
 	int  tmpcofx = static_cofx;
 	int  tmpcofy = static_cofy;
-	
+//------------------------------------------------------	
 	Set_K_ByDeltaX(delta_X);
-	
+//-----------------------------------------------------	
 	static_cofx = m_cofx;
 	static_cofy = m_cofy;
 
@@ -2434,9 +2436,9 @@ void CProcess::moveToDest( )
 			DesTilPos = curTilPos + inputY;
 		}
 	}
-
+//-------------------------------------------------------------------------------
 		zoomPos = checkZoomPosTable(delta_X);
-
+//-------------------------------------------------------------------------------
 		trkmsg.cmd_ID = acqPosAndZoom;
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	

@@ -2621,6 +2621,17 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 			DesTilPos = Origin_TilPos + inputY;
 		}
 	}
+
+	if(DesTilPos > 20000)
+	{
+		if(DesTilPos > 32768 + 1900)
+			DesTilPos = 32768 + 1900;
+	}
+	else
+	{
+		if(DesTilPos > 8900)
+			DesTilPos = 8900;
+	}
 //---------------------------------------------------------------
 	//DesPanPos = 4607;
 	//DesTilPos = 33587;

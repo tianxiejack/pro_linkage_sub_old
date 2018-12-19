@@ -396,7 +396,7 @@ public:
         FT_Select_Charmap( FT_Face(_face), (FT_Encoding)charMap);
     }
 
-    float2  drawText(int x,int y,int z,Rgba color,wchar_t* text,size_t length,FontVertex** vertexs,size_t*vertexLength = 0)
+    FLOAT2  drawText(int x,int y,int z,Rgba color,wchar_t* text,size_t length,FontVertex** vertexs,size_t*vertexLength = 0)
     {
         float           texWidth    =   float(_textureWidth);
         float           texHeight   =   float(_textureHeight);
@@ -405,7 +405,7 @@ public:
         float           zStart      =   float(z);
         unsigned        index       =   0;
         unsigned        size        =   length == 0 ? wcslen(text) :length;
-        float2          vSize(0,0);
+        FLOAT2          vSize(0,0);
         FontVertex*     vertex      =   (FontVertex*)_vertexBuffer;
 
         if (size == 0)

@@ -34,7 +34,7 @@ namespace CELL
     #define MAKE_INT(a, b)          ((int)(((short)(((int)(a)) & 0xffff)) | ((int)((short)(((int)(b)) & 0xffff))) << 16))
 
     typedef unsigned char           byte;
-    typedef long long               int64;
+    typedef long long               INT64;
     typedef unsigned short          ushort;
     typedef unsigned int            uint;
     typedef unsigned long           ulong;
@@ -57,7 +57,7 @@ namespace CELL
             unsigned    int LowPart;
             unsigned    int HighPart;
         }_largeInt;
-        int64       int64Data;
+        INT64       int64Data;
     } ;
 
 
@@ -75,7 +75,7 @@ namespace CELL
     /**
     *   产生64位数字
     */
-    inline  int64   makeInt64(unsigned low,unsigned hi)
+    inline  INT64   makeInt64(unsigned low,unsigned hi)
     {
         LargeInt    intdata;
         intdata._largeInt.HighPart  =   low;
@@ -5888,7 +5888,7 @@ namespace CELL
 
     typedef float             real;
     typedef tvec2<int>        int2;
-    typedef tvec2<float>      float2;
+    typedef tvec2<float>      FLOAT2;
     typedef tvec2<double>     double2;
 
     typedef tvec2<real>       real2;

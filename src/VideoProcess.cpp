@@ -1346,7 +1346,8 @@ int CVideoProcess::init()
 	dsInit.maxsize= processmaxtargetsizeMenu;
 	dsInit.minsize= processmintargetsizeMenu;
 #endif
-	
+	dsInit.disFPS = 30; // 20181219
+	dsInit.disSched = 3.5;
 
 //#if (!__IPC__)
 	dsInit.keyboardfunc = keyboard_event; 
@@ -1698,7 +1699,7 @@ int CVideoProcess::ReAcqTarget()
 #endif
 
 extern void cutColor(cv::Mat src, cv::Mat &dst, int code);
-
+static int saveCount = 0;
 #define TM
 #undef TM 
 int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
@@ -1788,6 +1789,17 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 		
 	//OSA_printf("chid =%d  m_curChId=%d m_curSubChId=%d\n", chId,m_curChId,m_curSubChId);
 
+/********************************************************************************************/
+	if(chId == 0 && m_display.savePic_once == true){
+			m_display.savePic_once = false;
+			memset(m_display.savePicName, 0, 20);
+			sprintf(m_display.savePicName,"%02d.bmp",saveCount);
+			saveCount ++;
+			Mat Dst(1080,1920,CV_8UC3);
+			cvtColor(frame,Dst,CV_YUV2BGR_YUYV);
+			imwrite(m_display.savePicName,Dst);
+	}
+/**********************************************************************/
 
 	if(chId == m_curChId || chId == m_curSubChId)
 	{

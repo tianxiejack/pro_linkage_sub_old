@@ -73,6 +73,7 @@ typedef enum
     speedloop,
     acqPosAndZoom,
     reset_swtarget_timer,
+    mtdFrame,
     invalid
 }CMD_ID;
 
@@ -274,6 +275,16 @@ typedef struct{
 	int Class;
 	int IPCID;
 }IPC_Handl;
+
+typedef struct{
+	int detectArea;
+	int detectNum;
+	int detectSpeed;
+	int tmpUpdateSpeed;
+	int tmpMaxPixel;
+	int tmpMinPixel;
+	int sensitivityThreshold;
+}CMD_Mtd_Frame;
 
 typedef struct{
     volatile unsigned char unitFaultStat;/*0:FR ok,TV ok; 1:FR ok,TV err; 2:FR err,TV ok; 3:FR err,TV err*/

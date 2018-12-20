@@ -145,6 +145,7 @@ void* recv_msg(SENDST *RS422)
 	CMD_ALGOSDRECT Ralgosdrect;
 	CMD_IPCRESOLUTION Rresolution;
 	LinkagePos posOfLinkage;
+	CMD_Mtd_Frame RmtdFrame;
 
 	//OSD_param* pOsd = NULL;
 	//pOsd = &m_osd;
@@ -171,6 +172,18 @@ void* recv_msg(SENDST *RS422)
 	printf("cmdID : %d (%02x %02x %02x %02x %02x)\n",cmdID,imgID1,imgID2,imgID3,imgID4,imgID5);
 	switch(cmdID)
 	{	
+
+	case mtdFrame:
+		memcpy(&RmtdFrame, RS422->param, sizeof(RmtdFrame));
+		printf("RmtdFrame->detectArea = %d \n", RmtdFrame.detectArea);
+		printf("RmtdFrame->detectNum = %d\n", RmtdFrame.detectNum);
+		printf("RmtdFrame->detectSpeed = %d\n", RmtdFrame.detectSpeed);
+		printf("RmtdFrame->sensitivityThreshold = %d\n", RmtdFrame.sensitivityThreshold);
+		printf("RmtdFrame->tmpMaxPixel = %d\n", RmtdFrame.tmpMaxPixel);
+		printf("RmtdFrame->tmpMinPixel = %d\n", RmtdFrame.tmpMinPixel);
+		printf("RmtdFrame->tmpUpdateSpeed = %d\n", RmtdFrame.tmpUpdateSpeed);
+		break;
+
 		case BoresightPos:
 			memcpy(&Rboresightmove, RS422->param, sizeof(Rboresightmove));
 			pMsg->opticAxisPosX[pMsg->SensorStat] = Rboresightmove.BoresightPos_x;

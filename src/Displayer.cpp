@@ -29,7 +29,8 @@
 
 #include "CcCamCalibra.h"
 #include "freetype.hpp"
-
+extern vector<Mat> imageListForCalibra;
+bool SubImage = true;
 MenuDisplay g_displayMode = MENU_SBS;
 SingletonSysParam* SingletonSysParam::m_uniqueInstance = SingletonSysParam::getInstance();
 SingletonSysParam* g_sysParam = SingletonSysParam::getInstance();
@@ -217,6 +218,7 @@ CDisplayer::CDisplayer()
 
 	m_initPrm.disSched = 3.5;
 /*************************************************************************/
+	memset(_bCutIMG, 0x00, sizeof(_bCutIMG));
 }
 
 CDisplayer::~CDisplayer()
@@ -1378,15 +1380,6 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 	gl_init();
 
 	gl_Loadinit();
-for(int i =0; i<100;i++) {
-		memset(&BMPName[i], 0, sizeof(BMPName[i]));
-	}
-	for(int i =1; i<51;i++) {
-		sprintf(BMPName[i],"%02d.bmp",i);
-		glGenTextures(1, &_textureId[i]);
-		glBindTexture(GL_TEXTURE_2D, _textureId[i]);
-		LoadBMPTexture(BMPName[i],GL_LINEAR, GL_LINEAR, GL_CLAMP);
-	}	
 
 	return 0;
 }
@@ -1813,6 +1806,7 @@ void CDisplayer::transfer()
 				cudaMalloc_share((void**)&d_src_rgb, byteCount, chId + DS_CHAN_MAX);
 				cudaMemcpyAsync(d_src_rgb, dism_img[chId].data, byteCount, cudaMemcpyHostToDevice,  m_cuStream[0]);
 				m_img[chId] = cv::Mat(dism_img[chId].rows, dism_img[chId].cols, CV_MAKETYPE(CV_8U,nChannel), d_src_rgb);
+				cudaFree_share(d_src_rgb, chId + DS_CHAN_MAX);
 			}
 			else
 			{
@@ -1990,8 +1984,18 @@ void CDisplayer::gl_init()
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffId_osd[i]);
 		glBufferData(GL_PIXEL_UNPACK_BUFFER, m_imgOsd[i].rows*m_imgOsd[i].cols*m_imgOsd[i].channels(), m_imgOsd[i].data, GL_DYNAMIC_COPY);//GL_STATIC_DRAW);//GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
 	}
+
+	cv::Mat blackIMG = cv::Mat::zeros(1080,1920,CV_8UC3);
+	for(int i =0; i<50;i++) {
+		glGenTextures(1, &_textureId[i]);
+		glBindTexture(GL_TEXTURE_2D, _textureId[i]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1920, 1080, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG.data);
+	}	
 	
 	x11disbuffer=(unsigned char *)malloc(mallocwidth*mallocheight*4);
 
@@ -2408,16 +2412,12 @@ void CDisplayer::gl_textureLoad(void)
 				updata_osd[i] = false;
 			}			
 		}
-
-	}
-
-	
+	}	
 	cudaEventRecord(m_stopEvent, 0);
 	cudaEventSynchronize(m_stopEvent);
 	cudaEventElapsedTime(	&elapsedTime, m_startEvent, m_stopEvent);
 	//if(elapsedTime > 5.0f)
 	//	OSA_printf("%s: -------elapsed %.3f ms.\n", __func__, elapsedTime);
-
 	float telapse = ( (getTickCount() - tstart)/getTickFrequency());
 }
 
@@ -2508,7 +2508,6 @@ void CDisplayer::gl_textureLoad(void)
 			if( (chId == 0 )&& (plat->m_camCalibra->Set_Handler_Calibra == true || g_sysParam->isEnable_Undistortion())) {
 				glBindTexture(GL_TEXTURE_2D, textureId_input[chId]);
 				if(dism_img[chId].channels() == 1){
-//glTexImage2D(GL_TEXTURE_2D, 0, m_videoSize[chId].c, m_videoSize[chId].w, m_videoSize[chId].h, 0, GL_RED, GL_UNSIGNED_BYTE, x11disbuffer);
 					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoSize[chId].w, m_videoSize[chId].h, GL_RED, GL_UNSIGNED_BYTE, x11disbuffer);
 				}else{
 					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoSize[chId].w, m_videoSize[chId].h, GL_BGR_EXT, GL_UNSIGNED_BYTE, x11disbuffer);
@@ -2517,10 +2516,8 @@ void CDisplayer::gl_textureLoad(void)
 				glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffId_input[chId]);
 				glBindTexture(GL_TEXTURE_2D, textureId_input[chId]);
 				if(dism_img[chId].channels() == 1){
-//glTexImage2D(GL_TEXTURE_2D, 0, m_videoSize[chId].c, m_videoSize[chId].w, m_videoSize[chId].h, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
 					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoSize[chId].w, m_videoSize[chId].h, GL_RED, GL_UNSIGNED_BYTE, NULL);
 				}else{
-//glTexImage2D(GL_TEXTURE_2D, 0, m_videoSize[chId].c, m_videoSize[chId].w, m_videoSize[chId].h, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, NULL);
 					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_videoSize[chId].w, m_videoSize[chId].h, GL_BGR_EXT, GL_UNSIGNED_BYTE, NULL);
 				}
 				glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
@@ -2532,18 +2529,26 @@ void CDisplayer::gl_textureLoad(void)
 
 	if(m_bOsd)
 	{
-		for(int i=0; i<DS_DC_CNT;  i++)
-		{
-			if(updata_osd[i])
-			{
-//				glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffId_osd[i]);
+		for(int i=0; i<DS_DC_CNT;  i++)	{
+			if(updata_osd[i]) {
 				glBindTexture(GL_TEXTURE_2D, textureId_osd[i]);
 				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_disOsd[i].cols, m_disOsd[i].rows, GL_BGRA_EXT, GL_UNSIGNED_BYTE, m_disOsd[i].data);
 				updata_osd[i] = false;
-//				glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 			}
 		}
 	}
+//=============================================================================================
+	int nsize = imageListForCalibra.size();
+	for(int i=0; i<100; i++)	{
+		if(_bCutIMG[i])  {
+			assert(nsize>i);				
+			cv::Mat IMG = imageListForCalibra[i];				
+			glBindTexture(GL_TEXTURE_2D, _textureId[i]);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, IMG.cols, IMG.rows, GL_BGR_EXT, GL_UNSIGNED_BYTE, IMG.data);
+			_bCutIMG[i] = false;
+		}
+	}
+//=============================================================================================	
 }
 
 #endif
@@ -2785,24 +2790,28 @@ void CDisplayer::gl_display(void)
 
 
 	linkageSwitchMode();
-	for(int Index =0; Index< 50; Index++)	
-	{			
-		int raw = 5;
-		int col = 10;
-		glViewport( 192.0*(Index%col), 540.0-108.0*((Index/col)+1), 192.0,108.0 );
-		glPushMatrix();
-		glLoadIdentity();
-		glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);	
-		glUniform1i(Uniform_tex_in, 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, _textureId[Index+1]);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glVertexPointer(3,GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].x);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].u);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glPopMatrix();	
-	}	
+	if(imageListForCalibra.size() != 0) {
+		//if(SubImage == false) {
+			for(int Index =0; Index< imageListForCalibra.size() && Index < 50; Index++)	
+			{			
+				int raw = 5;
+				int col = 10;
+				glViewport( 192.0*(Index%col), 540.0-108.0*((Index/col)+1), 192.0,108.0 );
+				glPushMatrix();
+				glLoadIdentity();
+				glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);	
+				glUniform1i(Uniform_tex_in, 0);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, _textureId[Index]);
+				glEnableClientState(GL_VERTEX_ARRAY);
+				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+				glVertexPointer(3,GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].x);
+				glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].u);
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+				glPopMatrix();	
+			}	
+		//}
+	}
 
 	for(winId=0; winId<m_renderCount; winId++)
 	{			
@@ -2887,6 +2896,26 @@ void CDisplayer::gl_display(void)
 	glutSwapBuffers();
 
 tStamp[6] = getTickCount();
+
+if(0)
+{
+	static int64 tmpStamp = 0ul;
+	if(tmpStamp != 0){
+		int32 interval = (tStamp[6] - tmpStamp)*0.000001;
+		static int32 tMax = 0;
+		static int32 tMin = 10000;
+		static unsigned int tcnt = 0;
+		tMax = max(tMax, interval);
+		tMin = min(tMin, interval);
+		tcnt ++;
+		if(tcnt == 100){
+			OSA_printf("%s %d: %d (%d, %d)", __FILE__, __LINE__, interval, tMin, tMax);
+			tcnt = 0;tMax = 0; tMin = 10000;
+		}
+	}
+	tmpStamp = tStamp[6];
+}
+
 #if 1
 	if(tStamp[6]-tSwap>5000000UL)
 		m_nSwapTimeOut++;
@@ -2925,6 +2954,7 @@ tStamp[6] = getTickCount();
 
 	glutPostRedisplay();
 	GetFPS();
+//	cout << "==========<GetFPS()>=====================  FPS = "<< frameCount << "ms"<<endl;
 }
 
 void CDisplayer::IrisAndFocus()

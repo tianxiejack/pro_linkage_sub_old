@@ -21,7 +21,7 @@ extern LinkagePos_t linkagePos;
 CProcess * CProcess::sThis = NULL;
 CProcess* plat = NULL;
 int glosttime = 3000;
-
+extern vector<Mat> imageListForCalibra;
 OSA_SemHndl g_linkage_getPos;
 
 SENDST trkmsg={0};
@@ -2684,6 +2684,11 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		case 2:
 			m_bMarkCircle = false;
 			//cout << "---------------->>> Press F2 : m_bMarkCircle == false " << endl;
+			break;
+		case 3:
+		{
+			
+		}
 			break;
 		default :
 			break;

@@ -51,6 +51,24 @@ bool CcCamCalibra::Load_CameraParams(const string& gun_file,const string& ball_f
 	}
 }
 
+
+void CcCamCalibra::PrintMs( const char* text )
+{
+	static long long last = 0;
+	long long Cur = getTickCount();
+	if(last == 0){
+		last = Cur;
+		return ;
+	}
+	long long ms = 0;
+	ms = ( (double)(Cur-last)/getTickFrequency() ) * 1000;
+	if(*text != 0){
+		printf("\r\n\r\n[RunTimme]++++++++++++++++++++ [%s] = %d ms\r\n\r\n", text, ms);
+	}
+	last = getTickCount();
+
+}
+
 void CcCamCalibra::Init_CameraParams()
 {
 	if(ret1 && ret2) {
@@ -187,10 +205,17 @@ void CcCamCalibra::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 
 int CcCamCalibra::Run()
 {
+#if 0
+	static bool calibrate_once = true;
+	if(calibrate_once /*&& start_calibrate*/ ){
+		calibrate_once = true;
+		 FindCorners();
+		 getObjectCoordinates();
+		 calibrate();
+	}
+#endif
 	char flag = 0;
-	
 	Mat frame = ball_frame;
-
 	cvtGunYuyv2Bgr();
 	cvtBallYuyv2Bgr();
 #if 1	
@@ -728,4 +753,227 @@ void CcCamCalibra::handle_pose_2d2d ( std::vector<Point2f> points1,
 
     H = findHomography ( points1, points2, RANSAC, 3 );
 }
+/*******************************************************以下是内参标定函数**********************************/
 
+void CcCamCalibra::FindCorners()
+{
+//	PrintMs();
+	while(image_num < imgList.size()) {
+
+	        filename = imgList[image_num++];
+	        cout << "image_num = " << image_num << endl;
+	        cout << filename.c_str() << endl;
+//	        PrintMs();
+	        cv::Mat imageInput = cv::imread(filename.c_str());
+//	        PrintMs("Read One Image's Corners:");
+	        if (image_num == 1)  {
+	            image_size.width = imageInput.cols;
+	            image_size.height = imageInput.rows;
+	            cout << "image_size.width = " << image_size.width << endl;
+	            cout << "image_size.height = " << image_size.height << endl;
+	        }
+//	        PrintMs();
+	        if (findChessboardCorners(imageInput, pattern_size, corner_points_buf) == 0) {
+	            cout << "can not find chessboard corners!\n";   //找不到角点
+	            return ;
+	            //exit(1);
+	        }
+	        else  {
+//	        	 PrintMs("findChessboardCorners:");
+	            cv::Mat gray;
+//	            PrintMs();
+	            cv::cvtColor(imageInput, gray, CV_RGB2GRAY);
+//	            PrintMs("CvtColor One Image's Corners:");
+//	            PrintMs();
+//	            cv::find4QuadCornerSubpix(gray, corner_points_buf, cv::Size(5, 5));
+
+	            cornerSubPix(gray, corner_points_buf, Size(11, 11), Size(-1, -1),
+	            		TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+//	            PrintMs("cornerSubPix:");
+
+
+	            corner_points_of_all_imgs.push_back(corner_points_buf);
+//	            cv::drawChessboardCorners(gray, pattern_size, corner_points_buf, true);
+//	            PrintMs();
+//	            cv::imshow("camera calibration", gray);
+//	            PrintMs("imshow");
+//	            cv::waitKey(100);
+	        }
+//	        PrintMs("Find One Image's Corners:");
+	    }
+
+#if 0
+	int total = corner_points_of_all_imgs.size();
+	    cout << "total=" << total << endl;
+	    int cornerNum = pattern_size.width * pattern_size.height;//每张图片上的总的角点数
+	        for (int i = 0; i < total;i++) {
+	           // cout << "--> 第" << i + 1 << "幅图片的数据 -->:" << endl;
+	            for (int j = 0;j < cornerNum;j++) {
+	                cout << "-->" << corner_points_of_all_imgs[i][j].x;
+	                cout << "-->" << corner_points_of_all_imgs[i][j].y;
+	                if ((j + 1) % 3 == 0) {
+	                    cout << endl;
+	                }
+	                else {
+	                    cout.width(10);
+	                }
+	            }
+	            cout << endl;
+	        }
+#endif
+	        cout << endl << "=============== <<  Complete Find All Chess Board Corners >> =============" << endl;
+}
+void CcCamCalibra::getObjectCoordinates()
+{
+	int i, j, k;
+	for (k = 0;k < image_num;k++) { 		 //遍历每一张图片
+		vector<cv::Point3f> tempCornerPoints;//每一幅图片对应的角点数组
+											//遍历所有的角点
+		for (i = 0;i < pattern_size.height;i++)	{
+			for (j = 0;j < pattern_size.width;j++) {
+				cv::Point3f singleRealPoint;	//一个角点的坐标
+				singleRealPoint.x = i * square_size.width;
+				singleRealPoint.y = j * square_size.height;
+				singleRealPoint.z = 0;			//假设z=0
+				tempCornerPoints.push_back(singleRealPoint);
+			}
+		}
+		objectPoints.push_back(tempCornerPoints);
+	}
+}
+
+void CcCamCalibra::calibrate()
+{
+	 cv::calibrateCamera(objectPoints, corner_points_of_all_imgs, image_size, cameraMatrix, distCoefficients, rvecsMat, tvecsMat, 0);
+//	    cout << "标定完成" << endl;
+	    //开始保存标定结果
+//	    cout << "开始保存标定结果" << endl;
+//	    cout << endl << "相机相关参数：" << endl;
+	    fout << "相机相关参数：" << endl;
+//	    cout << "1.内外参数矩阵:" << endl;
+	    fout << "1.内外参数矩阵:" << endl;
+//	    cout << "大小：" << cameraMatrix.size() << endl;
+	    fout << "大小：" << cameraMatrix.size() << endl;
+//	    cout << cameraMatrix << endl;
+	    fout << cameraMatrix << endl;
+//	    cout << "2.畸变系数：" << endl;
+	    fout << "2.畸变系数：" << endl;
+//	    cout << "大小：" << distCoefficients.size() << endl;
+	    fout << "大小：" << distCoefficients.size() << endl;
+//	    cout << distCoefficients << endl;
+	    fout << distCoefficients << endl;
+//	    cout << endl << "图像相关参数：" << endl;
+	        fout << endl << "图像相关参数：" << endl;
+	        cv::Mat rotation_Matrix = cv::Mat(3, 3, CV_32FC1, cv::Scalar::all(0));//旋转矩阵
+	        for (int i = 0;i < image_num;i++)
+	        {
+//	            cout << "第" << i + 1 << "幅图像的旋转向量：" << endl;
+	            fout << "第" << i + 1 << "幅图像的旋转向量：" << endl;
+//	            cout << rvecsMat[i] << endl;
+	            fout << rvecsMat[i] << endl;
+//	            cout << "第" << i + 1 << "幅图像的旋转矩阵：" << endl;
+	            fout << "第" << i + 1 << "幅图像的旋转矩阵：" << endl;
+	            cv::Rodrigues(rvecsMat[i], rotation_Matrix);//将旋转向量转换为相对应的旋转矩阵
+//	            cout << rotation_Matrix << endl;
+	            fout << rotation_Matrix << endl;
+//	            cout << "第" << i + 1 << "幅图像的平移向量：" << endl;
+	            fout << "第" << i + 1 << "幅图像的平移向量：" << endl;
+//	            cout << tvecsMat[i] << endl;
+	            fout << tvecsMat[i] << endl;
+	        }
+//	        cout << "结果保存完毕" << endl;
+	        //对标定结果进行评价
+	        cout << "================<< Start Calculate Average Error ! >> ==============================" << endl;
+	        //计算每幅图像中的角点数量，假设全部角点都检测到了
+	        int corner_points_counts;
+	        corner_points_counts = pattern_size.width * pattern_size.height;
+//	        cout << "每幅图像的标定误差：" << endl;
+	        fout << "每幅图像的标定误差：" << endl;
+	        double err = 0;//单张图像的误差
+	        double total_err = 0;//所有图像的平均误差
+	        for (int i = 0;i < image_num;i++)
+	        {
+	            vector<cv::Point2f> image_points_calculated;//存放新计算出的投影点的坐标
+	            vector<cv::Point3f> tempPointSet = objectPoints[i];
+	            cv::projectPoints(tempPointSet, rvecsMat[i], tvecsMat[i], cameraMatrix, distCoefficients, image_points_calculated);
+	            //计算新的投影点与旧的投影点之间的误差
+	            vector<cv::Point2f> image_points_old = corner_points_of_all_imgs[i];
+	            //将两组数据换成Mat格式
+	            cv::Mat image_points_calculated_mat = cv::Mat(1, image_points_calculated.size(), CV_32FC2);
+	            cv::Mat image_points_old_mat = cv::Mat(1, image_points_old.size(), CV_32FC2);
+	            for (int j = 0;j < tempPointSet.size();j++)
+	            {
+	                image_points_calculated_mat.at<cv::Vec2f>(0, j) = cv::Vec2f(image_points_calculated[j].x, image_points_calculated[j].y);
+	                image_points_old_mat.at<cv::Vec2f>(0, j) = cv::Vec2f(image_points_old[j].x, image_points_old[j].y);
+	            }
+	            err = cv::norm(image_points_calculated_mat, image_points_old_mat, cv::NORM_L2);
+//	            err /= corner_points_counts;
+	            err = std::sqrt(err*err/corner_points_counts);
+	            total_err += err;
+//	            cout << "第" << i + 1 << "幅图像的平均误差：" << err << "像素" << endl;
+	            fout << "第" << i + 1 << "幅图像的平均误差：" << err << "像素" << endl;
+	        }
+//	        cout << "总体平均误差：" << total_err / image_num << "像素" << endl;
+	        fout << "总体平均误差：" << total_err / image_num << "像素" << endl;
+	        fout.close();
+cout<<"============================== << Calculate Average Eoor Complite !!! >> ============================" << endl;
+#if 1
+			Mat mapx = cv::Mat(image_size, CV_32FC1);
+	        Mat mapy = cv::Mat(image_size, CV_32FC1);
+	        Mat R = Mat::eye(3, 3, CV_32F);
+//	        cout << "保存矫正图像" << endl;
+	        string imageFileName;
+	        std::stringstream StrStm;
+	        for (int i = 0;i < image_num;i++)
+	        {
+	            cout << "Frame #" << i + 1 << endl;
+	            initUndistortRectifyMap(cameraMatrix, distCoefficients, R, cameraMatrix, image_size, CV_32FC1, mapx, mapy);
+	            Mat src_image = imread(imgList[i].c_str(), 1);
+	            Mat new_image = src_image.clone();
+	            remap(src_image, new_image, mapx, mapy, cv::INTER_LINEAR);
+	            imshow("Undistortion Image", new_image);
+	          	waitKey(0);
+//	            imshow("原始图像", src_image);
+//	            imshow("矫正后图像", new_image);
+//	            StrStm.clear();
+//	            imageFileName.clear();
+//	            StrStm << i + 1;
+//	            StrStm >> imageFileName;
+//	            imageFileName += "_d.jpg";
+//	            cv::imwrite(imageFileName, new_image);
+	        }
+#endif
+	        cout << "======================= Calibrate Complete ! >> ===================================" << endl;
+//	        cv::waitKey(0);
+}
+
+void CcCamCalibra::undistortion(Mat distortionImage,Mat &unDistortionImage)
+{
+    //cout<<"undistortion ..."<<endl;
+    Size image_size = distortionImage.size();
+    Mat mapx = Mat(image_size,CV_32FC1);
+    Mat mapy = Mat(image_size,CV_32FC1);
+    Mat R = Mat::eye(3,3,CV_32F);
+    Matx33d intrinsic_matrix_new = cameraMatrix;//intrinsic_matrix;
+    //调节视场大小,乘的系数越小视场越大
+    intrinsic_matrix_new(0,0) *= 0.4;
+    intrinsic_matrix_new(1,1) *= 0.4;
+    //调节校正图中心，建议置于校正图中心
+    intrinsic_matrix_new(0,2) = 0.5 * distortionImage.cols;
+    intrinsic_matrix_new(1,2) = 0.5 * distortionImage.rows;
+    fisheye::initUndistortRectifyMap(cameraMatrix,distCoefficients,R,intrinsic_matrix_new,image_size,CV_32FC1,mapx,mapy);
+    unDistortionImage = distortionImage.clone();
+    remap(distortionImage,unDistortionImage,mapx, mapy, INTER_CUBIC);
+}
+
+void CcCamCalibra::showUndistortImages()
+{
+	Mat unDistortionImage;
+	Mat OriginImage;
+	for(int i =0; i<image_num ; i++){
+		OriginImage = imread(imgList[i].c_str(), 1);
+		undistortion(OriginImage,unDistortionImage);
+		imshow("Undistortion Image", unDistortionImage);
+		waitKey(100);
+	}
+}

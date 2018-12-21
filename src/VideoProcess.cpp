@@ -1,18 +1,17 @@
-
-
 #include <glut.h>
 #include "VideoProcess.hpp"
 #include "vmath.h"
 #include "arm_neon.h"
-
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
-
 #include "app_ctrl.h"
 #include "Ipcctl.h"
+#include <vector>
 
 using namespace vmath;
+
+
 extern CMD_EXT *msgextInCtrl;
 int CVideoProcess::m_mouseEvent = 0;
 int CVideoProcess::m_mousex = 0;
@@ -26,10 +25,11 @@ int CVideoProcess::m_iTrackLostCnt = 0;
 int64 CVideoProcess::tstart = 0;
 static int count=0;
 int ScalerLarge,ScalerMid,ScalerSmall;
-	extern SingletonSysParam* g_sysParam;
-	extern osdbuffer_t disOsdBuf[32];
-	extern osdbuffer_t disOsdBufbak[32];
-	extern wchar_t disOsd[32][33];
+extern SingletonSysParam* g_sysParam;
+extern osdbuffer_t disOsdBuf[32];
+extern osdbuffer_t disOsdBufbak[32];
+extern wchar_t disOsd[32][33];
+vector<Mat> imageListForCalibra;
 
 int CVideoProcess::MAIN_threadCreate(void)
 {
@@ -352,6 +352,7 @@ CcCamCalibra* CVideoProcess::m_camCalibra = new CcCamCalibra();
 CVideoProcess::CVideoProcess()
 	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40)		
 {
+	imageListForCalibra.clear();
 	pThis = this;
 	memset(m_mtd, 0, sizeof(m_mtd));
 	memset(&mainProcThrObj, 0, sizeof(MAIN_ProcThrObj));
@@ -1347,7 +1348,7 @@ int CVideoProcess::init()
 	dsInit.minsize= processmintargetsizeMenu;
 #endif
 	dsInit.disFPS = 30; // 20181219
-	dsInit.disSched = 3.5;
+	dsInit.disSched = 33;//3.5;
 
 //#if (!__IPC__)
 	dsInit.keyboardfunc = keyboard_event; 
@@ -1795,9 +1796,21 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 			memset(m_display.savePicName, 0, 20);
 			sprintf(m_display.savePicName,"%02d.bmp",saveCount);
 			saveCount ++;
-			Mat Dst(1080,1920,CV_8UC3);
-			cvtColor(frame,Dst,CV_YUV2BGR_YUYV);
-			imwrite(m_display.savePicName,Dst);
+			int nsize = imageListForCalibra.size();
+			if(nsize<100){
+				m_cutIMG[nsize] = cv::Mat(frame.rows,frame.cols,CV_8UC3);
+				cvtColor(frame,m_cutIMG[nsize],CV_YUV2BGR_YUYV);
+				//imwrite(m_display.savePicName,Dst);
+
+				imageListForCalibra.push_back(m_cutIMG[nsize]);
+				
+				m_display.SetCutDisplay(nsize, true);
+			}
+
+			/*for(std::vector<Mat>::iterator itr = imageListForCalibra.begin(); itr != imageListForCalibra.end(); ++itr) {
+				imshow("ImageList", (*itr));
+				waitKey(500);
+			}*/
 	}
 /**********************************************************************/
 

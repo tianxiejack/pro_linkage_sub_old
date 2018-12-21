@@ -165,8 +165,10 @@ public:
 	void linkageSwitchMode(void);
 	GLbyte* gltReadBMPBits(const char *szFileName, int *nWidth, int *nHeight);
 	bool LoadBMPTexture(const char *szFileName, GLenum minFilter, GLenum magFilter, GLenum wrapMode);	
-private:
+	void SetCutDisplay(int idx, bool enable = true){ _bCutIMG[idx] = enable;};
+public:
 	GLuint _textureId[100];
+	GLboolean _bCutIMG[100];
 	char BMPName[100][20];
 public:
 	unsigned char Cur_BMPIndex;

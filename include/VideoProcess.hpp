@@ -84,11 +84,13 @@ public:
 	Mat gun_srcMat_remap;
 	Point LeftPoint;
 	Point RightPoint;
+	Mat m_cutIMG[100];
 	
 private:
 	Mat m_GrayMat;
 	Mat m_Gun_GrayMat;
 	Mat m_rgbMat;
+	
 	
 
 public:

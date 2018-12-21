@@ -13,9 +13,12 @@
 #include <opencv/cv.hpp>
 #include <vector>
 #include "WorkThread.h"
-
 #include <iostream>
 #include <unistd.h>
+#include <vector>
+#include <fstream>
+#include <string>
+
 
 #include "osa_sem.h"
 
@@ -38,6 +41,55 @@ typedef struct __cameraParams{
 }CamParameters;
 
 class CcCamCalibra:public WorkThread {
+public:
+	void PrintMs( const char* text ="");
+	void undistortion(Mat distortionImage,Mat &unDistortionImage);
+	void showUndistortImages();
+private:
+//	PictureCalibrate *BMPCalibrate;
+	vector<string> imgList;
+	ifstream inImgPath;
+	ofstream fout;
+	int image_num ;
+	Mat imageInput;
+	Mat gray;
+	vector<Point3f> tempCornerPoints;//每一幅图片对应的角点数组
+	cv::Point3f singleRealPoint;	//一个角点的坐标
+	string filename;
+	Size image_size;
+	Size square_size;
+	Size pattern_size;
+	vector<cv::Point2f> corner_points_buf;//建一个数组缓存检测到的角点，通常采用Point2f形式
+	vector<cv::Point2f>::iterator corner_points_buf_ptr;
+	vector<vector< cv::Point2f> > corner_points_of_all_imgs;
+	Mat cameraMatrix;
+	Mat distCoefficients;
+	vector<cv::Mat> tvecsMat;//每幅图像的平移向量，t
+	vector<cv::Mat> rvecsMat;//每幅图像的旋转向量（罗德里格旋转向量）
+	vector<vector< cv::Point3f> > objectPoints;//保存所有图片的角点的三维坐标
+											 //初始化每一张图片中标定板上角点的三维坐标
+public:
+	bool read_Pictures(){
+		fout.open("caliberation_result.txt");
+		inImgPath.open("calibdata.txt");    //标定所用图像文件的路径
+		vector<string>::iterator p;
+		string temp;
+		if (inImgPath.is_open()) {
+			//读取文件中保存的图片文件路径，并存放在数组中
+			while (getline(inImgPath, temp))
+			{
+				imgList.push_back(temp);
+			}
+		}
+		else{
+			cout << "没有找到文件" << endl;
+			return false;
+		}
+		return true;
+	}
+	void FindCorners();
+	void getObjectCoordinates();
+	void calibrate();
 public:
 	CcCamCalibra();
 	virtual ~CcCamCalibra();

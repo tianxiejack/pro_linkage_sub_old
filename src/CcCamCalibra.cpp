@@ -949,6 +949,7 @@ cout<<"============================== << Calculate Average Eoor Complite !!! >> 
 
 void CcCamCalibra::undistortion(Mat distortionImage,Mat &unDistortionImage)
 {
+#if 0
     //cout<<"undistortion ..."<<endl;
     Size image_size = distortionImage.size();
     Mat mapx = Mat(image_size,CV_32FC1);
@@ -961,13 +962,15 @@ void CcCamCalibra::undistortion(Mat distortionImage,Mat &unDistortionImage)
     //调节校正图中心，建议置于校正图中心
     intrinsic_matrix_new(0,2) = 0.5 * distortionImage.cols;
     intrinsic_matrix_new(1,2) = 0.5 * distortionImage.rows;
-    fisheye::initUndistortRectifyMap(cameraMatrix,distCoefficients,R,intrinsic_matrix_new,image_size,CV_32FC1,mapx,mapy);
+    initUndistortRectifyMap(cameraMatrix,distCoefficients,R,intrinsic_matrix_new,image_size,CV_32FC1,mapx,mapy);
     unDistortionImage = distortionImage.clone();
     remap(distortionImage,unDistortionImage,mapx, mapy, INTER_CUBIC);
+#endif
 }
 
 void CcCamCalibra::showUndistortImages()
 {
+#if 0
 	Mat unDistortionImage;
 	Mat OriginImage;
 	for(int i =0; i<image_num ; i++){
@@ -976,4 +979,5 @@ void CcCamCalibra::showUndistortImages()
 		imshow("Undistortion Image", unDistortionImage);
 		waitKey(100);
 	}
+#endif
 }

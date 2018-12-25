@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+bool showDetectCorners = false;
 OSDSTATUS gConfig_Osd_param = {0};
 UTCTRKSTATUS gConfig_Alg_param = {0};
 extern int ScalerLarge,ScalerMid,ScalerSmall;
@@ -23,7 +24,7 @@ CProcess* plat = NULL;
 int glosttime = 3000;
 extern vector<Mat> imageListForCalibra;
 OSA_SemHndl g_linkage_getPos;
-
+extern GB_MENU run_Mode;
 SENDST trkmsg={0};
 	extern CamParameters g_camParams;
 	Point dest_ballPoint = Point(-100,-100);
@@ -2668,10 +2669,13 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 
 void CProcess::OnMouseLeftDwn(int x, int y)
 {
+	if( open_handleCalibra == true)
+	{
 		manualHandleKeyPoints(x,y);
 		//reMapCoords(x,y, false);  // add by swj
+	}	
 };
-void CProcess::OnMouseLeftUp(int x, int y){};
+void CProcess::OnMouseLeftUp(int x, int y){ };
 void CProcess::OnMouseRightDwn(int x, int y){};
 void CProcess::OnMouseRightUp(int x, int y){};
 void CProcess::OnSpecialKeyDwn(int key,int x, int y)
@@ -2686,9 +2690,15 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			//cout << "---------------->>> Press F2 : m_bMarkCircle == false " << endl;
 			break;
 		case 3:
-		{
-			
-		}
+		
+			break;
+		case 4:	
+			showDetectCorners = true;			
+			printf("++++++++++++++++++++ showDetectCorners = %d \r\n", showDetectCorners);
+			break;
+		case 5:			
+			showDetectCorners = false;			
+			printf("++++++++++++++++++++ showDetectCorners = %d \r\n", showDetectCorners);
 			break;
 		default :
 			break;
@@ -2713,8 +2723,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 		if(pIStuts->PicpSensorStat==0xff)
 			pIStuts->PicpSensorStat=1;
 		else 
-			pIStuts->PicpSensorStat=0xff;
-		
+			pIStuts->PicpSensorStat=0xff;		
 		msgdriv_event(MSGID_EXT_INPUT_ENPICP, NULL);
 	}
 

@@ -22,9 +22,55 @@
 //#include "../src/CcCamCalibra.h"
 #include <math.h>
 #include "configable.h"
+#include "CELLMath.hpp"
+#include <vector>
+#include "freetype/ftglyph.h"
+#include <wchar.h>
+#include FT_GLYPH_H
+#include FT_TRUETYPE_TABLES_H
+#include FT_BITMAP_H
+#include FT_WINFONTS_H
 
+using namespace CELL;
 using namespace std;
 using namespace cv;
+
+
+
+
+struct UIObject {
+public:
+    UIObject(){};
+    virtual ~UIObject(){};
+	FLOAT2 _pos;
+	FLOAT2 _size;
+	unsigned int _SN;
+	
+};
+typedef void (*LPDWON )(UIObject *obj);
+struct UIText:public UIObject{
+public:
+	//Rgba   _color;	
+	unsigned char r,g,b,a;
+	wchar_t  _text[32];
+	LPDWON _eventDown;
+	LPDWON _clickDown;	
+};
+typedef std::vector<UIText> ArrayText;
+
+
+typedef struct _GB_MENU{
+	ArrayText _texts;
+	UIText text1;
+	UIText text2;
+	UIText text3;
+	UIText text4;
+	bool _bRButton ;
+	CELL::int2  _mouseDown;
+	bool showSubMenu ;
+	UIObject* _pSelect;
+	UIObject* _LDown ;
+}GB_MENU;
 
 struct Vertex3F {
 	float x, y, z;
@@ -134,7 +180,17 @@ typedef struct _ds_init_param{
 
 class CDisplayer 
 {
-
+private:
+	int fontPosX, fontPosY;
+public:
+	void setFontPosition(int x, int y){
+		fontPosX = x;
+		fontPosY = y;
+	};
+	FLOAT2 getFontPosition(){
+		FLOAT2 fontpos = FLOAT2(fontPosX,fontPosY);
+		return fontpos;
+	};
 public:
 	cv::Mat gun_UndistorMat;
 	cv::Mat gun_BMP;
@@ -163,6 +219,9 @@ public:
 	DISPLAYMODE getDisplayMode( );
 	void linkage_init();
 	void linkageSwitchMode(void);
+	void RenderSavedBMPImage(void);
+	void RenderDetectCornerView(GLint x, GLint y, GLint width, GLint height);
+
 	GLbyte* gltReadBMPBits(const char *szFileName, int *nWidth, int *nHeight);
 	bool LoadBMPTexture(const char *szFileName, GLenum minFilter, GLenum magFilter, GLenum wrapMode);	
 	void SetCutDisplay(int idx, bool enable = true){ _bCutIMG[idx] = enable;};
@@ -170,6 +229,9 @@ public:
 	GLuint _textureId[100];
 	GLboolean _bCutIMG[100];
 	char BMPName[100][20];
+public:
+	GLuint _texCornerId;	
+	GLboolean _bCornerDetect;
 public:
 	unsigned char Cur_BMPIndex;
 
@@ -223,6 +285,7 @@ public:
 	bool m_crossOsd;
 
 	bool savePic_once;
+	bool showDetectCorners;
 	Mat m_disOsd[DS_DC_CNT];
 	Mat m_imgOsd[DS_DC_CNT];
 	DS_Size m_videoSize[DS_CHAN_MAX];
@@ -384,7 +447,7 @@ public:
 	void setFrameCount(int count)	{ frameCount = count;	};
 	float getFrameRate()			{return frameRate;	};
 	void GetFPS();
-	void chinese_osd(int x,int y,wchar_t* text,char font,char fontsize,unsigned char r,unsigned char g,unsigned char b,unsigned char a,int win_width,int win_height);
+	FLOAT2 chinese_osd(int x,int y,wchar_t* text,char font,char fontsize,unsigned char r,unsigned char g,unsigned char b,unsigned char a,int win_width,int win_height);
 
 	void IrisAndFocus();
 	int OSDFunc();

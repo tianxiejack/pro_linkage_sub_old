@@ -29,8 +29,13 @@
 
 #include "CcCamCalibra.h"
 #include "freetype.hpp"
+using namespace CELL;
+
+
 extern vector<Mat> imageListForCalibra;
 bool SubImage = true;
+bool g_bSubmitTexture = false;
+extern Mat g_CornerImage;
 MenuDisplay g_displayMode = MENU_SBS;
 SingletonSysParam* SingletonSysParam::m_uniqueInstance = SingletonSysParam::getInstance();
 SingletonSysParam* g_sysParam = SingletonSysParam::getInstance();
@@ -71,7 +76,120 @@ struct BMPInfo {
 };
 #pragma pack(8)
 #endif
+//=========================================================
+#if 1
+GB_MENU run_Mode;
+unsigned int textSelect[100]={0};
+void TextDown(UIObject *obj)
+{
+	g_displayMode = MENU_PIP;
+	memset(textSelect, 0, sizeof(textSelect));
+	textSelect[0] = 1;
+	
+}
+void ClickDown(UIObject *obj)
+{
+	
+}
+void TextDown2(UIObject *obj)
+{
+	g_displayMode = MENU_SBS;
+	memset(textSelect, 0, sizeof(textSelect));
+	textSelect[1] = 1;
+}
+void ClickDown2(UIObject *obj)
+{
+	
+}
+void TextDown3(UIObject *obj)
+{
+	g_displayMode = MENU_GUN;	
+	memset(textSelect, 0, sizeof(textSelect));
+	textSelect[2] = 1;
+}
+void ClickDown3(UIObject *obj)
+{
+	
+}
+void TextDown4(UIObject *obj)
+{
+	g_displayMode = MENU_BALL;	
+	memset(textSelect, 0, sizeof(textSelect));
+	textSelect[3] = 1;
+}
+void ClickDown4(UIObject *obj)
+{
+	
+}
+#endif
+//=========================================================
+FreeTypeFont*	_font_hd_big_st;
+FreeTypeFont*	_font_hd_mid_st;
+FreeTypeFont*	_font_hd_small_st;
 
+FreeTypeFont*	_font_hd_big_ht;
+FreeTypeFont*	_font_hd_mid_ht;
+FreeTypeFont*	_font_hd_small_ht;
+
+FreeTypeFont* _font_hd_IrisFocus_ht;
+
+void OSDCreatText()
+{
+	_font_hd_big_st   =   new FreeTypeFont();
+	_font_hd_big_st->create("simsun.ttc",40,512,512);
+
+	_font_hd_mid_st   =   new FreeTypeFont();
+	_font_hd_mid_st->create("simsun.ttc",30,512,512);	
+	
+	_font_hd_small_st   =   new FreeTypeFont();
+	_font_hd_small_st->create("simsun.ttc",20,512,512);
+	
+	_font_hd_big_ht   =   new FreeTypeFont();
+	_font_hd_big_ht->create("SIMLI.TTF",40,512,512);
+
+	_font_hd_mid_ht   =   new FreeTypeFont();
+	_font_hd_mid_ht->create("SIMLI.TTF",30,512,512);
+	
+	_font_hd_small_ht   =   new FreeTypeFont();
+	_font_hd_small_ht->create("SIMLI.TTF",20,512,512);
+	
+	_font_hd_IrisFocus_ht = new FreeTypeFont();
+	_font_hd_IrisFocus_ht->create("simsun.ttc",25,512,512);
+
+}
+
+FLOAT2 OSDdrawText(int x,int y,wchar_t* text,char font,char fontsize,int win_width,int win_height)
+{
+	FLOAT2 VerPos;
+	FreeTypeFont* pTmp  = NULL;
+	if(font == 0x02){
+		if(fontsize == 0x03)
+			pTmp = _font_hd_big_ht;
+		else if(fontsize == 0x02)
+			pTmp = _font_hd_mid_ht;
+		else
+			pTmp = _font_hd_small_ht;
+	}else{
+		if(fontsize == 0x03)
+			pTmp = _font_hd_big_st;
+		else if(fontsize == 0x02)
+			pTmp = _font_hd_mid_st;
+		else if(fontsize == 0x04)
+			pTmp = _font_hd_IrisFocus_ht;
+		else
+			pTmp = _font_hd_small_st;
+	}
+	
+	pTmp->begin(win_width,win_height);
+	VerPos = pTmp->drawText(x,y,0,Rgba(255,255,255,255),text,0,0,0);
+	pTmp->end();
+	return VerPos;
+}
+
+
+
+
+//=========================================================
 Vertex3F BMPVertex[] = {
 		{ -1.0f, -1.0f, 1.0f , 0, 0 },
 		{ -1.0f, 1.0f, 1.0f , 0, 1 },
@@ -167,7 +285,7 @@ void CDisplayer::linkage_init()
 /*
 	videonamex = 100;
 	videonamey = 130;
-	*/
+*/
 	timex = disOsdBuf[osdID_time].posx;
 	timey = disOsdBuf[osdID_time].posy;
 	videonamefs = 2;
@@ -210,15 +328,73 @@ CDisplayer::CDisplayer()
 	g_sysParam->setGunSize(SingletonSysParam::ONE_4);
 	g_sysParam->setGunPosition(SingletonSysParam::RU);
 	savePic_once = false;
+	showDetectCorners  = false;
 /************************************Add 20181219**************************/
 	for(i=0; i<DS_DC_CNT;	i++){
 		pp[i] = 0;
 		m_code[i] = -1;
 	}
-
-	m_initPrm.disSched = 3.5;
+	m_initPrm.disSched =33;// 3.5;
 /*************************************************************************/
 	memset(_bCutIMG, 0x00, sizeof(_bCutIMG));
+	_bCornerDetect = false;
+
+/************************************************************************/
+	run_Mode._bRButton = false;
+	run_Mode.showSubMenu = false;
+	run_Mode._pSelect = NULL;
+	run_Mode._LDown = NULL;
+/*************************************************************************/
+	setFontPosition(100, 100);	
+	run_Mode._texts.clear();
+	run_Mode.text1._pos = FLOAT2(fontPosX,fontPosY);
+	run_Mode.text1.r = 0;
+	run_Mode.text1.g = 0;
+	run_Mode.text1.b = 255;
+	run_Mode.text1.a = 255;
+	run_Mode.text1._eventDown = TextDown;
+	run_Mode.text1._clickDown = ClickDown;
+	wcscpy(run_Mode.text1._text, L"主界面");
+
+	run_Mode.text2._pos = FLOAT2(fontPosX,fontPosY+60);
+	run_Mode.text2.r = 0;
+	run_Mode.text2.g = 0;
+	run_Mode.text2.b = 255;
+	run_Mode.text2.a = 255;
+	run_Mode.text2._eventDown = TextDown2;
+	run_Mode.text2._clickDown = ClickDown2;
+	wcscpy(run_Mode.text2._text, L"标定界面");
+
+	run_Mode.text3._pos = FLOAT2(fontPosX,fontPosY+120);
+	run_Mode.text3.r = 0;
+	run_Mode.text3.g = 0;
+	run_Mode.text3.b = 255;
+	run_Mode.text3.a = 255;
+	run_Mode.text3._eventDown = TextDown3;
+	run_Mode.text3._clickDown = ClickDown3;
+	wcscpy(run_Mode.text3._text, L"枪机画面");
+
+	run_Mode.text4._pos = FLOAT2(fontPosX,fontPosY+180);
+	run_Mode.text4.r = 0;
+	run_Mode.text4.g = 0;
+	run_Mode.text4.b = 255;
+	run_Mode.text4.a = 255;
+	run_Mode.text4._eventDown = TextDown4;
+	run_Mode.text4._clickDown = ClickDown4;
+	wcscpy(run_Mode.text4._text, L"球机画面");
+
+	run_Mode._texts.push_back(run_Mode.text1);
+	run_Mode.text1._SN = run_Mode._texts.size() -1;	
+	
+	run_Mode._texts.push_back(run_Mode.text2);
+	run_Mode.text2._SN = run_Mode._texts.size() -1;	
+	
+	run_Mode._texts.push_back(run_Mode.text3);
+	run_Mode.text3._SN = run_Mode._texts.size() -1;	
+	
+	run_Mode._texts.push_back(run_Mode.text4);
+	run_Mode.text4._SN = run_Mode._texts.size() -1;
+	
 }
 
 CDisplayer::~CDisplayer()
@@ -1719,30 +1895,23 @@ if(chId == 0 && savePic_once == true){
 			uyvy2bgr_(d_src_rgb + (byteCount_rgb>>2)*3, d_src + (byteCount>>2)*3, frame.cols, (frame.rows>>2), m_cuStream[3]);
 		}
 		m_img[chId] = cv::Mat(frame.rows, frame.cols, CV_8UC3, d_src_rgb);
-
 		OSA_mutexUnlock(&m_mutex);
-
 		cudaFree_share(d_src, chId);
-
 		if((chId==video_gaoqing0)&&(tvbuffer0==0))
 		{
-			OSA_bufPutFull(&(tskSendBuftv0), bufId);
-			
+			OSA_bufPutFull(&(tskSendBuftv0), bufId);			
 		}
 		else if((chId==video_gaoqing)&&(tvbuffer1==0))
 		{
-			OSA_bufPutFull(&(tskSendBuftv1), bufId);
-			
+			OSA_bufPutFull(&(tskSendBuftv1), bufId);			
 		}
 		else if((chId==video_gaoqing2)&&(tvbuffer2==0))
 		{
-			OSA_bufPutFull(&(tskSendBuftv2), bufId);
-			
+			OSA_bufPutFull(&(tskSendBuftv2), bufId);			
 		}
 		else if((chId==video_gaoqing3)&&(tvbuffer3==0))
 		{
-			OSA_bufPutFull(&(tskSendBuftv3), bufId);
-			
+			OSA_bufPutFull(&(tskSendBuftv3), bufId);			
 		}
 		else if((chId==video_pal)&&(palbuffer==0))
 		{
@@ -1750,24 +1919,17 @@ if(chId == 0 && savePic_once == true){
 		}
 		cudaFree_share(d_src_rgb, chId + DS_CHAN_MAX);
 	}
-
 }
 #else
-
-
 void CDisplayer::display(Mat frame, int chId, int code)
 {
 	assert(chId>=0 && chId<DS_CHAN_MAX);
-
 	OSA_mutexLock(&m_mutex);
-
 	m_frame[chId][pp[chId]] = frame;
 	m_code[chId] = code;
-
 	OSA_mutexUnlock(&m_mutex);
 }
 #endif
-
 void CDisplayer::transfer()
 {
 	int winId, chId, nChannel,code;
@@ -1813,10 +1975,8 @@ void CDisplayer::transfer()
 				unsigned int byteCount_rgb = dism_img[chId].rows * dism_img[chId].cols * 3* sizeof(unsigned char);
 				unsigned int byteBlock_rgb = byteCount_rgb/DS_CUSTREAM_CNT;
 				unsigned char *d_src_gray = NULL;
-
 				cudaMalloc_share((void**)&d_src, byteCount, chId);
 				cudaMalloc_share((void**)&d_src_rgb, byteCount_rgb, chId + DS_CHAN_MAX);
-
 				for(int i = 0; i<DS_CUSTREAM_CNT; i++)
 					cudaMemcpyAsync(d_src + byteBlock*i, dism_img[chId].data + byteBlock*i, byteBlock, cudaMemcpyHostToDevice, m_cuStream[i]);
 
@@ -1917,11 +2077,9 @@ int CDisplayer::gl_create()
 {
 	char *argv[1] = {glName};
 	int argc = 1;
-    	glutInit(&argc, argv);  
-    	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
-
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
 	glClearColor(0.0f, 0.0f, 0.01f, 0.0f );
-
 	cudaEventCreate(&m_startEvent);
 	cudaEventCreate(&m_stopEvent);
 	return 0;
@@ -1985,7 +2143,7 @@ void CDisplayer::gl_init()
 		glBufferData(GL_PIXEL_UNPACK_BUFFER, m_imgOsd[i].rows*m_imgOsd[i].cols*m_imgOsd[i].channels(), m_imgOsd[i].data, GL_DYNAMIC_COPY);//GL_STATIC_DRAW);//GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	}
-
+// Texture For SHow Save BMP Images
 	cv::Mat blackIMG = cv::Mat::zeros(1080,1920,CV_8UC3);
 	for(int i =0; i<50;i++) {
 		glGenTextures(1, &_textureId[i]);
@@ -1996,6 +2154,15 @@ void CDisplayer::gl_init()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1920, 1080, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG.data);
 	}	
+// Texture For Show Corner Detect Images
+		glGenTextures(1, &_texCornerId);
+		glBindTexture(GL_TEXTURE_2D, _texCornerId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1920, 1080, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG.data);
+	
 	
 	x11disbuffer=(unsigned char *)malloc(mallocwidth*mallocheight*4);
 
@@ -2549,6 +2716,15 @@ void CDisplayer::gl_textureLoad(void)
 		}
 	}
 //=============================================================================================	
+	
+		if(g_bSubmitTexture && g_CornerImage.empty() == false){
+			g_bSubmitTexture = false;
+			cv::Mat IMG = g_CornerImage;			
+			glBindTexture(GL_TEXTURE_2D, _texCornerId);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, IMG.cols, IMG.rows, GL_BGR_EXT, GL_UNSIGNED_BYTE, IMG.data);
+		}
+	
+
 }
 
 #endif
@@ -2625,7 +2801,47 @@ void CDisplayer::RenderVideoOnOrthoView( int videoChannel, int x, int y, int wid
 	glPopMatrix();	
 }
 
+void CDisplayer::RenderDetectCornerView(GLint x, GLint y, GLint width, GLint height)
+{
+		glViewport( x, y, width,height);
+		glPushMatrix();
+		glLoadIdentity();
+		glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);	
+		glUniform1i(Uniform_tex_in, 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _texCornerId);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glVertexPointer(3,GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].x);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].u);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glPopMatrix();	
+}
+void CDisplayer::RenderSavedBMPImage(void)
+{
+	if(imageListForCalibra.size() != 0) {		
+		for(int Index =0; Index< imageListForCalibra.size() && Index < 50; Index++)	
+		{			
+			int raw = 5;
+			int col = 10;
+			glViewport( 192.0*(Index%col), 540.0-108.0*((Index/col)+1), 192.0,108.0 );
+			glPushMatrix();
+			glLoadIdentity();
+			glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);	
+			glUniform1i(Uniform_tex_in, 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, _textureId[Index]);
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glVertexPointer(3,GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].x);
+			glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].u);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			glPopMatrix();	
+		}	
+	}
+	
 
+}
 
 void CDisplayer::linkageSwitchMode(void)
 {
@@ -2665,7 +2881,8 @@ void CDisplayer::linkageSwitchMode(void)
 				g_CurDisplayMode = PREVIEW_MODE;		
 			break;
 
-		case PIC_IN_PIC:		
+		case PIC_IN_PIC:	
+		#if 0
 			m_renders[0].video_chId = video_gaoqing0;  	// video0 == gun camera
 			m_renders[0].displayrect.x = 0;
 			m_renders[0].displayrect.y = 0;
@@ -2677,7 +2894,20 @@ void CDisplayer::linkageSwitchMode(void)
 			m_renders[1].displayrect.y =  g_sysParam->getSysParam().gunposition.leftUp.y;//vdisWH[0][1]*3/4;
 			m_renders[1].displayrect.w = g_sysParam->getSysParam().gunposition.general.width;//vdisWH[0][0]/4;
 			m_renders[1].displayrect.h =  g_sysParam->getSysParam().gunposition.general.height;//vdisWH[0][1]/4;			
+		#else
+			m_renders[0].video_chId = video_gaoqing;  		//video0 == gun camera
+			m_renders[0].displayrect.x = 480;
+			m_renders[0].displayrect.y = 540;
+			m_renders[0].displayrect.w = vdisWH[0][0] /2;  	//WINDOW_WIDTH;
+			m_renders[0].displayrect.h = vdisWH[0][1] /2;
+			
+			m_renders[1].video_chId =    video_gaoqing0;
+			m_renders[1].displayrect.x =  0;//g_sysParam->getSysParam().gunposition.leftUp.x;//vdisWH[0][0]*3/4;
+			m_renders[1].displayrect.y =  0;//g_sysParam->getSysParam().gunposition.leftUp.y;//vdisWH[0][1]*3/4;
+			m_renders[1].displayrect.w =  1920;//g_sysParam->getSysParam().gunposition.general.width;//vdisWH[0][0]/4;
+			m_renders[1].displayrect.h =  540;//g_sysParam->getSysParam().gunposition.general.height;//vdisWH[0][1]/4;
 
+		#endif
 			//RenderVideoOnOrthoView(VIDEO_0, 0, 0, 1920, 1080);
 			//RenderVideoOnOrthoView(VIDEO_1, 1440, 810, 480, 270);
 			if( g_CurDisplayMode != PIC_IN_PIC)
@@ -2685,13 +2915,13 @@ void CDisplayer::linkageSwitchMode(void)
 			
 			break;
 		case GUN_FULL_SCREEN:			
-/*
+		/*
 			m_renders[0].video_chId = video_gaoqing0;  		// video0 == gun camera
 			m_renders[0].displayrect.x = 0;
 			m_renders[0].displayrect.y = 0;
 			m_renders[0].displayrect.w = WINDOW_WIDTH;
 			m_renders[0].displayrect.h = WINDOW_HEIGHT;
-*/
+		*/
 			m_renders[1].video_chId = video_gaoqing0;
 			m_renders[1].displayrect.x = 0;
 			m_renders[1].displayrect.y = 0;
@@ -2715,7 +2945,7 @@ void CDisplayer::linkageSwitchMode(void)
 			m_renders[0].displayrect.y = 0;
 			m_renders[0].displayrect.w = WINDOW_WIDTH;
 			m_renders[0].displayrect.h = WINDOW_HEIGHT;
-*/
+		*/
 			m_renders[1].video_chId = video_gaoqing;
 			m_renders[1].displayrect.x = 0;
 			m_renders[1].displayrect.y = 0;
@@ -2723,11 +2953,9 @@ void CDisplayer::linkageSwitchMode(void)
 			m_renders[1].displayrect.h =  vdisWH[0][1];
 			if( g_CurDisplayMode != BALL_FULL_SCREEN)
 				g_CurDisplayMode = BALL_FULL_SCREEN;			
-			break;
-			
-	//RenderVideoOnOrthoView(VIDEO_0, 0, 0, 1920, 1080);
-	//RenderVideoOnOrthoView(VIDEO_1, 1440, 810, 480, 270);
-			
+			break;			
+		//RenderVideoOnOrthoView(VIDEO_0, 0, 0, 1920, 1080);
+		//RenderVideoOnOrthoView(VIDEO_1, 1440, 810, 480, 270);			
 	#if 0		
 		case SIDE_BY_SIDE:
 			m_renders[1].video_chId = video_gaoqing0;
@@ -2740,11 +2968,10 @@ void CDisplayer::linkageSwitchMode(void)
 			m_renders[0].displayrect.x = 0;
 			m_renders[0].displayrect.y = 0;
 			m_renders[0].displayrect.w = WINDOW_WIDTH/2;
-			m_renders[0].displayrect.h = WINDOW_HEIGHT;
-				
-			if( g_CurDisplayMode != SIDE_BY_SIDE) 
-				g_CurDisplayMode = SIDE_BY_SIDE;
+			m_renders[0].displayrect.h = WINDOW_HEIGHT;	
 			
+			if( g_CurDisplayMode != SIDE_BY_SIDE) 
+				g_CurDisplayMode = SIDE_BY_SIDE;			
 			break;
 			
 		case LEFT_BALL_RIGHT_GUN:
@@ -2766,13 +2993,11 @@ void CDisplayer::linkageSwitchMode(void)
 			if( g_CurDisplayMode != LEFT_BALL_RIGHT_GUN)
 				g_CurDisplayMode = LEFT_BALL_RIGHT_GUN;
 			break;
-	#endif
-			
+	#endif			
 		default:
 			break;	
 	}
 }
-
 
 void CDisplayer::gl_display(void)
 {	
@@ -2788,46 +3013,20 @@ void CDisplayer::gl_display(void)
 	Uniform_mattrans = glGetUniformLocation(m_glProgram, "mTrans");
 	Uniform_font_color = glGetUniformLocation(m_fontProgram,"fontColor");
 
-
 	linkageSwitchMode();
-	if(imageListForCalibra.size() != 0) {
-		//if(SubImage == false) {
-			for(int Index =0; Index< imageListForCalibra.size() && Index < 50; Index++)	
-			{			
-				int raw = 5;
-				int col = 10;
-				glViewport( 192.0*(Index%col), 540.0-108.0*((Index/col)+1), 192.0,108.0 );
-				glPushMatrix();
-				glLoadIdentity();
-				glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);	
-				glUniform1i(Uniform_tex_in, 0);
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, _textureId[Index]);
-				glEnableClientState(GL_VERTEX_ARRAY);
-				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-				glVertexPointer(3,GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].x);
-				glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].u);
-				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-				glPopMatrix();	
-			}	
-		//}
-	}
-
+	RenderSavedBMPImage();
+	RenderDetectCornerView(0,0, 960, 540);
+	
 	for(winId=0; winId<m_renderCount; winId++)
 	{			
 		chId = m_renders[winId].video_chId;
-		if(chId < 0 || chId >= DS_CHAN_MAX)
-		{
+		if(chId < 0 || chId >= DS_CHAN_MAX) {
 			continue;
 		}
-
-		if(m_img[chId].cols <=0 || m_img[chId].rows <=0 || m_img[chId].channels() == 0)
-		{
+		if(m_img[chId].cols <=0 || m_img[chId].rows <=0 || m_img[chId].channels() == 0) {
 			continue;
-		}
-	
+		}	
 		glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);
-
 		glUniform1i(Uniform_tex_in, 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId_input[chId]);
@@ -2835,28 +3034,21 @@ void CDisplayer::gl_display(void)
 		glVertexAttribPointer(ATTRIB_TEXTURE, 2, GL_FLOAT, GL_FALSE, 0, m_glvTexCoords[0]);
 		glEnableVertexAttribArray(ATTRIB_VERTEX);
 		glEnableVertexAttribArray(ATTRIB_TEXTURE);
-
 		glViewport(m_renders[winId].displayrect.x,m_renders[winId].displayrect.y,m_renders[winId].displayrect.w,m_renders[winId].displayrect.h);
-
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
 	}	
-
 	if(m_bOsd)
 	{
 		glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTransDefault);
-
 		glUniform1i(Uniform_tex_in, 0);
 		glActiveTexture(GL_TEXTURE0);
-
-		glEnable(GL_BLEND);
-		
+		glEnable(GL_BLEND);		
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 		for(int i=0; i<DS_DC_CNT; i++)
 		{
-			if(m_renders[0].video_chId != i)
+			if(m_renders[0].video_chId != i){
 				continue;
+			}
 			glBindTexture(GL_TEXTURE_2D, textureId_osd[i]);
 			glVertexAttribPointer(ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, m_glvVertsDefault);
 			glVertexAttribPointer(ATTRIB_TEXTURE, 2, GL_FLOAT, GL_FALSE, 0, m_glvTexCoordsDefault);
@@ -2868,10 +3060,23 @@ void CDisplayer::gl_display(void)
 		glDisable(GL_BLEND);		
 		IrisAndFocus();
 		OSDFunc();
-	}	
+	}		
+
+/***************************************************** Menu *******************************************************************/
+	ArrayText::iterator itr = run_Mode._texts.begin();
+	   for(int i=0; i<run_Mode._texts.size()-1,itr != run_Mode._texts.end(); itr++, i++ )
+	   {
+		   if( textSelect[i] == 1) {
+	   			(*itr)._size = chinese_osd((*itr)._pos.x,(*itr)._pos.y,(*itr)._text,
+			   	 1,4,255,0,0,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+		   	}else{
+	   			(*itr)._size = chinese_osd((*itr)._pos.x,(*itr)._pos.y,(*itr)._text,
+			   	 1,4,(*itr).r,(*itr).g,(*itr).b,(*itr).a,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+		   	}
+	   }	
+	glUseProgram(0);	
 	
-	glUseProgram(0);
-/****************************************************************************/	
+/***************************************************************************************************************************/	
 	tStamp[5] = getTickCount();
 	m_waitSync = true;
 	int64 tcur = tStamp[5];
@@ -2891,8 +3096,6 @@ void CDisplayer::gl_display(void)
 	int64 tSwap = getTickCount();
 /******************************************************************************/
 
-
-	
 	glutSwapBuffers();
 
 tStamp[6] = getTickCount();
@@ -2953,6 +3156,7 @@ if(0)
 	m_tmRender = tend;
 
 	glutPostRedisplay();
+	
 	GetFPS();
 //	cout << "==========<GetFPS()>=====================  FPS = "<< frameCount << "ms"<<endl;
 }
@@ -3255,16 +3459,18 @@ void CDisplayer::GetFPS()
 	}
 }
 
-void CDisplayer::chinese_osd(int x,int y,wchar_t* text,char font,char fontsize,unsigned char r,unsigned char g,unsigned char b,unsigned char a,int win_width,int win_height)
+FLOAT2 CDisplayer::chinese_osd(int x,int y,wchar_t* text,char font,char fontsize,unsigned char r,unsigned char g,unsigned char b,unsigned char a,int win_width,int win_height)
 {
+	FLOAT2 VerPos;
 	glUseProgram(m_fontProgram);
 	_fontColor[0] = (float)r/float(255);
 	_fontColor[1] = (float)g/float(255);
 	_fontColor[2] = (float)b/float(255);
 	_fontColor[3] = (float)a/float(255);
 	glUniform4fv(Uniform_font_color,1,_fontColor);
-	OSDdrawText(x,y,text,font,fontsize,win_width,win_height);
+	VerPos = OSDdrawText(x,y,text,font,fontsize,win_width,win_height);
 	glUseProgram(0);
+	return VerPos;
 }
 GLbyte* CDisplayer::gltReadBMPBits(const char *szFileName, int *nWidth, int *nHeight)
 {

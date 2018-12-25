@@ -108,6 +108,7 @@ public:
 	void getGunSrcImage(Mat &src);
 	void cloneBallSrcImgae(Mat &src);
 	void cloneGunSrcImgae(Mat &src);
+	
 	void remapImage();
 	int find_feature_matches ( const Mat& img_1, const Mat& img_2,
 	                            std::vector<KeyPoint>& keypoints_1,
@@ -144,6 +145,7 @@ public:
 	void cr_decomposeEssentialMat( InputArray _E, OutputArray _R1, OutputArray _R2, OutputArray _t );
 	void cvtBallYuyv2Bgr();
 	void cvtGunYuyv2Bgr();
+	
 	void setBallPos(int in_panPos, int in_tilPos, int in_zoom);
 
 private:
@@ -161,6 +163,8 @@ private:
 	Mat ball_frame;
 	Mat ball_yuyv;
 	Mat gun_yuyv;
+	
+	Mat proc_frame;
 	Mat gun_BMP;
 	Mat ball_BMP;
 	vector<Point2f> pts;
@@ -172,8 +176,6 @@ private:
 	int tiltPos;
 	int zoomPos;
 	int flags;
-	
-
 public:
 
 	bool bool_Calibrate;
@@ -189,4 +191,33 @@ public:
 	vector<Point2f> key_points2;
 };
 
+class DetectCorners:public WorkThread
+{
+	private:
+		Mat corner_yuyv;
+		Mat corner_frame;
+		int successImageNum ;  
+		int width;  // detect Image wodth
+   		int height;  // detect Height wodth
+   		Size pattern_size;
+   		vector<Point2f> corners; 
+	public:
+		DetectCorners();
+		virtual ~DetectCorners();
+	struct RunPrm{
+		DetectCorners *pThis;
+	};
+	int RunService();
+	int StopService();
+
+	struct RunPrm m_prm;
+	static void* RunProxy(void* pArg);
+	void PrintMs( const char* text= "" );
+	int Run();
+	void Init();
+	void cvtCornerYuyv2Bgr();
+	void cloneCornerSrcImgae(Mat &src);
+	bool chessBoardCornersDetect(Mat image,Mat &cornerImage,int &successImages);
+	
+};
 #endif /* CCCAMCALIBRA_H_ */

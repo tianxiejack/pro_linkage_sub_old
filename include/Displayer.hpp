@@ -22,6 +22,7 @@
 //#include "../src/CcCamCalibra.h"
 #include <math.h>
 #include "configable.h"
+#include "Ipcctl.h"
 
 using namespace std;
 using namespace cv;
@@ -270,6 +271,11 @@ public:
 
 	OSA_BufCreate tskSendBufCreatepal;
 	OSA_BufHndl tskSendBufpal;
+
+	int m_menuindex;
+	AppMenu dismenuarray[menumaxid];
+	osdbuffer_t disMenuBuf[32][MAX_SUBMENU];
+	wchar_t disMenu[menumaxid][MAX_SUBMENU][33];
 	
 protected:
 	DS_InitPrm m_initPrm;
@@ -366,6 +372,7 @@ protected:
 	void gltLoadShaderSrc(const char *szShaderSrc, GLuint shader);
 	bool gltLoadShaderFile(const char *szFile, GLuint shader);
 	GLuint gltLoadShaderPairWithAttributes(const char *szVertexProg, const char *szFragmentProg, ...);
+	int menu_init();
 
 	Mat m_temp;
 
@@ -389,8 +396,7 @@ public:
 	void IrisAndFocus();
 	int OSDFunc();
 	void drawtriangle(Mat frame, char direction, char alpha);
-
-	
+	int MenuFunc(int index);
 };
 
 #define mallocwidth 1920

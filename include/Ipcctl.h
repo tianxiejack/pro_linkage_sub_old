@@ -74,6 +74,7 @@ typedef enum
     acqPosAndZoom,
     reset_swtarget_timer,
     mtdFrame,
+    menuswitch,
     invalid
 }CMD_ID;
 

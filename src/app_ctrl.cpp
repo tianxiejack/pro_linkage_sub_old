@@ -503,3 +503,148 @@ void app_ctrl_setWordSize(CMD_EXT * pInCmd)
 		pIStuts->osdTextSize = pInCmd->osdTextSize;
 	}
 }
+
+void app_ctrl_setMenuStat(int index)
+{
+	if(msgextInCtrl==NULL)
+		return;
+	CMD_EXT *pIStuts = msgextInCtrl;
+
+	pIStuts->MenuStat = index;
+	
+	memset(pIStuts->Passwd, 0, sizeof(pIStuts->Passwd));
+
+	MSGDRIV_send(MSGID_EXT_MENUSWITCH, 0);
+}
+
+void app_ctrl_setMenu()
+{
+	if(msgextInCtrl==NULL)
+		return;
+	CMD_EXT *pIStuts = msgextInCtrl;
+	
+	if(-1 == pIStuts->MenuStat)
+		app_ctrl_setMenuStat(mainmenu0);
+	else if(mainmenu0 == pIStuts->MenuStat)
+		app_ctrl_setMenuStat(-1);
+	else if(mainmenu1 == pIStuts->MenuStat)
+		app_ctrl_setMenuStat(-1);
+	else if(mainmenu2 == pIStuts->MenuStat)
+		app_ctrl_setMenuStat(-1);
+}
+
+void app_ctrl_setpasswd(char key)
+{
+	if(msgextInCtrl==NULL)
+		return;
+	CMD_EXT *pIStuts = msgextInCtrl;
+	
+	if((mainmenu0 == pIStuts->MenuStat) || (mainmenu1 == pIStuts->MenuStat))
+	{
+		int offset = strlen(pIStuts->Passwd) * sizeof(char);
+		if(offset < sizeof(pIStuts->Passwd) - 1)
+			sprintf(pIStuts->Passwd + offset,"%c", key);
+		else
+			printf("password reached max length:128");
+		
+		printf("%s,%d,passwd=%s\n",__FILE__,__LINE__,pIStuts->Passwd);
+	}
+}
+
+void app_ctrl_enter()
+{
+	char *init_passwd = "000000";
+	if(msgextInCtrl==NULL)
+		return;
+	CMD_EXT *pIStuts = msgextInCtrl;
+
+	if((mainmenu0 == pIStuts->MenuStat) || (mainmenu1 == pIStuts->MenuStat))
+	{
+		if(strcmp(init_passwd, pIStuts->Passwd))
+		{
+			app_ctrl_setMenuStat(mainmenu1);
+		}
+		else
+		{
+			app_ctrl_setMenuStat(mainmenu2);
+		}
+			
+	}
+	else if(mainmenu2 == pIStuts->MenuStat)
+	{
+		if((pIStuts->menuarray[mainmenu2].pointer >= 0) && (pIStuts->menuarray[mainmenu2].pointer <= 4))
+			app_ctrl_setMenuStat(pIStuts->menuarray[mainmenu2].pointer + 3);
+	}
+	else if(submenu_carli == pIStuts->MenuStat)
+	{
+		if(2 == pIStuts->menuarray[submenu_carli].pointer)
+			app_ctrl_setMenuStat(mainmenu2);
+	}
+	else if(submenu_gunball == pIStuts->MenuStat)
+	{
+		if(2 == pIStuts->menuarray[submenu_gunball].pointer)
+			app_ctrl_setMenuStat(mainmenu2);
+	}
+	else if(submenu_mtd == pIStuts->MenuStat)
+	{
+		if(6 == pIStuts->menuarray[submenu_mtd].pointer)
+			app_ctrl_setMenuStat(mainmenu2);
+	}
+	else if(submenu_setimg == pIStuts->MenuStat)
+	{
+		if(3 == pIStuts->menuarray[submenu_setimg].pointer)
+			app_ctrl_setMenuStat(mainmenu2);
+	}
+	else if(submenu_setball == pIStuts->MenuStat)
+	{
+		if(0 == pIStuts->menuarray[submenu_setball].pointer)
+			app_ctrl_setMenuStat(submenu_setcom);
+		else if(1 == pIStuts->menuarray[submenu_setball].pointer)
+			app_ctrl_setMenuStat(submenu_setnet);
+		else if(2 == pIStuts->menuarray[submenu_setball].pointer)
+			app_ctrl_setMenuStat(mainmenu2);
+	}
+	else if(submenu_setcom == pIStuts->MenuStat)
+	{
+		if(4 == pIStuts->menuarray[submenu_setcom].pointer)
+			app_ctrl_setMenuStat(submenu_setball);
+	}
+	else if(submenu_setnet == pIStuts->MenuStat)
+	{
+		if(4 == pIStuts->menuarray[submenu_setnet].pointer)
+			app_ctrl_setMenuStat(submenu_setball);
+	}
+}
+
+void app_ctrl_upMenu()
+{
+	if(msgextInCtrl==NULL)
+		return;
+	CMD_EXT *pIStuts = msgextInCtrl;
+	int menustate = pIStuts->MenuStat; 
+	if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
+	{
+		if(pIStuts->menuarray[menustate].pointer > 0)
+		{
+			pIStuts->menuarray[menustate].pointer--;
+			MSGDRIV_send(MSGID_EXT_UPMENU, 0);
+		}
+	}
+}
+
+void app_ctrl_downMenu()
+{
+	if(msgextInCtrl==NULL)
+		return;
+	CMD_EXT *pIStuts = msgextInCtrl;
+
+	int menustate = pIStuts->MenuStat; 
+	if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
+	{
+		if(pIStuts->menuarray[menustate].pointer < pIStuts->menuarray[menustate].submenu_cnt - 1)
+		{
+			pIStuts->menuarray[menustate].pointer++;
+			MSGDRIV_send(MSGID_EXT_DOWNMENU, 0);
+		}
+	}
+}

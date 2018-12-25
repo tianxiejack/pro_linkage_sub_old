@@ -166,8 +166,10 @@ protected:
 	 static void MSGAPI_update_camera(long IParam);
 	 static void MSGAPI_input_algosdrect(long lParam);
 	 static void MSGAPI_setMtdSelect(long lParam );
-
 	 static void MSGAPI_update_ballPos(long lParam );
+	 static void MSGAPI_update_menuindex(long lParam );
+	 static void MSGAPI_up_menu(long lParam);
+	 static void MSGAPI_down_menu(long lParam);
 
 private:
 	ACK_EXT extOutAck;

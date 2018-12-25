@@ -63,7 +63,20 @@ CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
 	CMD_EXT *pIStuts = extInCtrl;
+
+	pIStuts->MenuStat = -1;
+	memset(pIStuts->Passwd, 0, sizeof(pIStuts->Passwd));
+
+	int cnt[menumaxid] = {3,5,7,3,3,7,4,3,5,5};
+	memset(pIStuts->menuarray, 0, sizeof(pIStuts->menuarray));
+	for(int i = 0; i < menumaxid; i++)
+	{
+		pIStuts->menuarray[i].id = i;
+		pIStuts->menuarray[i].pointer = 0;
+		pIStuts->menuarray[i].submenu_cnt = cnt[i];
+	}
 	
+		
 	for(int i = 0; i < MAX_CHAN; i++)
 	{
 		pIStuts->opticAxisPosX[i] = vdisWH[i][0]/2;
@@ -2684,11 +2697,16 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		case 2:
 			m_bMarkCircle = false;
 			//cout << "---------------->>> Press F2 : m_bMarkCircle == false " << endl;
+
 			break;
-		case 3:
-		{
-			
-		}
+		case 12:
+			app_ctrl_setMenu();
+			break;
+		case 101:
+			app_ctrl_upMenu();
+			break;
+		case 103:
+			app_ctrl_downMenu();
 			break;
 		default :
 			break;
@@ -2846,6 +2864,14 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 			m_display.savePic_once = true;
 
+		}
+
+		if((key >= '0') && (key <= '9'))
+			app_ctrl_setpasswd(key);
+
+		if(key == 13)
+		{
+			app_ctrl_enter();
 		}
 		
 		
@@ -3549,6 +3575,39 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	 	algOsdRect=pIStuts->Imgalgosdrect;
 	}
 	
+	if(msgId == MSGID_EXT_MENUSWITCH)
+	{
+		m_display.m_menuindex = pIStuts->MenuStat;
+	}
+	if(msgId == MSGID_EXT_UPMENU)
+	{
+		int menustate = pIStuts->MenuStat;
+		int pointer = m_display.dismenuarray[menustate].pointer;
+		if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
+		{
+			if(pointer > 0)
+			{
+				m_display.disMenuBuf[menustate][pointer].color = 2;
+				m_display.dismenuarray[menustate].pointer= pIStuts->menuarray[menustate].pointer;
+				m_display.disMenuBuf[menustate][m_display.dismenuarray[menustate].pointer].color = 3;
+			}
+		}
+	}
+	if(msgId == MSGID_EXT_DOWNMENU)
+	{
+		int menustate = pIStuts->MenuStat;
+		int pointer = m_display.dismenuarray[menustate].pointer;
+		if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
+		{
+			if(pointer < pIStuts->menuarray[menustate].submenu_cnt - 1)
+			{
+				m_display.disMenuBuf[menustate][pointer].color = 2;
+				m_display.dismenuarray[menustate].pointer = pIStuts->menuarray[menustate].pointer;
+				m_display.disMenuBuf[menustate][m_display.dismenuarray[menustate].pointer].color = 3;
+			}
+		}
+	}
+	
 }
 
 
@@ -3589,10 +3648,11 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UPDATE_OSD,             	MSGAPI_update_osd,              0);	
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UPDATE_CAMERA,            MSGAPI_update_camera,           0);	
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_INPUT_ALGOSDRECT,         MSGAPI_input_algosdrect,        0);	
-
-
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SETCURPOS,     MSGAPI_update_ballPos,        	0);	
-
+	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_MENUSWITCH,     MSGAPI_update_menuindex,        	0);
+	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UPMENU,     MSGAPI_up_menu,        	0);
+	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_DOWNMENU,     MSGAPI_down_menu,        	0);
+	
 
     return 0;
 }
@@ -4442,4 +4502,17 @@ float  CProcess::PiexltoWindowsyf(float y,int channel)
 	
 	return  ret;
 }
+void CProcess::MSGAPI_update_menuindex(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_MENUSWITCH,NULL);
+}
 
+void CProcess::MSGAPI_up_menu(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_UPMENU,NULL);
+}
+
+void CProcess::MSGAPI_down_menu(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_DOWNMENU,NULL);
+}

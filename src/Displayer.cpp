@@ -145,7 +145,6 @@ osdbuffer_t disOsdBuf[32]={0};
 osdbuffer_t disOsdBufbak[32] = {0};
 wchar_t disOsd[32][33];
 
-
 void CDisplayer::linkage_init()
 {
 	displayMode = PREVIEW_MODE;
@@ -1381,6 +1380,8 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 
 	gl_Loadinit();
 
+	menu_init();
+
 	return 0;
 }
 
@@ -2157,6 +2158,58 @@ int CDisplayer::gl_updateVertex(void)
 	return iRet;
 }
 
+int CDisplayer::menu_init()
+{
+	m_menuindex = -1;
+	memcpy(&dismenuarray, plat->extInCtrl->menuarray, sizeof(dismenuarray));
+	unsigned char menubuf[menumaxid][7][128] = {
+            {"请输入密码呼出菜单", "按回车确认", "按F2退出"},
+            {"请输入密码呼出菜单", "********", "密码输入错误，按回车后再次输入", "按回车确认", "按F2退出"},
+            {"内参标定","枪球画面标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},
+            {"枪机内参标定","球机内参标定","返回"},
+            {"枪球自动标定","枪球手动标定","返回"},
+            {"检测区域选择","目标个数","跟踪持续时间","最大目标面积","最小目标面积","灵敏度","返回"},
+            {"扫描方式均为逐行扫描","格式","应用","返回"},
+            {"使用串口设置","使用网络设置","返回"},
+            {"波特率","球机地址","球机协议","工作模式","返回"},
+            {"网络协议","IP地址","登录用户名","登录密码","返回"}};
+
+
+	
+	for(int i = 0; i < menumaxid; i++)
+	{
+		for(int j = 0; j < MAX_SUBMENU; j++)
+		{
+			if(j >= dismenuarray[i].submenu_cnt)
+				break;
+			disMenuBuf[i][j].alpha = 2;
+			disMenuBuf[i][j].ctrl = 0;
+			disMenuBuf[i][j].posx = 1500;
+			disMenuBuf[i][j].color = 2;
+			disMenuBuf[i][j].posy = (j + 1) * 60;
+			setlocale(LC_ALL, "zh_CN.UTF-8");
+			swprintf(disMenu[i][j], 33, L"%s", menubuf[i][j]);
+		}
+	}
+
+	disMenuBuf[mainmenu0][1].posy = 4 * 60;
+	disMenuBuf[mainmenu0][2].posy = 5 * 60;
+	disMenuBuf[submenu_carli][2].posy = 4 * 60;
+	disMenuBuf[submenu_gunball][2].posy = 4 * 60;
+	disMenuBuf[submenu_setball][2].posy = 4 * 60;
+	disMenuBuf[submenu_setcom][4].posy = 6 * 60;
+	disMenuBuf[submenu_setnet][4].posy = 6 * 60;
+
+	disMenuBuf[mainmenu1][2].color= 3;
+	disMenuBuf[mainmenu2][0].color= 3;
+	disMenuBuf[submenu_carli][0].color= 3;
+	disMenuBuf[submenu_gunball][0].color= 3;
+	disMenuBuf[submenu_mtd][0].color= 3;
+	disMenuBuf[submenu_setball][0].color= 3;
+	disMenuBuf[submenu_setcom][0].color= 3;
+	disMenuBuf[submenu_setnet][0].color= 3;		
+}
+
 static int64 tstart = 0;
 static int64 tstartBK = 0;
 static float offtime = 0;
@@ -2868,6 +2921,7 @@ void CDisplayer::gl_display(void)
 		glDisable(GL_BLEND);		
 		IrisAndFocus();
 		OSDFunc();
+		MenuFunc(m_menuindex);
 	}	
 	
 	glUseProgram(0);
@@ -3043,6 +3097,78 @@ int CDisplayer::OSDFunc()
 		}
 	}
 
+	return 0;
+}
+
+int CDisplayer::MenuFunc(int index)
+{
+	unsigned char r, g, b, a, color, colorbak, Enable;
+	short x, y;
+	char font,fontsize;
+
+	for(int i = 0; i < MAX_SUBMENU; i++)
+	{
+		if(i == dismenuarray[index].submenu_cnt)
+			break;
+		Enable = disMenuBuf[index][i].ctrl;
+		if(!Enable)
+		{
+			 x = disMenuBuf[index][i].posx;
+			 y = disMenuBuf[index][i].posy;
+		 	 a = disMenuBuf[index][i].alpha;
+			 color = disMenuBuf[index][i].color;
+			 font = plat->extInCtrl->osdTextFont;
+			 fontsize = plat->extInCtrl->osdTextSize;
+			 //font = ;
+			 //fontsize = ;
+
+			switch(color)
+			{
+				case 1:
+					r = 0;
+					g = 0;
+					b = 0;
+					break;
+				case 2:
+					r = 255;
+					g = 255;
+					b = 255;
+					break;
+				case 3:
+					r = 255;
+					g = 0;
+					b = 0;
+					break;
+				case 4:
+					r = 255;
+					g = 255;
+					b = 0;
+					break;
+				case 5:
+					r = 0;
+					g = 0;
+					b = 255;
+					break;
+				case 6:
+					r = 0;
+					g = 255;
+					b = 0;
+					break;
+				case 7:
+					color = colorbak;
+					break;
+			}
+
+			if(a > 0x0a)
+				a = 0x0a;
+			if(a == 0x0a)
+				a = 0;
+			else
+				a = 255 - a*16;
+			chinese_osd(x, y, disMenu[index][i],font ,fontsize, r, g, b, a, VIDEO_DIS_WIDTH, VIDEO_DIS_HEIGHT);
+		}
+	}
+	
 	return 0;
 }
 

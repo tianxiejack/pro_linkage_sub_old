@@ -12,8 +12,12 @@
 
 CamParameters g_camParams;
 OSA_SemHndl m_linkage_getPos;
-	extern SingletonSysParam* g_sysParam;
-
+OSA_SemHndl g_detectCorners;
+extern SingletonSysParam* g_sysParam;
+extern bool showDetectCorners ;
+extern volatile bool rendeFlag;
+Mat g_CornerImage;
+extern bool g_bSubmitTexture;
 CcCamCalibra::CcCamCalibra():scale(0.5),bCal(false),ret1(false),ret2(false),
 	panPos(1024), tiltPos(13657), zoomPos(16),writeParam_flag(false),
 	Set_Handler_Calibra(false),bool_Calibrate(false),start_cloneVideoSrc(false)
@@ -37,7 +41,7 @@ CcCamCalibra::CcCamCalibra():scale(0.5),bCal(false),ret1(false),ret2(false),
 }
 
 CcCamCalibra::~CcCamCalibra() {
-
+	StopService();
 }
 bool CcCamCalibra::Load_CameraParams(const string& gun_file,const string& ball_file)
 {	
@@ -90,6 +94,7 @@ void CcCamCalibra::cvtBallYuyv2Bgr()
 	}
 }
 
+
 void CcCamCalibra::getBallSrcImage(Mat &src)
 {
 	ball_frame = src;	
@@ -109,8 +114,13 @@ void CcCamCalibra::cloneGunSrcImgae(Mat &src)
 	src.copyTo(gun_yuyv);
 }
 
+
 int CcCamCalibra::RunService()
 {
+	cout << "\n*********************************************************************************************\n" << endl;
+	cout << "**********              Start Match Points  Thread ...              *********\n" << endl;
+	cout << "**********                                                         ********\n" << endl;
+	cout << "************************************************************************************************\n" << endl;
 	m_prm.pThis = this;
 	return RunThread(RunProxy, &m_prm);
 }
@@ -128,9 +138,11 @@ void* CcCamCalibra::RunProxy(void* pArg)
 	 struct RunPrm *pPrm = (struct RunPrm*)pArg;
 	 while(pPrm->pThis->m_bRun)
 	 {		
+	 
 	 	tv.tv_sec = 0;
     		tv.tv_usec = (30%1000)*1000;
    		select(0, NULL, NULL, NULL, &tv);
+		
 		pPrm->pThis->Run();
 	 }
 	 return NULL;
@@ -214,21 +226,23 @@ int CcCamCalibra::Run()
 		 calibrate();
 	}
 #endif
+
 	char flag = 0;
 	Mat frame = ball_frame;
 	cvtGunYuyv2Bgr();
 	cvtBallYuyv2Bgr();
+	
+	
 #if 1	
-		if(!gun_frame.empty()){
-			remap(gun_frame, undisImage, map1, map2, INTER_LINEAR);
-		}
+	if(!gun_frame.empty()){
+		remap(gun_frame, undisImage, map1, map2, INTER_LINEAR);
+	}
 #else
-		if(!gun_BMP.empty()){
-			remap(gun_BMP, undisImage, map1, map2, INTER_LINEAR);
-		}
+	if(!gun_BMP.empty()){
+		remap(gun_BMP, undisImage, map1, map2, INTER_LINEAR);
+	}
 #endif
 	Mat gunDraw, ballDraw;
-
 	if( (!ball_frame.empty()) && (!gun_frame.empty()) )
 	{
 		if( (Set_Handler_Calibra || g_sysParam->isEnable_Undistortion() ) && (bool_Calibrate || g_sysParam->isEnable_calculateMatrix()) ) {		
@@ -981,3 +995,127 @@ void CcCamCalibra::showUndistortImages()
 	}
 #endif
 }
+
+
+//============================================================================================
+
+//DetectCorners
+DetectCorners::DetectCorners()
+{
+	OSA_semCreate(&g_detectCorners, 1, 0);
+}
+DetectCorners::~DetectCorners()
+{
+	StopService();
+}
+int DetectCorners::RunService()
+{
+	cout << "\n*********************************************************************************************\n" << endl;
+	cout << "**********              Start Corner Detect Thread ...              *********\n" << endl;
+	cout << "**********                                                         ********\n" << endl;
+	cout << "************************************************************************************************\n" << endl;
+	m_prm.pThis = this;
+	return RunThread(RunProxy, &m_prm);
+}
+
+int DetectCorners::StopService()
+{
+	 SetThreadExit();
+	 WaitThreadExit();
+	 return 0;
+}
+
+void DetectCorners::PrintMs( const char* text )
+{
+	static long long last = 0;
+	long long Cur = getTickCount();
+	if(last == 0){
+		last = Cur;
+		return ;
+	}
+	long long ms = 0;
+	ms = ( (double)(Cur-last)/getTickFrequency() ) * 1000;
+	if(*text != 0){
+		printf("\r\n\r\n[RunTimme]++++++++++++++++++++ [%s] = %d ms\r\n\r\n", text, ms);
+	}
+	last = getTickCount();
+
+}
+
+void* DetectCorners::RunProxy(void* pArg)
+{
+	 struct timeval tv;
+	 struct RunPrm *pPrm = (struct RunPrm*)pArg;
+	 while(pPrm->pThis->m_bRun)
+	 {		
+	 
+	 	tv.tv_sec = 0;
+    		tv.tv_usec = (30%1000)*1000;
+   		select(0, NULL, NULL, NULL, &tv);
+		
+		pPrm->pThis->Run();
+	 }
+	 return NULL;
+}
+void DetectCorners::cloneCornerSrcImgae(Mat &src)
+{
+	src.copyTo(corner_yuyv);
+}
+void DetectCorners::cvtCornerYuyv2Bgr()
+{
+	if(!corner_yuyv.empty()){
+		cvtColor(corner_yuyv,corner_frame,CV_YUV2BGR_YUYV);
+	}
+}
+void DetectCorners::Init()
+{
+	int pattern_cols = 13;
+  	int pattern_raws = 8;
+   	pattern_size = Size(pattern_cols,pattern_raws);      
+   	corners.clear();
+}
+bool DetectCorners::chessBoardCornersDetect(Mat image,Mat &cornerImage,int &successImages)
+{
+   width = image.cols;
+   height = image.rows;	
+   Mat imageGray;
+   cvtColor(image, imageGray , CV_RGB2GRAY);
+	
+    bool patternfound = findChessboardCorners(
+                image, pattern_size, corners,CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE+CALIB_CB_FAST_CHECK );
+    if (!patternfound)    {
+        cout<<"can not find chessboard corners!\n";    
+        return false;
+    }
+    else
+    {      
+        cornerSubPix(imageGray, corners, Size(11, 11), Size(-1, -1), TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+        drawChessboardCorners(cornerImage, pattern_size, corners, patternfound);
+		g_bSubmitTexture = true;		
+	}
+
+	//imshow("Detected Corners Image:", cornerImage);
+	//waitKey(200);
+    return true;
+}
+int DetectCorners::Run()
+{	
+	int flag = OSA_semWait(&g_detectCorners, OSA_TIMEOUT_FOREVER/*200*/);
+	if( -1 == flag ) {
+		printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );
+	}
+	else{
+		
+		cvtCornerYuyv2Bgr();
+		if( (showDetectCorners == true) && (corner_frame.empty() == false) ){
+			cvtCornerYuyv2Bgr();
+			g_CornerImage = corner_frame.clone();
+			PrintMs();
+			chessBoardCornersDetect( corner_frame ,g_CornerImage, successImageNum );
+			PrintMs("chessBoardCornersDetect~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		}
+	}
+
+}
+
+

@@ -13,7 +13,7 @@
 #include "configable.h"
 
 #include "CcCamCalibra.h"
-
+#define MAX_SUCCESS_IMAGES 160
 typedef struct
 {
 	int x;
@@ -76,23 +76,22 @@ class CVideoProcess
 {
 	MAIN_ProcThrObj	mainProcThrObj;
 	Mat mainFrame[2];
-
-
 public:
-	static CcCamCalibra *m_camCalibra;
-	
+	static CcCamCalibra *m_camCalibra;	
+	static DetectCorners *m_detectCorners;	
 	Mat gun_srcMat_remap;
 	Point LeftPoint;
 	Point RightPoint;
-	Mat m_cutIMG[100];
-	
+	Mat m_cutIMG[100];	
+	//int successImageNum ;                       /* ???????????? */
+	//int width;  // detect Image wodth
+   // int height;  // detect Height wodth
+   // vector<Point2f> corners;   
 private:
 	Mat m_GrayMat;
 	Mat m_Gun_GrayMat;
 	Mat m_rgbMat;
 	
-	
-
 public:
 	CVideoProcess();
 	~CVideoProcess();
@@ -140,13 +139,10 @@ public:
 	bool Set_SelectByRect;
 	bool open_handleCalibra;
 
-
 	int m_SensorStat;
 	int m_acqRectW;
 	int m_acqRectH;
-
 public :
-
 	//CMSTracker trackInit;
 	int detState ;
 	int trackEnd ;
@@ -156,12 +152,10 @@ public :
 	int prichnalid;
 	//vector<Rect> Box;
 	bool moveStat;
-	bool algOsdRect;
-	
+	bool algOsdRect;	
 	bool TrkAim43;
 	bool wFileFlag;
 	bool tvzoomStat;
-
 	ALGMTD_HANDLE m_mtd[MAX_CHAN];
 public:
 	CDisplayer m_display;
@@ -172,34 +166,27 @@ public:
 	RectfNode mRect[MAX_CHAN][100];
 	int m_tempX, m_tempY, m_rectn[MAX_CHAN];
 	int setrigon_flag;
-
 	int pol_draw;
 	PointNode polRect[MAX_CHAN][100];
 	int pol_tempX, pol_tempY, pol_rectn[MAX_CHAN];
 	int setrigon_polygon;
 protected:
 	MultiChVideo MultiCh;
-	//BigChVideo		BigChannel;
-	
+	//BigChVideo		BigChannel;	
 	int adaptiveThred;
-
-	UTCTRACK_HANDLE m_track;
-
-	
+	UTCTRACK_HANDLE m_track;	
 	static bool m_bTrack;
 	static bool m_bMtd;			// old singla for mmt : multi target detect
 	static bool m_bBlobDetect;
 	static bool m_bMoveDetect;
 	static int m_iTrackStat;
-	static int m_iTrackLostCnt;
-	
+	static int m_iTrackLostCnt;	
 	Uint32 rememtime;
 	bool rememflag;
 	int m_curChId;
 	int m_curSubChId;
 	int trackchange;
 	int m_searchmod;
-
 	int Enhmod;
 	float Enhparm;
 	int DetectGapparm;
@@ -208,14 +195,11 @@ protected:
 	int stillPixel;
 	int movePixel;
 	float lapScaler;
-	int lumThred;
-
-	int configEnhFromFile();
-	
+	int lumThred;	
+	int configEnhFromFile();	
 	void process_event(int type, int iPrm, void *pPrm);
 	int process_frame(int chId, int virchID, Mat frame);
 	int process_mtd(ALGMTD_HANDLE pChPrm, Mat frame_gray, Mat frame_dis);
-
 	#if __TRACK__
 	Track_InfoObj *trackinfo_obj;
 	int process_track(int trackStatus, Mat frame_gray, Mat frame_dis, UTC_RECT_float &rcResult);
@@ -223,8 +207,6 @@ protected:
 	void Track_reacq(UTC_RECT_float & m_rcTrack,int acqinterval);
 	void Track_fovreacq(int fov,int sensor,int sensorchange);
 	#endif
-	
-
 	static int m_mouseEvent, m_mousex, m_mousey;
 	static CVideoProcess *pThis;
 	static void call_run(int value);

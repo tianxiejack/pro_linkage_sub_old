@@ -9,7 +9,9 @@
 #include <stdlib.h>
 //#include <GL/glut.h>
 #include "freetype.hpp"
+using namespace CELL;
 
+#if 0
 FreeTypeFont*	_font_hd_big_st;
 FreeTypeFont*	_font_hd_mid_st;
 FreeTypeFont*	_font_hd_small_st;
@@ -47,6 +49,7 @@ void OSDCreatText()
 
 void OSDdrawText(int x,int y,wchar_t* text,char font,char fontsize,int win_width,int win_height)
 {
+	FLOAT2 VerPos;
 	FreeTypeFont* pTmp  = NULL;
 	if(font == 0x02){
 		if(fontsize == 0x03)
@@ -67,7 +70,8 @@ void OSDdrawText(int x,int y,wchar_t* text,char font,char fontsize,int win_width
 	}
 	
 	pTmp->begin(win_width,win_height);
-	pTmp->drawText(x,y,0,Rgba(255,255,255,255),text,0,0,0);
+	VerPos = pTmp->drawText(x,y,0,Rgba(255,255,255,255),text,0,0,0);
 	pTmp->end();
-	return ;
+	return VerPos;
 }
+#endif

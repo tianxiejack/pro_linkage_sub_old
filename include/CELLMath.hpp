@@ -73,7 +73,7 @@ namespace CELL
     }
 
     /**
-    *   ²úÉú64Î»Êý×Ö
+    *   ï¿½ï¿½ï¿½ï¿½64Î»ï¿½ï¿½ï¿½ï¿½
     */
     inline  INT64   makeInt64(unsigned low,unsigned hi)
     {
@@ -657,10 +657,10 @@ namespace CELL
         return res;
     }
     /**
-    *   Á½¸öÏòÁ¿µÄ¼Ð½Ç
-    *   ¶¨ÒåÁ½¸öÏòÁ¿ A,B
-    *   A¡¤B = |A|*|B|*cos(@)
-    *   cos(@) = A¡¤B/|A|*|B|
+    *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼Ð½ï¿½
+    *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ A,B
+    *   Aï¿½ï¿½B = |A|*|B|*cos(@)
+    *   cos(@) = Aï¿½ï¿½B/|A|*|B|
     *   @ = acos(@)
     */
     template <typename T>
@@ -746,8 +746,8 @@ namespace CELL
     }
 
     /**
-    *   µãÔÚ¶à±ßÐÎÀï
-    *   Èç¹ûµãÔÚ¶à±ßÐÎÖÐ£¬Ôò£¬µãÓë±ßµÄ¼Ð½ÇÖ®ºÍ == 360
+    *   ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ò£¬µï¿½ï¿½ï¿½ßµÄ¼Ð½ï¿½Ö®ï¿½ï¿½ == 360
     */
     template<typename T>
     bool    insidePolyon(	const tvec3<T>& point, const tvec3<T> polygon[], size_t count)
@@ -831,7 +831,7 @@ namespace CELL
 
 
     /**
-    *   ÉäÏßÓëÈý½ÇÐÎÏà½»
+    *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½à½»
     */
     template<typename T>
     bool intersectTriangle(
@@ -891,7 +891,7 @@ namespace CELL
         return true;
     }
     /**
-    *   ¼ÆËãÈý½ÇÐÎÃæ»ý
+    *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     */
     template<typename T> T calcTriangleArea(const tvec3<T>& pt1,const tvec3<T>& pt2,const tvec3<T>& pt3)
     {
@@ -3373,7 +3373,7 @@ namespace CELL
 
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
-    //! ÉäÏßÀà
+    //! ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
 
@@ -5047,14 +5047,14 @@ namespace CELL
         }
 
         /**
-        *   »ñÈ¡µãµÄÊýÁ¿
+        *   ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         */
         size_t getNumPoints(void) const
         {
             return  mPoints.size();
         }
         /**
-        *   Çå³ýËùÓÐµÄµãÊý¾Ý
+        *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÐµÄµï¿½ï¿½ï¿½ï¿½ï¿½
         */
         void clear(void)
         {
@@ -5062,7 +5062,7 @@ namespace CELL
             mTangents.clear();
         }
         /**
-        *   ¸üÐÂµãÊý¾Ý
+        *   ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ï¿½ï¿½
         */
         void updatePoint(size_t index, const tvec3<T>& value)
         {
@@ -5075,7 +5075,7 @@ namespace CELL
             }
         }
         /**
-        *   ²îÖµ»ñÈ¡µãÊý¾Ý
+        *   ï¿½ï¿½Öµï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         */
         tvec3<T>    interpolate(T time) const
         {
@@ -5087,7 +5087,7 @@ namespace CELL
             return interpolate(segIdx, time);
         }
         /**
-        *   ¸ù¾ÝË÷Òý²îÖµ
+        *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
         */
         tvec3<T>    interpolate(size_t fromIndex, T t) const
         {
@@ -5147,14 +5147,14 @@ namespace CELL
             return tvec3<T>(ret.x, ret.y, ret.z);
         }
         /**
-        *   ×Ô¶¯¼ÆËã±ê¼Ç
+        *   ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         */
         void    setAutoCalculate(bool autoCalc)
         {
             mAutoCalc = autoCalc;
         }
         /**
-        *   ¼ÆËãÇÐÏß
+        *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         */
         void    recalcTangents(void)
         {
@@ -5466,14 +5466,14 @@ namespace CELL
         {}
 
         /**
-        *   ÉèÖÃÉäÏßµÄÆðµã
+        *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½ï¿½
         */
         void            setOrigin(const tvec3<T>& origin)
         {
             _origin = origin;
         }
         /**
-        *   ·µ»ØÉäÏßµÄÆðµã
+        *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½ï¿½
         */
         const tvec3<T>&  getOrigin(void) const
         {
@@ -5481,7 +5481,7 @@ namespace CELL
         }
 
         /**
-        *   ÉèÖÃÉäÏßµÄ·½Ïò
+        *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµÄ·ï¿½ï¿½ï¿½
         */
         void            setDirection(const tvec3<T>& dir)
         {
@@ -5489,7 +5489,7 @@ namespace CELL
         }
 
         /**
-        *   ·µ»ØÉäÏßµÄ·½Ïò
+        *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµÄ·ï¿½ï¿½ï¿½
         */
         const tvec3<T>&  getDirection(void) const
         {
@@ -5505,10 +5505,10 @@ namespace CELL
         }
 
         /**
-        *   ²âÊÔÉäÏßboxÏà½»
-        *   Èç¹ûÏà½»,·µ»ØÖµÖÐµÄfirst == true.·ñÔòfalse
-        *   secondÎªÉäÏßµ½µãµÄ¾àÀë
-        *   µ÷ÓÃgetPoint·½·¨£¬Ôò·µ»Ø½»µã
+        *   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½boxï¿½à½»
+        *   ï¿½ï¿½ï¿½ï¿½à½»,ï¿½ï¿½ï¿½ï¿½Öµï¿½Ðµï¿½first == true.ï¿½ï¿½ï¿½ï¿½false
+        *   secondÎªï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½Ä¾ï¿½ï¿½ï¿½
+        *   ï¿½ï¿½ï¿½ï¿½getPointï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ò·µ»Ø½ï¿½ï¿½ï¿½
         */
             std::pair<bool, T> intersects(const AxisAlignedBox<T>& box) const
         {
@@ -5520,7 +5520,7 @@ namespace CELL
             tvec3<T>    max      =   box.getMaximum();
 
             /**
-            *   µãÔÚ°üÎ§ºÐÀïÃæ
+            *   ï¿½ï¿½ï¿½Ú°ï¿½Î§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             */
             if ( _origin > min && _origin < max )
             {
@@ -5687,7 +5687,7 @@ namespace CELL
             redefine(rkPoint0, rkPoint1, rkPoint2);
         }
         /**
-        *   µ½µãµÄ¾àÀë
+        *   ï¿½ï¿½ï¿½ï¿½Ä¾ï¿½ï¿½ï¿½
         */
         float distance(const tvec3<T> &pos) const
         {

@@ -8,10 +8,9 @@
 #include "app_ctrl.h"
 #include "Ipcctl.h"
 #include <vector>
-
 using namespace vmath;
 
-
+extern GB_MENU run_Mode;
 extern CMD_EXT *msgextInCtrl;
 int CVideoProcess::m_mouseEvent = 0;
 int CVideoProcess::m_mousex = 0;
@@ -30,13 +29,17 @@ extern osdbuffer_t disOsdBuf[32];
 extern osdbuffer_t disOsdBufbak[32];
 extern wchar_t disOsd[32][33];
 vector<Mat> imageListForCalibra;
+extern bool showDetectCorners;
+extern OSA_SemHndl g_detectCorners;
+extern volatile bool cloneOneFrame;
+
+
 
 int CVideoProcess::MAIN_threadCreate(void)
 {
 	int iRet = OSA_SOK;
 	iRet = OSA_semCreate(&mainProcThrObj.procNotifySem ,1,0) ;
 	OSA_assert(iRet == OSA_SOK);
-
 
 	mainProcThrObj.exitProcThread = false;
 
@@ -344,10 +347,16 @@ void CVideoProcess::linkage_init()
 
 	m_camCalibra->Init_CameraParams();
 	m_camCalibra->RunService();
+
+	if(m_detectCorners == NULL) {
+		cout << "Create DetectCorners Object Failed !!" << endl;
+	}
+	m_detectCorners->Init();
+	m_detectCorners->RunService();
 }
 
 CcCamCalibra* CVideoProcess::m_camCalibra = new CcCamCalibra();
-
+DetectCorners* CVideoProcess::m_detectCorners = new DetectCorners();
 
 CVideoProcess::CVideoProcess()
 	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40)		
@@ -990,21 +999,59 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
 	unsigned int curId;
-
-	int Critical_Point;	
+	int Critical_Point;
 
 	if(pThis->m_display.g_CurDisplayMode == PIC_IN_PIC) {
 		curId = 0;	
 	}else{
 		curId = pThis->m_curChId;
 	}
+	
+	if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+	{
+		pThis->OnMouseLeftUp(x, y);
+	}
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP)
+	{
+		//pThis->OnMouseRightUp(x,  y);
+
+		run_Mode._mouseDown = CELL::int2(x,y);
+	 	ArrayText::iterator itr = run_Mode._texts.begin();
+	 	for(; itr != run_Mode._texts.end(); ++itr){
+		 	CELL::trect<float> rt((*itr)._pos.x, (*itr)._pos.y, (*itr)._pos.x +(*itr)._size.x, (*itr)._pos.y + (*itr)._size.y);
+		 	if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
+				 if(run_Mode._LDown == &(*itr)) {
+					 (*itr)._clickDown(run_Mode._LDown);		
+				 }
+		 		break;
+		 	}
+	 	}
+	 	run_Mode._pSelect = 0;
+	 	run_Mode._bRButton = false;
+	}
 
 	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
 
+		run_Mode._bRButton = true;
+	 	run_Mode._mouseDown = CELL::int2(x,y);
+		run_Mode._pSelect = 0;
+		
+		ArrayText::iterator itr = run_Mode._texts.begin();
+		
+	 	for(; itr != run_Mode._texts.end(); ++itr){
+			CELL::trect<float> rt((*itr)._pos.x, (*itr)._pos.y, (*itr)._pos.x +(*itr)._size.x, (*itr)._pos.y + (*itr)._size.y);
+			 if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
+				 run_Mode._pSelect = &(*itr);
+				 run_Mode._LDown = &(*itr);				
+				 (*itr)._eventDown(run_Mode._pSelect);				 
+				 break;
+		 	}
+	 	}
+//================================================================================================
 		//pThis->OnMouseLeftDwn(x, y);   // add by swj
 		
-		if(pThis->open_handleCalibra || g_sysParam->isEnable_HandleCalibrate()) // Press 'y' or 'Y' , set this flag to 1
+		if (pThis->open_handleCalibra || g_sysParam->isEnable_HandleCalibrate()) // Press 'y' or 'Y' , set this flag to 1
 		{
 			pThis->OnMouseLeftDwn(x, y);
 		}
@@ -1348,8 +1395,7 @@ int CVideoProcess::init()
 	dsInit.minsize= processmintargetsizeMenu;
 #endif
 	dsInit.disFPS = 30; // 20181219
-	dsInit.disSched = 33;//3.5;
-
+	dsInit.disSched = 33 ; //   3.5      
 //#if (!__IPC__)
 	dsInit.keyboardfunc = keyboard_event; 
 	dsInit.keySpecialfunc = keySpecial_event;
@@ -1770,13 +1816,13 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 				#if !GUN_IMAGE_USEBMP
 					if(chId == GUN_CHID){
 						m_camCalibra->cloneGunSrcImgae(frame);
-						m_camCalibra->cvtGunYuyv2Bgr();
+						//m_camCalibra->cvtGunYuyv2Bgr();
 					}
 				#endif
 					
 				if( chId == BALL_CHID )	{	
 					m_camCalibra->cloneBallSrcImgae(frame);
-					m_camCalibra->cvtBallYuyv2Bgr();
+					//m_camCalibra->cvtBallYuyv2Bgr();
 				}
 			}
 			
@@ -1786,45 +1832,37 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 					copy_once = false;
 				}
 			}
-	
-		
-	//OSA_printf("chid =%d  m_curChId=%d m_curSubChId=%d\n", chId,m_curChId,m_curSubChId);
-
 /********************************************************************************************/
 	if(chId == 0 && m_display.savePic_once == true){
 			m_display.savePic_once = false;
-			memset(m_display.savePicName, 0, 20);
-			sprintf(m_display.savePicName,"%02d.bmp",saveCount);
-			saveCount ++;
+		//	memset(m_display.savePicName, 0, 20);
+			//sprintf(m_display.savePicName,"%02d.bmp",saveCount);
+			//saveCount ++;
 			int nsize = imageListForCalibra.size();
 			if(nsize<100){
 				m_cutIMG[nsize] = cv::Mat(frame.rows,frame.cols,CV_8UC3);
 				cvtColor(frame,m_cutIMG[nsize],CV_YUV2BGR_YUYV);
-				//imwrite(m_display.savePicName,Dst);
-
-				imageListForCalibra.push_back(m_cutIMG[nsize]);
-				
+				imageListForCalibra.push_back(m_cutIMG[nsize]);				
 				m_display.SetCutDisplay(nsize, true);
 			}
-
-			/*for(std::vector<Mat>::iterator itr = imageListForCalibra.begin(); itr != imageListForCalibra.end(); ++itr) {
-				imshow("ImageList", (*itr));
-				waitKey(500);
-			}*/
 	}
 /**********************************************************************/
-
+	if(chId == 0 && showDetectCorners == true){
+		if(cloneOneFrame == true){
+			cloneOneFrame = false;
+			//m_camCalibra->cloneCornerSrcImgae(frame);
+			m_detectCorners->cloneCornerSrcImgae(frame);
+			OSA_semSignal(&g_detectCorners);
+		}
+	}
+/**********************************************************************/
 	if(chId == m_curChId || chId == m_curSubChId)
 	{
 		if((chId == video_pal)&&(virchId != PAL_VIRCHID));
 		else
 			m_display.display(frame,  chId, format);		
 	}
-
 	OSA_mutexUnlock(&m_mutex);
-
-
-		
 
 //	OSA_printf("process_frame: chId = %d, time = %f sec \n",chId,  ( (getTickCount() - tstart)/getTickFrequency()) );
 	//获得结束时间，并显示结果
@@ -1841,13 +1879,10 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 #endif
 	return 0;
 }
-
-
 #if __TRACK__
 int CVideoProcess::process_track(int trackStatus, Mat frame_gray, Mat frame_dis, UTC_RECT_float &rcResult)
 {
 	IMG_MAT image;
-
 	image.data_u8 = frame_gray.data;
 	image.width = frame_gray.cols;
 	image.height = frame_gray.rows;
@@ -2045,5 +2080,7 @@ void CVideoProcess::getImgRioDelta(unsigned char* pdata,int width ,int height,UT
 	Idelta = Idelta/(rio.width*rio.height);
 	*value = Idelta;
 }
+
+/************************************************************************************************************/
 
 

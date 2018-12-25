@@ -10,7 +10,6 @@
 #define AVT_TRK_AIM_SIZE			2
 
 
-
 typedef struct _Resolution{
 	int raw, col ;
 }Resolution;

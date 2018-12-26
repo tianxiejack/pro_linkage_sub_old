@@ -141,6 +141,7 @@ typedef struct _ds_init_param{
 	void (*autocarli)(int value);
 	void (*closecarli)(int value);
 	void (*passivemotionfunc)(GLint xMouse, GLint yMouse);
+	void (*motionfunc)(GLint xMouse, GLint yMouse);
 	void (*mousefunc)(int button, int state, int x, int y);
 	void (*menufunc)(int value);
 	void (*setrigion)(int value);

@@ -1344,8 +1344,10 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 	//mouse event:
 	if(m_initPrm.mousefunc != NULL)
 		glutMouseFunc(m_initPrm.mousefunc);//GLUT_LEFT_BUTTON GLUT_MIDDLE_BUTTON GLUT_RIGHT_BUTTON; GLUT_DOWN GLUT_UP
-	if(m_initPrm.passivemotionfunc != NULL)
+	if(m_initPrm.passivemotionfunc != NULL)//drag mouse when button is unpressed
 		glutPassiveMotionFunc(m_initPrm.passivemotionfunc);
+	if(m_initPrm.motionfunc != NULL)//drag mouse when button is pressed
+		glutMotionFunc(m_initPrm.motionfunc);
 	
 	if(m_initPrm.menufunc != NULL)
 	{
@@ -1536,7 +1538,7 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 		glutAddSubMenu("Auto Linkage Enable",sub_menu);
 		glutAddSubMenu("Display Mode",sub_menu2);
 		glutAddSubMenu("Setup",sub_menu3);
-		glutAttachMenu(GLUT_RIGHT_BUTTON);
+		//glutAttachMenu(GLUT_RIGHT_BUTTON);
 	}
 
 	if(m_initPrm.visibilityfunc != NULL)

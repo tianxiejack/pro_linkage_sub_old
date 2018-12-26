@@ -398,6 +398,10 @@ CVideoProcess::CVideoProcess()
 	detectNum = 10;
 	maxsize = 50000;
 	minsize = 1000;
+	setrigion_flagv20 = mtdcnt = 0;	
+	memset(&mtdrigionv20, 0, sizeof(mtdrigionv20));
+	memset(grid19x10, 0, sizeof(grid19x10));
+	memset(grid19x10_bak, 0, sizeof(grid19x10_bak));
 #endif
 
 	m_curChId = video_gaoqing ;
@@ -1000,7 +1004,13 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
 	unsigned int curId;
 	int Critical_Point;
-
+	
+	if(pThis->setrigion_flagv20)
+	{
+		pThis->mouse_eventv20(button, state, x, y);
+		return;
+	}
+	
 	if(pThis->m_display.g_CurDisplayMode == PIC_IN_PIC) {
 		curId = 0;	
 	}else{
@@ -1295,6 +1305,23 @@ void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
 	}
 }
 
+void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
+{
+	printf("mousemotion_event start, x,y(%d,%d)\n", xMouse, yMouse);
+}
+
+
+void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
+{
+	//printf("mouse_eventv20 start, button=%d,state=%d,x,y(%d,%d)\n", button, state, x, y);
+	CMD_EXT tmpCmd = {0};
+	tmpCmd.Mtdmouseclick.button = button;
+	tmpCmd.Mtdmouseclick.state = state;
+	tmpCmd.Mtdmouseclick.x = x;
+	tmpCmd.Mtdmouseclick.y = y;
+	app_ctrl_setMtdRigion(&tmpCmd);
+}
+
 void CVideoProcess::menu_event(int value)
 {
 	switch(value)
@@ -1386,6 +1413,7 @@ int CVideoProcess::init()
 	dsInit.menufunc = menu_event;
 	dsInit.mousefunc = mouse_event;
 	dsInit.passivemotionfunc = mousemove_event;
+	dsInit.motionfunc = mousemotion_event;
 	dsInit.setrigion = processrigionMenu;
 	dsInit.rigionsel = processrigionselMenu;
 	dsInit.rigionpolygon = processrigionpolygonMenu;

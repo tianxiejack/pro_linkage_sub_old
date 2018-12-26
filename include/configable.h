@@ -238,7 +238,7 @@ typedef struct {
 	int Timedisp_9;
 	bool OSD_text_show;
 	int OSD_text_color;
-	int OSD_text_alpha;
+	int OSD_text_alpha;0
 	int OSD_text_font;
 	int OSD_text_size;
 	bool OSD_draw_show;

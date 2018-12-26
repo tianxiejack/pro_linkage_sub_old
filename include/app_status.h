@@ -232,6 +232,7 @@ typedef struct
 
 	volatile unsigned char  MtdState[eSen_Max];	//record moving obj detect state of each channel
 	volatile unsigned int  MtdSelect[eSen_Max];
+	volatile unsigned int  MtdSetRigion;
 	
 	/***** cmd osd part *****/
 	volatile unsigned int  DispGrp[eSen_Max];       	// eDispGrade
@@ -252,6 +253,8 @@ typedef struct
 	volatile unsigned int MenuStat;
 	AppMenu menuarray[menumaxid];
 	char Passwd[128];
+
+	mouse_t Mtdmouseclick;
 	
 } CMD_EXT;
 #endif
@@ -326,6 +329,8 @@ typedef enum
     MSGID_EXT_UPDATE_CAMERA,
     MSGID_EXT_MVDETECT,
     MSGID_EXT_MVDETECTSELECT,
+    MSGID_EXT_MVDETECT_SETRIGIONSTAT,
+    MSGID_EXT_MVDETECT_SETRIGION,
 
 	//
 	MSGID_EXT_SETCURPOS,

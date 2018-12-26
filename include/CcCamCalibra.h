@@ -201,9 +201,13 @@ class DetectCorners:public WorkThread
    		int height;  // detect Height wodth
    		Size pattern_size;
    		vector<Point2f> corners; 
+		Mat m_cutIMG[100];
+	public:
+		bool _bCutIMG[100];
 	public:
 		DetectCorners();
 		virtual ~DetectCorners();
+		void SetCutDisplay(int idx, bool enable = true){ _bCutIMG[idx] = enable;};
 	struct RunPrm{
 		DetectCorners *pThis;
 	};

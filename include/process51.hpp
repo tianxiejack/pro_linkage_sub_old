@@ -9,6 +9,10 @@
 
 
 using namespace cv;
+#define SPECIAL_KEY_UP			101
+#define SPECIAL_KEY_DOWN 		103
+#define SPECIAL_KEY_LEFT 		100
+#define SPECIAL_KEY_RIGHT 		102
 
 
 class CProcess : public CVideoProcess
@@ -54,6 +58,7 @@ class CProcess : public CVideoProcess
 	Point textPos2_backup[64];
 	Point circle_point;
 private:
+	Rect m_rectSelectPic;
 	bool m_bMarkCircle;
 	void Cmp_SysParam();
 	SysParam m_sysparm;

@@ -3309,6 +3309,9 @@ int CDisplayer::MenuFunc(int index)
 	unsigned char r, g, b, a, color, colorbak, Enable;
 	short x, y;
 	char font,fontsize;
+	
+	if(-1 == index)
+		return -1;
 
 	for(int i = 0; i < MAX_SUBMENU; i++)
 	{

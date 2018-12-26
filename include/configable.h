@@ -49,28 +49,6 @@ typedef struct _SysParam{
 }SysParam;
 
 #define MAX_SUBMENU 7
-typedef struct
-{
-	int id;
-	int pointer;
-	int submenu_cnt;
-	int start;
-	int end;
-}AppMenu;
-
-typedef enum{
-	mainmenu0=0,
-	mainmenu1,
-	mainmenu2,
-	submenu_carli,
-	submenu_gunball,
-	submenu_mtd,
-	submenu_setimg,
-	submenu_setball,
-	submenu_setcom,
-	submenu_setnet,
-	menumaxid
-}AppMenuId;
 
 class SingletonSysParam {
 	public:

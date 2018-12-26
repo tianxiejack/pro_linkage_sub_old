@@ -91,7 +91,7 @@ public:
 	Mat gun_srcMat_remap;
 	Point LeftPoint;
 	Point RightPoint;
-	Mat m_cutIMG[100];	
+		
 	//int successImageNum ;                       /* ???????????? */
 	//int width;  // detect Image wodth
    // int height;  // detect Height wodth

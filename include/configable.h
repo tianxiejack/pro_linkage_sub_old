@@ -197,13 +197,21 @@ class SingletonSysParam {
 
 	typedef enum _MenuDisplay{
 		MENU_PIP=0,
-		MENU_SBS=1,
-		MENU_GUN=2,
-		MENU_BALL=3,
+		MENU_SBS,
+		MENU_GUN,
+		MENU_BALL,
+		MENU_CALIBRA_CAP,
+		MENU_CALIBRA_RESULT,
 
 		MENU_DISPLAY_COUNT
 		
 	}MenuDisplay;
+typedef enum _GB_WorkMode{
+		HANDLE_LINK_MODE =0,
+		AUTO_LINK_MODE,
+		ONLY_BALL_MODE,
+		MODE_COUNT		
+	}GB_WorkMode;
 
 
 enum devvideo{

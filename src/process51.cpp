@@ -15,6 +15,7 @@
 #include <time.h>
 
 int gun_resolu[2] = {1920, 1080};
+extern int captureCount;
 bool showDetectCorners = false;
 OSDSTATUS gConfig_Osd_param = {0};
 UTCTRKSTATUS gConfig_Alg_param = {0};
@@ -27,9 +28,10 @@ extern vector<Mat> imageListForCalibra;
 OSA_SemHndl g_linkage_getPos;
 extern GB_MENU run_Mode;
 SENDST trkmsg={0};
-	extern CamParameters g_camParams;
-	Point dest_ballPoint = Point(-100,-100);
-	extern SingletonSysParam* g_sysParam;
+extern CamParameters g_camParams;
+Point dest_ballPoint = Point(-100,-100);
+extern SingletonSysParam* g_sysParam;
+extern GB_WorkMode g_workMode;
 void inputtmp(unsigned char cmdid)
 {
 	plat->OnKeyDwn(cmdid);
@@ -61,6 +63,7 @@ CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16
 	m_bCast=false;
 	rememflag=false;
 	rememtime=0;
+	m_rectSelectPic = Rect(0,540,192,54);
 	// default cmd value
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
@@ -1770,7 +1773,14 @@ osdindex++;	//acqRect
 			}			
 		}	
 	}
-//========================================================
+//=========================Draw A Rectangle On Selected Picture ===============================
+if(0){
+	int leftStartX = (m_display.getSelectPicIndex() % 10)*192;
+	int leftStartY = 540 - (m_display.getSelectPicIndex() /10)*108;
+	m_rectSelectPic = Rect(leftStartX,leftStartY,192,108);
+	rectangle (m_display.m_imgOsd[1],  m_rectSelectPic,cvScalar(0,0,255,255), 1, 8);
+}
+//=============================================================================================
 #if 0
 	{
 		recIn.x=480;
@@ -2810,7 +2820,23 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 
 			break;
 		case 3:
-		
+			{
+				GB_WorkMode nextMode = GB_WorkMode(((int)g_workMode+1)% MODE_COUNT);
+				g_workMode = nextMode;
+				int value = 0;
+				if(g_workMode == AUTO_LINK_MODE){
+					value = 1;
+					g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = true;
+				}
+				else{
+					value = 0;
+					g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
+				}
+				SENDST	tmp;
+				tmp.cmd_ID = mtdmode;
+				tmp.param[0] = value ;
+				ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+			}
 			break;
 		case 4:	
 			showDetectCorners = true;			
@@ -2819,16 +2845,36 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		case 5:			
 			showDetectCorners = false;			
 			printf("++++++++++++++++++++ showDetectCorners = %d \r\n", showDetectCorners);
-		case 12:
-			app_ctrl_setMenu();
 			break;
-		case 101:
-			app_ctrl_upMenu();
+		case 6:
+			imageListForCalibra.clear();
+			captureCount = 0;
 			break;
-		case 103:
-			app_ctrl_downMenu();
+	#if 0
+		case SPECIAL_KEY_RIGHT:
+			
+			m_display.selected_PicIndex = (m_display.selected_PicIndex +1)%50;
 			break;
-		default :
+		case SPECIAL_KEY_LEFT:
+			if(m_display.selected_PicIndex == 0){
+				m_display.selected_PicIndex =49;
+			}
+			m_display.selected_PicIndex -= 1;
+			break;
+		case SPECIAL_KEY_DOWN:
+			m_display.selected_PicIndex += 10;
+			if( m_display.selected_PicIndex > 39) {
+				m_display.selected_PicIndex -= 40;
+			}
+			break;
+		case SPECIAL_KEY_UP:
+			m_display.selected_PicIndex -= 10;
+			if( m_display.selected_PicIndex < 9) {
+				m_display.selected_PicIndex += 50;
+			}
+			break;
+	#endif
+		default:
 			break;
 	}
 }

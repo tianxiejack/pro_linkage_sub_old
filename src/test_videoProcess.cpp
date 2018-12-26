@@ -19,10 +19,10 @@ using namespace cv;
 bool startEnable = false;
 
 volatile bool cloneOneFrame = false;
-uint32 count1,count2,count3,count4,count5;
+uint32 count1=0,count2,count3,count4,count5;
 static void timer_op(int signum)
 {   
-   if( count1 == 50){
+   if( count1 == 60){
    		cloneOneFrame = true;		
 		count1 = 0;	
    }   

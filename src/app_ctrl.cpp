@@ -3,7 +3,14 @@
 #include "osa.h"
 #include "msgDriv.h"
 #include "configable.h"
+#include <iostream>
+using namespace std;
 
+extern UI_CONNECT_ACTION g_connectAction;
+extern bool showDetectCorners;
+
+extern GB_WorkMode g_workMode;
+extern MenuDisplay g_displayMode;
 CMD_EXT *msgextInCtrl;
 #define Coll_Save 0 //   1:quit coll is to save  cross  or  0:using save funtion to cross axis
 #define FrColl_Change 1 //0:frcoll v1.00 1:frcoll v1.01     //ver1.01 is using 
@@ -257,36 +264,6 @@ void app_ctrl_setMtdSelect(CMD_EXT * pInCmd)
 	}
 	return ;
 }
-
-void app_ctrl_setMtdRigionStat(CMD_EXT * pInCmd)
-{
-	if(msgextInCtrl==NULL)
-		return ;
-
-	CMD_EXT *pIStuts = msgextInCtrl;
-	if (pIStuts->MtdSetRigion != pInCmd->MtdSetRigion)
-	{
-		pIStuts->MtdSetRigion = pInCmd->MtdSetRigion;
-		MSGDRIV_send(MSGID_EXT_MVDETECT_SETRIGIONSTAT, 0);
-	}
-	return;
-}
-
-void app_ctrl_setMtdRigion(CMD_EXT * pInCmd)
-{
-	//printf("app_ctrl_setMtdRigion start, button=%d,state=%d,x,y(%d,%d)\n", pInCmd->Mtdmouseclick.button, pInCmd->Mtdmouseclick.state, pInCmd->Mtdmouseclick.x, pInCmd->Mtdmouseclick.y);
-	if(msgextInCtrl==NULL)
-		return ;
-
-	CMD_EXT *pIStuts = msgextInCtrl;
-	memcpy(&pIStuts->Mtdmouseclick, &pInCmd->Mtdmouseclick, sizeof(pIStuts->Mtdmouseclick));
-	if (pIStuts->MtdSetRigion)
-	{
-		MSGDRIV_send(MSGID_EXT_MVDETECT_SETRIGION, 0);
-	}
-	return;
-}
-
 #endif
 
 unsigned char app_ctrl_getMtdStat()
@@ -607,8 +584,27 @@ void app_ctrl_enter()
 	}
 	else if(submenu_carli == pIStuts->MenuStat)
 	{
-		if(2 == pIStuts->menuarray[submenu_carli].pointer)
+		if(2 == pIStuts->menuarray[submenu_carli].pointer) {
 			app_ctrl_setMenuStat(mainmenu2);
+			g_displayMode = MENU_MAIN_VIEW;
+			showDetectCorners = false;
+		}
+		else if(1 == pIStuts->menuarray[submenu_carli].pointer) {
+			g_displayMode = MENU_CALIBRA_CAP;
+			g_connectAction.CurCalibraCam = CAM_1;
+			showDetectCorners = true;
+			//cout <<"@@@@@@@@@@@@@@@@@@@@@@@@@@ == 1" << endl;
+		}
+		else if(0 == pIStuts->menuarray[submenu_carli].pointer) {
+			g_displayMode = MENU_CALIBRA_CAP;
+			g_connectAction.CurCalibraCam = CAM_0;
+			showDetectCorners = true;
+			//cout <<"@@@@@@@@@@@@@@@@@@@@@@@@@@ == 0" << endl;
+		}
+		else
+		{
+		 }
+		
 	}
 	else if(submenu_gunball == pIStuts->MenuStat)
 	{
@@ -617,14 +613,7 @@ void app_ctrl_enter()
 	}
 	else if(submenu_mtd == pIStuts->MenuStat)
 	{
-		if(0 == pIStuts->menuarray[submenu_mtd].pointer)
-		{
-			CMD_EXT tmpCmd = {0};
-			tmpCmd.MtdSetRigion = !pIStuts->MtdSetRigion;
-			app_ctrl_setMtdRigionStat(&tmpCmd);
-		}
-		
-		else if(6 == pIStuts->menuarray[submenu_mtd].pointer)
+		if(6 == pIStuts->menuarray[submenu_mtd].pointer)
 			app_ctrl_setMenuStat(mainmenu2);
 	}
 	else if(submenu_setimg == pIStuts->MenuStat)

@@ -10,6 +10,9 @@
 #include <vector>
 using namespace vmath;
 
+extern UI_CONNECT_ACTION g_connectAction;
+bool showDetectCorners = false;
+
 extern GB_WorkMode g_workMode;
 extern GB_MENU run_Mode;
 extern CMD_EXT *msgextInCtrl;
@@ -400,10 +403,6 @@ CVideoProcess::CVideoProcess()
 	detectNum = 10;
 	maxsize = 50000;
 	minsize = 1000;
-	setrigion_flagv20 = mtdcnt = 0;	
-	memset(&mtdrigionv20, 0, sizeof(mtdrigionv20));
-	memset(grid19x10, 0, sizeof(grid19x10));
-	memset(grid19x10_bak, 0, sizeof(grid19x10_bak));
 #endif
 
 	m_curChId = video_gaoqing ;
@@ -623,7 +622,7 @@ int CVideoProcess::in_gun_area(int x, int y)
 			else
 				return 0;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			if(((x > 0 && x < 1440) && (y > 0 && y < 1080)) ||((x > 1440 && x < 1920) && (y > 0 && y < 810)))
 				return 1;
 			else
@@ -659,7 +658,7 @@ int CVideoProcess::in_ball_area(int x, int y)
 			else
 				return 0;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			if((x > 1440 && x < 1920) && (y > 810 && y < 1080))
 				return 1;
 			else
@@ -692,7 +691,7 @@ mouserect CVideoProcess::map2preview(mouserect rectcur)
 		case PREVIEW_MODE:
 			return rectcur;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			return mappip2preview(rectcur);
 			break;
 		case SIDE_BY_SIDE:
@@ -824,7 +823,7 @@ mouserect CVideoProcess::mapfullscreen2gun(mouserect rectcur)
 			rectgun.w = 960;
 			rectgun.h = 540;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			rectgun.x = 0;
 			rectgun.y = 0;
 			rectgun.w = 1920;
@@ -869,7 +868,7 @@ mouserect CVideoProcess::mapgun2fullscreen(mouserect rectcur)
 			rectgun.w = 960;
 			rectgun.h = 540;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			rectgun.x = 0;
 			rectgun.y = 0;
 			rectgun.w = 1920;
@@ -912,7 +911,7 @@ int CVideoProcess::mapgun2fullscreen_point(int *x, int *y)
 			rectgun.w = 960;
 			rectgun.h = 540;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			rectgun.x = 0;
 			rectgun.y = 0;
 			rectgun.w = 1920;
@@ -1007,15 +1006,9 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
 	unsigned int curId;
 	int Critical_Point;
-	
-	if(pThis->setrigion_flagv20)
-	{
-		pThis->mouse_eventv20(button, state, x, y);
-		return;
-	}
-	
-	if(pThis->m_display.g_CurDisplayMode == PIC_IN_PIC) {
-		curId = 0;	
+
+	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW) {
+		curId = 1;	
 	}else{
 		curId = pThis->m_curChId;
 	}
@@ -1236,7 +1229,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 							case SIDE_BY_SIDE:
 								Critical_Point = 960;
 							break;
-							case PIC_IN_PIC:
+							case MAIN_VIEW:
 								Critical_Point = 1440;
 								break;
 							case LEFT_BALL_RIGHT_GUN:
@@ -1248,7 +1241,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					#endif
 					/********************************************************************************************************************/	
 					#if 0
-						if( pThis->m_display.g_CurDisplayMode != PIC_IN_PIC){
+						if( pThis->m_display.g_CurDisplayMode != MAIN_VIEW){
 							if(x > Critical_Point) {							
 								pThis->reMapCoords(x,y,true);	// Auto Link workMode							
 							}
@@ -1265,12 +1258,12 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 						}
 					#endif
 						if(g_workMode == HANDLE_LINK_MODE ) {
-							if(x >960) {							
+							//if(x >960) {							
 								pThis->reMapCoords(x,y,true);								
-							}
+							//}
 						}
 						else if(g_workMode == ONLY_BALL_MODE) {
-							if(x <960) {							
+							if(x>480 && x <1440) {							
 								pThis->moveToDest();					
 							}
 						}
@@ -1321,8 +1314,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
 {
 	unsigned int curId;
-	if(pThis->m_display.g_CurDisplayMode == PIC_IN_PIC)
-		curId = 0;
+	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW)
+		curId = 1;
 	else
 		curId = pThis->m_curChId;
 
@@ -1344,23 +1337,6 @@ void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
 		pThis->pol_tempY = floaty;
 		pThis->pol_draw = 1;
 	}
-}
-
-void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
-{
-	printf("mousemotion_event start, x,y(%d,%d)\n", xMouse, yMouse);
-}
-
-
-void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
-{
-	//printf("mouse_eventv20 start, button=%d,state=%d,x,y(%d,%d)\n", button, state, x, y);
-	CMD_EXT tmpCmd = {0};
-	tmpCmd.Mtdmouseclick.button = button;
-	tmpCmd.Mtdmouseclick.state = state;
-	tmpCmd.Mtdmouseclick.x = x;
-	tmpCmd.Mtdmouseclick.y = y;
-	app_ctrl_setMtdRigion(&tmpCmd);
 }
 
 void CVideoProcess::menu_event(int value)
@@ -1454,7 +1430,6 @@ int CVideoProcess::init()
 	dsInit.menufunc = menu_event;
 	dsInit.mousefunc = mouse_event;
 	dsInit.passivemotionfunc = mousemove_event;
-	dsInit.motionfunc = mousemotion_event;
 	dsInit.setrigion = processrigionMenu;
 	dsInit.rigionsel = processrigionselMenu;
 	dsInit.rigionpolygon = processrigionpolygonMenu;
@@ -1920,7 +1895,7 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 #endif
 
 /**********************************************************************/
-	if(chId == 0 && showDetectCorners == true){
+	if( (chId == g_connectAction.CurCalibraCam) && (showDetectCorners == true) ){
 		if(cloneOneFrame == true){
 			cloneOneFrame = false;
 			//m_camCalibra->cloneCornerSrcImgae(frame);

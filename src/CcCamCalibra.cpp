@@ -19,6 +19,7 @@ OSA_SemHndl g_detectCorners;
 extern SingletonSysParam* g_sysParam;
 extern bool showDetectCorners ;
 extern volatile bool rendeFlag;
+extern bool saveOnePicture;
 Mat g_CornerImage;
 extern bool g_bSubmitTexture;
 bool captureOnePicture = false;
@@ -1104,7 +1105,7 @@ bool DetectCorners::chessBoardCornersDetect(Mat image,Mat &cornerImage,int &succ
 		cornerImage.copyTo(g_CornerImage); // clone the detected image to global Mat "g_CornerImage" for submit textures
 		g_bSubmitTexture = true;
 		//captureOnePicture = true;
-		captureCount += 1;		
+				
 	}	
     return true;
 }
@@ -1123,13 +1124,17 @@ int DetectCorners::Run()
 			//PrintMs();
 		bool ret=	chessBoardCornersDetect( corner_frame, cornerImage, successImageNum );
 		if(ret){
-			int nsize = imageListForCalibra.size();
-			if(nsize<50){
-//				m_cutIMG[nsize] = cv::Mat(corner_frame.rows,corner_frame.cols,CV_8UC3);
-//				cvtColor(corner_frame,m_cutIMG[nsize],CV_YUV2BGR_YUYV);
-				corner_frame.copyTo(m_cutIMG[nsize]);
-				imageListForCalibra.push_back(m_cutIMG[nsize]);				
-				SetCutDisplay(nsize, true);
+			if(saveOnePicture == true ) {
+				saveOnePicture = false;
+				int nsize = imageListForCalibra.size();
+				if(nsize<50){
+	//				m_cutIMG[nsize] = cv::Mat(corner_frame.rows,corner_frame.cols,CV_8UC3);
+	//				cvtColor(corner_frame,m_cutIMG[nsize],CV_YUV2BGR_YUYV);
+					corner_frame.copyTo(m_cutIMG[nsize]);
+					imageListForCalibra.push_back(m_cutIMG[nsize]);
+					captureCount += 1;
+					SetCutDisplay(nsize, true);
+				}
 			}
 			
 		}

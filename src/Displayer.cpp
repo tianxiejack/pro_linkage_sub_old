@@ -3,7 +3,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.hpp>
 #include <opencv2/opencv.hpp>
-
+#include <stdlib.h>
 //#include <gl.h>
 #include <glew.h>
 #include <glut.h>
@@ -31,7 +31,8 @@
 #include "freetype.hpp"
 using namespace CELL;
 
-
+extern int captureCount;
+UI_CONNECT_ACTION g_connectAction;
 extern vector<Mat> imageListForCalibra;
 bool SubImage = true;
 bool g_bSubmitTexture = false;
@@ -85,7 +86,7 @@ unsigned int textSelect[20]={0};
 unsigned int textSelect2[20]={0};
 void TextDown(UIObject *obj)
 {
-	g_displayMode = MENU_PIP;
+	g_displayMode = MENU_MAIN_VIEW;
 	memset(textSelect, 0, sizeof(textSelect));
 	textSelect[0] = 1;
 	
@@ -294,7 +295,7 @@ osdbuffer_t disOsdBuf[32]={0};
 //char disOsdBuf[32][128] = {0};
 osdbuffer_t disOsdBufbak[32] = {0};
 wchar_t disOsd[32][33];
-
+wchar_t capNum[32];
 void CDisplayer::linkage_init()
 {
 	displayMode = PREVIEW_MODE;
@@ -360,6 +361,9 @@ CDisplayer::CDisplayer()
 	g_sysParam->setGunPosition(SingletonSysParam::RU);
 	savePic_once = false;
 	showDetectCorners  = false;
+	
+	g_connectAction.CurCalibraCam = CAM_0;
+	
 /************************************Add 20181219**************************/
 	for(i=0; i<DS_DC_CNT;	i++){
 		pp[i] = 0;
@@ -367,9 +371,7 @@ CDisplayer::CDisplayer()
 	}
 	m_initPrm.disSched =33;// 3.5;
 /*************************************************************************/
-
 	_bCornerDetect = false;
-
 /************************************************************************/
 	run_Mode._bRButton = false;
 	run_Mode.showSubMenu = false;
@@ -720,7 +722,7 @@ void CDisplayer::processDMMenu(int value)
 	//printf("%s start, value=%d\n", __FUNCTION__, value);
 	switch(value) {
 		case 0:		
-			g_displayMode = MENU_PIP;		
+			g_displayMode = MENU_MAIN_VIEW;		
 			break;
 		case 1:
 			g_displayMode = MENU_SBS;		
@@ -1435,10 +1437,8 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 	//mouse event:
 	if(m_initPrm.mousefunc != NULL)
 		glutMouseFunc(m_initPrm.mousefunc);//GLUT_LEFT_BUTTON GLUT_MIDDLE_BUTTON GLUT_RIGHT_BUTTON; GLUT_DOWN GLUT_UP
-	if(m_initPrm.passivemotionfunc != NULL)//drag mouse when button is unpressed
+	if(m_initPrm.passivemotionfunc != NULL)
 		glutPassiveMotionFunc(m_initPrm.passivemotionfunc);
-	if(m_initPrm.motionfunc != NULL)//drag mouse when button is pressed
-		glutMotionFunc(m_initPrm.motionfunc);
 	
 	if(m_initPrm.menufunc != NULL)
 	{
@@ -1629,7 +1629,7 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 		glutAddSubMenu("Auto Linkage Enable",sub_menu);
 		glutAddSubMenu("Display Mode",sub_menu2);
 		glutAddSubMenu("Setup",sub_menu3);
-		//glutAttachMenu(GLUT_RIGHT_BUTTON);
+		glutAttachMenu(GLUT_RIGHT_BUTTON);
 	}
 
 	if(m_initPrm.visibilityfunc != NULL)
@@ -3011,8 +3011,8 @@ void CDisplayer::linkageSwitchMode(void)
 	int winId, chId;
 	unsigned int mask = 0;
 	switch( g_displayMode ){
-		case MENU_PIP:
-			displayMode = PIC_IN_PIC;
+		case MENU_MAIN_VIEW:
+			displayMode = MAIN_VIEW;
 			break;
 		case MENU_SBS:
 			displayMode = PREVIEW_MODE;
@@ -3043,13 +3043,14 @@ void CDisplayer::linkageSwitchMode(void)
 				g_CurDisplayMode = PREVIEW_MODE;		
 			break;
 
-		case PIC_IN_PIC:	
+		case MAIN_VIEW:	
 		
 			RenderVideoOnOrthoView(VIDEO_1,vdisWH[0][0]/4,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);
-			RenderVideoOnOrthoView(VIDEO_0, 0,0,vdisWH[0][0],vdisWH[0][1]/2);			
+			RenderVideoOnOrthoView(VIDEO_0, 0,0,vdisWH[0][0],vdisWH[0][1]/2);
+			
 	
-			if( g_CurDisplayMode != PIC_IN_PIC)
-				g_CurDisplayMode = PIC_IN_PIC;			
+			if( g_CurDisplayMode != MAIN_VIEW)
+				g_CurDisplayMode = MAIN_VIEW;			
 			break;
 		case GUN_FULL_SCREEN:				
 			RenderVideoOnOrthoView(VIDEO_0, 0,0,vdisWH[0][0],vdisWH[0][1]);
@@ -3061,12 +3062,14 @@ void CDisplayer::linkageSwitchMode(void)
 			if( g_CurDisplayMode != BALL_FULL_SCREEN)
 				g_CurDisplayMode = BALL_FULL_SCREEN;			
 			break;	
-		case CALIBRATE_CAPTURE:		
+		case CALIBRATE_CAPTURE:
+		{
 			RenderDetectCornerView(0,810,480,270);
-			RenderVideoOnOrthoView(captureBMP_channel, 480,270,1440,810);
+			RenderVideoOnOrthoView(g_connectAction.CurCalibraCam/*captureBMP_channel*/, 480,270,1440,810);
+
 			if( g_CurDisplayMode != CALIBRATE_CAPTURE)
 				g_CurDisplayMode = CALIBRATE_CAPTURE;	
-		
+		}
 			break;
 		case CALIBRATE_RESULT:
 			//RenderVideoOnOrthoView(VIDEO_0, 480,540,960,540);
@@ -3175,18 +3178,22 @@ ArrayText::iterator itr2 = run_Mode.workMode.begin();
 		   	}
 	   }	
 #endif
-	switch(g_workMode){
-		case HANDLE_LINK_MODE:
-			chinese_osd(500,600,L"手动联动模式",1,4,255,0,0,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-			break;
-		case AUTO_LINK_MODE:
-			chinese_osd(500,600,L"自动联动模式",1,4,255,0,0,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-			break;
-		case ONLY_BALL_MODE:
-			chinese_osd(500,600,L"单控球机模式",1,4,255,0,0,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-			break;
-		default:
-			break;	
+/******************************************************************************************************************************/
+	if(displayMode == MAIN_VIEW){
+		chinese_osd(50,150,L"工作模式：",1,4,100,180,200,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+		switch(g_workMode){
+			case HANDLE_LINK_MODE:
+				chinese_osd(80,200,L"手动联动模式",1,4,100,180,200,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+				break;
+			case AUTO_LINK_MODE:
+				chinese_osd(80,200,L"自动联动模式",1,4,100,180,200,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+				break;
+			case ONLY_BALL_MODE:
+				chinese_osd(80,200,L"单控球机模式",1,4,100,180,200,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+				break;
+			default:
+				break;	
+		}
 	}
 
 /******************************************************************************************************************************/

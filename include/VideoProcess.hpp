@@ -14,15 +14,6 @@
 
 #include "CcCamCalibra.h"
 #define MAX_SUCCESS_IMAGES 160
-#define GRID_CNT_X 19
-#define GRID_CNT_Y 10
-
-typedef struct
-{
-	int state;//1:is clicked,  0:not be clicked
-	int rigionindex;//rigion num
-}grid_node;
-
 typedef struct
 {
 	int x;
@@ -244,10 +235,8 @@ protected:
 	int mapnormal2curchannel_point(float *x, float *y, int w, int h);
 	int map1080p2normal_rect(mouserectf *rect);
 	int mapnormal2curchannel_rect(mouserectf *rect, int w, int h);
-	static void mousemotion_event(GLint xMouse, GLint yMouse);
 	static void mousemove_event(GLint xMouse, GLint yMouse);
 	static void mouse_event(int button, int state, int x, int y);
-	void mouse_eventv20(int button, int state, int x, int y);
 	static void menu_event(int value);
 	static void processrigionMenu(int value);
 	static void processrigionselMenu(int value);
@@ -319,18 +308,6 @@ public:
 		char chooseDetect;
 		int maxsize;
 		int minsize;
-
-		int setrigion_flagv20;
-		struct{
-			int button;
-			int state;
-			int x;
-			int y;
-		} mtdrigionv20;
-
-		grid_node grid19x10[GRID_CNT_X][GRID_CNT_Y];
-		grid_node grid19x10_bak[GRID_CNT_X][GRID_CNT_Y];
-		int mtdcnt;
 #endif
 
 

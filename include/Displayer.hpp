@@ -147,7 +147,6 @@ typedef struct _ds_init_param{
 	void (*autocarli)(int value);
 	void (*closecarli)(int value);
 	void (*passivemotionfunc)(GLint xMouse, GLint yMouse);
-	void (*motionfunc)(GLint xMouse, GLint yMouse);
 	void (*mousefunc)(int button, int state, int x, int y);
 	void (*menufunc)(int value);
 	void (*setrigion)(int value);
@@ -173,7 +172,7 @@ typedef struct _ds_init_param{
 
 	typedef enum _DISPLAYMODE {
 		PREVIEW_MODE = 0,
-		PIC_IN_PIC,
+		MAIN_VIEW,
 		SIDE_BY_SIDE,
 		LEFT_BALL_RIGHT_GUN,
 		GUN_FULL_SCREEN,

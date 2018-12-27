@@ -193,27 +193,36 @@ class SingletonSysParam {
 		};
 		virtual ~SingletonSysParam(){};
 };
+//=================================================================
+#define CAM_0  0
+#define CAM_1  1
 
-
-	typedef enum _MenuDisplay{
-		MENU_PIP=0,
-		MENU_SBS,
-		MENU_GUN,
-		MENU_BALL,
-		MENU_CALIBRA_CAP,
-		MENU_CALIBRA_RESULT,
-
-		MENU_DISPLAY_COUNT
-		
-	}MenuDisplay;
+typedef enum _MenuDisplay{
+	MENU_MAIN_VIEW=0,
+	MENU_SBS,
+	MENU_GUN,
+	MENU_BALL,
+	MENU_CALIBRA_CAP,
+	MENU_CALIBRA_RESULT,
+	MENU_DISPLAY_COUNT		
+}MenuDisplay;
 typedef enum _GB_WorkMode{
-		HANDLE_LINK_MODE =0,
-		AUTO_LINK_MODE,
-		ONLY_BALL_MODE,
-		MODE_COUNT		
-	}GB_WorkMode;
+	HANDLE_LINK_MODE =0,
+	AUTO_LINK_MODE,
+	ONLY_BALL_MODE,
+	MODE_COUNT		
+}GB_WorkMode;
+
+typedef struct _UI_CONNECT_ACTION{
+	
+	int CurCalibraCam;   // gun camera == 0;  ball camera == 1;
 
 
+}UI_CONNECT_ACTION;
+
+
+
+//================================================================
 enum devvideo{
 	video_gaoqing0=0,
 	video_gaoqing,
@@ -246,7 +255,7 @@ typedef struct {
 	int Timedisp_9;
 	bool OSD_text_show;
 	int OSD_text_color;
-	int OSD_text_alpha;0
+	int OSD_text_alpha;
 	int OSD_text_font;
 	int OSD_text_size;
 	bool OSD_draw_show;

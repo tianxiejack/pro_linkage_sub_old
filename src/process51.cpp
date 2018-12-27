@@ -1602,6 +1602,19 @@ osdindex++;	//acqRect
 
 	
 #if __MOVE_DETECT__
+//mtd grid
+	if(setrigion_flagv20)
+	{
+		DrawMtdYellowGrid(1);
+		DrawMtdRedGrid(1);
+	}
+	else
+	{
+		DrawMtdYellowGrid(0);
+		DrawMtdRedGrid(0);
+		//getMtdRigion();
+	}
+
 	osdindex++;
 	{
 		unsigned int mtd_warningbox_Id;
@@ -1624,8 +1637,8 @@ osdindex++;	//acqRect
 				startwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][i].y;
 				endwarnpoly.x = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].x;
 				endwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].y;
-				printf("%s,%d, clear polygon line(%d,%d)-(%d,%d)\n",__FILE__,__LINE__,startwarnpoly.x,startwarnpoly.y,endwarnpoly.x,endwarnpoly.y);
-				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,0,1);
+				//printf("%s,%d, clear polygon line(%d,%d)-(%d,%d)\n",__FILE__,__LINE__,startwarnpoly.x,startwarnpoly.y,endwarnpoly.x,endwarnpoly.y);
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,0,3);
 			}
 
 			cv::Rect tmp;
@@ -1641,7 +1654,7 @@ osdindex++;	//acqRect
 					tmp.y = recttmp.y;
 					tmp.width = recttmp.w;
 					tmp.height = recttmp.h;
-				printf("%s,%d, clear rectx,y,w,h(%d,%d,%d,%d)\n",__FILE__,__LINE__,tmp.x,tmp.y,tmp.width,tmp.height);
+				//printf("%s,%d, clear rectx,y,w,h(%d,%d,%d,%d)\n",__FILE__,__LINE__,tmp.x,tmp.y,tmp.width,tmp.height);
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);
 			}
 			
@@ -1659,8 +1672,8 @@ osdindex++;	//acqRect
 				startwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][i].y;
 				endwarnpoly.x = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].x;
 				endwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].y;
-				printf("%s,%d, draw polygon line(%d,%d)-(%d,%d)\n",__FILE__,__LINE__,startwarnpoly.x,startwarnpoly.y,endwarnpoly.x,endwarnpoly.y);
-				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,3,1);
+				//printf("%s,%d, draw polygon line(%d,%d)-(%d,%d)\n",__FILE__,__LINE__,startwarnpoly.x,startwarnpoly.y,endwarnpoly.x,endwarnpoly.y);
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,5,3);
 			}
 
 			detect_bak = detect_vect;
@@ -1711,7 +1724,7 @@ osdindex++;	//acqRect
 					tmp.y = recttmp.y;
 					tmp.width = recttmp.w;
 					tmp.height = recttmp.h;
-					printf("%s,%d, draw rectx,y,w,h(%d,%d,%d,%d)\n",__FILE__,__LINE__,tmp.x,tmp.y,tmp.width,tmp.height);
+					//printf("%s,%d, draw rectx,y,w,h(%d,%d,%d,%d)\n",__FILE__,__LINE__,tmp.x,tmp.y,tmp.width,tmp.height);
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 			}
 			Osdflag[osdindex]=1;
@@ -1976,17 +1989,6 @@ unsigned int drawpolyRectId ;
 		}
 	}
 
-//mtd grid
-	if(setrigion_flagv20)
-	{
-		DrawMtdYellowGrid(1);
-		DrawMtdRedGrid(1);
-	}
-	else
-	{
-		DrawMtdYellowGrid(0);
-		getMtdRigion();
-	}
 	
 	static unsigned int count = 0;
 	if((count & 1) == 1)
@@ -2067,18 +2069,22 @@ void CProcess::DrawMtdRedGrid(int flag)
 		}
 		
 	memcpy(grid19x10_bak, grid19x10, sizeof(grid19x10_bak));
-	for(int i = 0; i < GRID_CNT_X; i++)
-		for(int j = 0; j < GRID_CNT_Y; j++)
-		{
-			if(grid19x10_bak[i][j].state)
+
+	if(flag)
+	{
+		for(int i = 0; i < GRID_CNT_X; i++)
+			for(int j = 0; j < GRID_CNT_Y; j++)
 			{
-				tmp.x = (i) * interval_w;
-				tmp.y = (j) * interval_h;
-				tmp.width = interval_w;
-				tmp.height = interval_h;
-				rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,255,255),3,8);
+				if(grid19x10_bak[i][j].state)
+				{
+					tmp.x = (i) * interval_w;
+					tmp.y = (j) * interval_h;
+					tmp.width = interval_w;
+					tmp.height = interval_h;
+					rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,255,255),3,8);
+				}
 			}
-		}
+	}
 }
 
 void CProcess::getMtdRigion()
@@ -3928,16 +3934,28 @@ int CProcess::usopencvapi()
 	Mat dstImage = Mat::zeros(mask.size(),CV_8UC1);
 	drawContours(dstImage,contours, -1, Scalar(255,10,10));
 	psize = contours[0].size();
-		
-	std::vector<cv::Point> polyWarnRoi;
-	polyWarnRoi.resize(psize);
-	polyWarnRoi[0] = cv::Point(contours[0][0].x,contours[0][0].y);
-	printf("will set this rigion:\n(%d,%d)\n",polyWarnRoi[0].x,polyWarnRoi[0].y);
+
+	unsigned int curId;
+	if(m_display.g_CurDisplayMode == PIC_IN_PIC) {
+		curId = 0;	
+	}else{
+		curId = m_curChId;
+	}
+	//std::vector<cv::Point> polyWarnRoi;
+	//polyWarnRoi.resize(psize);
+	//polyWarnRoi[0] = cv::Point(contours[0][0].x,contours[0][0].y);
+	//printf("will set this rigion:\n(%d,%d)\n",polyWarnRoi[0].x,polyWarnRoi[0].y);
+	polWarnRect[curId][0].x = contours[0][0].x + minx * interval_w;
+	polWarnRect[curId][0].y = contours[0][0].y + miny * interval_h;
 	for(int i =1; i < psize; i++)
 	{
-		polyWarnRoi[i] = cv::Point(contours[0][psize-i].x,contours[0][psize-i].y);
-		printf("(%d,%d)\n",polyWarnRoi[i].x,polyWarnRoi[i].y);
+		//polyWarnRoi[i] = cv::Point(contours[0][psize-i].x,contours[0][psize-i].y);
+		polWarnRect[curId][i].x = contours[0][psize-i].x + minx * interval_w;
+		polWarnRect[curId][i].y = contours[0][psize-i].y + miny * interval_h;
+		//printf("(%d,%d)\n",polyWarnRoi[i].x,polyWarnRoi[i].y);
 	}
+	polwarn_count[curId] = psize;
+					
 }
 
 int CProcess::cp2pointarray()

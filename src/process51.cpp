@@ -31,7 +31,6 @@ SENDST trkmsg={0};
 extern CamParameters g_camParams;
 Point dest_ballPoint = Point(-100,-100);
 extern SingletonSysParam* g_sysParam;
-extern CMD_Mtd_Frame Mtd_Frame;
 extern GB_WorkMode g_workMode;
 void inputtmp(unsigned char cmdid)
 {
@@ -1663,8 +1662,8 @@ osdindex++;	//cross aim
 			}
 
 			detect_bak = detect_vect;
-			printf("%%%%%%  Mtd_Frame.detectNum  = %d\n",  Mtd_Frame.detectNum);
-			mvIndexHandle(mvList,detect_bak,Mtd_Frame.detectNum);
+			
+			mvIndexHandle(mvList,detect_bak,detectNum);
 	
 			if(forwardflag)
 			{
@@ -2355,16 +2354,18 @@ void CProcess::moveToDest( )
 	static int static_cofx = 6200;
 	static int static_cofy = 6320;
 
-	int point_X , point_Y , offset_x , zoomPos; 
+	int point_X , point_Y , offset_x , offset_y,zoomPos; 
 	int delta_X ;	
 
 	switch(m_display.g_CurDisplayMode) 
 	{
 		case PREVIEW_MODE:
 			offset_x = 0;	
+			offset_y = 0;
 			break;
 		case MAIN_VIEW:
 			offset_x = 480;
+			offset_y = 0;
 			break;
 		/*
 		case SIDE_BY_SIDE:
@@ -2502,7 +2503,7 @@ void CProcess::clickOnBallImage(int x, int y)
 //==========================================================================
 void CProcess::reMapCoords(int x, int y,bool mode)
 {	
-	int point_X , point_Y , offset_x , zoomPos; 
+	int point_X , point_Y , offset_x , offset_y,zoomPos; 
 	int delta_X ;
 	Point opt;
 	
@@ -2515,10 +2516,12 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 		switch(m_display.g_CurDisplayMode) 
 		{
 			case PREVIEW_MODE:	
-				offset_x = 960;			
+				offset_x = 960;
+				offset_y = 0;
 				break;
 			case MAIN_VIEW:
 				offset_x =0;
+				offset_y = 540;
 				break;			
 			default:
 				break;
@@ -2526,6 +2529,9 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	
 		LeftPoint.x -= offset_x;
 		RightPoint.x -=offset_x;
+		LeftPoint.y -= offset_y;
+		RightPoint.y -=offset_y;
+		
 		delta_X = abs(LeftPoint.x - RightPoint.x) ;
 
 		if(mode) {
@@ -2543,8 +2549,8 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 		}
 		else
 		{
-			//point_X = (x - offset_x);
-			//point_Y = y;
+			point_X = (x - offset_x);
+			point_Y = (y- offset_y);
 		}
  	
 		switch(m_display.g_CurDisplayMode) {
@@ -2552,7 +2558,7 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 				opt = Point( point_X*2, point_Y*2 );	
 				break;
 			case MAIN_VIEW:
-				opt = Point( x, y*2 );
+				opt = Point( x, (y-offset_y)*2 );
 				break;		
 			default:
 				break;

@@ -36,7 +36,6 @@ vector<Mat> imageListForCalibra;
 extern bool showDetectCorners;
 extern OSA_SemHndl g_detectCorners;
 extern volatile bool cloneOneFrame;
-extern CMD_Mtd_Frame Mtd_Frame;
 extern bool captureOnePicture;
 extern int captureCount ;
 
@@ -293,11 +292,11 @@ void CVideoProcess::main_proc_func()
 		#if __MOVE_DETECT__
 			if(m_pMovDetector != NULL)
 			{
-				m_pMovDetector->setFrame(frame_gray, 0, Mtd_Frame.detectSpeed, Mtd_Frame.tmpMinPixel, Mtd_Frame.tmpMaxPixel, Mtd_Frame.sensitivityThreshold);
+				m_pMovDetector->setFrame(frame_gray,0,2,minsize,maxsize,16);
 			}
 		#endif
 		}
-
+		
 		OnProcess(chId, frame);
 		framecount++;
 
@@ -398,6 +397,12 @@ CVideoProcess::CVideoProcess()
 
 #if __MMT__
 	memset(m_tgtBox, 0, sizeof(TARGETBOX)*MAX_TARGET_NUMBER);
+#endif
+
+#if __MOVE_DETECT__
+	detectNum = 10;
+	maxsize = 50000;
+	minsize = 1000;
 #endif
 
 	m_curChId = video_gaoqing ;
@@ -1253,12 +1258,12 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 						}
 					#endif
 						if(g_workMode == HANDLE_LINK_MODE ) {
-							//if(x >960) {							
+							if(y > 540) {							
 								pThis->reMapCoords(x,y,true);								
-							//}
+							}
 						}
 						else if(g_workMode == ONLY_BALL_MODE) {
-							if(x>480 && x <1440) {							
+							if(x>480 && x <1440 && y<540) {							
 								pThis->moveToDest();					
 							}
 						}
@@ -1367,25 +1372,25 @@ void CVideoProcess::processrigionpolygonMenu(int value)
 void CVideoProcess::processmaxnumMenu(int value)
 {
 	if(0 == value)
-		Mtd_Frame.detectNum = 5;
+		pThis->detectNum = 5;
 	else if(1 == value)
-		Mtd_Frame.detectNum =10;
+		pThis->detectNum = 10;
 }
 
 void CVideoProcess::processmaxtargetsizeMenu(int value)
 {
 	if(0 == value)
-		Mtd_Frame.tmpMaxPixel = 40000;
+		pThis->maxsize= 40000;
 	else if(1 == value)
-		Mtd_Frame.tmpMaxPixel= 50000;
+		pThis->maxsize= 50000;
 }
 
 void CVideoProcess::processmintargetsizeMenu(int value)
 {
 	if(0 == value)
-		Mtd_Frame.tmpMinPixel = 100;
+		pThis->minsize= 100;
 	else if(1 == value)
-		Mtd_Frame.tmpMinPixel = 1000;
+		pThis->minsize= 1000;
 }
 #endif
 void CVideoProcess::keyboard_event(unsigned char key, int x, int y)

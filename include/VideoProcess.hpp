@@ -304,7 +304,10 @@ public:
 		std::vector<TRK_RECT_INFO> detect_vect;
 		std::vector<TRK_RECT_INFO> detect_bak;
 		std::vector<TRK_RECT_INFO> mvList;
+		int detectNum;
 		char chooseDetect;
+		int maxsize;
+		int minsize;
 #endif
 
 

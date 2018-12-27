@@ -26,9 +26,11 @@ extern vector<Mat> imageListForCalibra;
 OSA_SemHndl g_linkage_getPos;
 extern GB_MENU run_Mode;
 SENDST trkmsg={0};
-	extern CamParameters g_camParams;
-	Point dest_ballPoint = Point(-100,-100);
-	extern SingletonSysParam* g_sysParam;
+extern CamParameters g_camParams;
+Point dest_ballPoint = Point(-100,-100);
+extern SingletonSysParam* g_sysParam;
+extern CMD_Mtd_Frame Mtd_Frame;
+
 void inputtmp(unsigned char cmdid)
 {
 	plat->OnKeyDwn(cmdid);
@@ -1658,8 +1660,8 @@ osdindex++;	//acqRect
 			}
 
 			detect_bak = detect_vect;
-			
-			mvIndexHandle(mvList,detect_bak,detectNum);
+			printf("%%%%%%  Mtd_Frame.detectNum  = %d\n",  Mtd_Frame.detectNum);
+			mvIndexHandle(mvList,detect_bak,Mtd_Frame.detectNum);
 	
 			if(forwardflag)
 			{

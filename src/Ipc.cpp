@@ -21,6 +21,7 @@ extern UTCTRKSTATUS gConfig_Alg_param;
 int IrisAndFocusAndExit = 0;
 CMD_triangle cmd_triangle;
 OSD_param m_osd;
+CMD_Mtd_Frame Mtd_Frame;
 int ipc_loop = 1;
 
 extern void inputtmp(unsigned char cmdid);
@@ -145,7 +146,6 @@ void* recv_msg(SENDST *RS422)
 	CMD_ALGOSDRECT Ralgosdrect;
 	CMD_IPCRESOLUTION Rresolution;
 	LinkagePos posOfLinkage;
-	CMD_Mtd_Frame RmtdFrame;
 
 	//OSD_param* pOsd = NULL;
 	//pOsd = &m_osd;
@@ -174,14 +174,20 @@ void* recv_msg(SENDST *RS422)
 	{	
 
 	case mtdFrame:
-		memcpy(&RmtdFrame, RS422->param, sizeof(RmtdFrame));
-		printf("RmtdFrame->detectArea = %d \n", RmtdFrame.detectArea);
-		printf("RmtdFrame->detectNum = %d\n", RmtdFrame.detectNum);
-		printf("RmtdFrame->detectSpeed = %d\n", RmtdFrame.detectSpeed);
-		printf("RmtdFrame->sensitivityThreshold = %d\n", RmtdFrame.sensitivityThreshold);
-		printf("RmtdFrame->tmpMaxPixel = %d\n", RmtdFrame.tmpMaxPixel);
-		printf("RmtdFrame->tmpMinPixel = %d\n", RmtdFrame.tmpMinPixel);
-		printf("RmtdFrame->tmpUpdateSpeed = %d\n", RmtdFrame.tmpUpdateSpeed);
+		memcpy(&Mtd_Frame, RS422->param, sizeof(Mtd_Frame));
+		printf("RmtdFrame->detectNum = %d\n", Mtd_Frame.detectNum);
+		printf("RmtdFrame->detectSpeed = %d\n", Mtd_Frame.detectSpeed);
+		printf("RmtdFrame->sensitivityThreshold = %d\n", Mtd_Frame.sensitivityThreshold);
+		printf("RmtdFrame->tmpMaxPixel = %d\n", Mtd_Frame.tmpMaxPixel);
+		printf("RmtdFrame->tmpMinPixel = %d\n", Mtd_Frame.tmpMinPixel);
+		printf("RmtdFrame->tmpUpdateSpeed = %d\n", Mtd_Frame.tmpUpdateSpeed);
+		printf("RmtdFrame->detectArea_X = %d\n", Mtd_Frame.detectArea_X);
+		printf("RmtdFrame->detectArea_Y = %d\n", Mtd_Frame.detectArea_Y);
+		printf("RmtdFrame->detectArea_high = %d\n", Mtd_Frame.detectArea_high);
+		printf("RmtdFrame->detectArea_wide = %d\n", Mtd_Frame.detectArea_wide);
+		printf("RmtdFrame->priority = %d\n", Mtd_Frame.priority);
+		printf("RmtdFrame->alarm_delay = %d\n", Mtd_Frame.alarm_delay);
+
 		break;
 
 		case BoresightPos:

@@ -32,7 +32,7 @@ vector<Mat> imageListForCalibra;
 extern bool showDetectCorners;
 extern OSA_SemHndl g_detectCorners;
 extern volatile bool cloneOneFrame;
-
+extern CMD_Mtd_Frame Mtd_Frame;
 
 
 int CVideoProcess::MAIN_threadCreate(void)
@@ -287,11 +287,11 @@ void CVideoProcess::main_proc_func()
 		#if __MOVE_DETECT__
 			if(m_pMovDetector != NULL)
 			{
-				m_pMovDetector->setFrame(frame_gray,0,2,minsize,maxsize,16);
+				m_pMovDetector->setFrame(frame_gray, 0, Mtd_Frame.detectSpeed, Mtd_Frame.tmpMinPixel, Mtd_Frame.tmpMaxPixel, Mtd_Frame.sensitivityThreshold);
 			}
 		#endif
 		}
-		
+
 		OnProcess(chId, frame);
 		framecount++;
 
@@ -392,12 +392,6 @@ CVideoProcess::CVideoProcess()
 
 #if __MMT__
 	memset(m_tgtBox, 0, sizeof(TARGETBOX)*MAX_TARGET_NUMBER);
-#endif
-
-#if __MOVE_DETECT__
-	detectNum = 10;
-	maxsize = 50000;
-	minsize = 1000;
 #endif
 
 	m_curChId = video_gaoqing ;
@@ -1328,25 +1322,25 @@ void CVideoProcess::processrigionpolygonMenu(int value)
 void CVideoProcess::processmaxnumMenu(int value)
 {
 	if(0 == value)
-		pThis->detectNum = 5;
+		Mtd_Frame.detectNum = 5;
 	else if(1 == value)
-		pThis->detectNum = 10;
+		Mtd_Frame.detectNum =10;
 }
 
 void CVideoProcess::processmaxtargetsizeMenu(int value)
 {
 	if(0 == value)
-		pThis->maxsize= 40000;
+		Mtd_Frame.tmpMaxPixel = 40000;
 	else if(1 == value)
-		pThis->maxsize= 50000;
+		Mtd_Frame.tmpMaxPixel= 50000;
 }
 
 void CVideoProcess::processmintargetsizeMenu(int value)
 {
 	if(0 == value)
-		pThis->minsize= 100;
+		Mtd_Frame.tmpMinPixel = 100;
 	else if(1 == value)
-		pThis->minsize= 1000;
+		Mtd_Frame.tmpMinPixel = 1000;
 }
 #endif
 void CVideoProcess::keyboard_event(unsigned char key, int x, int y)

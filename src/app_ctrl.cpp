@@ -617,7 +617,14 @@ void app_ctrl_enter()
 	}
 	else if(submenu_mtd == pIStuts->MenuStat)
 	{
-		if(6 == pIStuts->menuarray[submenu_mtd].pointer)
+		if(0 == pIStuts->menuarray[submenu_mtd].pointer)
+		{
+			CMD_EXT tmpCmd = {0};
+			tmpCmd.MtdSetRigion = !pIStuts->MtdSetRigion;
+			app_ctrl_setMtdRigionStat(&tmpCmd);
+		}
+		
+		else if(6 == pIStuts->menuarray[submenu_mtd].pointer)
 			app_ctrl_setMenuStat(mainmenu2);
 	}
 	else if(submenu_setimg == pIStuts->MenuStat)

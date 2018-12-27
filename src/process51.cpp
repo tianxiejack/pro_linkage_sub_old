@@ -1637,7 +1637,6 @@ osdindex++;	//acqRect
 				startwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][i].y;
 				endwarnpoly.x = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].x;
 				endwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].y;
-				//printf("%s,%d, clear polygon line(%d,%d)-(%d,%d)\n",__FILE__,__LINE__,startwarnpoly.x,startwarnpoly.y,endwarnpoly.x,endwarnpoly.y);
 				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,0,3);
 			}
 
@@ -1654,7 +1653,6 @@ osdindex++;	//acqRect
 					tmp.y = recttmp.y;
 					tmp.width = recttmp.w;
 					tmp.height = recttmp.h;
-				//printf("%s,%d, clear rectx,y,w,h(%d,%d,%d,%d)\n",__FILE__,__LINE__,tmp.x,tmp.y,tmp.width,tmp.height);
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);
 			}
 			
@@ -1672,7 +1670,6 @@ osdindex++;	//acqRect
 				startwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][i].y;
 				endwarnpoly.x = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].x;
 				endwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].y;
-				//printf("%s,%d, draw polygon line(%d,%d)-(%d,%d)\n",__FILE__,__LINE__,startwarnpoly.x,startwarnpoly.y,endwarnpoly.x,endwarnpoly.y);
 				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,5,3);
 			}
 
@@ -1724,7 +1721,6 @@ osdindex++;	//acqRect
 					tmp.y = recttmp.y;
 					tmp.width = recttmp.w;
 					tmp.height = recttmp.h;
-					//printf("%s,%d, draw rectx,y,w,h(%d,%d,%d,%d)\n",__FILE__,__LINE__,tmp.x,tmp.y,tmp.width,tmp.height);
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 			}
 			Osdflag[osdindex]=1;
@@ -2856,6 +2852,15 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			imageListForCalibra.clear();
 			captureCount = 0;
 			break;
+		case 12:
+			app_ctrl_setMenu();
+			break;
+		case 101:
+			app_ctrl_upMenu();
+			break;
+		case 103:
+			app_ctrl_downMenu();
+			break;
 	#if 0
 		case SPECIAL_KEY_RIGHT:
 			
@@ -2934,11 +2939,6 @@ void CProcess::OnKeyDwn(unsigned char key)
 	if (key == 'f' || key == 'F')
 	{
 		backflag = true;
-	}
-	if (key == 'g' || key == 'G')
-	{
-		tmpCmd.MtdSetRigion = !pIStuts->MtdSetRigion;
-		app_ctrl_setMtdRigionStat(&tmpCmd);
 	}
 
 	if (key == 'k' || key == 'K')
@@ -3825,8 +3825,6 @@ int CProcess::updateredgrid()
 
 int CProcess::updatemtdrigion()
 {
-	printf("%s,%d, start\n",__FILE__,__LINE__);
-
 	int init_merge = 0;
 	int no_merge = 0;
 	int int_cnt = 0;
@@ -3909,10 +3907,8 @@ int CProcess::usopencvapi()
 	int tmph = maxy-miny + 1;
 	int matw = tmpw*interval_w;
 	int math = tmph*interval_h;
-	printf("%s,%d,matw,h(%d,%d)\n",__FILE__,__LINE__,matw,math);
 
 	Mat mask = Mat::zeros(math, matw, CV_8UC1);
-	//Mat mask(math, matw, CV_8UC1);
 	Rect rect;
 
 	for(int i = 0; i < GRID_CNT_X; i++)
@@ -3924,7 +3920,6 @@ int CProcess::usopencvapi()
 				rect.y = (j-miny)*interval_h;
 				rect.width = interval_w;
 				rect.height = interval_h;
-				printf("%s,%d,rect x,y,w,h(%d,%d,%d,%d)\n",__FILE__,__LINE__,rect.x,rect.y,rect.width,rect.height);
 				mask(rect).setTo(255);
 			}
 		}
@@ -3941,20 +3936,42 @@ int CProcess::usopencvapi()
 	}else{
 		curId = m_curChId;
 	}
-	//std::vector<cv::Point> polyWarnRoi;
-	//polyWarnRoi.resize(psize);
-	//polyWarnRoi[0] = cv::Point(contours[0][0].x,contours[0][0].y);
-	//printf("will set this rigion:\n(%d,%d)\n",polyWarnRoi[0].x,polyWarnRoi[0].y);
-	polWarnRect[curId][0].x = contours[0][0].x + minx * interval_w;
-	polWarnRect[curId][0].y = contours[0][0].y + miny * interval_h;
+	
+	int setx, sety = 0;
+	float floatx,floaty;
+	std::vector<cv::Point> polyWarnRoi ;
+	polyWarnRoi.resize(psize);		
+
+	floatx = contours[0][0].x + minx * interval_w;
+	floaty = contours[0][0].y + miny * interval_h;
+	map1080p2normal_point(&floatx, &floaty);
+	mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+	setx = floatx;
+	sety = floaty;
+	//pThis->mapgun2fullscreen_point(&setx, &sety);
+	polyWarnRoi[0] = cv::Point(setx, sety);
+	floaty = floaty / 2 + 540;
+	polWarnRect[curId][0].x = floatx;
+	polWarnRect[curId][0].y = floaty;
 	for(int i =1; i < psize; i++)
 	{
-		//polyWarnRoi[i] = cv::Point(contours[0][psize-i].x,contours[0][psize-i].y);
-		polWarnRect[curId][i].x = contours[0][psize-i].x + minx * interval_w;
-		polWarnRect[curId][i].y = contours[0][psize-i].y + miny * interval_h;
-		//printf("(%d,%d)\n",polyWarnRoi[i].x,polyWarnRoi[i].y);
+		floatx = contours[0][psize-i].x + minx * interval_w;
+		floaty = contours[0][psize-i].y + miny * interval_h;
+		map1080p2normal_point(&floatx, &floaty);
+		mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+
+		setx = floatx;
+		sety = floaty;
+		//pThis->mapgun2fullscreen_point(&setx, &sety);
+		polyWarnRoi[i] = cv::Point(setx, sety);
+		
+		floaty = floaty / 2 + 540;
+		polWarnRect[curId][i].x = floatx;
+		polWarnRect[curId][i].y = floaty;
+
 	}
 	polwarn_count[curId] = psize;
+	pThis->m_pMovDetector->setWarningRoi(polyWarnRoi, 0);
 					
 }
 
@@ -4120,7 +4137,6 @@ int CProcess::cp2pointarray()
 				}
 				else
 				{
-					printf("%s,%d, right no grid\n",__FILE__,__LINE__);
 					curd = (curd + 1) % DIR_MAX;
 				}
 
@@ -4140,7 +4156,6 @@ int CProcess::cp2pointarray()
 					}
 					else if(curx == 0)
 					{
-						printf("%s,%d\n",__FILE__,__LINE__);
 						curd = (curd + 1) % DIR_MAX;
 					}
 					else if(gridtmp[gridx][gridy].down)
@@ -4161,7 +4176,6 @@ int CProcess::cp2pointarray()
 				}
 				else
 				{
-					printf("%s,%d, down no grid\n",__FILE__,__LINE__);
 					curd = (curd + 1) % DIR_MAX;
 				}
 				break;
@@ -4197,7 +4211,6 @@ int CProcess::cp2pointarray()
 				}
 				else
 				{
-					printf("%s,%d, left no grid\n",__FILE__,__LINE__);
 					curd = (curd + 1) % DIR_MAX;
 				}
 				break;
@@ -4233,7 +4246,6 @@ int CProcess::cp2pointarray()
 				}
 				else
 				{
-					printf("%s,%d, up no grid\n",__FILE__,__LINE__);
 					curd = (curd + 1) % DIR_MAX;
 				}
 				break;
@@ -4251,7 +4263,6 @@ int CProcess::cp2pointarray()
 
 int CProcess::isborder(int rigionindex, int x, int y)
 {
-	printf("%s,%d, isborder start,(%d,%d,%d)\n",__FILE__,__LINE__, rigionindex, x, y);
 	for(int i = 0; i < GRID_CNT_X; i++)
 		for(int j = 0; j < GRID_CNT_Y; j++)
 		{
@@ -4270,20 +4281,17 @@ int CProcess::isborder(int rigionindex, int x, int y)
 
 int CProcess::createrigion(int rigionindex, int x, int y)
 {
-	printf("%s,%d, create rigion%d start,(%d,%d)\n",__FILE__,__LINE__, rigionindex, x, y);
 	grid19x10[x][y].rigionindex = rigionindex;
 	mtdcnt++;
 }
 
 int CProcess::mergenode(int rigionindex, int x, int y)
 {
-	printf("%s,%d, mergenode start,(%d,%d,%d)\n",__FILE__,__LINE__, rigionindex, x, y);
 	grid19x10[x][y].rigionindex = rigionindex;
 }
 
 int CProcess::mergerigion(int rigionindex_dst, int rigionindex_src)
 {
-	printf("%s,%d, mergenode start,(%d,%d)\n",__FILE__,__LINE__, rigionindex_dst, rigionindex_src);
 	for(int i = 0; i < GRID_CNT_X; i++)
 		for(int j = 0; j < GRID_CNT_Y; j++)
 		{

@@ -9,6 +9,9 @@
 #include <sys/time.h>
 #include "configable.h"
 #include "Ipcctl.h"
+#include <vector>
+#include <iostream>
+using namespace std;
 
 CamParameters g_camParams;
 OSA_SemHndl m_linkage_getPos;
@@ -16,8 +19,15 @@ OSA_SemHndl g_detectCorners;
 extern SingletonSysParam* g_sysParam;
 extern bool showDetectCorners ;
 extern volatile bool rendeFlag;
+extern bool saveOnePicture;
 Mat g_CornerImage;
 extern bool g_bSubmitTexture;
+bool captureOnePicture = false;
+int captureCount = 0;
+extern vector<Mat> imageListForCalibra;
+bool _bCutIMG[100]= {false};
+
+
 CcCamCalibra::CcCamCalibra():scale(0.5),bCal(false),ret1(false),ret2(false),
 	panPos(1024), tiltPos(13657), zoomPos(16),writeParam_flag(false),
 	Set_Handler_Calibra(false),bool_Calibrate(false),start_cloneVideoSrc(false)
@@ -1003,6 +1013,7 @@ void CcCamCalibra::showUndistortImages()
 DetectCorners::DetectCorners()
 {
 	OSA_semCreate(&g_detectCorners, 1, 0);
+	memset(_bCutIMG, 0x00, sizeof(_bCutIMG));
 }
 DetectCorners::~DetectCorners()
 {
@@ -1091,11 +1102,11 @@ bool DetectCorners::chessBoardCornersDetect(Mat image,Mat &cornerImage,int &succ
     {      
         cornerSubPix(imageGray, corners, Size(11, 11), Size(-1, -1), TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
         drawChessboardCorners(cornerImage, pattern_size, corners, patternfound);
-		g_bSubmitTexture = true;		
-	}
-
-	//imshow("Detected Corners Image:", cornerImage);
-	//waitKey(200);
+		cornerImage.copyTo(g_CornerImage); // clone the detected image to global Mat "g_CornerImage" for submit textures
+		g_bSubmitTexture = true;
+		//captureOnePicture = true;
+				
+	}	
     return true;
 }
 int DetectCorners::Run()
@@ -1106,13 +1117,30 @@ int DetectCorners::Run()
 	}
 	else{
 		
-		cvtCornerYuyv2Bgr();
-		if( (showDetectCorners == true) && (corner_frame.empty() == false) ){
+		if( showDetectCorners == true ){
+			cv::Mat cornerImage;
 			cvtCornerYuyv2Bgr();
-			g_CornerImage = corner_frame.clone();
-			PrintMs();
-			chessBoardCornersDetect( corner_frame ,g_CornerImage, successImageNum );
-			PrintMs("chessBoardCornersDetect~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+			cornerImage = corner_frame.clone();
+			//PrintMs();
+		bool ret=	chessBoardCornersDetect( corner_frame, cornerImage, successImageNum );
+		if(ret){
+			if(saveOnePicture == true ) {
+				saveOnePicture = false;
+				int nsize = imageListForCalibra.size();
+				if(nsize<50){
+	//				m_cutIMG[nsize] = cv::Mat(corner_frame.rows,corner_frame.cols,CV_8UC3);
+	//				cvtColor(corner_frame,m_cutIMG[nsize],CV_YUV2BGR_YUYV);
+					corner_frame.copyTo(m_cutIMG[nsize]);
+					imageListForCalibra.push_back(m_cutIMG[nsize]);
+					captureCount += 1;
+					SetCutDisplay(nsize, true);
+				}
+			}
+			
+		}
+
+		
+			//PrintMs("chessBoardCornersDetect~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 		}
 	}
 

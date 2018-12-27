@@ -14,7 +14,9 @@
 #include <stdlib.h>
 #include <time.h>
 
-bool showDetectCorners = false;
+extern bool showDetectCorners;
+bool saveOnePicture = false;
+extern int captureCount;
 OSDSTATUS gConfig_Osd_param = {0};
 UTCTRKSTATUS gConfig_Alg_param = {0};
 extern int ScalerLarge,ScalerMid,ScalerSmall;
@@ -30,7 +32,7 @@ extern CamParameters g_camParams;
 Point dest_ballPoint = Point(-100,-100);
 extern SingletonSysParam* g_sysParam;
 extern CMD_Mtd_Frame Mtd_Frame;
-
+extern GB_WorkMode g_workMode;
 void inputtmp(unsigned char cmdid)
 {
 	plat->OnKeyDwn(cmdid);
@@ -52,7 +54,7 @@ void getMtdxy(int *x,int *y,int *w,int *h)
 }
 #endif
 
-CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6200),m_cofy(6320)
+CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6200),m_cofy(6320),m_bak_count(0)
 {
 	memset(rcTrackBak, 0, sizeof(rcTrackBak));
 	memset(tgBak, 0, sizeof(tgBak));
@@ -62,6 +64,7 @@ CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16
 	m_bCast=false;
 	rememflag=false;
 	rememtime=0;
+	m_rectSelectPic = Rect(0,540,192,54);
 	// default cmd value
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
@@ -1579,7 +1582,7 @@ osdindex++;	//cross aim
 	}
 
 
-osdindex++;	//acqRect
+	osdindex++;	//acqRect
 	{
 		if(changesensorCnt){
 			recIn = acqRectBak;
@@ -1605,7 +1608,7 @@ osdindex++;	//acqRect
 		unsigned int mtd_warningbox_Id;
 		Osd_cvPoint startwarnpoly,endwarnpoly;
 		int polwarn_flag = 0;
-		if(m_display.g_CurDisplayMode == PIC_IN_PIC)
+		if(m_display.g_CurDisplayMode == MAIN_VIEW)
 		{			
 				mtd_warningbox_Id = 0;
 		}
@@ -1768,7 +1771,29 @@ osdindex++;	//acqRect
 			}			
 		}	
 	}
-//========================================================
+//=========================Draw A Rectangle On Selected Picture ===============================
+{
+
+	if(0){
+		int leftStartX = (m_display.getSelectPicIndex() % 10)*192;
+		int leftStartY = 540 - (m_display.getSelectPicIndex() /10)*108;
+		m_rectSelectPic = Rect(leftStartX,leftStartY,192,108);
+		rectangle (m_display.m_imgOsd[1],  m_rectSelectPic,cvScalar(0,0,255,255), 1, 8);
+	}
+
+
+	if( (m_display.displayMode == CALIBRATE_CAPTURE) && (showDetectCorners == true)) {		
+		
+		putText(m_display.m_imgOsd[1],Bak_CString,Point(200,400),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
+
+		sprintf(Bak_CString,"Save Picture: %d",captureCount);			
+						
+		putText(m_display.m_imgOsd[1],Bak_CString,Point(200,400),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,255,255,255), 1);
+			
+	}
+	
+}
+//=============================================================================================
 #if 0
 	{
 		recIn.x=480;
@@ -1825,8 +1850,8 @@ osdindex++;	//acqRect
 	unsigned int drawRectId ;
 	if(m_draw)
 	{    
-		if(m_display.g_CurDisplayMode == PIC_IN_PIC){			
-				drawRectId = 0;
+		if(m_display.g_CurDisplayMode == MAIN_VIEW){			
+				drawRectId = 1;
 		}
 		else{
 				drawRectId = extInCtrl->SensorStat;
@@ -1842,7 +1867,7 @@ osdindex++;	//acqRect
 		memcpy(mRectbak, mRect, sizeof(mRectbak));
 		memcpy(m_rectnbak, m_rectn, sizeof(m_rectnbak));
 		int j = 0;
-		
+		#if 0
 		if(0)
 		{
 			for(j = 0; j < m_rectn[drawRectId]; j++)
@@ -1853,6 +1878,7 @@ osdindex++;	//acqRect
 						cvScalar(0,0,255,255), 1, 8);
 			}
 		}
+		#endif
 		
 		if(m_click == 1)
 		{
@@ -1869,7 +1895,7 @@ osdindex++;	//acqRect
 	}
 //polygon mtd area
 unsigned int drawpolyRectId ;   
-	if(m_display.g_CurDisplayMode == PIC_IN_PIC)
+	if(m_display.g_CurDisplayMode == MAIN_VIEW)
 	{			
 		drawpolyRectId = 0;
 	}
@@ -2337,6 +2363,9 @@ void CProcess::moveToDest( )
 		case PREVIEW_MODE:
 			offset_x = 0;	
 			break;
+		case MAIN_VIEW:
+			offset_x = 480;
+			break;
 		/*
 		case SIDE_BY_SIDE:
 			offset_x = 0;	
@@ -2349,9 +2378,8 @@ void CProcess::moveToDest( )
 			RightPoint.x *= 2;
 			LeftPoint.y *=2;
 			RightPoint.y *= 2;
-			break;
-		*/
-		case PIC_IN_PIC:
+			break;		
+		case MAIN_VIEW:
 			if( (g_sysParam->getGunPosition(SingletonSysParam::RU) == 1) &&
 				( g_sysParam->getGunSize(SingletonSysParam::ONE_4) == 1) ) {
 				offset_x =1440;
@@ -2360,7 +2388,9 @@ void CProcess::moveToDest( )
 				LeftPoint.y *=2;
 				RightPoint.y *= 2;
 			}
-			break;			
+			break;
+		*/
+		
 		default:
 			break;
 	}	
@@ -2475,76 +2505,67 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	int point_X , point_Y , offset_x , zoomPos; 
 	int delta_X ;
 	Point opt;
-	if(g_sysParam->isEnable_AutoDetectMoveTargets()){
-		opt = Point(x,y);
-	}
-	else{
-
-	switch(m_display.g_CurDisplayMode) 
-	{
-		case PREVIEW_MODE:
-		//case SIDE_BY_SIDE:
-			offset_x = 960;			
-			break;
-		case PIC_IN_PIC:
-			offset_x =0;
-			break;
-		/*
-		case LEFT_BALL_RIGHT_GUN:
-			offset_x = 480;			
-			break;
-		*/
-		default:
-			break;
-	}
 	
-	LeftPoint.x -= offset_x;
-	RightPoint.x -=offset_x;
-	delta_X = abs(LeftPoint.x - RightPoint.x) ;
-
-	if(mode)
-		zoomPos = checkZoomPosTable(delta_X);			
-	if(mode)
+	if(g_sysParam->isEnable_AutoDetectMoveTargets())
 	{
-		if(LeftPoint.x < RightPoint.x) {
-			point_X = abs(LeftPoint.x - RightPoint.x) /2 + LeftPoint.x;
-			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + LeftPoint.y;	
-		}else{
-			point_X = abs(LeftPoint.x - RightPoint.x) /2 + RightPoint.x;
-			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
-		}
+		opt = Point(x,y);
 	}
 	else
 	{
-		point_X = (x - offset_x);
-		point_Y = y;
-	}
+		switch(m_display.g_CurDisplayMode) 
+		{
+			case PREVIEW_MODE:	
+				offset_x = 960;			
+				break;
+			case MAIN_VIEW:
+				offset_x =0;
+				break;			
+			default:
+				break;
+		}
+	
+		LeftPoint.x -= offset_x;
+		RightPoint.x -=offset_x;
+		delta_X = abs(LeftPoint.x - RightPoint.x) ;
+
+		if(mode) {
+			zoomPos = checkZoomPosTable(delta_X);		
+		}
+		if(mode)
+		{
+			if(LeftPoint.x < RightPoint.x) {
+				point_X = abs(LeftPoint.x - RightPoint.x) /2 + LeftPoint.x;
+				point_Y = abs(LeftPoint.y - RightPoint.y) /2 + LeftPoint.y;	
+			}else{
+				point_X = abs(LeftPoint.x - RightPoint.x) /2 + RightPoint.x;
+				point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
+			}
+		}
+		else
+		{
+			//point_X = (x - offset_x);
+			//point_Y = y;
+		}
  	
-	switch(m_display.g_CurDisplayMode) {
-		case PREVIEW_MODE:
-			opt = Point( point_X*2, point_Y*2 );	
-			break;
-		case PIC_IN_PIC:
-			opt = Point( x, y );
-			break;
-		/*	
-		case SIDE_BY_SIDE:
-			opt = Point( point_X*2, point_Y );	
-			break;
-		case LEFT_BALL_RIGHT_GUN:
-			opt = Point( point_X*1920.0/1440.0, point_Y*1080.0/810.0 );	
-			break;
-		*/
-		default:
-			break;
+		switch(m_display.g_CurDisplayMode) {
+			case PREVIEW_MODE:
+				opt = Point( point_X*2, point_Y*2 );	
+				break;
+			case MAIN_VIEW:
+				opt = Point( x, y*2 );
+				break;		
+			default:
+				break;
+		}
+
+		//printf("......................................>>>  Gun Image Point: < %d , %d >\r\n", opt.x, opt.y);
+		//cout << "g_camParams.cameraMatrix_gun = " << g_camParams.cameraMatrix_gun << endl;
+		//cout << "g_camParams.distCoeffs_gun = " << g_camParams.distCoeffs_gun << endl;
+		//cout << "g_camParams.cameraMatrix_ball = " << g_camParams.cameraMatrix_ball << endl;
+		//cout << "g_camParams.homography = " << g_camParams.homography << endl;
 	}
 
-	//printf("......................................>>>  Gun Image Point: < %d , %d >\r\n", opt.x, opt.y);
-	//cout << "g_camParams.cameraMatrix_gun = " << g_camParams.cameraMatrix_gun << endl;
-	//cout << "g_camParams.distCoeffs_gun = " << g_camParams.distCoeffs_gun << endl;
-	//cout << "g_camParams.cameraMatrix_ball = " << g_camParams.cameraMatrix_ball << endl;
-	//cout << "g_camParams.homography = " << g_camParams.homography << endl;
-	}
+	
 	std::vector<cv::Point2d> distorted, normalizedUndistorted;
 	distorted.push_back(cv::Point2d(opt.x, opt.y));
 	undistortPoints(distorted,normalizedUndistorted,g_camParams.cameraMatrix_gun,g_camParams.distCoeffs_gun);
@@ -2697,34 +2718,80 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 {
 	switch( key ) {
 		case 1:
-			m_bMarkCircle = true;
+			//m_bMarkCircle = true;
 			//cout << "---------------->>> Press F1 : m_bMarkCircle == true " << endl;
+			{
+				GB_WorkMode nextMode = GB_WorkMode(((int)g_workMode+1)% MODE_COUNT);
+				g_workMode = nextMode;
+				int value = 0;
+				if(g_workMode == AUTO_LINK_MODE){
+					value = 1;
+					g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = true;
+				}
+				else{
+					value = 0;
+					g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
+				}
+				SENDST	tmp;
+				tmp.cmd_ID = mtdmode;
+				tmp.param[0] = value ;
+				ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+			}
 			break;
 		case 2:
-			m_bMarkCircle = false;
+			//m_bMarkCircle = false;
 			//cout << "---------------->>> Press F2 : m_bMarkCircle == false " << endl;
-
+			app_ctrl_setMenu();  // Open Menu information
 			break;
 		case 3:
-		
+			
 			break;
 		case 4:	
-			showDetectCorners = true;			
-			printf("++++++++++++++++++++ showDetectCorners = %d \r\n", showDetectCorners);
+			//showDetectCorners = true;			
+			//printf("++++++++++++++++++++ showDetectCorners = %d \r\n", showDetectCorners);
 			break;
 		case 5:			
-			showDetectCorners = false;			
-			printf("++++++++++++++++++++ showDetectCorners = %d \r\n", showDetectCorners);
-		case 12:
-			app_ctrl_setMenu();
+			//showDetectCorners = false;			
+			//printf("++++++++++++++++++++ showDetectCorners = %d \r\n", showDetectCorners);
 			break;
-		case 101:
-			app_ctrl_upMenu();
+		case 6:
+			imageListForCalibra.clear();
+			captureCount = 0;
 			break;
-		case 103:
+		case SPECIAL_KEY_DOWN:
 			app_ctrl_downMenu();
 			break;
-		default :
+		case SPECIAL_KEY_UP:
+			app_ctrl_upMenu();
+			break;
+		case SPECIAL_KEY_PAGEUP:
+			saveOnePicture = true;
+			break;
+	#if 0
+		case SPECIAL_KEY_RIGHT:
+			
+			m_display.selected_PicIndex = (m_display.selected_PicIndex +1)%50;
+			break;
+		case SPECIAL_KEY_LEFT:
+			if(m_display.selected_PicIndex == 0){
+				m_display.selected_PicIndex =49;
+			}
+			m_display.selected_PicIndex -= 1;
+			break;
+		case SPECIAL_KEY_DOWN:
+			m_display.selected_PicIndex += 10;
+			if( m_display.selected_PicIndex > 39) {
+				m_display.selected_PicIndex -= 40;
+			}
+			break;
+		case SPECIAL_KEY_UP:
+			m_display.selected_PicIndex -= 10;
+			if( m_display.selected_PicIndex < 9) {
+				m_display.selected_PicIndex += 50;
+			}
+			break;
+	#endif
+		default:
 			break;
 	}
 }

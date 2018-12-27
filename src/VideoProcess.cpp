@@ -10,6 +10,10 @@
 #include <vector>
 using namespace vmath;
 
+extern UI_CONNECT_ACTION g_connectAction;
+bool showDetectCorners = false;
+
+extern GB_WorkMode g_workMode;
 extern GB_MENU run_Mode;
 extern CMD_EXT *msgextInCtrl;
 int CVideoProcess::m_mouseEvent = 0;
@@ -33,6 +37,8 @@ extern bool showDetectCorners;
 extern OSA_SemHndl g_detectCorners;
 extern volatile bool cloneOneFrame;
 extern CMD_Mtd_Frame Mtd_Frame;
+extern bool captureOnePicture;
+extern int captureCount ;
 
 
 int CVideoProcess::MAIN_threadCreate(void)
@@ -425,6 +431,7 @@ int CVideoProcess::creat()
 	#if __TRACK__
 		trackinfo_obj=(Track_InfoObj *)malloc(sizeof(Track_InfoObj));
 	#endif
+	m_display.m_detectCorners = m_detectCorners;
 	m_display.create();
 
 	MultiCh.m_user = this;
@@ -610,7 +617,7 @@ int CVideoProcess::in_gun_area(int x, int y)
 			else
 				return 0;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			if(((x > 0 && x < 1440) && (y > 0 && y < 1080)) ||((x > 1440 && x < 1920) && (y > 0 && y < 810)))
 				return 1;
 			else
@@ -646,7 +653,7 @@ int CVideoProcess::in_ball_area(int x, int y)
 			else
 				return 0;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			if((x > 1440 && x < 1920) && (y > 810 && y < 1080))
 				return 1;
 			else
@@ -679,7 +686,7 @@ mouserect CVideoProcess::map2preview(mouserect rectcur)
 		case PREVIEW_MODE:
 			return rectcur;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			return mappip2preview(rectcur);
 			break;
 		case SIDE_BY_SIDE:
@@ -811,7 +818,7 @@ mouserect CVideoProcess::mapfullscreen2gun(mouserect rectcur)
 			rectgun.w = 960;
 			rectgun.h = 540;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			rectgun.x = 0;
 			rectgun.y = 0;
 			rectgun.w = 1920;
@@ -856,7 +863,7 @@ mouserect CVideoProcess::mapgun2fullscreen(mouserect rectcur)
 			rectgun.w = 960;
 			rectgun.h = 540;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			rectgun.x = 0;
 			rectgun.y = 0;
 			rectgun.w = 1920;
@@ -899,7 +906,7 @@ int CVideoProcess::mapgun2fullscreen_point(int *x, int *y)
 			rectgun.w = 960;
 			rectgun.h = 540;
 			break;
-		case PIC_IN_PIC:
+		case MAIN_VIEW:
 			rectgun.x = 0;
 			rectgun.y = 0;
 			rectgun.w = 1920;
@@ -995,8 +1002,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 	unsigned int curId;
 	int Critical_Point;
 
-	if(pThis->m_display.g_CurDisplayMode == PIC_IN_PIC) {
-		curId = 0;	
+	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW) {
+		curId = 1;	
 	}else{
 		curId = pThis->m_curChId;
 	}
@@ -1020,6 +1027,17 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		 		break;
 		 	}
 	 	}
+		ArrayText::iterator itr2 = run_Mode.workMode.begin();
+		for(; itr2 != run_Mode.workMode.end(); ++itr2) {
+			CELL::trect<float> rt((*itr2)._pos.x, (*itr2)._pos.y, (*itr2)._pos.x +(*itr2)._size.x, (*itr2)._pos.y + (*itr2)._size.y);
+		 	if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
+				 if(run_Mode._LDown == &(*itr2)) {
+					 (*itr2)._clickDown(run_Mode._LDown);		
+				 }
+		 		break;
+		 	}
+			
+		}
 	 	run_Mode._pSelect = 0;
 	 	run_Mode._bRButton = false;
 	}
@@ -1039,6 +1057,17 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				 run_Mode._pSelect = &(*itr);
 				 run_Mode._LDown = &(*itr);				
 				 (*itr)._eventDown(run_Mode._pSelect);				 
+				 break;
+		 	}
+	 	}
+
+		ArrayText::iterator itr2 = run_Mode.workMode.begin();		
+	 	for(; itr2 != run_Mode.workMode.end(); ++itr2){
+			CELL::trect<float> rt((*itr2)._pos.x, (*itr2)._pos.y, (*itr2)._pos.x +(*itr2)._size.x, (*itr2)._pos.y + (*itr2)._size.y);
+			 if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
+				 run_Mode._pSelect = &(*itr2);
+				 run_Mode._LDown = &(*itr2);				
+				 (*itr2)._eventDown(run_Mode._pSelect);				 
 				 break;
 		 	}
 	 	}
@@ -1189,13 +1218,13 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								pThis->m_rectn[curId]--;
 							}
 							pThis->m_draw = 1;	
-
+					#if 0
 						switch( pThis->m_display.g_CurDisplayMode){
 							case PREVIEW_MODE:
 							case SIDE_BY_SIDE:
 								Critical_Point = 960;
 							break;
-							case PIC_IN_PIC:
+							case MAIN_VIEW:
 								Critical_Point = 1440;
 								break;
 							case LEFT_BALL_RIGHT_GUN:
@@ -1204,13 +1233,15 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 							default:
 							break;
 						}
-						
-						if( pThis->m_display.g_CurDisplayMode != PIC_IN_PIC){
+					#endif
+					/********************************************************************************************************************/	
+					#if 0
+						if( pThis->m_display.g_CurDisplayMode != MAIN_VIEW){
 							if(x > Critical_Point) {							
-								pThis->reMapCoords(x,y,true);								
+								pThis->reMapCoords(x,y,true);	// Auto Link workMode							
 							}
 							else {
-								pThis->moveToDest();
+								pThis->moveToDest(); // Only Move Ball Camera
 							}
 						}else{
 							if(x < Critical_Point) {							
@@ -1220,11 +1251,25 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								pThis->moveToDest();
 							}
 						}
+					#endif
+						if(g_workMode == HANDLE_LINK_MODE ) {
+							//if(x >960) {							
+								pThis->reMapCoords(x,y,true);								
+							//}
+						}
+						else if(g_workMode == ONLY_BALL_MODE) {
+							if(x>480 && x <1440) {							
+								pThis->moveToDest();					
+							}
+						}
+						else{
 							
 						}
-						else
-							printf("move illegal!!!\n");
+					/*******************************************************************************************************************/		
 					}
+					else
+						printf("move illegal!!!\n");
+				}
 					
 			}
 		}
@@ -1264,8 +1309,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
 {
 	unsigned int curId;
-	if(pThis->m_display.g_CurDisplayMode == PIC_IN_PIC)
-		curId = 0;
+	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW)
+		curId = 1;
 	else
 		curId = pThis->m_curChId;
 
@@ -1827,26 +1872,33 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 				}
 			}
 /********************************************************************************************/
-	if(chId == 0 && m_display.savePic_once == true){
+#if 0
+	if( (chId == m_display.getCapBMPChannel() ) && (captureOnePicture == true)/*(m_display.savePic_once == true)*/ ){
 			m_display.savePic_once = false;
+			captureOnePicture = false;
 		//	memset(m_display.savePicName, 0, 20);
 			//sprintf(m_display.savePicName,"%02d.bmp",saveCount);
 			//saveCount ++;
 			int nsize = imageListForCalibra.size();
-			if(nsize<100){
+			if(nsize<50){
 				m_cutIMG[nsize] = cv::Mat(frame.rows,frame.cols,CV_8UC3);
 				cvtColor(frame,m_cutIMG[nsize],CV_YUV2BGR_YUYV);
 				imageListForCalibra.push_back(m_cutIMG[nsize]);				
 				m_display.SetCutDisplay(nsize, true);
 			}
 	}
+#endif
+
 /**********************************************************************/
-	if(chId == 0 && showDetectCorners == true){
+	if( (chId == g_connectAction.CurCalibraCam) && (showDetectCorners == true) ){
 		if(cloneOneFrame == true){
 			cloneOneFrame = false;
 			//m_camCalibra->cloneCornerSrcImgae(frame);
 			m_detectCorners->cloneCornerSrcImgae(frame);
 			OSA_semSignal(&g_detectCorners);
+		}
+		if(captureCount > 50) {
+			showDetectCorners =false;
 		}
 	}
 /**********************************************************************/

@@ -19,7 +19,7 @@
 #include "osa_buf.h"
 #include "osa_sem.h"
 #include "app_status.h"
-//#include "../src/CcCamCalibra.h"
+#include "CcCamCalibra.h"
 #include <math.h>
 #include "configable.h"
 #include "Ipcctl.h"
@@ -62,10 +62,16 @@ typedef std::vector<UIText> ArrayText;
 
 typedef struct _GB_MENU{
 	ArrayText _texts;
+	ArrayText workMode;
 	UIText text1;
 	UIText text2;
 	UIText text3;
 	UIText text4;
+	UIText text5;
+	UIText text6;
+	UIText text7;
+	UIText text8;
+	UIText text9;
 	bool _bRButton ;
 	CELL::int2  _mouseDown;
 	bool showSubMenu ;
@@ -166,11 +172,13 @@ typedef struct _ds_init_param{
 
 	typedef enum _DISPLAYMODE {
 		PREVIEW_MODE = 0,
-		PIC_IN_PIC,
+		MAIN_VIEW,
 		SIDE_BY_SIDE,
 		LEFT_BALL_RIGHT_GUN,
 		GUN_FULL_SCREEN,
 		BALL_FULL_SCREEN,
+		CALIBRATE_CAPTURE,  // get camera intrinsic matrix, and save picture of patterns
+		CALIBRATE_RESULT, // display camera calibrate result and average error  
 		TOTAL_MODE_COUNT
 	}DISPLAYMODE;
 
@@ -183,7 +191,13 @@ class CDisplayer
 {
 private:
 	int fontPosX, fontPosY;
+	int captureBMP_channel;
 public:
+	int selected_PicIndex;
+public:
+	int getSelectPicIndex(){
+		return selected_PicIndex;
+	};
 	void setFontPosition(int x, int y){
 		fontPosX = x;
 		fontPosY = y;
@@ -192,12 +206,20 @@ public:
 		FLOAT2 fontpos = FLOAT2(fontPosX,fontPosY);
 		return fontpos;
 	};
+	void setCapBMPChannel(int index){
+		captureBMP_channel = index;
+	};
+	int getCapBMPChannel(){
+		return captureBMP_channel;
+	};
 public:
 	cv::Mat gun_UndistorMat;
 	cv::Mat gun_BMP;
     DISPLAYMODE displayMode;
     char savePicName[20];
 	int videonamex, videonamey, timex, timey, videonamefs;
+
+	DetectCorners *m_detectCorners;
 
 	typedef enum _WindowSize{
 		WINDOW_WIDTH = 1920,
@@ -221,14 +243,15 @@ public:
 	void linkage_init();
 	void linkageSwitchMode(void);
 	void RenderSavedBMPImage(void);
+	void RenderSavedBMPImageByIndex(int Index);
 	void RenderDetectCornerView(GLint x, GLint y, GLint width, GLint height);
 
 	GLbyte* gltReadBMPBits(const char *szFileName, int *nWidth, int *nHeight);
 	bool LoadBMPTexture(const char *szFileName, GLenum minFilter, GLenum magFilter, GLenum wrapMode);	
-	void SetCutDisplay(int idx, bool enable = true){ _bCutIMG[idx] = enable;};
+	
 public:
 	GLuint _textureId[100];
-	GLboolean _bCutIMG[100];
+	
 	char BMPName[100][20];
 public:
 	GLuint _texCornerId;	

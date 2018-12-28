@@ -37,7 +37,7 @@ extern vector<Mat> imageListForCalibra;
 bool SubImage = true;
 bool g_bSubmitTexture = false;
 extern Mat g_CornerImage;
-MenuDisplay g_displayMode = MENU_SBS;
+MenuDisplay g_displayMode = MENU_MAIN_VIEW;
 GB_WorkMode g_workMode = HANDLE_LINK_MODE;
 
 SingletonSysParam* SingletonSysParam::m_uniqueInstance = SingletonSysParam::getInstance();
@@ -3149,7 +3149,7 @@ void CDisplayer::gl_display(void)
 	}		
 
 /***************************************************** Menu *******************************************************************/
-
+#if 0
 ArrayText::iterator itr = run_Mode._texts.begin();
 	   for(int i=0; i<run_Mode._texts.size()-1,itr != run_Mode._texts.end(); itr++, i++ )
 	   {
@@ -3162,7 +3162,8 @@ ArrayText::iterator itr = run_Mode._texts.begin();
 	   			(*itr)._size = chinese_osd((*itr)._pos.x,(*itr)._pos.y,(*itr)._text,
 			   	 1,4,(*itr).r,(*itr).g,(*itr).b,(*itr).a,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 		   	}
-	   }	
+	   }
+#endif
 #if 0
 ArrayText::iterator itr2 = run_Mode.workMode.begin();
 	   for(int i=0; i<run_Mode.workMode.size()-1,itr2 != run_Mode.workMode.end(); itr2++, i++ )

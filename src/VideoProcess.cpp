@@ -292,7 +292,10 @@ void CVideoProcess::main_proc_func()
 		#if __MOVE_DETECT__
 			if(m_pMovDetector != NULL)
 			{
-				m_pMovDetector->setFrame(frame_gray,0,2,minsize,maxsize,16);
+				for(int i = 0; i < MAX_MTDRIGION_NUM; i++)
+				{
+					m_pMovDetector->setFrame(frame_gray,i,2,minsize,maxsize,16);
+				}
 			}
 		#endif
 		}
@@ -403,6 +406,10 @@ CVideoProcess::CVideoProcess()
 	detectNum = 10;
 	maxsize = 50000;
 	minsize = 1000;
+	setrigion_flagv20 = mtdcnt = 0;	
+	memset(&mtdrigionv20, 0, sizeof(mtdrigionv20));
+	memset(grid19x10, 0, sizeof(grid19x10));
+	memset(grid19x10_bak, 0, sizeof(grid19x10_bak));
 #endif
 
 	m_curChId = video_gaoqing ;
@@ -849,6 +856,24 @@ mouserect CVideoProcess::mapfullscreen2gun(mouserect rectcur)
 	return maprect(rectcur, rect1080p, rectgun);
 }
 
+mouserect CVideoProcess::mapfullscreen2gunv20(mouserect rectcur)
+{
+	mouserect rect1080p;
+	mouserect rectgun;
+
+	rect1080p.x = 0;
+	rect1080p.y = 0;
+	rect1080p.w = 1920;
+	rect1080p.h = 1080;
+
+	rectgun.x = 0;
+	rectgun.y = 540;
+	rectgun.w = 1920;
+	rectgun.h = 540;
+	
+	return maprect(rectcur, rect1080p, rectgun);
+}
+
 mouserect CVideoProcess::mapgun2fullscreen(mouserect rectcur)
 {
 	mouserect rect1080p;
@@ -935,6 +960,24 @@ int CVideoProcess::mapgun2fullscreen_point(int *x, int *y)
 	return maprect_point(x, y, rectgun, rect1080p);
 }
 
+int CVideoProcess::mapfullscreen2gun_pointv20(int *x, int *y)
+{
+	mouserect rect1080p;
+	mouserect rectgun;
+	
+	rect1080p.x = 0;
+	rect1080p.y = 0;
+	rect1080p.w = 1920;
+	rect1080p.h = 1080;
+
+	rectgun.x = 0;
+	rectgun.y = 540;
+	rectgun.w = 1920;
+	rectgun.h = 540;
+	
+	return maprect_point(x, y, rect1080p, rectgun);
+}
+
 mouserect CVideoProcess::maprect(mouserect rectcur,mouserect rectsrc,mouserect rectdest)
 {
 	mouserect rect_result;
@@ -1006,6 +1049,12 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
 	unsigned int curId;
 	int Critical_Point;
+
+	if(pThis->setrigion_flagv20)
+	{
+		pThis->mouse_eventv20(button, state, x, y);
+		return;
+	}
 
 	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW) {
 		curId = 1;	
@@ -1339,6 +1388,23 @@ void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
 	}
 }
 
+void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
+{
+	printf("mousemotion_event start, x,y(%d,%d)\n", xMouse, yMouse);
+}
+
+
+void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
+{
+	//printf("mouse_eventv20 start, button=%d,state=%d,x,y(%d,%d)\n", button, state, x, y);
+	CMD_EXT tmpCmd = {0};
+	tmpCmd.Mtdmouseclick.button = button;
+	tmpCmd.Mtdmouseclick.state = state;
+	tmpCmd.Mtdmouseclick.x = x;
+	tmpCmd.Mtdmouseclick.y = y;
+	app_ctrl_setMtdRigion(&tmpCmd);
+}
+
 void CVideoProcess::menu_event(int value)
 {
 	switch(value)
@@ -1430,6 +1496,7 @@ int CVideoProcess::init()
 	dsInit.menufunc = menu_event;
 	dsInit.mousefunc = mouse_event;
 	dsInit.passivemotionfunc = mousemove_event;
+	dsInit.motionfunc = mousemotion_event;
 	dsInit.setrigion = processrigionMenu;
 	dsInit.rigionsel = processrigionselMenu;
 	dsInit.rigionpolygon = processrigionpolygonMenu;
@@ -2092,8 +2159,13 @@ void	CVideoProcess::DeInitMvDetect()
 void CVideoProcess::NotifyFunc(void *context, int chId)
 {
 	CVideoProcess *pParent = (CVideoProcess*)context;
-	pThis->detect_vect.clear();
-	pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect,0);
+	//pThis->detect_vect.clear();
+	pThis->detect_vect_arr.clear();
+	int cnt = pThis->detect_vect_arr.size() > 3 ? 3 : pThis->detect_vect_arr.size();
+	for(int i = 0; i < cnt; i++)
+	{
+		pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect_arr[i],i);
+	}
 
 	
 	//pParent->m_display.m_bOsd = true;

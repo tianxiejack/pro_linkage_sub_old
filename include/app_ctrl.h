@@ -26,6 +26,8 @@ void  app_ctrl_getSysData(CMD_EXT * exthandle);
 void app_ctrl_setMmtSelect(CMD_EXT * pIStuts,unsigned char index);
 void app_ctrl_setMtdStat(CMD_EXT * pInCmd);
 void app_ctrl_setMtdSelect(CMD_EXT * pInCmd);
+void app_ctrl_setMtdRigionStat(CMD_EXT * pInCmd);
+void app_ctrl_setMtdRigion(CMD_EXT * pInCmd);
 void app_ctrl_setAcqRect(CMD_EXT * pInCmd);
 void app_ctrl_setBoresightPos(CMD_EXT * pInCmd);
 void app_ctrl_setalgosdrect(CMD_EXT * pInCmd);
@@ -38,5 +40,6 @@ void app_ctrl_setpasswd(char key);
 void app_ctrl_enter();
 void app_ctrl_upMenu();
 void app_ctrl_downMenu();
+void app_ctrl_savemtdrigion();
 
 #endif /* APP_CTRL_H_ */

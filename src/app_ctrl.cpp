@@ -264,6 +264,36 @@ void app_ctrl_setMtdSelect(CMD_EXT * pInCmd)
 	}
 	return ;
 }
+
+void app_ctrl_setMtdRigionStat(CMD_EXT * pInCmd)
+{
+	if(msgextInCtrl==NULL)
+		return ;
+
+	CMD_EXT *pIStuts = msgextInCtrl;
+	if (pIStuts->MtdSetRigion != pInCmd->MtdSetRigion)
+	{
+		pIStuts->MtdSetRigion = pInCmd->MtdSetRigion;
+		MSGDRIV_send(MSGID_EXT_MVDETECT_SETRIGIONSTAT, 0);
+	}
+	return;
+}
+
+void app_ctrl_setMtdRigion(CMD_EXT * pInCmd)
+{
+	//printf("app_ctrl_setMtdRigion start, button=%d,state=%d,x,y(%d,%d)\n", pInCmd->Mtdmouseclick.button, pInCmd->Mtdmouseclick.state, pInCmd->Mtdmouseclick.x, pInCmd->Mtdmouseclick.y);
+	if(msgextInCtrl==NULL)
+		return ;
+
+	CMD_EXT *pIStuts = msgextInCtrl;
+	memcpy(&pIStuts->Mtdmouseclick, &pInCmd->Mtdmouseclick, sizeof(pIStuts->Mtdmouseclick));
+	if (pIStuts->MtdSetRigion)
+	{
+		MSGDRIV_send(MSGID_EXT_MVDETECT_SETRIGION, 0);
+	}
+	return;
+}
+
 #endif
 
 unsigned char app_ctrl_getMtdStat()
@@ -613,7 +643,16 @@ void app_ctrl_enter()
 	}
 	else if(submenu_mtd == pIStuts->MenuStat)
 	{
-		if(6 == pIStuts->menuarray[submenu_mtd].pointer)
+		if(0 == pIStuts->menuarray[submenu_mtd].pointer)
+		{
+			CMD_EXT tmpCmd = {0};
+			tmpCmd.MtdSetRigion = 1;
+			app_ctrl_setMtdRigionStat(&tmpCmd);
+			g_displayMode = MENU_GUN;
+			app_ctrl_setMenuStat(submenu_setmtdrigion);
+		}
+		
+		else if(6 == pIStuts->menuarray[submenu_mtd].pointer)
 			app_ctrl_setMenuStat(mainmenu2);
 	}
 	else if(submenu_setimg == pIStuts->MenuStat)
@@ -639,6 +678,10 @@ void app_ctrl_enter()
 	{
 		if(4 == pIStuts->menuarray[submenu_setnet].pointer)
 			app_ctrl_setMenuStat(submenu_setball);
+	}
+	else if(submenu_setmtdrigion == pIStuts->MenuStat)
+	{
+		app_ctrl_savemtdrigion();
 	}
 }
 
@@ -673,4 +716,9 @@ void app_ctrl_downMenu()
 			MSGDRIV_send(MSGID_EXT_DOWNMENU, 0);
 		}
 	}
+}
+
+void app_ctrl_savemtdrigion()
+{
+	MSGDRIV_send(MSGID_EXT_SMR, 0);
 }

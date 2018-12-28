@@ -115,7 +115,8 @@ public:
 	void OnMouseRightUp(int x, int y);
 	void OnKeyDwn(unsigned char key);
 	void OnSpecialKeyDwn(int key,int x, int y);
-
+	void DrawMtdYellowGrid(int flag);
+	void DrawMtdRedGrid(int flag);
 	
 	CMD_EXT* extInCtrl;
 	static CProcess *sThis;
@@ -143,7 +144,16 @@ protected:
 	int  WindowstoPiexly(int y,int channel);
 	float PiexltoWindowsxf(float x,int channel);
 	float PiexltoWindowsyf(float y,int channel);
-
+	int updateredgrid();
+	int updatemtdrigion();
+	int isborder(int rigionindex, int x, int y);
+	int createrigion(int rigionindex, int x, int y);
+	int mergenode(int rigionindex, int x, int y);
+	int mergerigion(int rigionindex_dst, int rigionindex_src);
+	int getmtdedge();
+	int cp2pointarray();
+	int usopencvapi();
+	int usopencvapi2();
 
 
 	 static int  MSGAPI_initial(void);
@@ -181,6 +191,9 @@ protected:
 	 static void MSGAPI_update_menuindex(long lParam );
 	 static void MSGAPI_up_menu(long lParam);
 	 static void MSGAPI_down_menu(long lParam);
+	 static void MSGAPI_setMtdSetRigionStat(long lParam);
+	 static void MSGAPI_setMtdSetRigion(long lParam);
+	 static void MSGAPI_save_mtdrigion(long lParam);
 
 private:
 	ACK_EXT extOutAck;

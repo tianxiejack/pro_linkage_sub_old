@@ -8,6 +8,7 @@
 #define AIM_HEIGHT					64
 
 #define AVT_TRK_AIM_SIZE			2
+#define MAX_MTDRIGION_NUM 3
 
 
 typedef struct _Resolution{

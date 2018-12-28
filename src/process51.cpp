@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+int gun_resolu[2] = {1920, 1080};
+extern MenuDisplay g_displayMode;
 extern bool showDetectCorners;
 bool saveOnePicture = false;
 extern int captureCount;
@@ -46,10 +48,10 @@ void getMmtTg(unsigned char index,int *x,int *y)
 #if __MOVE_DETECT__
 void getMtdxy(int *x,int *y,int *w,int *h)
 {
-	*x = plat->mvList[plat->chooseDetect].targetRect.x + plat->mvList[plat->chooseDetect].targetRect.width/2;
-	*y = plat->mvList[plat->chooseDetect].targetRect.y + plat->mvList[plat->chooseDetect].targetRect.height/2;
-	*w = plat->mvList[plat->chooseDetect].targetRect.width;
-	*h = plat->mvList[plat->chooseDetect].targetRect.height;
+	*x = plat->mvList_arr[0][plat->chooseDetect].targetRect.x + plat->mvList_arr[0][plat->chooseDetect].targetRect.width/2;
+	*y = plat->mvList_arr[0][plat->chooseDetect].targetRect.y + plat->mvList_arr[0][plat->chooseDetect].targetRect.height/2;
+	*w = plat->mvList_arr[0][plat->chooseDetect].targetRect.width;
+	*h = plat->mvList_arr[0][plat->chooseDetect].targetRect.height;
 }
 #endif
 
@@ -72,7 +74,7 @@ CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16
 	pIStuts->MenuStat = -1;
 	memset(pIStuts->Passwd, 0, sizeof(pIStuts->Passwd));
 
-	int cnt[menumaxid] = {3,5,7,3,3,7,4,3,5,5};
+	int cnt[menumaxid] = {3,5,7,3,3,7,4,3,5,5,5};
 	memset(pIStuts->menuarray, 0, sizeof(pIStuts->menuarray));
 	for(int i = 0; i < menumaxid; i++)
 	{
@@ -1602,6 +1604,18 @@ osdindex++;	//cross aim
 
 	
 #if __MOVE_DETECT__
+//mtd grid
+	if(setrigion_flagv20)
+	{
+		DrawMtdYellowGrid(1);
+		DrawMtdRedGrid(1);
+	}
+	else
+	{
+		DrawMtdYellowGrid(0);
+		DrawMtdRedGrid(0);
+	}
+
 	osdindex++;
 	{
 		unsigned int mtd_warningbox_Id;
@@ -1609,7 +1623,7 @@ osdindex++;	//cross aim
 		int polwarn_flag = 0;
 		if(m_display.g_CurDisplayMode == MAIN_VIEW)
 		{			
-				mtd_warningbox_Id = 0;
+				mtd_warningbox_Id = 1;
 		}
 		else
 		{
@@ -1617,57 +1631,66 @@ osdindex++;	//cross aim
 		}
 		if(Osdflag[osdindex])
 		{
-			for(int i = 0; i < polwarn_count_bak[mtd_warningbox_Id]; i++)
-			{
-				polwarn_flag = (i+1)%polwarn_count_bak[mtd_warningbox_Id];
-				startwarnpoly.x = polWarnRectBak[mtd_warningbox_Id][i].x;
-				startwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][i].y;
-				endwarnpoly.x = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].x;
-				endwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].y;
-				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,0,1);
-			}
-
+			int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
+			for(int i = 0; i < cnt; i++)
+				for(int j = 0; j < edge_contours_bak[i].size(); j++)
+				{
+					polwarn_flag = (j+1)%edge_contours_bak[i].size();
+					startwarnpoly.x = edge_contours_bak[i][j].x;
+					startwarnpoly.y = edge_contours_bak[i][j].y;
+					endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
+					endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
+					DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,0,3);
+				}
+/*
 			cv::Rect tmp;
 			mouserect recttmp;
-			for(std::vector<TRK_RECT_INFO>::iterator plist = mvList.begin(); plist != mvList.end(); ++plist)
-			{		
-					recttmp.x = (*plist).targetRect.x;
-					recttmp.y = (*plist).targetRect.y;
-					recttmp.w = (*plist).targetRect.width;
-					recttmp.h = (*plist).targetRect.height;
-					recttmp = mapfullscreen2gun(recttmp);
-					tmp.x = recttmp.x;
-					tmp.y = recttmp.y;
-					tmp.width = recttmp.w;
-					tmp.height = recttmp.h;
-
-				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);
+			for(int i = 0; i < cnt; i++)
+			{
+				for(std::vector<TRK_RECT_INFO>::iterator plist = mvList_arr[i].begin(); plist != mvList_arr[i].end(); ++plist)
+				{		
+						recttmp.x = (*plist).targetRect.x;
+						recttmp.y = (*plist).targetRect.y;
+						recttmp.w = (*plist).targetRect.width;
+						recttmp.h = (*plist).targetRect.height;
+						recttmp = mapfullscreen2gunv20(recttmp);
+						tmp.x = recttmp.x;
+						tmp.y = recttmp.y;
+						tmp.width = recttmp.w;
+						tmp.height = recttmp.h;
+					DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);
+				}
 			}
-			
 			Osdflag[osdindex]=0;
+*/
 		}
 
 		if(m_bMoveDetect)
 		{
 			memcpy(&polwarn_count_bak, &polwarn_count, sizeof(polwarn_count));
 			memcpy(&polWarnRectBak, &polWarnRect, sizeof(polWarnRect));
-			for(int i = 0; i < polwarn_count_bak[mtd_warningbox_Id]; i++)
-			{
-				polwarn_flag = (i+1)%polwarn_count_bak[mtd_warningbox_Id];
-				startwarnpoly.x = polWarnRectBak[mtd_warningbox_Id][i].x;
-				startwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][i].y;
-				endwarnpoly.x = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].x;
-				endwarnpoly.y = polWarnRectBak[mtd_warningbox_Id][polwarn_flag].y;
-				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,3,1);
-			}
+			edge_contours_bak = edge_contours;
+			int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
+			for(int i = 0; i < cnt; i++)
+				for(int j = 0; j < edge_contours_bak[i].size(); j++)
+				{
+					polwarn_flag = (j+1)%edge_contours_bak[i].size();
+					startwarnpoly.x = edge_contours_bak[i][j].x;
+					startwarnpoly.y = edge_contours_bak[i][j].y;
+					endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
+					endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
+					DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,5,3);
+				}
+/*
+			detect_vect_arr_bak = detect_vect_arr;
+			mvList_arr = detect_vect_arr_bak;
 
-			detect_bak = detect_vect;
-			
-			mvIndexHandle(mvList,detect_bak,detectNum);
+			mvIndexHandle(mvList_arr[0],detect_vect_arr_bak[0],detectNum);
+				
 	
 			if(forwardflag)
 			{
-				if(++chooseDetect > mvList.size())
+				if(++chooseDetect > mvList_arr[0].size())
 					chooseDetect = 0;
 				
 				forwardflag = 0;
@@ -1675,42 +1698,48 @@ osdindex++;	//cross aim
 			else if(backflag)
 			{
 				if( --chooseDetect < 0)
-					chooseDetect = mvList.size()-1;		
-				
+					chooseDetect = mvList_arr[0].size()-1;		
+					
 				backflag = 0;
 			}
 			
-			if(chooseDetect > mvList.size())
-				chooseDetect = mvList.size()-1 ;
+			if(chooseDetect > mvList_arr[0].size())
+				chooseDetect = mvList_arr[0].size()-1 ;
 			
 			char tmpNum = 0;
 			cv::Rect tmp;
 			mouserect recttmp;
-			for(std::vector<TRK_RECT_INFO>::iterator plist = mvList.begin(); plist != mvList.end(); ++plist)
-			{	
-				if( chooseDetect == tmpNum++)
-					color = 6;
-				else
-					color = 3;
+			for(int i = 0; i < cnt; i++)
+			{
+				tmpNum = 0;
+				for(std::vector<TRK_RECT_INFO>::iterator plist = mvList_arr[i].begin(); plist != mvList_arr[i].end(); ++plist)
+				{	
+					if( chooseDetect == tmpNum++)
+						color = 6;
+					else
+						color = 3;
 
-				
-					if(color == 6)
-					{
-						reMapCoords(((*plist).targetRect.x + (*plist).targetRect.width/2) + 480,
-										((*plist).targetRect.y - (*plist).targetRect.height/2) - 270 ,false);
-					}
+					
+						if(color == 6)
+						{
+							reMapCoords(((*plist).targetRect.x + (*plist).targetRect.width/2) + 480,
+											((*plist).targetRect.y - (*plist).targetRect.height/2) - 270 ,false);
+						}
 
-					recttmp.x = (*plist).targetRect.x;
-					recttmp.y = (*plist).targetRect.y;
-					recttmp.w = (*plist).targetRect.width;
-					recttmp.h = (*plist).targetRect.height;
-					recttmp = mapfullscreen2gun(recttmp);
-					tmp.x = recttmp.x;
-					tmp.y = recttmp.y;
-					tmp.width = recttmp.w;
-					tmp.height = recttmp.h;
-				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+						recttmp.x = (*plist).targetRect.x;
+						recttmp.y = (*plist).targetRect.y;
+						recttmp.w = (*plist).targetRect.width;
+						recttmp.h = (*plist).targetRect.height;
+						recttmp = mapfullscreen2gunv20(recttmp);
+						tmp.x = recttmp.x;
+						tmp.y = recttmp.y;
+						tmp.width = recttmp.w;
+						tmp.height = recttmp.h;
+					DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+				}
 			}
+*/
+			
 			Osdflag[osdindex]=1;
 		}
 	}
@@ -1994,6 +2023,105 @@ unsigned int drawpolyRectId ;
 		OSA_semSignal(&(sThis->m_display.tskdisSemmain));
 	count++;
 	return true;
+}
+	
+void CProcess::DrawMtdYellowGrid(int flag)
+{
+	unsigned int drawmtdgridId; 
+	if(m_display.g_CurDisplayMode == MAIN_VIEW)
+	{			
+		drawmtdgridId = 1;
+	}
+	else
+	{
+		drawmtdgridId = extInCtrl->SensorStat;
+	}
+	
+	Osd_cvPoint start, end;
+	int interval_w = gun_resolu[0] / GRID_CNT_X;
+	int interval_h = gun_resolu[1] / GRID_CNT_Y;
+		
+	for(int i = 1; i < GRID_CNT_X; i++)
+	{
+		start.x = interval_w * i;
+		start.y = 0;
+		end.x = interval_w * i;
+		end.y = gun_resolu[1];
+		if(flag)
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
+		}
+		else
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
+		}
+	}
+	for(int j = 1; j < GRID_CNT_Y; j++)
+	{
+		start.x = 0;
+		start.y = interval_h * j;
+		end.x = gun_resolu[0];
+		end.y = interval_h * j;
+		if(flag)
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
+		}
+		else
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
+		}
+	}
+}
+
+
+void CProcess::DrawMtdRedGrid(int flag)
+{
+	unsigned int drawmtdgridRectId; 
+	cv::Rect tmp;
+
+	int interval_w = gun_resolu[0] / GRID_CNT_X;
+	int interval_h = gun_resolu[1] / GRID_CNT_Y;
+	
+	if(m_display.g_CurDisplayMode == MAIN_VIEW)
+	{			
+		drawmtdgridRectId = 1;
+	}
+	else
+	{
+		drawmtdgridRectId = extInCtrl->SensorStat;
+	}
+
+	for(int i = 0; i < GRID_CNT_X; i++)
+		for(int j = 0; j < GRID_CNT_Y; j++)
+		{
+			if(grid19x10_bak[i][j].state)
+			{
+				tmp.x = (i) * interval_w;
+				tmp.y = (j) * interval_h;
+				tmp.width = interval_w;
+				tmp.height = interval_h;
+				
+				rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,0,0),3,8);
+			}
+		}
+		
+	memcpy(grid19x10_bak, grid19x10, sizeof(grid19x10_bak));
+
+	if(flag)
+	{
+		for(int i = 0; i < GRID_CNT_X; i++)
+			for(int j = 0; j < GRID_CNT_Y; j++)
+			{
+				if(grid19x10_bak[i][j].state)
+				{
+					tmp.x = (i) * interval_w;
+					tmp.y = (j) * interval_h;
+					tmp.width = interval_w;
+					tmp.height = interval_h;
+					rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,255,255),3,8);
+				}
+			}
+	}
 }
 
 static inline void my_rotate(GLfloat result[16], float theta)
@@ -2957,6 +3085,15 @@ void CProcess::OnKeyDwn(unsigned char key)
 		if((key >= '0') && (key <= '9'))
 			app_ctrl_setpasswd(key);
 
+		if(key == '2')
+		{
+			tmpCmd.MtdSetRigion = 0;
+			app_ctrl_setMtdRigionStat(&tmpCmd);
+			app_ctrl_setMenuStat(-1);
+			g_displayMode = MENU_MAIN_VIEW;
+			memset(m_display.disMenu[submenu_setmtdrigion][4], 0, sizeof(m_display.disMenu[submenu_setmtdrigion][4]));
+		}
+		
 		if(key == 13)
 		{
 			app_ctrl_enter();
@@ -3616,29 +3753,37 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 		if(Mtdstatus)
 		{
 			struct timeval tv;
-			while(!m_pMovDetector->isWait(0))
+			for(int i = 0; i < MAX_MTDRIGION_NUM; i++)
 			{
-				tv.tv_sec = 0;
-				tv.tv_usec = (10%1000)*1000;
-				select(0, NULL, NULL, NULL, &tv);
+				while(!m_pMovDetector->isWait(i))
+				{
+					tv.tv_sec = 0;
+					tv.tv_usec = (10%1000)*1000;
+					select(0, NULL, NULL, NULL, &tv);
+				}
+
+				if(m_pMovDetector->isWait(i))
+				{
+					m_pMovDetector->mvOpen(i);	
+					dynamic_config(VP_CFG_MvDetect, 1,NULL);
+					tmpCmd.MtdState[pIStuts->SensorStat] = 1;
+				}
 			}
-			if(m_pMovDetector->isWait(0))
-			{
-				m_pMovDetector->mvOpen(0);	
-				dynamic_config(VP_CFG_MvDetect, 1,NULL);
-				tmpCmd.MtdState[pIStuts->SensorStat] = 1;
-			}
+
 		}
 		else
 		{
-			if(m_pMovDetector->isRun(0))
+			for(int i = 0; i < MAX_MTDRIGION_NUM; i++)
 			{
-				dynamic_config(VP_CFG_MvDetect, 0,NULL);
-				tmpCmd.MtdState[pIStuts->SensorStat] = 0;
-				//app_ctrl_setMtdStat(&tmpCmd);
-				m_pMovDetector->mvClose(0);
-				chooseDetect = 0;
-			}	
+				if(m_pMovDetector->isRun(i))
+				{
+					dynamic_config(VP_CFG_MvDetect, 0,NULL);
+					tmpCmd.MtdState[pIStuts->SensorStat] = 0;
+					//app_ctrl_setMtdStat(&tmpCmd);
+					m_pMovDetector->mvClose(i);
+					chooseDetect = i;
+				}	
+			}
 		}
 	}
 	if(msgId == MSGID_EXT_MVDETECTSELECT)
@@ -3657,6 +3802,23 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 
 		}
 	}
+	if(msgId == MSGID_EXT_MVDETECT_SETRIGIONSTAT)
+	{
+		setrigion_flagv20 = pIStuts->MtdSetRigion;
+		printf("%s,%d,setrigion_flagv20=%d\n",__FILE__,__LINE__, setrigion_flagv20);
+	}
+	if(msgId == MSGID_EXT_MVDETECT_SETRIGION)
+	{
+		memcpy(&mtdrigionv20, &pIStuts->Mtdmouseclick, sizeof(mtdrigionv20));
+		updateredgrid();
+	/*	
+		if((0 == mtdrigionv20.button) && (0 == mtdrigionv20.state))
+		{
+			updatemtdrigion();
+		}
+		*/
+	}
+		
 #endif
 	if(msgId == MSGID_EXT_INPUT_ALGOSDRECT)
 	{
@@ -3695,9 +3857,625 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 			}
 		}
 	}
+	if(msgId == MSGID_EXT_SMR)
+	{
+		getmtdedge();
+	}
 	
 }
 
+int CProcess::updateredgrid()
+{
+	int interval_w = gun_resolu[0] / GRID_CNT_X;
+	int interval_h = gun_resolu[1] / GRID_CNT_Y;
+	
+	int x = mtdrigionv20.x / interval_w;
+	int y = mtdrigionv20.y / interval_h;
+	x = x >= GRID_CNT_X ? GRID_CNT_X -1 : x;
+	y = y >= GRID_CNT_Y ? GRID_CNT_Y -1 : y;
+	
+	if((0 == mtdrigionv20.button) && (0 == mtdrigionv20.state))
+	{
+			grid19x10[x][y].state= 1;
+	}
+	if((2 == mtdrigionv20.button) && (0 == mtdrigionv20.state))
+	{
+			grid19x10[x][y].state = 0;
+	}
+}
+
+int CProcess::updatemtdrigion()
+{
+	int init_merge = 0;
+	int no_merge = 0;
+	int int_cnt = 0;
+	int interval_w = gun_resolu[0] / GRID_CNT_X;
+	int interval_h = gun_resolu[1] / GRID_CNT_Y;
+	
+	int x = mtdrigionv20.x / interval_w;
+	int y = mtdrigionv20.y / interval_h;
+	x = x >= GRID_CNT_X ? GRID_CNT_X -1 : x;
+	y = y >= GRID_CNT_Y ? GRID_CNT_Y -1 : y;
+	
+	for(int i = 1; i <= mtdcnt; i++)
+	{
+		if(isborder(i, x, y))
+		{
+			no_merge = 1;
+			if(!init_merge)
+			{
+				mergenode(i, x, y);
+				int_cnt = i;
+				init_merge = 1;
+			}
+			else
+			{
+				mergerigion(int_cnt, i);
+				for(int j = i; j < mtdcnt; j++)
+					mergerigion(j, j+1);
+				mtdcnt--;
+				i--;
+			}
+		}
+	}
+	if(0 == no_merge)
+	{
+		createrigion(mtdcnt + 1, x, y);
+	}
+
+	for(int cnt = 1; cnt <= mtdcnt; cnt++)
+	{
+		printf("@@@@@@@@@@@@@rigion%d has these nodes:\n", cnt);
+		for(int i = 0; i < GRID_CNT_X; i++)
+			for(int j = 0; j < GRID_CNT_Y; j++)
+			{
+				if(grid19x10[i][j].rigionindex == cnt)
+					printf("(%d,%d),",i,j);
+			}
+		printf("\n");
+	}
+}
+
+int CProcess::getmtdedge()
+{
+	//cp2pointarray();
+	//usopencvapi();
+	usopencvapi2();
+}
+
+int CProcess::usopencvapi()
+{
+	int psize = 0;
+	int interval_w = gun_resolu[0] / GRID_CNT_X;
+	int interval_h = gun_resolu[1] / GRID_CNT_Y;
+	
+	int minx= GRID_CNT_X - 1;
+	int miny = GRID_CNT_Y - 1;
+	int maxx = 0;
+	int maxy = 0;
+	
+	for(int i = 0; i < GRID_CNT_X; i++)
+		for(int j = 0; j < GRID_CNT_Y; j++)
+		{
+			if(grid19x10[i][j].rigionindex == 1)
+			{
+				if(i < minx) minx = i;
+				if(j < miny) miny = j;
+				if(i > maxx) maxx = i;
+				if(j > maxy) maxy = j;
+			}
+		}
+	int tmpw = maxx-minx + 1;
+	int tmph = maxy-miny + 1;
+	int matw = tmpw*interval_w;
+	int math = tmph*interval_h;
+
+	Mat mask = Mat::zeros(math, matw, CV_8UC1);
+	Rect rect;
+
+	for(int i = 0; i < GRID_CNT_X; i++)
+		for(int j = 0; j < GRID_CNT_Y; j++)
+		{
+			if(grid19x10[i][j].rigionindex == 1)
+			{
+				rect.x = (i-minx)*interval_w;
+				rect.y = (j-miny)*interval_h;
+				rect.width = interval_w;
+				rect.height = interval_h;
+				mask(rect).setTo(255);
+			}
+		}
+
+	std::vector< std::vector< cv::Point > > contours;
+	findContours(mask,contours, noArray(), RETR_EXTERNAL,CHAIN_APPROX_SIMPLE);
+	Mat dstImage = Mat::zeros(mask.size(),CV_8UC1);
+	drawContours(dstImage,contours, -1, Scalar(255,10,10));
+	psize = contours[0].size();
+
+	unsigned int curId;
+	if(m_display.g_CurDisplayMode == MAIN_VIEW) {
+		curId = 1;	
+	}else{
+		curId = m_curChId;
+	}
+	
+	int setx, sety = 0;
+	float floatx,floaty;
+	std::vector<cv::Point> polyWarnRoi ;
+	polyWarnRoi.resize(psize);		
+
+	floatx = contours[0][0].x + minx * interval_w;
+	floaty = contours[0][0].y + miny * interval_h;
+	map1080p2normal_point(&floatx, &floaty);
+	mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+	setx = floatx;
+	sety = floaty;
+	polyWarnRoi[0] = cv::Point(setx, sety);
+	//floaty = floaty / 2 + 540;
+	mapfullscreen2gun_pointv20(&setx, &sety);
+	polWarnRect[curId][0].x = setx;
+	polWarnRect[curId][0].y = sety;
+	for(int i =1; i < psize; i++)
+	{
+		floatx = contours[0][psize-i].x + minx * interval_w;
+		floaty = contours[0][psize-i].y + miny * interval_h;
+		map1080p2normal_point(&floatx, &floaty);
+		mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+
+		setx = floatx;
+		sety = floaty;
+		polyWarnRoi[i] = cv::Point(setx, sety);
+		
+		//floaty = floaty / 2 + 540;
+		mapfullscreen2gun_pointv20(&setx, &sety);
+		polWarnRect[curId][i].x = setx;
+		polWarnRect[curId][i].y = sety;
+
+	}
+	polwarn_count[curId] = psize;
+	m_pMovDetector->setWarningRoi(polyWarnRoi, 0);
+					
+}
+
+int CProcess::usopencvapi2()
+{
+	int psize = 0;
+	int interval_w = gun_resolu[0] / GRID_CNT_X;
+	int interval_h = gun_resolu[1] / GRID_CNT_Y;
+
+	unsigned int curId;
+	if(m_display.g_CurDisplayMode == MAIN_VIEW) {
+		curId = 1;	
+	}else{
+		curId = m_curChId;
+	}
+	
+	Mat mask = Mat::zeros(gun_resolu[1], gun_resolu[0], CV_8UC1);
+	Rect rect;
+
+	for(int i = 0; i < GRID_CNT_X; i++)
+		for(int j = 0; j < GRID_CNT_Y; j++)
+		{
+			if(grid19x10[i][j].state == 1)
+			{
+				rect.x = i * interval_w;
+				rect.y = j * interval_h;
+				rect.width = interval_w;
+				rect.height = interval_h;
+				mask(rect).setTo(255);
+			}
+		}
+
+	for(int i = 1; i < GRID_CNT_X; i++)
+		for(int j = 1; j < GRID_CNT_Y; j++)
+			{
+				int xx = i * interval_w;
+				int yy = j * interval_h;
+				mask.at<uchar>(yy,xx) = 0;
+				mask.at<uchar>(yy,xx-1) = 0;
+				mask.at<uchar>(yy,xx+1) = 0;
+				mask.at<uchar>(yy-1,xx) = 0;
+				mask.at<uchar>(yy+1,xx) = 0;
+			}
+				
+		
+	printf("%s,%d\n",__FILE__,__LINE__);
+	float floatx,floaty;
+	int setx, sety = 0;
+	std::vector< std::vector< cv::Point > > polyWarnRoi;
+	std::vector< std::vector< cv::Point > > contours;
+	findContours(mask,contours, noArray(), RETR_EXTERNAL,CHAIN_APPROX_SIMPLE);
+	Mat dstImage = Mat::zeros(mask.size(),CV_8UC1);
+	drawContours(dstImage,contours, -1, Scalar(255,10,10));
+	edge_contours = contours;
+	polyWarnRoi = contours;
+
+	for(int i = 0; i < contours.size(); i++)
+	{
+		int psize = contours[i].size();
+		floatx = contours[i][0].x;
+		floaty = contours[i][0].y;
+		map1080p2normal_point(&floatx, &floaty);
+		mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+		setx = floatx;
+		sety = floaty;
+		//polyWarnRoi[0] = cv::Point(setx, sety);
+		polyWarnRoi[i][0] = cv::Point(setx, sety);
+		//floaty = floaty / 2 + 540;
+		mapfullscreen2gun_pointv20(&setx, &sety);
+		edge_contours[i][0].x = setx;
+		edge_contours[i][0].y = sety;
+		for(int j = 1; j < contours[i].size(); j++)
+		{
+			floatx = contours[i][psize-j].x;
+			floaty = contours[i][psize-j].y;
+			map1080p2normal_point(&floatx, &floaty);
+			mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+
+			setx = floatx;
+			sety = floaty;
+			//polyWarnRoi[i] = cv::Point(setx, sety);
+			polyWarnRoi[i][j] = cv::Point(setx, sety);
+			
+			//floaty = floaty / 2 + 540;
+			mapfullscreen2gun_pointv20(&setx, &sety);
+			edge_contours[i][j].x = setx;
+			edge_contours[i][j].y = sety;
+		}
+	}
+	if(contours.size() > 3)
+	{
+        swprintf(m_display.disMenu[submenu_setmtdrigion][4], 33, L"错误，检测区域大于3个");
+	}
+	else
+	{
+        swprintf(m_display.disMenu[submenu_setmtdrigion][4], 33, L"检测区域:%d个", contours.size());
+	}
+
+	for(int i = 0; i < edge_contours.size(); i++)
+	{
+		printf("heihei... rigion %d have %d points:\n", i,edge_contours[i].size());
+		for(int j = 0; j < edge_contours[i].size(); j++)
+			printf("(%d,%d),",edge_contours[i][j].x,edge_contours[i][j].y);
+		printf("\n");
+	}
+
+	for(int i = 0; i < contours.size(); i++)
+	{
+		printf("%s,%d,i=%d\n",__FILE__,__LINE__, i);
+		m_pMovDetector->setWarningRoi(polyWarnRoi[i], i);
+	}
+	//cv::imshow("aann",dstImage);
+	//cv::waitKey(0);
+}
+
+int CProcess::cp2pointarray()
+{
+	typedef struct{
+		int state;
+		int up;
+		int down;
+		int left;
+		int right;
+	}grid_t;
+
+	int minx= GRID_CNT_X - 1;
+	int miny = GRID_CNT_Y - 1;
+	int maxx = 0;
+	int maxy = 0;
+
+	for(int i = 0; i < GRID_CNT_X; i++)
+		for(int j = 0; j < GRID_CNT_Y; j++)
+		{
+			if(grid19x10[i][j].rigionindex == 1)
+			{
+				if(i < minx) minx = i;
+				if(j < miny) miny = j;
+				if(i > maxx) maxx = i;
+				if(j > maxy) maxy = j;
+			}
+		}
+	printf("minx,maxx,miny,maxy=(%d,%d,%d,%d)\n", minx,maxx,miny,maxy);
+	int tmpw = maxx-minx + 1;
+	int tmph = maxy-miny + 1;
+	int pointw = tmpw + 1;
+	int pointh = tmph + 1;
+	grid_t gridtmp[tmpw][tmph] = {0};
+	int pointarray[pointw][pointh] = {0};
+
+	for(int i = minx; i <= maxx; i++)
+		for(int j = miny; j <= maxy; j++)
+		{
+			if(grid19x10[i][j].rigionindex == 1)
+			{
+				int tmpx = i-minx;
+				int tmpy = j-miny;
+				int tmpu = tmpy - 1;
+				int tmpd = tmpy + 1;
+				int tmpl = tmpx - 1;
+				int tmpr = tmpx + 1;
+				gridtmp[tmpx][tmpy].state = grid19x10[i][j].state;
+				if((tmpu >= 0) && (grid19x10[i][j-1].state)) gridtmp[tmpx][tmpy].up = 1;
+				if((tmpd < tmph) && (grid19x10[i][j+1].state)) gridtmp[tmpx][tmpy].down = 1;
+				if((tmpl >= 0) && (grid19x10[i-1][j].state)) gridtmp[tmpx][tmpy].left = 1;
+				if((tmpr < tmpw) && (grid19x10[i+1][j].state)) gridtmp[tmpx][tmpy].right = 1;
+			}
+		}
+
+	printf("rigion1 gridtmp has these nodes:\n");
+	for(int i = 0; i < tmpw; i++)
+		for(int j = 0; j < tmph; j++)
+		{
+			if(gridtmp[i][j].state)
+				printf("(%d,%d),",i,j);
+		}
+	printf("\n");
+
+
+	for(int i = 0; i < tmpw; i++)
+		for(int j = 0; j < tmph; j++)
+		{
+			if(gridtmp[i][j].state)
+				printf("node(%d,%d)l,r,u,d(%d,%d,%d,%d)\n",i,j,gridtmp[i][j].left,gridtmp[i][j].right,gridtmp[i][j].up,gridtmp[i][j].down);
+		}
+
+	int pminx = tmpw;
+	int pminy = tmph;
+	for(int i = 0; i < tmpw; i++)
+		for(int j = 0; j < tmph; j++)
+		{
+			if(gridtmp[i][j].state)
+			{
+				pminx = i < pminx ? i : pminx;
+				pminy = j < pminy ? j : pminy;
+				pointarray[i][j] = 1;
+				pointarray[i+1][j] = 1;
+				pointarray[i][j+1] = 1;
+				pointarray[i+1][j+1] = 1;
+			}
+		}
+
+	printf("pointarray has these points:\n");
+	for(int i = 0; i < pointw; i++)
+		for(int j = 0; j < pointh; j++)
+		{
+			if(pointarray[i][j])
+				printf("(%d,%d),", i, j);
+		}
+	printf("\n");
+
+
+	enum direction{
+		DIR_UP = 0,
+		DIR_RIGHT,
+		DIR_DOWN,
+		DIR_LEFT,
+		DIR_MAX,
+	};
+	int curx, cury, curd;
+	curx = pminx;
+	cury = pminy;
+	curd = DIR_RIGHT;
+	int tmpcnt = 0;
+	int gridx = 0;
+	int gridy = 0;
+	std::vector<cv::Point> polyWarnRoi ;
+	polyWarnRoi.push_back(cv::Point(curx, cury));
+	tmpcnt++;
+	curx++;
+	polyWarnRoi.push_back(cv::Point(curx, cury));
+	curd = DIR_UP;
+	tmpcnt++;
+	/*	
+	while((curx != pminx) || (cury != pminy))
+	{
+		switch(curd)
+		{
+			case DIR_RIGHT:
+				if((curx<tmpw) && (pointarray[curx+1][cury]))
+				{
+					gridx = curx;
+					gridy = cury - 1;
+
+					if(curx == 0)
+					{
+						curx = curx - 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+						curd = ((curd+2)%DIR_MAX+1)%DIR_MAX;
+					}
+					else if(cury == 0)
+					{
+						curx = curx + 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+						curd = ((curd+2)%DIR_MAX+1)%DIR_MAX;
+					}
+					else if(gridtmp[gridx][gridy].right)
+					{
+						curx = curx + 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+						curd = ((curd+2)%DIR_MAX+1)%DIR_MAX;
+					}
+					else
+					{
+						cury = cury + 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+					}
+				}
+				else
+				{
+					curd = (curd + 1) % DIR_MAX;
+				}
+
+				break;
+			case DIR_DOWN:
+				if((cury<tmph) && (pointarray[curx][cury+1]))
+				{
+					gridx = curx - 1;
+					gridy = cury - 1;
+					if(cury == 0)
+					{
+						cury = cury + 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+						curd = ((curd+2)%DIR_MAX+1)%DIR_MAX;
+					}
+					else if(curx == 0)
+					{
+						curd = (curd + 1) % DIR_MAX;
+					}
+					else if(gridtmp[gridx][gridy].down)
+					{
+						cury = cury + 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+						curd = ((curd+2)%DIR_MAX+1)%DIR_MAX;
+					}
+					else
+					{
+						curx = curx - 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+					}
+				}
+				else
+				{
+					curd = (curd + 1) % DIR_MAX;
+				}
+				break;
+
+			case DIR_LEFT:
+				if((curx>0) && (pointarray[curx-1][cury]))
+				{
+					gridx = curx;
+					gridy = cury - 1;
+					if(curx == tmpw)
+					{
+						curx = curx - 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+						curd = ((curd+2)%DIR_MAX+1)%DIR_MAX;
+					}
+					else if(gridtmp[gridx][gridy].left)
+					{
+						curx = curx - 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+						curd = ((curd+2)%DIR_MAX+1)%DIR_MAX;
+					}
+					else
+					{
+						cury = cury - 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+					}
+				}
+				else
+				{
+					curd = (curd + 1) % DIR_MAX;
+				}
+				break;
+				
+			case DIR_UP:
+				if((cury>0) && (pointarray[curx][cury-1]))
+				{
+					gridx = curx;
+					gridy = cury;
+					if(cury == tmph)
+					{
+						cury = cury - 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+						curd = ((curd+2)%DIR_MAX+1)%DIR_MAX;
+					}
+					else if(gridtmp[gridx][gridy].up)
+					{
+						cury = cury - 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+						curd = ((curd+2)%DIR_MAX+1)%DIR_MAX;
+					}
+					else
+					{
+						curx = curx + 1;
+						printf("%s,%d, push point(%d,%d)\n",__FILE__, __LINE__, curx,cury);
+						polyWarnRoi.push_back(cv::Point(curx, cury));
+						tmpcnt++;
+					}
+				}
+				else
+				{
+					curd = (curd + 1) % DIR_MAX;
+				}
+				break;
+			default:
+				break;
+		}
+
+	}
+	*/
+	printf("edge point:\n");
+	for(int i = 0; i < tmpcnt; i++)
+		printf("(%d,%d),", polyWarnRoi[i].x, polyWarnRoi[i].y);
+	printf("\n");	
+}
+
+int CProcess::isborder(int rigionindex, int x, int y)
+{
+	for(int i = 0; i < GRID_CNT_X; i++)
+		for(int j = 0; j < GRID_CNT_Y; j++)
+		{
+			if(grid19x10[i][j].rigionindex == rigionindex)
+			{
+				if((((x == (i - 1)) || (x == (i + 1))) && (y == j)) || (((y == (j - 1)) || (y == (j + 1))) && (x == i)))
+				{
+					printf("node(%d,%d)is border of rigion%d node(%d,%d)\n", x, y, rigionindex, i, j);
+					return 1;
+				}
+			}
+		}
+	printf("node(%d,%d)is not the border of rigion%d\n", x, y, rigionindex);
+	return 0;
+}
+
+int CProcess::createrigion(int rigionindex, int x, int y)
+{
+	grid19x10[x][y].rigionindex = rigionindex;
+	mtdcnt++;
+}
+
+int CProcess::mergenode(int rigionindex, int x, int y)
+{
+	grid19x10[x][y].rigionindex = rigionindex;
+}
+
+int CProcess::mergerigion(int rigionindex_dst, int rigionindex_src)
+{
+	for(int i = 0; i < GRID_CNT_X; i++)
+		for(int j = 0; j < GRID_CNT_Y; j++)
+		{
+			if(grid19x10[i][j].rigionindex == rigionindex_src)
+			{
+				grid19x10[i][j].rigionindex = rigionindex_dst;
+				printf("%s,%d,merge node(%d,%d) from rigion%d to rigion%d\n", __FILE__,__LINE__, i, j, rigionindex_src, rigionindex_dst);
+			}
+		}
+}
 
 /////////////////////////////////////////////////////
 //int majormmtid=0;
@@ -3732,6 +4510,8 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_INPUT_CFGSAVE,            MSGAPI_SaveCfgcmd,              0);	
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_MVDETECT,             	MSGAPI_setMtdState,             0);
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_MVDETECTSELECT,           MSGAPI_setMtdSelect,            0);	
+    MSGDRIV_attachMsgFun(handle,    MSGID_EXT_MVDETECT_SETRIGIONSTAT,       MSGAPI_setMtdSetRigionStat,            0);
+    MSGDRIV_attachMsgFun(handle,    MSGID_EXT_MVDETECT_SETRIGION,       MSGAPI_setMtdSetRigion,            0);
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UPDATE_ALG,             	MSGAPI_update_alg,              0);	
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UPDATE_OSD,             	MSGAPI_update_osd,              0);	
     MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UPDATE_CAMERA,            MSGAPI_update_camera,           0);	
@@ -3740,6 +4520,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_MENUSWITCH,     MSGAPI_update_menuindex,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UPMENU,     MSGAPI_up_menu,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_DOWNMENU,     MSGAPI_down_menu,        	0);
+	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SMR,     MSGAPI_save_mtdrigion,        	0);
 	
 
     return 0;
@@ -3836,7 +4617,17 @@ void CProcess::MSGAPI_setMtdSelect(long lParam )
 
 	sThis->msgdriv_event(MSGID_EXT_MVDETECTSELECT,NULL);
 }
-	
+
+void CProcess::MSGAPI_setMtdSetRigionStat(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_MVDETECT_SETRIGIONSTAT,NULL);
+}
+
+void CProcess::MSGAPI_setMtdSetRigion(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_MVDETECT_SETRIGION,NULL);
+}
+
 void CProcess::MSGAPI_setAimRefine(long lParam)
 {
 	CMD_EXT *pIStuts = sThis->extInCtrl;
@@ -4603,4 +5394,9 @@ void CProcess::MSGAPI_up_menu(long lParam)
 void CProcess::MSGAPI_down_menu(long lParam)
 {
 	sThis->msgdriv_event(MSGID_EXT_DOWNMENU,NULL);
+}
+
+void CProcess::MSGAPI_save_mtdrigion(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_SMR,NULL);
 }

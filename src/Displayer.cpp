@@ -1437,8 +1437,10 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 	//mouse event:
 	if(m_initPrm.mousefunc != NULL)
 		glutMouseFunc(m_initPrm.mousefunc);//GLUT_LEFT_BUTTON GLUT_MIDDLE_BUTTON GLUT_RIGHT_BUTTON; GLUT_DOWN GLUT_UP
-	if(m_initPrm.passivemotionfunc != NULL)
+	if(m_initPrm.passivemotionfunc != NULL)//drag mouse when button is unpressed
 		glutPassiveMotionFunc(m_initPrm.passivemotionfunc);
+	if(m_initPrm.motionfunc != NULL)//drag mouse when button is pressed
+		glutMotionFunc(m_initPrm.motionfunc);
 	
 	if(m_initPrm.menufunc != NULL)
 	{
@@ -1629,7 +1631,7 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 		glutAddSubMenu("Auto Linkage Enable",sub_menu);
 		glutAddSubMenu("Display Mode",sub_menu2);
 		glutAddSubMenu("Setup",sub_menu3);
-		glutAttachMenu(GLUT_RIGHT_BUTTON);
+		//glutAttachMenu(GLUT_RIGHT_BUTTON);
 	}
 
 	if(m_initPrm.visibilityfunc != NULL)
@@ -2432,7 +2434,8 @@ int CDisplayer::menu_init()
             {"扫描方式均为逐行扫描","格式","应用","返回"},
             {"使用串口设置","使用网络设置","返回"},
             {"波特率","球机地址","球机协议","工作模式","返回"},
-            {"网络协议","IP地址","登录用户名","登录密码","返回"}};
+            {"网络协议","IP地址","登录用户名","登录密码","返回"},
+            {"检测区域设置","用鼠标指针左键框选、点选:增加区域","用鼠标指针右键框选、点选:删除区域","按回车保存设置，按2返回"}};
 
 
 	
@@ -2459,6 +2462,18 @@ int CDisplayer::menu_init()
 	disMenuBuf[submenu_setball][2].posy = 4 * 60;
 	disMenuBuf[submenu_setcom][4].posy = 6 * 60;
 	disMenuBuf[submenu_setnet][4].posy = 6 * 60;
+
+	disMenuBuf[submenu_setmtdrigion][0].posx = 960 - strlen((char *)menubuf[submenu_setmtdrigion][0])*3;
+	disMenuBuf[submenu_setmtdrigion][1].posx = 960 - strlen((char *)menubuf[submenu_setmtdrigion][1])*3;
+	disMenuBuf[submenu_setmtdrigion][2].posx = 960 - strlen((char *)menubuf[submenu_setmtdrigion][2])*3;
+	disMenuBuf[submenu_setmtdrigion][3].posx = 960 - strlen((char *)menubuf[submenu_setmtdrigion][3])*3;
+	disMenuBuf[submenu_setmtdrigion][4].posx = 1600;
+	disMenuBuf[submenu_setmtdrigion][4].posy = 60;
+	disMenuBuf[submenu_setmtdrigion][0].color = 1;
+	disMenuBuf[submenu_setmtdrigion][1].color = 1;
+	disMenuBuf[submenu_setmtdrigion][2].color = 1;
+	disMenuBuf[submenu_setmtdrigion][3].color = 1;
+	disMenuBuf[submenu_setmtdrigion][4].color = 3;
 
 	disMenuBuf[mainmenu1][2].color= 3;
 	disMenuBuf[mainmenu2][0].color= 3;

@@ -3868,6 +3868,14 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 		m_display.disresol_type = pMenuStatus->resol_type;
 		swprintf(m_display.disMenu[submenu_setimg][1], 33, L"%s", resolbuf[m_display.disresol_type]);
 	}
+
+	if(msgId == MSGID_EXT_SETBAUD){
+
+			 unsigned char baudlbuf[MAX_BAUDID][128] = {"波特率     2400","波特率     4800","波特率     9600","波特率     115200"};
+
+					m_display.disbaud_type = pMenuStatus->baud_type;
+					swprintf(m_display.disMenu[submenu_setcom][0], 33, L"%s", baudlbuf[m_display.disbaud_type]);
+				}
 	
 	
 }
@@ -4530,7 +4538,7 @@ int CProcess::mergerigion(int rigionindex_dst, int rigionindex_src)
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_DOWNMENU,     MSGAPI_down_menu,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SMR,     MSGAPI_save_mtdrigion,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SETRESOL,     MSGAPI_set_resol,        	0);
-	
+	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SETBAUD, 	MSGAPI_set_baud,			0);
 
     return 0;
 }
@@ -5414,4 +5422,12 @@ void CProcess::MSGAPI_set_resol(long lParam)
 {
 	sThis->msgdriv_event(MSGID_EXT_SETRESOL,NULL);
 }
+
+
+void CProcess::MSGAPI_set_baud(long lParam)
+{
+
+	sThis->msgdriv_event(MSGID_EXT_SETBAUD,NULL);
+}
+
 

@@ -725,6 +725,11 @@ void app_ctrl_upMenu()
 			pMenuStatus->resol_type = (pMenuStatus->resol_type + 1) % maxresolid;
 			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
 		}
+		else if( (submenu_setcom == menustate) && (pMenuStatus->baud_light == 1) ){
+
+			pMenuStatus->baud_type = (pMenuStatus->baud_type + 1) % MAX_BAUDID;
+			MSGDRIV_send(MSGID_EXT_SETBAUD, 0);
+		}
 		else if(pIStuts->menuarray[menustate].pointer > 0)
 		{
 			pIStuts->menuarray[menustate].pointer--;
@@ -749,6 +754,11 @@ void app_ctrl_downMenu()
 		{
 			pMenuStatus->resol_type = (pMenuStatus->resol_type + maxresolid - 1) % maxresolid;
 			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
+		}
+		else if((submenu_setcom == menustate) && (pMenuStatus->baud_light == 1))
+		{
+			pMenuStatus->baud_type = (pMenuStatus->baud_type + MAX_BAUDID - 1) % MAX_BAUDID;
+			MSGDRIV_send(MSGID_EXT_SETBAUD, 0);
 		}
 		else if(pIStuts->menuarray[menustate].pointer < pIStuts->menuarray[menustate].submenu_cnt - 1)
 		{

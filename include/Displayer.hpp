@@ -364,7 +364,7 @@ public:
 	osdbuffer_t disMenuBuf[32][MAX_SUBMENU];
 	wchar_t disMenu[menumaxid][MAX_SUBMENU][33];
 	int disresol_type;
-	
+	int disbaud_type;
 protected:
 	DS_InitPrm m_initPrm;
 	DS_Render m_renders[DS_RENDER_MAX];

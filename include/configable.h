@@ -241,6 +241,15 @@ enum resol_t{
 	maxresolid,
 };
 
+enum baud_t{
+	baud_2400,
+	baud_4800,
+	baud_9600,
+	baud_15200,
+	MAX_BAUDID
+};
+
+
 #define MAIN_CHID					video_gaoqing
 #define PAL_VIRCHID					0
 

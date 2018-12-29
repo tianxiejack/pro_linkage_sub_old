@@ -204,6 +204,7 @@ protected:
 	 static void MSGAPI_setMtdSetRigion(long lParam);
 	 static void MSGAPI_save_mtdrigion(long lParam);
 	 static void MSGAPI_set_resol(long lParam);
+	 static void MSGAPI_set_baud(long lParam);
 
 private:
 	ACK_EXT extOutAck;

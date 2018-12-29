@@ -719,13 +719,17 @@ void app_ctrl_upMenu()
 	int menustate = pIStuts->MenuStat; 
 	if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
 	{
-
+<<<<<<< HEAD
+	
+		if(pIStuts->menuarray[menustate].pointer > 0)
+=======
 		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
 		{
 			pMenuStatus->resol_type = (pMenuStatus->resol_type + 1) % maxresolid;
 			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
 		}
 		else if(pIStuts->menuarray[menustate].pointer > 0)
+>>>>>>> 5ec4742bd6d236ac823ebc5a6bd053474f17c7f6
 		{
 			pIStuts->menuarray[menustate].pointer--;
 			MSGDRIV_send(MSGID_EXT_UPMENU, 0);

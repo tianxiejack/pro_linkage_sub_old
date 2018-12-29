@@ -2431,7 +2431,7 @@ int CDisplayer::menu_init()
             {"枪机内参标定","球机内参标定","返回"},
             {"枪球自动标定","枪球手动标定","返回"},
             {"检测区域选择","目标个数","跟踪持续时间","最大目标面积","最小目标面积","灵敏度","返回"},
-            {"扫描方式均为逐行扫描","格式","应用","返回"},
+            {"扫描方式均为逐行扫描","格式 1920x1080@60Hz","应用","返回"},
             {"使用串口设置","使用网络设置","返回"},
             {"波特率     9600","球机地址   001","球机协议   PALCO-D","工作模式   485半双工","返回"},
             {"网络协议","IP地址","登录用户名","登录密码","返回"},
@@ -3411,10 +3411,10 @@ int CDisplayer::MenuFunc(int index)
 			 y = disMenuBuf[index][i].posy;
 		 	 a = disMenuBuf[index][i].alpha;
 			 color = disMenuBuf[index][i].color;
-			 font = plat->extInCtrl->osdTextFont;
-			 fontsize = plat->extInCtrl->osdTextSize;
-			 //font = ;
-			 //fontsize = ;
+			 //font = plat->extInCtrl->osdTextFont;
+			 //fontsize = plat->extInCtrl->osdTextSize;
+			 font = 1;
+			 fontsize = 4;
 
 			switch(color)
 			{

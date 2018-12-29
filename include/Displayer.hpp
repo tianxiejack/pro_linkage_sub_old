@@ -363,6 +363,7 @@ public:
 	AppMenu dismenuarray[menumaxid];
 	osdbuffer_t disMenuBuf[32][MAX_SUBMENU];
 	wchar_t disMenu[menumaxid][MAX_SUBMENU][33];
+	int disresol_type;
 	
 protected:
 	DS_InitPrm m_initPrm;

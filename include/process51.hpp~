@@ -20,11 +20,14 @@ using namespace cv;
 typedef struct{
 	int resol_deng;//1:deng liang   0:deng mie
 	int resol_type;
-
+<<<<<<< HEAD
 	int baud_light;
 	int baud_type;// 2400,4800,9600, 115200
 }menu_param_t;
 
+=======
+}menu_param_t;
+>>>>>>> 5ec4742bd6d236ac823ebc5a6bd053474f17c7f6
 
 class CProcess : public CVideoProcess
 {

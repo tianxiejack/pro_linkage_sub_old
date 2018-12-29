@@ -396,6 +396,7 @@ CVideoProcess::CVideoProcess()
 	
 #if __MOVE_DETECT__
 	m_pMovDetector	=NULL;
+	detect_vect_arr.resize(MAX_MTDRIGION_NUM);
 #endif
 
 #if __MMT__
@@ -2159,10 +2160,10 @@ void	CVideoProcess::DeInitMvDetect()
 void CVideoProcess::NotifyFunc(void *context, int chId)
 {
 	CVideoProcess *pParent = (CVideoProcess*)context;
-	//pThis->detect_vect.clear();
 	pThis->detect_vect_arr.clear();
 	int cnt = pThis->detect_vect_arr.size() > 3 ? 3 : pThis->detect_vect_arr.size();
-	for(int i = 0; i < cnt; i++)
+	//for(int i = 0; i < cnt; i++)
+	for(int i = 0; i < 1; i++)
 	{
 		pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect_arr[i],i);
 	}

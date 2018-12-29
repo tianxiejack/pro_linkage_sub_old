@@ -1857,7 +1857,7 @@ int CVideoProcess::ReAcqTarget()
 #endif
 
 extern void cutColor(cv::Mat src, cv::Mat &dst, int code);
-static int saveCount = 0;
+ int saveCount = 0;
 #define TM
 #undef TM 
 int CVideoProcess::process_frame(int chId, int virchId, Mat frame)

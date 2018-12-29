@@ -214,14 +214,15 @@ typedef enum _GB_WorkMode{
 	MODE_COUNT		
 }GB_WorkMode;
 
-typedef struct _UI_CONNECT_ACTION{
-	
+typedef struct _UI_CONNECT_ACTION{	
 	int CurCalibraCam;   // gun camera == 0;  ball camera == 1;
-
-
 }UI_CONNECT_ACTION;
 
-
+typedef enum _GB_CLICK_MODE{
+	CLICK_MODE=0,
+	RECT_SELECT_MODE,
+	MOUSE_MODE_COUNT
+}GB_CLICK_MODE;
 
 //================================================================
 enum devvideo{

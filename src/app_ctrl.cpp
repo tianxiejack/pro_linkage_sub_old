@@ -671,8 +671,10 @@ void app_ctrl_enter()
 	}
 	else if(submenu_setcom == pIStuts->MenuStat)
 	{
-		if(4 == pIStuts->menuarray[submenu_setcom].pointer)
+		if(4 == pIStuts->menuarray[submenu_setcom].pointer){
 			app_ctrl_setMenuStat(submenu_setball);
+		}
+		
 	}
 	else if(submenu_setnet == pIStuts->MenuStat)
 	{
@@ -693,6 +695,7 @@ void app_ctrl_upMenu()
 	int menustate = pIStuts->MenuStat; 
 	if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
 	{
+	
 		if(pIStuts->menuarray[menustate].pointer > 0)
 		{
 			pIStuts->menuarray[menustate].pointer--;

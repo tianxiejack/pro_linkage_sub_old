@@ -87,7 +87,8 @@ public:
 		}
 		return true;
 	}
-	void FindCorners();
+	void FindCorners();	
+	void FindPatternCorners();
 	void getObjectCoordinates();
 	void calibrate();
 public:
@@ -194,6 +195,7 @@ public:
 class DetectCorners:public WorkThread
 {
 	private:
+		char savePicname[20];
 		Mat corner_yuyv;
 		Mat corner_frame;
 		int successImageNum ;  

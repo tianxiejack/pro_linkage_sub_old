@@ -18,6 +18,7 @@ int gun_resolu[2] = {1920, 1080};
 extern MenuDisplay g_displayMode;
 extern bool showDetectCorners;
 bool saveOnePicture = false;
+extern bool start_calibrate;
 extern int captureCount;
 OSDSTATUS gConfig_Osd_param = {0};
 UTCTRKSTATUS gConfig_Alg_param = {0};
@@ -2867,7 +2868,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			app_ctrl_setMenu();  // Open Menu information
 			break;
 		case 3:
-			
+			start_calibrate = true;
 			break;
 		case 4:	
 			//showDetectCorners = true;			
@@ -3032,8 +3033,10 @@ void CProcess::OnKeyDwn(unsigned char key)
 			m_display.changeDisplayMode(SIDE_BY_SIDE);
 		}
 		
-		if(key == 'q') {
-			m_display.switchDisplayMode();
+		if(key == 'Q') {
+			//m_display.switchDisplayMode();
+			MenuDisplay nextMode = MenuDisplay((int)(g_displayMode+1) % MENU_DISPLAY_COUNT);
+			g_displayMode = nextMode;
 		}
 
 		if(key == 'M' || key == 'm' ) {
@@ -3848,8 +3851,9 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	}
 	if(msgId == MSGID_EXT_SMR)
 	{
-		getmtdedge();
+		getmtdedge();// press Enter
 	}
+	
 	
 }
 

@@ -2433,7 +2433,7 @@ int CDisplayer::menu_init()
             {"检测区域选择","目标个数","跟踪持续时间","最大目标面积","最小目标面积","灵敏度","返回"},
             {"扫描方式均为逐行扫描","格式","应用","返回"},
             {"使用串口设置","使用网络设置","返回"},
-            {"波特率","球机地址","球机协议","工作模式","返回"},
+            {"波特率     9600","球机地址   001","球机协议   PALCO-D","工作模式   485半双工","返回"},
             {"网络协议","IP地址","登录用户名","登录密码","返回"},
             {"检测区域设置","用鼠标指针左键框选、点选:增加区域","用鼠标指针右键框选、点选:删除区域","按回车保存设置，按2返回"}};
 
@@ -3196,16 +3196,17 @@ ArrayText::iterator itr2 = run_Mode.workMode.begin();
 #endif
 /******************************************************************************************************************************/
 	if(displayMode == MAIN_VIEW){
-		chinese_osd(50,150,L"工作模式：",1,4,100,180,200,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+		int fontx = 80;
+		int fonty = 80;
 		switch(g_workMode){
 			case HANDLE_LINK_MODE:
-				chinese_osd(80,200,L"手动联动模式",1,4,100,180,200,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+				chinese_osd(fontx,fonty,L"手动联动",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 				break;
 			case AUTO_LINK_MODE:
-				chinese_osd(80,200,L"自动联动模式",1,4,100,180,200,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+				chinese_osd(fontx,fonty,L"自动联动",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 				break;
 			case ONLY_BALL_MODE:
-				chinese_osd(80,200,L"单控球机模式",1,4,100,180,200,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+				chinese_osd(fontx,fonty,L"单控球机",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 				break;
 			default:
 				break;	

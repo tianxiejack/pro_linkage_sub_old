@@ -1726,22 +1726,19 @@ osdindex++;	//cross aim
 					else
 						color = 3;
 
-					
-						if(color == 6)
-						{
-							reMapCoords(((*plist).targetRect.x + (*plist).targetRect.width/2) + 480,
-											((*plist).targetRect.y - (*plist).targetRect.height/2) - 270 ,false);
-						}
+					recttmp.x = (*plist).targetRect.x;
+					recttmp.y = (*plist).targetRect.y;
+					recttmp.w = (*plist).targetRect.width;
+					recttmp.h = (*plist).targetRect.height;
+					recttmp = mapfullscreen2gunv20(recttmp);
+					tmp.x = recttmp.x;
+					tmp.y = recttmp.y;
+					tmp.width = recttmp.w;
+					tmp.height = recttmp.h;
 
-						recttmp.x = (*plist).targetRect.x;
-						recttmp.y = (*plist).targetRect.y;
-						recttmp.w = (*plist).targetRect.width;
-						recttmp.h = (*plist).targetRect.height;
-						recttmp = mapfullscreen2gunv20(recttmp);
-						tmp.x = recttmp.x;
-						tmp.y = recttmp.y;
-						tmp.width = recttmp.w;
-						tmp.height = recttmp.h;
+					if(color == 6)
+						reMapCoords(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
+
 					DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 				}
 			}
@@ -2641,71 +2638,63 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	int delta_X ;
 	Point opt;
 	
-	if(g_sysParam->isEnable_AutoDetectMoveTargets())
+	switch(m_display.g_CurDisplayMode) 
 	{
-		opt = Point(x,y);
+		case PREVIEW_MODE:	
+			offset_x = 960;
+			offset_y = 0;
+			break;
+		case MAIN_VIEW:
+			offset_x =0;
+			offset_y = 540;
+			break;			
+		default:
+			break;
+	}
+
+	LeftPoint.x -= offset_x;
+	RightPoint.x -=offset_x;
+	LeftPoint.y -= offset_y;
+	RightPoint.y -=offset_y;
+	
+	delta_X = abs(LeftPoint.x - RightPoint.x) ;
+
+	if(mode) {
+		zoomPos = checkZoomPosTable(delta_X);		
+	}
+	if(mode)
+	{
+		if(LeftPoint.x < RightPoint.x) {
+			point_X = abs(LeftPoint.x - RightPoint.x) /2 + LeftPoint.x;
+			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + LeftPoint.y;	
+		}else{
+			point_X = abs(LeftPoint.x - RightPoint.x) /2 + RightPoint.x;
+			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
+		}
 	}
 	else
 	{
-		switch(m_display.g_CurDisplayMode) 
-		{
-			case PREVIEW_MODE:	
-				offset_x = 960;
-				offset_y = 0;
-				break;
-			case MAIN_VIEW:
-				offset_x =0;
-				offset_y = 540;
-				break;			
-			default:
-				break;
-		}
+		point_X = (x - offset_x);
+		point_Y = (y- offset_y);
+	}
 	
-		LeftPoint.x -= offset_x;
-		RightPoint.x -=offset_x;
-		LeftPoint.y -= offset_y;
-		RightPoint.y -=offset_y;
-		
-		delta_X = abs(LeftPoint.x - RightPoint.x) ;
-
-		if(mode) {
-			zoomPos = checkZoomPosTable(delta_X);		
-		}
-		if(mode)
-		{
-			if(LeftPoint.x < RightPoint.x) {
-				point_X = abs(LeftPoint.x - RightPoint.x) /2 + LeftPoint.x;
-				point_Y = abs(LeftPoint.y - RightPoint.y) /2 + LeftPoint.y;	
-			}else{
-				point_X = abs(LeftPoint.x - RightPoint.x) /2 + RightPoint.x;
-				point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
-			}
-		}
-		else
-		{
-			point_X = (x - offset_x);
-			point_Y = (y- offset_y);
-		}
- 	
-		switch(m_display.g_CurDisplayMode) {
-			case PREVIEW_MODE:
-				opt = Point( point_X*2, point_Y*2 );	
-				break;
-			case MAIN_VIEW:
-				opt = Point( x, (y-offset_y)*2 );
-				break;		
-			default:
-				break;
-		}
-
-		//printf("......................................>>>  Gun Image Point: < %d , %d >\r\n", opt.x, opt.y);
-		//cout << "g_camParams.cameraMatrix_gun = " << g_camParams.cameraMatrix_gun << endl;
-		//cout << "g_camParams.distCoeffs_gun = " << g_camParams.distCoeffs_gun << endl;
-		//cout << "g_camParams.cameraMatrix_ball = " << g_camParams.cameraMatrix_ball << endl;
-		//cout << "g_camParams.homography = " << g_camParams.homography << endl;
+	switch(m_display.g_CurDisplayMode) {
+		case PREVIEW_MODE:
+			opt = Point( point_X*2, point_Y*2 );	
+			break;
+		case MAIN_VIEW:
+			opt = Point( x, (y-offset_y)*2 );
+			break;		
+		default:
+			break;
 	}
 
-	
+	//printf("......................................>>>  Gun Image Point: < %d , %d >\r\n", opt.x, opt.y);
+	//cout << "g_camParams.cameraMatrix_gun = " << g_camParams.cameraMatrix_gun << endl;
+	//cout << "g_camParams.distCoeffs_gun = " << g_camParams.distCoeffs_gun << endl;
+	//cout << "g_camParams.cameraMatrix_ball = " << g_camParams.cameraMatrix_ball << endl;
+	//cout << "g_camParams.homography = " << g_camParams.homography << endl;
+
 	std::vector<cv::Point2d> distorted, normalizedUndistorted;
 	distorted.push_back(cv::Point2d(opt.x, opt.y));
 	undistortPoints(distorted,normalizedUndistorted,g_camParams.cameraMatrix_gun,g_camParams.distCoeffs_gun);

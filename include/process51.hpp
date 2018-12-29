@@ -17,6 +17,13 @@ using namespace cv;
 #define SPECIAL_KEY_PAGEUP 		104
 #define SPECIAL_KEY_PAGEDOWN 	105
 
+typedef struct{
+	int resol_deng;//1:deng liang   0:deng mie
+	int resol_type;
+	int baud_light;
+	int baud_type;// 2400,4800,9600, 115200
+}menu_param_t;
+
 
 class CProcess : public CVideoProcess
 {

@@ -671,7 +671,10 @@ void app_ctrl_enter()
 	}
 	else if(submenu_setcom == pIStuts->MenuStat)
 	{
-		if(4 == pIStuts->menuarray[submenu_setcom].pointer){
+		if(0 == pIStuts->menuarray[submenu_setcom].pointer){
+				pMenuStatus->baud_light= !pMenuStatus->baud_light;
+		}
+		else if(4 == pIStuts->menuarray[submenu_setcom].pointer){
 			app_ctrl_setMenuStat(submenu_setball);
 		}
 		

@@ -34,6 +34,8 @@ extern CamParameters g_camParams;
 Point dest_ballPoint = Point(-100,-100);
 extern SingletonSysParam* g_sysParam;
 extern GB_WorkMode g_workMode;
+extern menu_param_t *msgextMenuCtrl;
+
 void inputtmp(unsigned char cmdid)
 {
 	plat->OnKeyDwn(cmdid);
@@ -145,6 +147,10 @@ CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16
 	rendpos[3].h=vdisWH[0][1]/3;
 
 	msgextInCtrl = extInCtrl;
+	msgextMenuCtrl = &extMenuCtrl;
+	extMenuCtrl.resol_deng = 0;
+	extMenuCtrl.resol_type = r1920x1080_f60;
+	
 	sThis = this;
 	plat = this;
 
@@ -1661,8 +1667,9 @@ osdindex++;	//cross aim
 					DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);
 				}
 			}
-			Osdflag[osdindex]=0;
 */
+			Osdflag[osdindex]=0;
+
 		}
 
 		if(m_bMoveDetect)
@@ -1739,7 +1746,6 @@ osdindex++;	//cross aim
 				}
 			}
 */
-			
 			Osdflag[osdindex]=1;
 		}
 	}
@@ -3109,6 +3115,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 {
 	int tempvalue=0;
 	CMD_EXT *pIStuts = extInCtrl;
+	menu_param_t *pMenuStatus = &extMenuCtrl;
 	CMD_EXT *pInCmd = NULL;
 	CMD_EXT tmpCmd = {0};
 	if(msgId == MSGID_EXT_INPUT_SENSOR || msgId == MSGID_EXT_INPUT_ENPICP)
@@ -3861,6 +3868,14 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	{
 		getmtdedge();
 	}
+	if(msgId == MSGID_EXT_SETRESOL)
+	{
+        unsigned char resolbuf[maxresolid][128] = {
+            "格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
+
+		m_display.disresol_type = pMenuStatus->resol_type;
+		swprintf(m_display.disMenu[submenu_setimg][1], 33, L"%s", resolbuf[m_display.disresol_type]);
+	}
 	
 }
 
@@ -4521,6 +4536,7 @@ int CProcess::mergerigion(int rigionindex_dst, int rigionindex_src)
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UPMENU,     MSGAPI_up_menu,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_DOWNMENU,     MSGAPI_down_menu,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SMR,     MSGAPI_save_mtdrigion,        	0);
+	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SETRESOL,     MSGAPI_set_resol,        	0);
 	
 
     return 0;
@@ -5400,3 +5416,9 @@ void CProcess::MSGAPI_save_mtdrigion(long lParam)
 {
 	sThis->msgdriv_event(MSGID_EXT_SMR,NULL);
 }
+
+void CProcess::MSGAPI_set_resol(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_SETRESOL,NULL);
+}
+

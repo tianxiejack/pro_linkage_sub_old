@@ -17,6 +17,10 @@ using namespace cv;
 #define SPECIAL_KEY_PAGEUP 		104
 #define SPECIAL_KEY_PAGEDOWN 	105
 
+typedef struct{
+	int resol_deng;//1:deng liang   0:deng mie
+	int resol_type;
+}menu_param_t;
 
 class CProcess : public CVideoProcess
 {
@@ -119,6 +123,7 @@ public:
 	void DrawMtdRedGrid(int flag);
 	
 	CMD_EXT* extInCtrl;
+	menu_param_t extMenuCtrl;
 	static CProcess *sThis;
 	void process_osd_test(void *pPrm);
 
@@ -194,6 +199,7 @@ protected:
 	 static void MSGAPI_setMtdSetRigionStat(long lParam);
 	 static void MSGAPI_setMtdSetRigion(long lParam);
 	 static void MSGAPI_save_mtdrigion(long lParam);
+	 static void MSGAPI_set_resol(long lParam);
 
 private:
 	ACK_EXT extOutAck;

@@ -4,6 +4,10 @@
 #include "msgDriv.h"
 #include "configable.h"
 #include <iostream>
+//#include <glew.h>
+#include <glut.h>
+#include "process51.hpp"
+
 using namespace std;
 
 extern UI_CONNECT_ACTION g_connectAction;
@@ -12,6 +16,7 @@ extern bool showDetectCorners;
 extern GB_WorkMode g_workMode;
 extern MenuDisplay g_displayMode;
 CMD_EXT *msgextInCtrl;
+menu_param_t *msgextMenuCtrl;
 #define Coll_Save 0 //   1:quit coll is to save  cross  or  0:using save funtion to cross axis
 #define FrColl_Change 1 //0:frcoll v1.00 1:frcoll v1.01     //ver1.01 is using 
 
@@ -593,7 +598,11 @@ void app_ctrl_enter()
 	char *init_passwd = "000000";
 	if(msgextInCtrl==NULL)
 		return;
+
+	if(msgextMenuCtrl==NULL)
+		return;
 	CMD_EXT *pIStuts = msgextInCtrl;
+	menu_param_t *pMenuStatus = msgextMenuCtrl;
 
 	if((mainmenu0 == pIStuts->MenuStat) || (mainmenu1 == pIStuts->MenuStat))
 	{
@@ -657,7 +666,15 @@ void app_ctrl_enter()
 	}
 	else if(submenu_setimg == pIStuts->MenuStat)
 	{
-		if(3 == pIStuts->menuarray[submenu_setimg].pointer)
+		if(1 == pIStuts->menuarray[submenu_setimg].pointer)
+		{
+			pMenuStatus->resol_deng = !pMenuStatus->resol_deng;
+		}
+		else if(2 == pIStuts->menuarray[submenu_setimg].pointer)
+		{
+
+		}
+		else if(3 == pIStuts->menuarray[submenu_setimg].pointer)
 			app_ctrl_setMenuStat(mainmenu2);
 	}
 	else if(submenu_setball == pIStuts->MenuStat)
@@ -689,11 +706,20 @@ void app_ctrl_upMenu()
 {
 	if(msgextInCtrl==NULL)
 		return;
+	if(msgextMenuCtrl==NULL)
+		return;
+		
 	CMD_EXT *pIStuts = msgextInCtrl;
+	menu_param_t *pMenuStatus = msgextMenuCtrl;
 	int menustate = pIStuts->MenuStat; 
 	if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
 	{
-		if(pIStuts->menuarray[menustate].pointer > 0)
+		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
+		{
+			pMenuStatus->resol_type = (pMenuStatus->resol_type + 1) % maxresolid;
+			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
+		}
+		else if(pIStuts->menuarray[menustate].pointer > 0)
 		{
 			pIStuts->menuarray[menustate].pointer--;
 			MSGDRIV_send(MSGID_EXT_UPMENU, 0);
@@ -705,12 +731,20 @@ void app_ctrl_downMenu()
 {
 	if(msgextInCtrl==NULL)
 		return;
+	if(msgextMenuCtrl==NULL)
+		return;
 	CMD_EXT *pIStuts = msgextInCtrl;
+	menu_param_t *pMenuStatus = msgextMenuCtrl;
 
 	int menustate = pIStuts->MenuStat; 
 	if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
 	{
-		if(pIStuts->menuarray[menustate].pointer < pIStuts->menuarray[menustate].submenu_cnt - 1)
+		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
+		{
+			pMenuStatus->resol_type = (pMenuStatus->resol_type + maxresolid - 1) % maxresolid;
+			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
+		}
+		else if(pIStuts->menuarray[menustate].pointer < pIStuts->menuarray[menustate].submenu_cnt - 1)
 		{
 			pIStuts->menuarray[menustate].pointer++;
 			MSGDRIV_send(MSGID_EXT_DOWNMENU, 0);

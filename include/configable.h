@@ -233,6 +233,13 @@ enum devvideo{
 	MAX_CHAN,
 };
 
+enum resol_t{
+	r1920x1080_f60,
+	r1024x768_f60,
+	r1280x1024_f60,
+	maxresolid,
+};
+
 #define MAIN_CHID					video_gaoqing
 #define PAL_VIRCHID					0
 

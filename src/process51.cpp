@@ -3875,7 +3875,30 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 
 					m_display.disbaud_type = pMenuStatus->baud_type;
 					swprintf(m_display.disMenu[submenu_setcom][0], 33, L"%s", baudlbuf[m_display.disbaud_type]);
-				}
+
+		switch(m_display.disbaud_type){
+			case 0:
+				m_display.saveBaudrate = 2400;
+				break;
+			case 1:
+				m_display.saveBaudrate = 4800;
+				break;
+			case 2:
+				m_display.saveBaudrate = 9600;
+				break;
+			case 3:
+				m_display.saveBaudrate = 115200;
+				break;
+			default:
+				break;
+		}
+
+		bool retvalue = m_display.saveComConfigs("ctrl_config.yml");
+		if(!retvalue) {
+			printf("\r\nXXXXXXXXXXXXXXXXXXXXXXXXXX  Save COM config Failed !!!\r\n");		
+		}
+					
+	}
 	
 	
 }

@@ -487,6 +487,12 @@ CDisplayer::CDisplayer()
 
 	run_Mode.workMode.push_back(run_Mode.text9);
 	run_Mode.text9._SN = run_Mode.workMode.size() -1;
+	//=======================================
+
+	bool retValue = LoadComConfigs("ctrl_config.yml");
+	if(!retValue){
+		cout << " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Read ctrl_config.yml Failed !!!"<< endl;
+	}
 }
 
 CDisplayer::~CDisplayer()
@@ -2435,7 +2441,8 @@ int CDisplayer::menu_init()
             {"使用串口设置","使用网络设置","返回"},
             {"波特率     9600","球机地址   001","球机协议   PALCO-D","工作模式   485半双工","返回"},
             {"网络协议","IP地址","登录用户名","登录密码","返回"},
-            {"检测区域设置","用鼠标指针左键框选、点选:增加区域","用鼠标指针右键框选、点选:删除区域","按回车保存设置，按2返回"}};
+            {"检测区域设置","用鼠标指针左键框选、点选:增加区域","用鼠标指针右键框选、点选:删除区域","按回车保存设置，按2返回"}
+	};
 
 
 	
@@ -2482,7 +2489,38 @@ int CDisplayer::menu_init()
 	disMenuBuf[submenu_mtd][0].color= 3;
 	disMenuBuf[submenu_setball][0].color= 3;
 	disMenuBuf[submenu_setcom][0].color= 3;
-	disMenuBuf[submenu_setnet][0].color= 3;		
+	disMenuBuf[submenu_setnet][0].color= 3;
+
+#if 1
+		switch(curBaudRate){
+			case 2400:
+				//disbaud_type = 0;
+				setlocale(LC_ALL, "zh_CN.UTF-8");
+				swprintf(disMenu[submenu_setcom][0] , 33, L"%s","波特率     2400" );
+				break;
+			case 4800:
+				//disbaud_type = 1;
+				setlocale(LC_ALL, "zh_CN.UTF-8");
+				swprintf(disMenu[submenu_setcom][0] , 33, L"%s","波特率     4800" );
+				break;
+			case 9600:
+				//disbaud_type = 2;
+				setlocale(LC_ALL, "zh_CN.UTF-8");
+				swprintf(disMenu[submenu_setcom][0] , 33, L"%s","波特率     9600" );
+				break;
+			case 115200:
+				//disbaud_type = 3;
+				setlocale(LC_ALL, "zh_CN.UTF-8");
+				swprintf(disMenu[submenu_setcom][0] , 33, L"%s","波特率     115200" );
+				break;
+			default:
+				break;
+		}
+	#endif
+
+	
+
+	
 }
 
 static int64 tstart = 0;
@@ -3775,5 +3813,36 @@ bool CDisplayer::LoadBMPTexture(const char *szFileName, GLenum minFilter, GLenum
 	return true;
 }
 
+bool CDisplayer::LoadComConfigs( const string& filename)
+	{
+	    FileStorage fs2( filename, FileStorage::READ );
+	    bool ret = fs2.isOpened();
+	    if(!ret){
+	        cout << filename << " can't opened !\n" << endl;
+	        return ret;
+	    }
+	   //cv::String date;
+	   // fs2["calibration_time"] >> date;
+	   
+	    curBaudRate = (int)fs2["current_BaudRate"];
+	    cout << "================================ CurrentBaudRate: \n" <<curBaudRate<< endl;
+	  
+	    fs2.release();
+	    return ret;
+	}
 
+ bool CDisplayer::saveComConfigs( const char* filename)
+{
+    FileStorage fs( filename, FileStorage::WRITE );
+    bool ret = fs.isOpened();
+    if(!ret){
+        cout << filename << " can't opened !\n" << endl;
+        return ret;
+    }
+   
+    fs << "current_BaudRate" << saveBaudrate;
+
+    fs.release();
+    return ret;
+}
 

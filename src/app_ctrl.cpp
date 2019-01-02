@@ -15,6 +15,8 @@ extern bool showDetectCorners;
 
 extern GB_WorkMode g_workMode;
 extern MenuDisplay g_displayMode;
+extern CProcess* plat;
+
 CMD_EXT *msgextInCtrl;
 menu_param_t *msgextMenuCtrl;
 #define Coll_Save 0 //   1:quit coll is to save  cross  or  0:using save funtion to cross axis
@@ -669,6 +671,13 @@ void app_ctrl_enter()
 		if(1 == pIStuts->menuarray[submenu_setimg].pointer)
 		{
 			pMenuStatus->resol_deng = !pMenuStatus->resol_deng;
+			if(pMenuStatus->resol_deng)
+				plat->dtimer.startTimer(plat->resol_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->resol_light_id);
+				MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
+			}
 		}
 		else if(2 == pIStuts->menuarray[submenu_setimg].pointer)
 		{

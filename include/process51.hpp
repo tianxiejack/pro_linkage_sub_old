@@ -6,6 +6,7 @@
 #include "osd_cv.h"
 
 #include "osa_sem.h"
+#include "DxTimer.hpp"
 
 
 using namespace cv;
@@ -18,7 +19,7 @@ using namespace cv;
 #define SPECIAL_KEY_PAGEDOWN 	105
 
 typedef struct{
-	int resol_deng;//1:deng liang   0:deng mie
+	int resol_deng;//1:dianmie fanying
 	int resol_type;
 
 	int baud_light;
@@ -130,6 +131,8 @@ public:
 	menu_param_t extMenuCtrl;
 	static CProcess *sThis;
 	void process_osd_test(void *pPrm);
+	void TimerCreate();
+	static void Tcallback(void *p);
 
 
 protected:
@@ -252,6 +255,8 @@ public:
 
 	PointNode polyRectbak[MAX_CHAN][100];
 	int polytempXbak, polytempYbak, polyrectnbak[MAX_CHAN];
+	DxTimer dtimer;
+	int resol_light_id;
 
 };
 

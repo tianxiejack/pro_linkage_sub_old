@@ -438,6 +438,30 @@ void CProcess::OnCreate()
 		if(ret == true) {
 			this->Init_CameraMatrix();
 		}
+
+		TimerCreate();
+}
+void CProcess::TimerCreate()
+{
+	resol_light_id = dtimer.createTimer();
+	dtimer.registerTimer(resol_light_id, Tcallback, &resol_light_id);
+}
+
+
+void CProcess::Tcallback(void *p)
+{
+	static int resol_dianmie = 0;
+	int a = *(int *)p;
+	if(a == sThis->resol_light_id)
+	{
+		unsigned char resolbuf[maxresolid][128] = {
+			"格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
+		if(resol_dianmie)
+			swprintf(sThis->m_display.disMenu[submenu_setimg][1], 33, L"%s", resolbuf[sThis->m_display.disresol_type]);
+		else
+			memset(sThis->m_display.disMenu[submenu_setimg][1], 0, sizeof(sThis->m_display.disMenu[submenu_setimg][1]));
+		resol_dianmie = !resol_dianmie;
+	}
 }
 
 void CProcess::Init_CameraMatrix()

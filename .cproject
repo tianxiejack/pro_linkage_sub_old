@@ -38,6 +38,7 @@
 									<listOptionValue builtIn="false" value="../include/APP"/>
 									<listOptionValue builtIn="false" value="../include/dxutc"/>
 									<listOptionValue builtIn="false" value="../src/OSA_CAP/inc"/>
+									<listOptionValue builtIn="false" value="../src/DxTimer"/>
 								</option>
 								<option id="nvcc.compiler.compileroptions.624954633" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
 									<listOptionValue builtIn="false" value="-fopenmp"/>
@@ -142,6 +143,7 @@
 									<listOptionValue builtIn="false" value="../include/APP"/>
 									<listOptionValue builtIn="false" value="../include/dxutc"/>
 									<listOptionValue builtIn="false" value="../src/OSA_CAP/inc"/>
+									<listOptionValue builtIn="false" value="../src/DxTimer"/>
 								</option>
 								<option id="nvcc.compiler.compileroptions.2028599137" name="Preprocessor options (-Xcompiler)" superClass="nvcc.compiler.compileroptions" valueType="stringList">
 									<listOptionValue builtIn="false" value="-fopenmp"/>

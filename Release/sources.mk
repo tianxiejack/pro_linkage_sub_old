@@ -30,6 +30,7 @@ src/OSD_CR \
 src/OSD \
 src/OSA_CAP/src \
 src/MSGDRI \
+src/DxTimer \
 src/DXUTC \
 src/APP \
 

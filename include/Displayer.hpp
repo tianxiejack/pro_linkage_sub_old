@@ -366,7 +366,9 @@ public:
 	int disresol_type;
 	int disbaud_type; // add baud settings
 	int curBaudRate;
-	int saveBaudrate;
+	int curBaudAddress;
+	volatile int saveBaudrate;
+	volatile int ballAddressID;
 public:
 	bool LoadComConfigs( const string& filename);
 	bool saveComConfigs( const char* filename);

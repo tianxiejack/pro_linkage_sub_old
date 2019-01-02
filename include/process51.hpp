@@ -90,13 +90,15 @@ public:
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
 	void reMapCoords(int x, int y , bool mode);
+	void ClickGunMove2Ball(int x, int y,bool mode);
+
+	void Event_click2Move(int x, int y);
 	void moveToDest( );
 	void QueryCurBallCamPosition();
 	void setBallPos(int in_panPos, int in_tilPos, int in_zoom);
 	void Set_K_ByDeltaX( int delta_x);
 
 
-	void clickOnBallImage(int x, int y);
 
 	void Init_CameraMatrix();
 	Mat undisImageGun;

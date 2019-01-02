@@ -12,7 +12,7 @@ using namespace vmath;
 
 extern UI_CONNECT_ACTION g_connectAction;
 bool showDetectCorners = false;
-
+SelectMode mouse_workmode = Click_Mode;
 extern GB_WorkMode g_workMode;
 extern GB_MENU run_Mode;
 extern CMD_EXT *msgextInCtrl;
@@ -1048,6 +1048,7 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
+if(mouse_workmode == DrawRectangle_Mode){
 	unsigned int curId;
 	int Critical_Point;
 
@@ -1358,6 +1359,21 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			pThis->pol_rectn[curId] = 0;
 			pThis->pol_draw = 1;
 		}
+	}
+
+	}
+	else 
+	{
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+		{
+			if(y > 0 && y< 540) {
+				pThis->Event_click2Move(x - 480, y);
+			}
+			 //(y>=540 && y < 1080) 
+			else{
+				pThis->ClickGunMove2Ball(x,y,false);
+			}
+		}	
 	}
 }
 

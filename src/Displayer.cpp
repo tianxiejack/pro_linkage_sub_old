@@ -40,6 +40,9 @@ extern Mat g_CornerImage;
 MenuDisplay g_displayMode = MENU_MAIN_VIEW;
 GB_WorkMode g_workMode = HANDLE_LINK_MODE;
 
+extern BallCOMConfig CurrentBallConfig;
+
+
 SingletonSysParam* SingletonSysParam::m_uniqueInstance = SingletonSysParam::getInstance();
 SingletonSysParam* g_sysParam = SingletonSysParam::getInstance();
 #if 1
@@ -349,7 +352,7 @@ CDisplayer::CDisplayer()
 
 	frameCount = 0;
 	frameRate = 0.0;
-
+	ballAddressID = 0x01;
 	linkage_init();
 	g_sysParam->getSysParam().gunposition.leftUp.x = 1440;
 	g_sysParam->getSysParam().gunposition.leftUp.y = 810;
@@ -489,9 +492,17 @@ CDisplayer::CDisplayer()
 	run_Mode.text9._SN = run_Mode.workMode.size() -1;
 	//=======================================
 
-	bool retValue = LoadComConfigs("ctrl_config.yml");
-	if(!retValue){
-		cout << " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Read ctrl_config.yml Failed !!!"<< endl;
+	if(CurrentBallConfig.ballAdrress !=0 ){
+		curBaudRate = CurrentBallConfig.ballRate;
+		curBaudAddress = CurrentBallConfig.ballAdrress;
+		cout << " \n\nOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO: Recv BallRate Fome IPC !!!\n\n"<< endl;
+	}
+	else
+	{
+		bool retValue = LoadComConfigs("ctrl_config.yml");
+		if(!retValue){
+			cout << " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Read ctrl_config.yml Failed !!!"<< endl;
+		}
 	}
 }
 

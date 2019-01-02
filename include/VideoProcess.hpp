@@ -137,9 +137,10 @@ public:
 	virtual void OnKeyDwn(unsigned char key){};
 	virtual void OnSpecialKeyDwn(int key,int  x,int  y){};
 	
-
+	virtual void Event_click2Move(int x, int y){};
 	virtual void reMapCoords(int x, int y,bool mode){ };
-	virtual void clickOnBallImage(int x, int y) {};
+	virtual void ClickGunMove2Ball(int x, int y,bool mode){ };
+
 	virtual void moveToDest( ){ };
 	//virtual void QueryCurBallCamPosition() { };
 	//virtual void setBallPos(int in_panPos, int in_tilPos, int in_zoom) { };

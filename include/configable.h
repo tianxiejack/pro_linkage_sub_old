@@ -224,6 +224,14 @@ typedef enum _GB_CLICK_MODE{
 	MOUSE_MODE_COUNT
 }GB_CLICK_MODE;
 
+
+typedef enum _SelectMode{
+	Click_Mode =0,
+	DrawRectangle_Mode,
+	Mode_Count
+}SelectMode;
+
+
 //================================================================
 enum devvideo{
 	video_gaoqing0=0,

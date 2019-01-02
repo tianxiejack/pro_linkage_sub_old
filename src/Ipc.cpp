@@ -23,7 +23,9 @@ CMD_triangle cmd_triangle;
 OSD_param m_osd;
 CMD_Mtd_Frame Mtd_Frame;
 int ipc_loop = 1;
-
+BallCOMConfig CurrentBallConfig ;
+int g_ballAddress =0;
+int g_ballRate =0;
 extern void inputtmp(unsigned char cmdid);
 
 extern osdbuffer_t disOsdBuf[32];
@@ -210,6 +212,14 @@ void* recv_msg(SENDST *RS422)
 			memcpy(&disOsdBufbak[imgID1],&disOsdBuf[imgID1],sizeof(osdbuffer_t));
 			swprintf(disOsd[imgID1], 33, L"%s", disOsdBuf[imgID1].buf);
 			break;
+		case ballbaud:
+			memcpy((void *)&(CurrentBallConfig.ballAdrress), &(RS422->param[0]), sizeof(CurrentBallConfig.ballAdrress));
+			memcpy((void *)&(CurrentBallConfig.ballRate), &(RS422->param[4]), sizeof(CurrentBallConfig.ballRate));
+			printf("\r\nOOOOOOOOOOOOOOOO  Address = %d, \t BaudRate = %d \r\n", CurrentBallConfig.ballAdrress,
+				CurrentBallConfig.ballRate);			
+			break;
+
+			
 		case read_shm_osdtext:
 			{
 				osdtext_t *osdtexttmp = ipc_getosdtextstatus_p();

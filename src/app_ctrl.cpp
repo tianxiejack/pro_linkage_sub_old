@@ -24,6 +24,9 @@ menu_param_t *msgextMenuCtrl;
 
 static int pristatus=0;
 LinkagePos_t linkagePos; 
+bool setComBaud_select = false;
+bool changeComBaud = false;
+
 
 void getMmtTg(unsigned char index,int *x,int *y);
 #if __MOVE_DETECT__
@@ -712,6 +715,11 @@ void app_ctrl_enter()
 	{
 		if(0 == pIStuts->menuarray[submenu_setcom].pointer){
 				pMenuStatus->baud_light= !pMenuStatus->baud_light;
+				if(setComBaud_select == true) {
+					setComBaud_select = false;
+					changeComBaud = true;
+					MSGDRIV_send(MSGID_EXT_SETBAUD, 0);
+				}
 		}
 		else if(4 == pIStuts->menuarray[submenu_setcom].pointer){
 			app_ctrl_setMenuStat(submenu_setball);
@@ -749,6 +757,7 @@ void app_ctrl_upMenu()
 		}
 		else if( (submenu_setcom == menustate) && (pMenuStatus->baud_light == 1) ){
 
+			setComBaud_select = true;
 			pMenuStatus->baud_type = (pMenuStatus->baud_type + 1) % MAX_BAUDID;
 			MSGDRIV_send(MSGID_EXT_SETBAUD, 0);
 		}
@@ -779,6 +788,7 @@ void app_ctrl_downMenu()
 		}
 		else if((submenu_setcom == menustate) && (pMenuStatus->baud_light == 1))
 		{
+			setComBaud_select = true;
 			pMenuStatus->baud_type = (pMenuStatus->baud_type + MAX_BAUDID - 1) % MAX_BAUDID;
 			MSGDRIV_send(MSGID_EXT_SETBAUD, 0);
 		}

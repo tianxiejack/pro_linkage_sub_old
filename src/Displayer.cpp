@@ -2491,6 +2491,13 @@ int CDisplayer::menu_init()
 	disMenuBuf[submenu_setcom][0].color= 3;
 	disMenuBuf[submenu_setnet][0].color= 3;
 
+	disMenuBuf[submenu_setimg][4].posx = 60;
+	disMenuBuf[submenu_setimg][4].posy = 6*60;
+	disMenuBuf[submenu_setimg][5].posx = 60;
+	disMenuBuf[submenu_setimg][5].posy = 7*60;
+	disMenuBuf[submenu_setimg][4].color = 3;
+	disMenuBuf[submenu_setimg][5].color = 3;
+
 #if 1
 		switch(curBaudRate){
 			case 2400:

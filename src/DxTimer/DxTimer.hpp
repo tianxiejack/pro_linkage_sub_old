@@ -104,7 +104,7 @@ private:
     }
 
     Dx_Obj gDxObj;
-    TMSGDRIV_Class g_MsgDrvObj;
+    TMSGDRIV_Class t_MsgDrvObj;
     Dx_Procth pth;
     DX_TIMER cTimer;
     pthread_t thread_timer;

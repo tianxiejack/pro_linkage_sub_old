@@ -77,7 +77,7 @@ CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16
 	pIStuts->MenuStat = -1;
 	memset(pIStuts->Passwd, 0, sizeof(pIStuts->Passwd));
 
-	int cnt[menumaxid] = {3,5,7,3,3,7,4,3,5,5,5};
+	int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,5};
 	memset(pIStuts->menuarray, 0, sizeof(pIStuts->menuarray));
 	for(int i = 0; i < menumaxid; i++)
 	{
@@ -168,6 +168,7 @@ CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16
 	memset(timearr, 0, sizeof(timearr));
 	memset(timearrbak, 0, sizeof(timearrbak));
 	timexbak = timeybak = 0;
+	memset(polyrectnbak, 0, sizeof(polyrectnbak));
 #if __MOVE_DETECT__
 	chooseDetect = 0;
 #endif
@@ -444,23 +445,39 @@ void CProcess::OnCreate()
 void CProcess::TimerCreate()
 {
 	resol_light_id = dtimer.createTimer();
+	resol_apply_id = dtimer.createTimer();
 	dtimer.registerTimer(resol_light_id, Tcallback, &resol_light_id);
+	dtimer.registerTimer(resol_apply_id, Tcallback, &resol_apply_id);
 }
 
 
 void CProcess::Tcallback(void *p)
 {
 	static int resol_dianmie = 0;
+	static int cnt_down = 10;
+	unsigned char resolbuf[maxresolid][128] = {
+			"格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
+	unsigned char resolapplybuf1[128] = "是否保存当前分辨率?";
+	unsigned char resolapplybuf2[128] = "0:取消  1:保存";
 	int a = *(int *)p;
+
 	if(a == sThis->resol_light_id)
 	{
-		unsigned char resolbuf[maxresolid][128] = {
-			"格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
 		if(resol_dianmie)
 			swprintf(sThis->m_display.disMenu[submenu_setimg][1], 33, L"%s", resolbuf[sThis->m_display.disresol_type]);
 		else
 			memset(sThis->m_display.disMenu[submenu_setimg][1], 0, sizeof(sThis->m_display.disMenu[submenu_setimg][1]));
 		resol_dianmie = !resol_dianmie;
+	}
+	else if(a == sThis->resol_apply_id)
+	{
+		swprintf(sThis->m_display.disMenu[submenu_setimg][4], 33, L"%s %d", resolapplybuf1, cnt_down--);
+		swprintf(sThis->m_display.disMenu[submenu_setimg][5], 33, L"%s", resolapplybuf2);
+		if(cnt_down < 0)
+		{
+			sThis->dtimer.stopTimer(sThis->resol_apply_id);
+			cnt_down = 10;
+		}
 	}
 }
 
@@ -1959,6 +1976,7 @@ unsigned int drawpolyRectId ;
 	{
 		drawpolyRectId = extInCtrl->SensorStat;
 	}
+
 	if(pol_draw)
 	{
 		Osd_cvPoint start;
@@ -3105,7 +3123,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 		}
 
 		if((key >= '0') && (key <= '9'))
-			app_ctrl_setpasswd(key);
+			app_ctrl_setnumber(key);
 
 		if(key == '2')
 		{

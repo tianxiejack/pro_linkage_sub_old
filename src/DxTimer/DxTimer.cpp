@@ -61,7 +61,7 @@ int DxTimer::registerTimer(unsigned int timerId,void (*callback)(void *), void *
         return -1;
     }
 		
-    TMSGDRIV_Class *handle=&g_MsgDrvObj;
+    TMSGDRIV_Class *handle=&t_MsgDrvObj;
 
     assert(handle != NULL);
     MSGDRIV_attachMsgFun(handle,timerId,callback,p);
@@ -192,10 +192,11 @@ int DxTimer::killTimer(int timerId)
 
 void DxTimer::Dx_initTimer()
 {
-    memset(&g_MsgDrvObj, 0, sizeof(TMSGDRIV_Class));
-    g_MsgDrvObj.tskLoop = 1;
-    g_MsgDrvObj.bIntial = 1;
-    g_MsgDrvObj.istskStopDone = 0;
+    memset(&t_MsgDrvObj, 0, sizeof(TMSGDRIV_Class));
+    memset(&gDxObj, 0, sizeof(gDxObj));
+    t_MsgDrvObj.tskLoop = 1;
+    t_MsgDrvObj.bIntial = 1;
+    t_MsgDrvObj.istskStopDone = 0;
 
     memset(pTimeArray,0,sizeof(CDTime)*DX_TIMER_MAX);
 
@@ -249,7 +250,7 @@ void DxTimer::Dx_destroyTimer()
 void DxTimer::PTH_msgrecv()
 {
     int status = 0;
-    TMSGDRIV_Class *handle=&g_MsgDrvObj;
+    TMSGDRIV_Class *handle=&t_MsgDrvObj;
     pth.ptimer = this;
     pth.pmsg = handle;
 
@@ -358,6 +359,6 @@ void DxTimer::MSGDRIV_recv(void *pPrm)
 void DxTimer::MSGDRIV_send(int msgId)
 {
     assert(msgId < DX_TIMER_MAX);
-    OSA_msgqSendMsg(&g_MsgDrvObj.msgQue, &g_MsgDrvObj.msgQue, msgId, NULL, 0, NULL);
+    OSA_msgqSendMsg(&t_MsgDrvObj.msgQue, &t_MsgDrvObj.msgQue, msgId, NULL, 0, NULL);
 }
 

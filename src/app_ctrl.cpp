@@ -577,7 +577,7 @@ void app_ctrl_setMenu()
 		app_ctrl_setMenuStat(-1);
 }
 
-void app_ctrl_setpasswd(char key)
+void app_ctrl_setnumber(char key)
 {
 	if(msgextInCtrl==NULL)
 		return;
@@ -592,6 +592,19 @@ void app_ctrl_setpasswd(char key)
 			printf("password reached max length:128");
 		
 		printf("%s,%d,passwd=%s\n",__FILE__,__LINE__,pIStuts->Passwd);
+	}
+	else if(submenu_setimg == pIStuts->MenuStat)
+	{
+		if(key == '0')
+		{
+			printf("cancel resol!!!\n");
+		}
+		else if(key == '1')
+		{
+			printf("ok resol!!!\n");
+			//vdisWH[0][0] = ;
+			//vdisWH[0][1] = ;
+		}
 	}
 }
 
@@ -681,7 +694,7 @@ void app_ctrl_enter()
 		}
 		else if(2 == pIStuts->menuarray[submenu_setimg].pointer)
 		{
-
+			plat->dtimer.startTimer(plat->resol_apply_id, 1000);
 		}
 		else if(3 == pIStuts->menuarray[submenu_setimg].pointer)
 			app_ctrl_setMenuStat(mainmenu2);

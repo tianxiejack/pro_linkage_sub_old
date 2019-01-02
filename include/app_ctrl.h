@@ -36,7 +36,7 @@ void app_ctrl_setWordSize(CMD_EXT * pInCmd);
 void app_ctrl_setLinkagePos(int panPos,int tilPos,int zoom);
 void app_ctrl_setMenuStat(int index);
 void app_ctrl_setMenu();
-void app_ctrl_setpasswd(char key);
+void app_ctrl_setnumber(char key);
 void app_ctrl_enter();
 void app_ctrl_upMenu();
 void app_ctrl_downMenu();

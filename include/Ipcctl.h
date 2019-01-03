@@ -122,12 +122,6 @@ typedef struct{
 	unsigned int zoom;
 }LinkagePos;
 
-typedef struct _BallCOMConfig{
-	volatile int ballAdrress;
-	volatile int ballRate;
-
-}BallCOMConfig;
-
 typedef struct{
 	volatile int dir;
 	volatile int alpha;
@@ -484,6 +478,7 @@ typedef struct{
 
 typedef struct{
 	volatile unsigned char resolution[ipc_eSen_Max];
+	volatile unsigned char outputresol;
 }CMD_IPCRESOLUTION;
 
 typedef struct{

@@ -136,6 +136,7 @@ public:
 	void TimerCreate();
 	static void Tcallback(void *p);
 	int setresol(int resoltype);
+	int udoutputresol(int resoltype);
 
 
 protected:

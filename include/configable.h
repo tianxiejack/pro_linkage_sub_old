@@ -274,6 +274,8 @@ enum baud_t{
 
 extern int vcapWH[5][2];
 extern int vdisWH[5][2];
+extern int outputWHF[3];
+extern int oresoltype;
 
 #if 0
 typedef struct {

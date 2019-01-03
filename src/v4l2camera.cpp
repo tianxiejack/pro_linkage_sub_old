@@ -29,6 +29,8 @@
 
 int vcapWH[5][2] = {{1920, 1080},{1920, 1080},{1920, 1080},{1920, 1080},{720, 576}};
 int vdisWH[5][2] = {{1920, 1080},{1920, 1080},{1920, 1080},{1920, 1080},{720, 576}};
+int outputWHF[3] = {1920, 1080, 60};
+int oresoltype = r1920x1080_f60;
 
 v4l2_camera::v4l2_camera(int devId):io(IO_METHOD_USERPTR),buffers(NULL),force_format(1),m_devFd(-1),n_buffers(0),bRun(false)
 {

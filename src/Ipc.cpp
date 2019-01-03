@@ -23,7 +23,6 @@ CMD_triangle cmd_triangle;
 OSD_param m_osd;
 CMD_Mtd_Frame Mtd_Frame;
 int ipc_loop = 1;
-BallCOMConfig CurrentBallConfig ;
 int g_ballAddress =0;
 int g_ballRate =0;
 extern void inputtmp(unsigned char cmdid);
@@ -536,6 +535,29 @@ void* recv_msg(SENDST *RS422)
 				vcapWH[ipc_eSen_CH4][1] = 576;
 				vdisWH[ipc_eSen_CH4][0] = 720;
 				vdisWH[ipc_eSen_CH4][1] = 576;
+			}
+			switch(Rresolution.outputresol)
+			{
+				case 5:
+					outputWHF[0] = 1920;
+					outputWHF[1] = 1080;
+					outputWHF[2] = 60;
+					oresoltype = r1920x1080_f60;
+					break;
+				case 6:
+					outputWHF[0] = 1280;
+					outputWHF[1] = 1024;
+					outputWHF[2] = 60;
+					oresoltype = r1280x1024_f60;
+					break;
+				case 7:
+					outputWHF[0] = 1024;
+					outputWHF[1] = 768;
+					outputWHF[2] = 60;
+					oresoltype = r1024x768_f60;
+					break;
+				default:
+					break;
 			}
 			break;
 			

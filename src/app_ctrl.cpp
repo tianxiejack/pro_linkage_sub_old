@@ -8,10 +8,12 @@
 #include <glut.h>
 #include "process51.hpp"
 
-using namespace std;
+class CVideoProcess ;
 
+using namespace std;
 extern UI_CONNECT_ACTION g_connectAction;
 extern bool showDetectCorners;
+extern MenuDisplay g_displayMode;
 
 extern GB_WorkMode g_workMode;
 extern MenuDisplay g_displayMode;
@@ -19,14 +21,13 @@ extern CProcess* plat;
 
 CMD_EXT *msgextInCtrl;
 menu_param_t *msgextMenuCtrl;
-#define Coll_Save 0 //   1:quit coll is to save  cross  or  0:using save funtion to cross axis
-#define FrColl_Change 1 //0:frcoll v1.00 1:frcoll v1.01     //ver1.01 is using 
+#define Coll_Save 0 		//   1:quit coll is to save  cross  or  0:using save funtion to cross axis
+#define FrColl_Change 1 	//0:frcoll v1.00 1:frcoll v1.01     // ver1.01 is using 
 
-static int pristatus=0;
-LinkagePos_t linkagePos; 
-bool setComBaud_select = false;
-bool changeComBaud = false;
-
+static int pristatus=0 ;
+LinkagePos_t linkagePos ; 
+bool setComBaud_select = false ;
+bool changeComBaud = false ;
 
 void getMmtTg(unsigned char index,int *x,int *y);
 #if __MOVE_DETECT__
@@ -684,8 +685,27 @@ void app_ctrl_enter()
 	}
 	else if(submenu_gunball == pIStuts->MenuStat)
 	{
-		if(2 == pIStuts->menuarray[submenu_gunball].pointer)
+		g_displayMode = MENU_SBS;
+		CVideoProcess::m_camCalibra->start_cloneVideoSrc = true;
+		if(0 == pIStuts->menuarray[submenu_gunball].pointer) 
+		{
+			if(CVideoProcess::m_camCalibra->start_cloneVideoSrc = true){
+				OSA_waitMsecs(1500);	
+				CVideoProcess::m_camCalibra->bool_Calibrate = true;
+			}
+		}
+		else if (1 == pIStuts->menuarray[submenu_gunball].pointer)
+		{
+			
+			CVideoProcess::m_camCalibra->Set_Handler_Calibra = true ;
+		}
+		else if(2 == pIStuts->menuarray[submenu_gunball].pointer)
+		{
 			app_ctrl_setMenuStat(mainmenu2);
+			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
+			CVideoProcess::m_camCalibra->Set_Handler_Calibra = false ;
+			g_displayMode = MENU_MAIN_VIEW;
+		}
 	}
 	else if(submenu_mtd == pIStuts->MenuStat)
 	{

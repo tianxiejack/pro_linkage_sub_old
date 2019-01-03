@@ -40,6 +40,8 @@ extern Mat g_CornerImage;
 MenuDisplay g_displayMode = MENU_MAIN_VIEW;
 GB_WorkMode g_workMode = HANDLE_LINK_MODE;
 
+extern BallCOMConfig CurrentBallConfig;
+
 SingletonSysParam* SingletonSysParam::m_uniqueInstance = SingletonSysParam::getInstance();
 SingletonSysParam* g_sysParam = SingletonSysParam::getInstance();
 #if 1

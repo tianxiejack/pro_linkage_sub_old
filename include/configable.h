@@ -231,6 +231,11 @@ typedef enum _SelectMode{
 	Mode_Count
 }SelectMode;
 
+typedef struct _BallCOMConfig{
+	volatile int ballAdrress;
+	volatile int ballRate;
+
+}BallCOMConfig;
 
 //================================================================
 enum devvideo{

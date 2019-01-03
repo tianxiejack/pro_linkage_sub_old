@@ -23,6 +23,7 @@ CMD_triangle cmd_triangle;
 OSD_param m_osd;
 CMD_Mtd_Frame Mtd_Frame;
 int ipc_loop = 1;
+BallCOMConfig CurrentBallConfig ;
 int g_ballAddress =0;
 int g_ballRate =0;
 extern void inputtmp(unsigned char cmdid);

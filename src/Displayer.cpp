@@ -42,7 +42,6 @@ GB_WorkMode g_workMode = HANDLE_LINK_MODE;
 
 extern BallCOMConfig CurrentBallConfig;
 
-
 SingletonSysParam* SingletonSysParam::m_uniqueInstance = SingletonSysParam::getInstance();
 SingletonSysParam* g_sysParam = SingletonSysParam::getInstance();
 #if 1
@@ -504,6 +503,8 @@ CDisplayer::CDisplayer()
 			cout << " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Read ctrl_config.yml Failed !!!"<< endl;
 		}
 	}
+
+	disresol_type = disresol_type_tmp = oresoltype;
 }
 
 CDisplayer::~CDisplayer()
@@ -1437,7 +1438,7 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 
 /*************************************************************************************/
     //glutInitWindowPosition(m_initPrm.winPosX, m_initPrm.winPosY);
-    glutInitWindowSize(VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+    glutInitWindowSize(outputWHF[0],outputWHF[1]);
     glutCreateWindow("DSS");
 	//glutSetCursor(GLUT_CURSOR_NONE);
 	glutDisplayFunc(&_display);
@@ -2455,7 +2456,8 @@ int CDisplayer::menu_init()
             {"检测区域设置","用鼠标指针左键框选、点选:增加区域","用鼠标指针右键框选、点选:删除区域","按回车保存设置，按2返回"}
 	};
 
-
+	unsigned char resolbuf[maxresolid][128] = {
+            "格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
 	
 	for(int i = 0; i < menumaxid; i++)
 	{
@@ -2472,6 +2474,8 @@ int CDisplayer::menu_init()
 			swprintf(disMenu[i][j], 33, L"%s", menubuf[i][j]);
 		}
 	}
+
+	swprintf(disMenu[submenu_setimg][1], 33, L"%s", resolbuf[oresoltype]);
 
 	disMenuBuf[mainmenu0][1].posy = 4 * 60;
 	disMenuBuf[mainmenu0][2].posy = 5 * 60;

@@ -171,7 +171,7 @@ m_cofy(6320),m_bak_count(0)
 	msgextInCtrl = extInCtrl;
 	msgextMenuCtrl = &extMenuCtrl;
 	extMenuCtrl.resol_deng = 0;
-	extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = r1920x1080_f60;
+	extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
 	save_flag = 0;
 	cnt_down = 10;
 	
@@ -4340,6 +4340,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	if(msgId == MSGID_EXT_SAVERESOL)
 	{
 		m_display.disresol_type = pMenuStatus->resol_type;
+		udoutputresol(m_display.disresol_type);
 	}
 	if(msgId == MSGID_EXT_SETBAUD){
 
@@ -5016,6 +5017,48 @@ int CProcess::setresol(int resoltype)
 			break;
 		default:
 			break;	
+	}
+}
+
+int CProcess::udoutputresol(int resoltype)
+{
+	SENDST test;
+	CMD_SETCONFIG cmdsetconfig;
+	int send_flag = 1;
+
+	test.cmd_ID = setconfig;
+	cmdsetconfig.block = 51;
+	cmdsetconfig.field = 5;
+
+	switch(resoltype)
+	{
+		case r1920x1080_f60:
+			outputWHF[0] = 1920;
+			outputWHF[1] = 1080;
+			outputWHF[2] = 60;
+			cmdsetconfig.value = 5;
+			break;
+		case r1024x768_f60:
+			outputWHF[0] = 1024;
+			outputWHF[1] = 768;
+			outputWHF[2] = 60;
+			cmdsetconfig.value = 7;
+			break;
+		case r1280x1024_f60:
+			outputWHF[0] = 1280;
+			outputWHF[1] = 1024;
+			outputWHF[2] = 60;
+			cmdsetconfig.value = 6;
+			break;
+		default:
+			send_flag = 0;
+			break;	
+	}
+
+	if(send_flag)
+	{
+		memcpy(test.param, &cmdsetconfig, sizeof(cmdsetconfig));
+		ipc_sendmsg(&test, IPC_FRIMG_MSG);
 	}
 }
 

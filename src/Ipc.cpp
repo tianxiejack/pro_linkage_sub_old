@@ -537,6 +537,29 @@ void* recv_msg(SENDST *RS422)
 				vdisWH[ipc_eSen_CH4][0] = 720;
 				vdisWH[ipc_eSen_CH4][1] = 576;
 			}
+			switch(Rresolution.outputresol)
+			{
+				case 5:
+					outputWHF[0] = 1920;
+					outputWHF[1] = 1080;
+					outputWHF[2] = 60;
+					oresoltype = r1920x1080_f60;
+					break;
+				case 6:
+					outputWHF[0] = 1280;
+					outputWHF[1] = 1024;
+					outputWHF[2] = 60;
+					oresoltype = r1280x1024_f60;
+					break;
+				case 7:
+					outputWHF[0] = 1024;
+					outputWHF[1] = 768;
+					outputWHF[2] = 60;
+					oresoltype = r1024x768_f60;
+					break;
+				default:
+					break;
+			}
 			break;
 			
 		case querypos:

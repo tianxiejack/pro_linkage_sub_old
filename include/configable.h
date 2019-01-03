@@ -235,6 +235,11 @@ typedef enum _SelectMode{
 	Mode_Count
 }SelectMode;
 
+typedef struct _BallCOMConfig{
+	volatile int ballAdrress;
+	volatile int ballRate;
+
+}BallCOMConfig;
 
 //================================================================
 enum devvideo{
@@ -278,6 +283,8 @@ enum baud_t{
 
 extern int vcapWH[5][2];
 extern int vdisWH[5][2];
+extern int outputWHF[3];
+extern int oresoltype;
 
 #if 0
 typedef struct {

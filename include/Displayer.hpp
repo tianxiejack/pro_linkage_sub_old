@@ -363,7 +363,7 @@ public:
 	AppMenu dismenuarray[menumaxid];
 	osdbuffer_t disMenuBuf[32][MAX_SUBMENU];
 	wchar_t disMenu[menumaxid][MAX_SUBMENU][33];
-	int disresol_type;
+	int disresol_type, disresol_type_tmp;
 	int disbaud_type; // add baud settings
 	int curBaudRate;
 	int curBaudAddress;

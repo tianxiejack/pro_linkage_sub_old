@@ -171,7 +171,9 @@ m_cofy(6320),m_bak_count(0)
 	msgextInCtrl = extInCtrl;
 	msgextMenuCtrl = &extMenuCtrl;
 	extMenuCtrl.resol_deng = 0;
-	extMenuCtrl.resol_type = r1920x1080_f60;
+	extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = r1920x1080_f60;
+	save_flag = 0;
+	cnt_down = 10;
 	
 	sThis = this;
 	plat = this;
@@ -477,7 +479,6 @@ void CProcess::TimerCreate()
 void CProcess::Tcallback(void *p)
 {
 	static int resol_dianmie = 0;
-	static int cnt_down = 10;
 	unsigned char resolbuf[maxresolid][128] = {
 			"格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
 	unsigned char resolapplybuf1[128] = "是否保存当前分辨率?";
@@ -487,19 +488,26 @@ void CProcess::Tcallback(void *p)
 	if(a == sThis->resol_light_id)
 	{
 		if(resol_dianmie)
-			swprintf(sThis->m_display.disMenu[submenu_setimg][1], 33, L"%s", resolbuf[sThis->m_display.disresol_type]);
+			swprintf(sThis->m_display.disMenu[submenu_setimg][1], 33, L"%s", resolbuf[sThis->m_display.disresol_type_tmp]);
 		else
 			memset(sThis->m_display.disMenu[submenu_setimg][1], 0, sizeof(sThis->m_display.disMenu[submenu_setimg][1]));
 		resol_dianmie = !resol_dianmie;
 	}
 	else if(a == sThis->resol_apply_id)
 	{
-		swprintf(sThis->m_display.disMenu[submenu_setimg][4], 33, L"%s %d", resolapplybuf1, cnt_down--);
+		swprintf(sThis->m_display.disMenu[submenu_setimg][4], 33, L"%s %d", resolapplybuf1, sThis->cnt_down--);
 		swprintf(sThis->m_display.disMenu[submenu_setimg][5], 33, L"%s", resolapplybuf2);
-		if(cnt_down < 0)
+		if(sThis->cnt_down < 0)
 		{
 			sThis->dtimer.stopTimer(sThis->resol_apply_id);
-			cnt_down = 10;
+			if(sThis->save_flag)
+			{
+				sThis->save_flag = 0;
+				sThis->setresol(sThis->m_display.disresol_type);
+				swprintf(sThis->m_display.disMenu[submenu_setimg][1], 33, L"%s", resolbuf[sThis->m_display.disresol_type]);
+				memset(sThis->m_display.disMenu[submenu_setimg][4], 0, sizeof(sThis->m_display.disMenu[submenu_setimg][4]));
+				memset(sThis->m_display.disMenu[submenu_setimg][5], 0, sizeof(sThis->m_display.disMenu[submenu_setimg][5]));
+			}
 		}
 	}
 }
@@ -4323,11 +4331,13 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	{
         unsigned char resolbuf[maxresolid][128] = {
             "格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
-
-		m_display.disresol_type = pMenuStatus->resol_type;
-		swprintf(m_display.disMenu[submenu_setimg][1], 33, L"%s", resolbuf[m_display.disresol_type]);
+		m_display.disresol_type_tmp = pMenuStatus->resol_type_tmp;
+		swprintf(m_display.disMenu[submenu_setimg][1], 33, L"%s", resolbuf[m_display.disresol_type_tmp]);
 	}
-
+	if(msgId == MSGID_EXT_SAVERESOL)
+	{
+		m_display.disresol_type = pMenuStatus->resol_type;
+	}
 	if(msgId == MSGID_EXT_SETBAUD){
 
 		unsigned char baudlbuf[MAX_BAUDID][128] = {
@@ -4988,6 +4998,24 @@ int CProcess::mergerigion(int rigionindex_dst, int rigionindex_src)
 		}
 }
 
+int CProcess::setresol(int resoltype)
+{
+	switch(resoltype)
+	{
+		case r1920x1080_f60:
+			system("xrandr -s 1920x1080_60.00");
+			break;
+		case r1024x768_f60:
+			system("xrandr -s 1024x768_60.01");
+			break;
+		case r1280x1024_f60:
+			system("xrandr -s 1280x1024_60.00");
+			break;
+		default:
+			break;	
+	}
+}
+
 /////////////////////////////////////////////////////
 //int majormmtid=0;
 
@@ -5034,6 +5062,7 @@ int CProcess::mergerigion(int rigionindex_dst, int rigionindex_src)
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SMR,     MSGAPI_save_mtdrigion,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SETRESOL,     MSGAPI_set_resol,        	0);
 	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SETBAUD, 	MSGAPI_set_baud,			0);
+	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SAVERESOL, 	MSGAPI_save_resol,			0);
 
     return 0;
 }
@@ -5918,11 +5947,13 @@ void CProcess::MSGAPI_set_resol(long lParam)
 	sThis->msgdriv_event(MSGID_EXT_SETRESOL,NULL);
 }
 
-
 void CProcess::MSGAPI_set_baud(long lParam)
 {
 
 	sThis->msgdriv_event(MSGID_EXT_SETBAUD,NULL);
 }
 
-
+void CProcess::MSGAPI_save_resol(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_SAVERESOL,NULL);
+}

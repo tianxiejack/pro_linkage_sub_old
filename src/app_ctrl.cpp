@@ -584,7 +584,10 @@ void app_ctrl_setnumber(char key)
 {
 	if(msgextInCtrl==NULL)
 		return;
+	if(msgextMenuCtrl==NULL)
+		return;
 	CMD_EXT *pIStuts = msgextInCtrl;
+	menu_param_t *pMenuStatus = msgextMenuCtrl;
 	
 	if((mainmenu0 == pIStuts->MenuStat) || (mainmenu1 == pIStuts->MenuStat))
 	{
@@ -600,13 +603,29 @@ void app_ctrl_setnumber(char key)
 	{
 		if(key == '0')
 		{
-			printf("cancel resol!!!\n");
+			if(plat->save_flag)
+			{
+				plat->dtimer.stopTimer(plat->resol_apply_id);
+				pMenuStatus->resol_type_tmp = pMenuStatus->resol_type;
+				plat->setresol(pMenuStatus->resol_type);
+				plat->save_flag = 0;
+				memset(plat->m_display.disMenu[submenu_setimg][4], 0, sizeof(plat->m_display.disMenu[submenu_setimg][4]));
+				memset(plat->m_display.disMenu[submenu_setimg][5], 0, sizeof(plat->m_display.disMenu[submenu_setimg][5]));
+				MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
+			}
 		}
 		else if(key == '1')
 		{
-			printf("ok resol!!!\n");
-			//vdisWH[0][0] = ;
-			//vdisWH[0][1] = ;
+			if(plat->save_flag)
+			{
+				plat->dtimer.stopTimer(plat->resol_apply_id);
+				pMenuStatus->resol_type = pMenuStatus->resol_type_tmp;
+				plat->save_flag = 0;
+				memset(plat->m_display.disMenu[submenu_setimg][4], 0, sizeof(plat->m_display.disMenu[submenu_setimg][4]));
+				memset(plat->m_display.disMenu[submenu_setimg][5], 0, sizeof(plat->m_display.disMenu[submenu_setimg][5]));
+				MSGDRIV_send(MSGID_EXT_SAVERESOL, 0);
+			}
+
 		}
 	}
 }
@@ -696,7 +715,10 @@ void app_ctrl_enter()
 			}
 		}
 		else if(2 == pIStuts->menuarray[submenu_setimg].pointer)
-		{
+		{	
+			plat->setresol(pMenuStatus->resol_type_tmp);
+			plat->save_flag = 1;
+			plat->cnt_down = 10;
 			plat->dtimer.startTimer(plat->resol_apply_id, 1000);
 		}
 		else if(3 == pIStuts->menuarray[submenu_setimg].pointer)
@@ -752,7 +774,7 @@ void app_ctrl_upMenu()
 
 		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
 		{
-			pMenuStatus->resol_type = (pMenuStatus->resol_type + 1) % maxresolid;
+			pMenuStatus->resol_type_tmp = (pMenuStatus->resol_type_tmp + 1) % maxresolid;
 			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
 		}
 		else if( (submenu_setcom == menustate) && (pMenuStatus->baud_light == 1) ){
@@ -783,7 +805,7 @@ void app_ctrl_downMenu()
 	{
 		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
 		{
-			pMenuStatus->resol_type = (pMenuStatus->resol_type + maxresolid - 1) % maxresolid;
+			pMenuStatus->resol_type_tmp = (pMenuStatus->resol_type_tmp + maxresolid - 1) % maxresolid;
 			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
 		}
 		else if((submenu_setcom == menustate) && (pMenuStatus->baud_light == 1))

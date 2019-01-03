@@ -20,7 +20,7 @@ using namespace cv;
 
 typedef struct{
 	int resol_deng;//1:dianmie fanying
-	int resol_type;
+	int resol_type_tmp, resol_type;
 
 	int baud_light;
 	int baud_type;// 2400,4800,9600, 115200
@@ -135,6 +135,7 @@ public:
 	void process_osd_test(void *pPrm);
 	void TimerCreate();
 	static void Tcallback(void *p);
+	int setresol(int resoltype);
 
 
 protected:
@@ -210,6 +211,7 @@ protected:
 	 static void MSGAPI_save_mtdrigion(long lParam);
 	 static void MSGAPI_set_resol(long lParam);
 	 static void MSGAPI_set_baud(long lParam);
+	 static void MSGAPI_save_resol(long lParam);
 
 private:
 	ACK_EXT extOutAck;
@@ -259,6 +261,8 @@ public:
 	int polytempXbak, polytempYbak, polyrectnbak[MAX_CHAN];
 	DxTimer dtimer;
 	int resol_light_id, resol_apply_id;
+	int save_flag;
+	int cnt_down;
 
 };
 

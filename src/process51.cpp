@@ -2929,7 +2929,7 @@ printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 {
-printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
+	//printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 	int point_X , point_Y , offset_x , offset_y,	zoomPos; 
 	int delta_X ;
 	Point opt;
@@ -2964,7 +2964,7 @@ printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 
 	 pt.x /= 2.0;	//+ 960;
 	 pt.y /= 2.0;
-
+	 
 	Point bpt( pt.x, pt.y );
 	
 //================================================
@@ -3066,7 +3066,7 @@ printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
 	}
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
-	printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
+	//printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 }
 
@@ -3074,7 +3074,7 @@ printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 //==========================================================================
 void CProcess::reMapCoords(int x, int y,bool mode)
 {	
-	printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
+//	printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 
 	int point_X , point_Y , offset_x , offset_y,zoomPos; 
 	int delta_X ;
@@ -3500,6 +3500,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 	
 		if(key == 'v' || key == 'V') {
 			m_camCalibra->start_cloneVideoSrc = true;
+			printf("\r\n [%s] ================ Press Key ' v ' : Start Clone One Frame Image !\r\n",__FUNCTION__);
 		}
 
 		if(key == 'l') {
@@ -3514,6 +3515,8 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 		if(key == 'M' || key == 'm' ) {
 			m_camCalibra->bool_Calibrate = true;
+			
+		printf("\r\n [%s] ================ Press Key ' m ' : Start to Calibrate!\r\n",__FUNCTION__);
 		}	
 		
 		if(key == 'U' || key == 'u' ) {

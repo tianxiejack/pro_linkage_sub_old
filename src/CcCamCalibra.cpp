@@ -128,10 +128,6 @@ void CcCamCalibra::cloneGunSrcImgae(Mat &src)
 
 int CcCamCalibra::RunService()
 {
-	cout << "\n*********************************************************************************************\n" << endl;
-	cout << "**********              Start Match Points  Thread ...              *********\n" << endl;
-	cout << "**********                                                         ********\n" << endl;
-	cout << "************************************************************************************************\n" << endl;
 	m_prm.pThis = this;
 	return RunThread(RunProxy, &m_prm);
 }
@@ -228,7 +224,7 @@ void CcCamCalibra::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 
 int CcCamCalibra::Run()
 {
-#if 1
+#if 0
 	//static bool calibrate_once = true;
 	if(/*calibrate_once && */start_calibrate ){
 		 start_calibrate = false;
@@ -292,7 +288,7 @@ int CcCamCalibra::Run()
 		else 
 		{	
 			if( bool_Calibrate || g_sysParam->isEnable_calculateMatrix()) {
-				printf("%s : start auto calibrate \n",__func__);
+				//printf("%s : start auto calibrate \n",__func__);
 				vector<KeyPoint> keypoints_1, keypoints_2;
 				vector<DMatch> matches;
 				find_feature_matches ( undisImage, frame,  keypoints_1, keypoints_2, matches , 60.0, true);
@@ -313,6 +309,7 @@ int CcCamCalibra::Run()
 					SENDST trkmsg={0};
 					trkmsg.cmd_ID = querypos;
 					ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+					printf("\r\n [%s]===== Send Message to Ball Camera : MsgID =  querypos \r\n",__FUNCTION__);
 
 					flag = OSA_semWait(&m_linkage_getPos, OSA_TIMEOUT_FOREVER/*200*/);
 					if( -1 == flag ) {
@@ -320,8 +317,9 @@ int CcCamCalibra::Run()
 						printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );
 					}
 					else{
+						printf("\r\n [%s]:=====Recive Meaasge From Ball Camera !!!",__FUNCTION__);
 						getCurrentPosFlag = true;
-						cout << "******************Query Ball Camera Position Sucess ! *****************" << endl;
+						cout << "\n\n******************Get It << Query Ball Camera Position Sucess ! *****************" << endl;
 						cout << " panPos = "<< panPos << endl;
 						cout << " tiltPos = "<< tiltPos << endl;
 						cout << " zoomPos = "<< zoomPos << endl;
@@ -1018,10 +1016,6 @@ DetectCorners::~DetectCorners()
 }
 int DetectCorners::RunService()
 {
-	cout << "\n*********************************************************************************************\n" << endl;
-	cout << "**********              Start Corner Detect Thread ...              *********\n" << endl;
-	cout << "**********                                                         ********\n" << endl;
-	cout << "************************************************************************************************\n" << endl;
 	m_prm.pThis = this;
 	return RunThread(RunProxy, &m_prm);
 }

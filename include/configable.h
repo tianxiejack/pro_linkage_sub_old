@@ -4,12 +4,16 @@
 
 #include "string.h"
 
-#define AIM_WIDTH					64
-#define AIM_HEIGHT					64
+#define AIM_WIDTH				64
+#define AIM_HEIGHT				64
 
 #define AVT_TRK_AIM_SIZE			2
-#define MAX_MTDRIGION_NUM 3
+#define MAX_MTDRIGION_NUM 		3
 
+typedef struct _BallCOMConfig{
+	volatile int ballAdrress;
+	volatile int ballRate;
+}BallCOMConfig;
 
 typedef struct _Resolution{
 	int raw, col ;

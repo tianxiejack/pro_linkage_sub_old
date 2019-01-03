@@ -3218,7 +3218,7 @@ void CDisplayer::gl_display(void)
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		}
 		glDisable(GL_BLEND);		
-		IrisAndFocus();
+		//IrisAndFocus();
 		OSDFunc();
 		MenuFunc(m_menuindex);
 	}		
@@ -3294,12 +3294,15 @@ ArrayText::iterator itr2 = run_Mode.workMode.begin();
 		pthread_mutex_unlock(&render_lock);
 	}
 #endif
-	int64 tSwap = getTickCount();
 /******************************************************************************/
 
 	glutSwapBuffers();
+#if 0
+	int64 tSwap = getTickCount();
 
-tStamp[6] = getTickCount();
+	//glutSwapBuffers();
+
+	tStamp[6] = getTickCount();
 
 if(0)
 {
@@ -3337,7 +3340,7 @@ if(0)
 #endif
 	tend = tStamp[6];
 	float renderIntv = (tend - m_tmRender)/getTickFrequency();
-#if 1
+#if 
 	static unsigned long rCount = 0;
 	if(rCount%(m_initPrm.disFPS*100) == 0){
 		printf("\r\n[%d] %.4f (ws%.4f,cu%.4f,tv%.4f,to%.4f,rd%.4f,wp%.4f) %.4f(%.4f)",
@@ -3355,11 +3358,10 @@ if(0)
 	rCount ++;
 #endif
 	m_tmRender = tend;
-
+#endif
 	glutPostRedisplay();
 	
 	GetFPS();
-//	cout << "==========<GetFPS()>=====================  FPS = "<< frameCount << "ms"<<endl;
 }
 
 void CDisplayer::IrisAndFocus()

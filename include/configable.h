@@ -10,11 +10,6 @@
 #define AVT_TRK_AIM_SIZE			2
 #define MAX_MTDRIGION_NUM 		3
 
-typedef struct _BallCOMConfig{
-	volatile int ballAdrress;
-	volatile int ballRate;
-}BallCOMConfig;
-
 typedef struct _Resolution{
 	int raw, col ;
 }Resolution;

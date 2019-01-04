@@ -1048,132 +1048,123 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
-if(mouse_workmode == DrawRectangle_Mode){
-	unsigned int curId;
-	int Critical_Point;
-
-	if(pThis->setrigion_flagv20)
+	if(mouse_workmode == DrawRectangle_Mode)
 	{
-		pThis->mouse_eventv20(button, state, x, y);
-		return;
-	}
+		unsigned int curId;
+		int Critical_Point;
 
-	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW) {
-		curId = 1;	
-	}else{
-		curId = pThis->m_curChId;
-	}
-	
-	if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
-	{
-		pThis->OnMouseLeftUp(x, y);
-	}
-	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP)
-	{
-		//pThis->OnMouseRightUp(x,  y);
-
-		run_Mode._mouseDown = CELL::int2(x,y);
-	 	ArrayText::iterator itr = run_Mode._texts.begin();
-	 	for(; itr != run_Mode._texts.end(); ++itr){
-		 	CELL::trect<float> rt((*itr)._pos.x, (*itr)._pos.y, (*itr)._pos.x +(*itr)._size.x, (*itr)._pos.y + (*itr)._size.y);
-		 	if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
-				 if(run_Mode._LDown == &(*itr)) {
-					 (*itr)._clickDown(run_Mode._LDown);		
-				 }
-		 		break;
-		 	}
-	 	}
-		ArrayText::iterator itr2 = run_Mode.workMode.begin();
-		for(; itr2 != run_Mode.workMode.end(); ++itr2) {
-			CELL::trect<float> rt((*itr2)._pos.x, (*itr2)._pos.y, (*itr2)._pos.x +(*itr2)._size.x, (*itr2)._pos.y + (*itr2)._size.y);
-		 	if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
-				 if(run_Mode._LDown == &(*itr2)) {
-					 (*itr2)._clickDown(run_Mode._LDown);		
-				 }
-		 		break;
-		 	}
-			
+		if(pThis->setrigion_flagv20)
+		{
+			pThis->mouse_eventv20(button, state, x, y);
+			return;
 		}
-	 	run_Mode._pSelect = 0;
-	 	run_Mode._bRButton = false;
-	}
 
-	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
+		if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW) {
+			curId = 1;	
+		}else{
+			curId = pThis->m_curChId;
+		}
+	
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+		{
+			pThis->OnMouseLeftUp(x, y);
+		}
+		if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP)
+		{
+			//pThis->OnMouseRightUp(x,  y);
 
-		run_Mode._bRButton = true;
-	 	run_Mode._mouseDown = CELL::int2(x,y);
-		run_Mode._pSelect = 0;
-		
-		ArrayText::iterator itr = run_Mode._texts.begin();
-		
-	 	for(; itr != run_Mode._texts.end(); ++itr){
-			CELL::trect<float> rt((*itr)._pos.x, (*itr)._pos.y, (*itr)._pos.x +(*itr)._size.x, (*itr)._pos.y + (*itr)._size.y);
-			 if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
-				 run_Mode._pSelect = &(*itr);
-				 run_Mode._LDown = &(*itr);				
-				 (*itr)._eventDown(run_Mode._pSelect);				 
-				 break;
+			run_Mode._mouseDown = CELL::int2(x,y);
+		 	ArrayText::iterator itr = run_Mode._texts.begin();
+		 	for(; itr != run_Mode._texts.end(); ++itr){
+			 	CELL::trect<float> rt((*itr)._pos.x, (*itr)._pos.y, (*itr)._pos.x +(*itr)._size.x, (*itr)._pos.y + (*itr)._size.y);
+			 	if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
+					 if(run_Mode._LDown == &(*itr)) {
+						 (*itr)._clickDown(run_Mode._LDown);		
+					 }
+			 		break;
+			 	}
 		 	}
-	 	}
+			ArrayText::iterator itr2 = run_Mode.workMode.begin();
+			for(; itr2 != run_Mode.workMode.end(); ++itr2) {
+				CELL::trect<float> rt((*itr2)._pos.x, (*itr2)._pos.y, (*itr2)._pos.x +(*itr2)._size.x, (*itr2)._pos.y + (*itr2)._size.y);
+			 	if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
+					 if(run_Mode._LDown == &(*itr2)) {
+						 (*itr2)._clickDown(run_Mode._LDown);		
+					 }
+			 		break;
+			 	}
+				
+			}
+		 	run_Mode._pSelect = 0;
+		 	run_Mode._bRButton = false;
+		}
 
-		ArrayText::iterator itr2 = run_Mode.workMode.begin();		
-	 	for(; itr2 != run_Mode.workMode.end(); ++itr2){
-			CELL::trect<float> rt((*itr2)._pos.x, (*itr2)._pos.y, (*itr2)._pos.x +(*itr2)._size.x, (*itr2)._pos.y + (*itr2)._size.y);
-			 if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
-				 run_Mode._pSelect = &(*itr2);
-				 run_Mode._LDown = &(*itr2);				
-				 (*itr2)._eventDown(run_Mode._pSelect);				 
-				 break;
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+		{
+			run_Mode._bRButton = true;
+		 	run_Mode._mouseDown = CELL::int2(x,y);
+			run_Mode._pSelect = 0;		
+			ArrayText::iterator itr = run_Mode._texts.begin();			
+		 	for(; itr != run_Mode._texts.end(); ++itr){
+				CELL::trect<float> rt((*itr)._pos.x, (*itr)._pos.y, (*itr)._pos.x +(*itr)._size.x, (*itr)._pos.y + (*itr)._size.y);
+				 if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
+					 run_Mode._pSelect = &(*itr);
+					 run_Mode._LDown = &(*itr);				
+					 (*itr)._eventDown(run_Mode._pSelect);				 
+					 break;
+			 	}
 		 	}
-	 	}
+
+			ArrayText::iterator itr2 = run_Mode.workMode.begin();		
+		 	for(; itr2 != run_Mode.workMode.end(); ++itr2){
+				CELL::trect<float> rt((*itr2)._pos.x, (*itr2)._pos.y, (*itr2)._pos.x +(*itr2)._size.x, (*itr2)._pos.y + (*itr2)._size.y);
+				 if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
+					 run_Mode._pSelect = &(*itr2);
+					 run_Mode._LDown = &(*itr2);				
+					 (*itr2)._eventDown(run_Mode._pSelect);				 
+					 break;
+			 	}
+		 	}
 //================================================================================================
 		//pThis->OnMouseLeftDwn(x, y);   // add by swj
 		
-		if (pThis->open_handleCalibra || g_sysParam->isEnable_HandleCalibrate()) // Press 'y' or 'Y' , set this flag to 1
-		{
-			pThis->OnMouseLeftDwn(x, y);
-		}
-		else
-		{
-			if( pThis->setrigon_flag && !m_bMoveDetect)
+			if (pThis->open_handleCalibra || g_sysParam->isEnable_HandleCalibrate()) // Press 'y' or 'Y' , set this flag to 1
 			{
-				if(pThis->m_click == 0)
+				pThis->OnMouseLeftDwn(x, y);
+			}
+			else
+			{
+				if( pThis->setrigon_flag && !m_bMoveDetect)
 				{
-					pThis->m_click = 1;
-					pThis->m_rectn[curId] = 0;
+					if(pThis->m_click == 0)
+					{
+						pThis->m_click = 1;
+						pThis->m_rectn[curId] = 0;
 
-					float floatx,floaty;
-					floatx = x;
-					floaty = y;
-					pThis->map1080p2normal_point(&floatx, &floaty);
-					pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
-					
-					pThis->mRect[curId][pThis->m_rectn[curId]].x1 = floatx;
-					pThis->mRect[curId][pThis->m_rectn[curId]].y1 = floaty;
+						float floatx,floaty;
+						floatx = x;
+						floaty = y;
+						pThis->map1080p2normal_point(&floatx, &floaty);
+						pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+						
+						pThis->mRect[curId][pThis->m_rectn[curId]].x1 = floatx;
+						pThis->mRect[curId][pThis->m_rectn[curId]].y1 = floaty;
 
-				}
-				else
-				{	
-					pThis->m_click = 0;
+					}
+					else
+					{	
+						pThis->m_click = 0;
 
-					float floatx,floaty;
-					floatx = x;
-					floaty = y;
-					pThis->map1080p2normal_point(&floatx, &floaty);
-					pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
-					
-					pThis->mRect[curId][pThis->m_rectn[curId]].x2 = floatx;
-					pThis->mRect[curId][pThis->m_rectn[curId]].y2 = floaty;
+						float floatx,floaty;
+						floatx = x;
+						floaty = y;
+						pThis->map1080p2normal_point(&floatx, &floaty);
+						pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+						
+						pThis->mRect[curId][pThis->m_rectn[curId]].x2 = floatx;
+						pThis->mRect[curId][pThis->m_rectn[curId]].y2 = floaty;
 
 
-				/*printf("Rigion%d: Point1(%d,%d),Point2(%d,%d),Point3(%d,%d),Point4(%d,%d)\n",
-					pThis->m_rectn[curId],
-					pThis->mRect[curId][pThis->m_rectn[curId]].x1,pThis->mRect[curId][pThis->m_rectn[curId]].y1,
-					pThis->mRect[curId][pThis->m_rectn[curId]].x2,pThis->mRect[curId][pThis->m_rectn[curId]].y1,
-					pThis->mRect[curId][pThis->m_rectn[curId]].x1,pThis->mRect[curId][pThis->m_rectn[curId]].y2,
-					pThis->mRect[curId][pThis->m_rectn[curId]].x2,pThis->mRect[curId][pThis->m_rectn[curId]].y2
-				);*/
 					//point1  ---  lefttop    ,  point2  --- righttop  , point3 --- leftbottom  ,point --- rightbottom
 
 					mouserect rectsrcf;
@@ -1362,14 +1353,13 @@ if(mouse_workmode == DrawRectangle_Mode){
 	}
 
 	}
-	else 
+	else  /*  click on gun image , ball camera move*/
 	{
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
 			if(y > 0 && y< 540) {
 				pThis->Event_click2Move(x - 480, y);
 			}
-			 //(y>=540 && y < 1080) 
 			else{
 				pThis->ClickGunMove2Ball(x,y,false);
 			}

@@ -21,8 +21,14 @@ extern bool showDetectCorners ;
 extern volatile bool rendeFlag;
 extern bool saveOnePicture;
 extern int saveCount;
+
 Mat g_CornerImage;
+Mat g_WarpImage;
+Mat g_MatchImage;
+extern bool g_bSubmitWarpTexture;
 extern bool g_bSubmitTexture;
+extern bool g_bSubmitMatchTexture;
+
 bool captureOnePicture = false;
 int captureCount = 0;
 extern vector<Mat> imageListForCalibra;
@@ -232,17 +238,13 @@ int CcCamCalibra::Run()
 		 FindCorners();
 		 //FindPatternCorners();
 		 getObjectCoordinates();
-		 calibrate();
-		
+		 calibrate();		
 	}
 #endif
-
 	char flag = 0;
 	Mat frame = ball_frame;
 	cvtGunYuyv2Bgr();
 	cvtBallYuyv2Bgr();
-	
-	
 #if 1	
 	if(!gun_frame.empty()){
 		remap(gun_frame, undisImage, map1, map2, INTER_LINEAR);
@@ -280,7 +282,9 @@ int CcCamCalibra::Run()
 					warpPerspective(undisImage, warp, homography, undisImage.size());
 					resize(warp, warp, Size(warp.cols*scale, warp.rows*scale));					
 					drawChessboardCorners(warp, boardSize, key_points1, false);		
-					imshow("camera gun warp", warp);
+					//imshow("camera gun warp", warp);
+					warp.copyTo(g_WarpImage);
+					g_bSubmitWarpTexture = true;
 				}
 			}
 		}
@@ -342,7 +346,9 @@ int CcCamCalibra::Run()
 					else{
 						drawChessboardCorners(warp, boardSize, pts, false);	
 					}
-					imshow("camera gun warp", warp);
+					//imshow("camera gun warp", warp);
+					warp.copyTo(g_WarpImage);
+					g_bSubmitWarpTexture = true;
 				}
 			}	
 		}
@@ -504,8 +510,10 @@ int CcCamCalibra::find_feature_matches ( const Mat& img_1, const Mat& img_2,
         //Mat img_match;
         Mat img_match;
         drawMatches ( img_1, keypoints_1, img_2, keypoints_2, matches, img_match );
-        resize(img_match, img_match, Size(img_match.cols/2, img_match.rows/2));
-        imshow ( "matchWnd", img_match );
+        resize(img_match, img_match, Size(img_match.cols/4, img_match.rows/2));		
+       //imshow ( "matchWnd", img_match );
+        img_match.copyTo(g_MatchImage);
+	g_bSubmitMatchTexture = true;
     }
     return matches.size();
 }
@@ -1112,18 +1120,19 @@ int DetectCorners::Run()
 			cv::Mat cornerImage;
 			cvtCornerYuyv2Bgr();
 			cornerImage = corner_frame.clone();
-			//PrintMs();
+			
 		bool ret=	chessBoardCornersDetect( corner_frame, cornerImage, successImageNum );
-		if(ret){
-			if(saveOnePicture == true ) {
+		if(ret)
+		{
+			if(saveOnePicture == true )
+			{
 				saveOnePicture = false;
 				int nsize = imageListForCalibra.size();
-				if(nsize<50){
+				if(nsize<50)
+				{
 					memset(savePicname, 0, sizeof(savePicname));
 					sprintf(savePicname, "%02d.bmp",saveCount);					
 					saveCount ++;
-					// Mat Dst(1080,1920,CV_8UC3);
-					// cvtColor(corner_frame,Dst,CV_YUV2BGR_YUYV);
 					imwrite(savePicname,corner_frame);
 		
 	//				m_cutIMG[nsize] = cv::Mat(corner_frame.rows,corner_frame.cols,CV_8UC3);
@@ -1133,15 +1142,10 @@ int DetectCorners::Run()
 					captureCount += 1;
 					SetCutDisplay(nsize, true);
 				}
-			}
-			
-		}
-
-		
-			//PrintMs("chessBoardCornersDetect~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+			}			
+		     }		
 		}
 	}
-
 }
 
 

@@ -36,7 +36,12 @@ UI_CONNECT_ACTION g_connectAction;
 extern vector<Mat> imageListForCalibra;
 bool SubImage = true;
 bool g_bSubmitTexture = false;
+bool g_bSubmitWarpTexture = false;
+bool g_bSubmitMatchTexture = false;
 extern Mat g_CornerImage;
+extern Mat g_WarpImage;
+extern Mat g_MatchImage;
+
 MenuDisplay g_displayMode = MENU_MAIN_VIEW;
 GB_WorkMode g_workMode = HANDLE_LINK_MODE;
 
@@ -2277,6 +2282,24 @@ void CDisplayer::gl_init()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1920, 1080, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG.data);
 	
+// Texture For Show Warp Images
+		cv::Mat blackIMG2 = cv::Mat::zeros(540,960,CV_8UC3);
+		glGenTextures(1, &_texWarpId);
+		glBindTexture(GL_TEXTURE_2D, _texWarpId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 960, 540, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG2.data);
+
+//Texture For Show Match Points Images
+		glGenTextures(1, &_texMatchId);
+		glBindTexture(GL_TEXTURE_2D, _texMatchId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 960, 540, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG2.data);
 	
 	x11disbuffer=(unsigned char *)malloc(mallocwidth*mallocheight*4);
 
@@ -2938,10 +2961,23 @@ void CDisplayer::gl_textureLoad(void)
 	}
 //=============================================================================================	
 	
-		if(g_bSubmitTexture && g_CornerImage.empty() == false){
+		if( g_bSubmitTexture && (g_CornerImage.empty() == false) ){
 			g_bSubmitTexture = false;
 			cv::Mat IMG = g_CornerImage;			
 			glBindTexture(GL_TEXTURE_2D, _texCornerId);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, IMG.cols, IMG.rows, GL_BGR_EXT, GL_UNSIGNED_BYTE, IMG.data);
+		}
+
+		if(g_bSubmitWarpTexture && (g_WarpImage.empty() == false)){
+			g_bSubmitWarpTexture = false;
+			cv::Mat IMG = g_WarpImage;			
+			glBindTexture(GL_TEXTURE_2D, _texWarpId);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, IMG.cols, IMG.rows, GL_BGR_EXT, GL_UNSIGNED_BYTE, IMG.data);
+		}
+		if(g_bSubmitMatchTexture && (g_MatchImage.empty() == false)){
+			g_bSubmitMatchTexture = false;
+			cv::Mat IMG = g_MatchImage;			
+			glBindTexture(GL_TEXTURE_2D, _texMatchId);
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, IMG.cols, IMG.rows, GL_BGR_EXT, GL_UNSIGNED_BYTE, IMG.data);
 		}
 	
@@ -3022,21 +3058,55 @@ void CDisplayer::RenderVideoOnOrthoView( int videoChannel, int x, int y, int wid
 	glPopMatrix();	
 }
 
+void CDisplayer::RenderMatchPointsImageView(GLint x, GLint y, GLint width, GLint height)
+{
+	glViewport( x, y, width,height);
+	glPushMatrix();
+	glLoadIdentity();
+	glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);	
+	glUniform1i(Uniform_tex_in, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, _texMatchId);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glVertexPointer(3,GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].x);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].u);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glPopMatrix();	
+}
+
+
+void CDisplayer::RenderWarpImageView(GLint x, GLint y, GLint width, GLint height)
+{
+	glViewport( x, y, width,height);
+	glPushMatrix();
+	glLoadIdentity();
+	glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);	
+	glUniform1i(Uniform_tex_in, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, _texWarpId);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glVertexPointer(3,GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].x);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].u);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glPopMatrix();	
+}
 void CDisplayer::RenderDetectCornerView(GLint x, GLint y, GLint width, GLint height)
 {
-		glViewport( x, y, width,height);
-		glPushMatrix();
-		glLoadIdentity();
-		glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);	
-		glUniform1i(Uniform_tex_in, 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, _texCornerId);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glVertexPointer(3,GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].x);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].u);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glPopMatrix();	
+	glViewport( x, y, width,height);
+	glPushMatrix();
+	glLoadIdentity();
+	glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTrans[0]);	
+	glUniform1i(Uniform_tex_in, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, _texCornerId);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glVertexPointer(3,GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].x);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex3F), &BMPVertex[0].u);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glPopMatrix();	
 }
 
 void CDisplayer::RenderSavedBMPImageByIndex(int Index)
@@ -3112,7 +3182,10 @@ void CDisplayer::linkageSwitchMode(void)
 	{
 		case PREVIEW_MODE:
 			RenderVideoOnOrthoView(VIDEO_1, 0,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);
-			RenderVideoOnOrthoView(VIDEO_0, vdisWH[0][0]/2,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);			
+			RenderVideoOnOrthoView(VIDEO_0, vdisWH[0][0]/2,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);	
+			RenderWarpImageView(0,0, vdisWH[0][0]/2, vdisWH[0][1]/2);
+			RenderMatchPointsImageView(960,0, vdisWH[0][0]/2, vdisWH[0][1]/2);
+			
 			setFontPosition(100, 640);
 			if( g_CurDisplayMode != PREVIEW_MODE)
 				g_CurDisplayMode = PREVIEW_MODE;		
@@ -3197,6 +3270,7 @@ void CDisplayer::gl_display(void)
 	Uniform_font_color = glGetUniformLocation(m_fontProgram,"fontColor");
 
 	linkageSwitchMode();	
+	
 	if(m_bOsd)
 	{
 		glUniformMatrix4fv(Uniform_mattrans, 1, GL_FALSE, m_glmat44fTransDefault);
@@ -3271,6 +3345,12 @@ ArrayText::iterator itr2 = run_Mode.workMode.begin();
 			default:
 				break;	
 		}
+	}
+
+	if(displayMode == CALIBRATE_CAPTURE){
+		chinese_osd(100,400,L"已保存图片:",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+		chinese_osd(280,400,L"张",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+
 	}
 
 /******************************************************************************************************************************/

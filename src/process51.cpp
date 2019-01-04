@@ -1823,7 +1823,7 @@ osdindex++;	//cross aim
 
 	osdindex++;
 	{		
-		if( open_handleCalibra == true || g_sysParam->isEnable_HandleCalibrate()){  
+		if( open_handleCalibra == true/* || g_sysParam->isEnable_HandleCalibrate()*/){  
 			sprintf(show_key[string_cnt1], "%d", string_cnt1);	
 			putText(m_display.m_imgOsd[1],show_key[string_cnt1],key1_pos,FONT_HERSHEY_TRIPLEX,0.8, cvScalar(255,0,0,255), 1);	
 			cv::circle( m_display.m_imgOsd[1], key1_pos, 3 , cvScalar(255,0,255,255), 2, 8, 0);
@@ -1849,16 +1849,6 @@ osdindex++;	//cross aim
 						textPos2_backup[m+1] = textPos2_record[m];
 					}
 					
-				#if 0
-					for(int i=0; i<AllPoints_Num; i++)
-					{
-						putText(m_display.m_imgOsd[1],show_key[i],textPos1_record[i],FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);	
-						cv::circle(m_display.m_imgOsd[1],textPos1_record[i],3 ,cvScalar(0,0,0,0),2,8,0);			
-						
-						putText(m_display.m_imgOsd[1],show_key2[i],textPos2_record[i],FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);	
-						cv::circle(m_display.m_imgOsd[1],textPos2_record[i],3 ,cvScalar(0,0,0,0),2,8,0);
-					}
-				#endif
 					for(int i=0; i<=key_point1_cnt; i++)
 					{
 						putText(m_display.m_imgOsd[1],show_key[i],textPos1_backup[i],FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);	
@@ -1886,14 +1876,16 @@ osdindex++;	//cross aim
 	}
 
 
-	if( (m_display.displayMode == CALIBRATE_CAPTURE) && (showDetectCorners == true)) {		
+	if( (m_display.displayMode == CALIBRATE_CAPTURE) && (showDetectCorners == true)){		
 		
-		putText(m_display.m_imgOsd[1],Bak_CString,Point(200,400),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
+		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
 
-		sprintf(Bak_CString,"Save Picture: %d",captureCount);			
+		sprintf(Bak_CString,"%d",captureCount);			
 						
-		putText(m_display.m_imgOsd[1],Bak_CString,Point(200,400),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,255,255,255), 1);
+		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,255,255,255), 1);
 			
+	}else {
+		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
 	}
 	
 }
@@ -3181,7 +3173,7 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	float coefficientx ;//= (float)tmpcofx*0.001f;
 	float coefficienty ;//= (float)tmpcofy*0.001f;
 	float fx = 1796.2317019134 + 10;
-	float fy = 1795.8556284573 +55;
+	float fy = 1795.8556284573 +55+20;;
 	float degperpixX = 36000/(2*CV_PI*fx);
 	float degperpixY = 36000/(2*CV_PI*fy);
 	coefficientx = degperpixX*2;

@@ -245,8 +245,10 @@ public:
 	void linkageSwitchMode(void);
 	void RenderSavedBMPImage(void);
 	void RenderSavedBMPImageByIndex(int Index);
-	void RenderDetectCornerView(GLint x, GLint y, GLint width, GLint height);
-
+	void RenderDetectCornerView(GLint x, GLint y, GLint width, GLint height);	
+	void RenderWarpImageView(GLint x, GLint y, GLint width, GLint height);	
+	void RenderMatchPointsImageView(GLint x, GLint y, GLint width, GLint height);
+	
 	GLbyte* gltReadBMPBits(const char *szFileName, int *nWidth, int *nHeight);
 	bool LoadBMPTexture(const char *szFileName, GLenum minFilter, GLenum magFilter, GLenum wrapMode);	
 	
@@ -256,6 +258,8 @@ public:
 	char BMPName[100][20];
 public:
 	GLuint _texCornerId;	
+	GLuint _texWarpId;	
+	GLuint _texMatchId;	
 	GLboolean _bCornerDetect;
 public:
 	unsigned char Cur_BMPIndex;

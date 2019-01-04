@@ -2457,11 +2457,10 @@ int CDisplayer::gl_updateVertex(void)
 		//m_glvTexCoords[1][6]=0.562500
 		//m_glvTexCoords[1][7]=0.588889
 	}
-
 	return iRet;
 }
 
-int CDisplayer::menu_init()
+int CDisplayer::menu_init( ) 
 {
 	m_menuindex = -1;
 	memcpy(&dismenuarray, plat->extInCtrl->menuarray, sizeof(dismenuarray));
@@ -2476,8 +2475,9 @@ int CDisplayer::menu_init()
             {"使用串口设置","使用网络设置","返回"},
             {"波特率     9600","球机地址   001","球机协议   PALCO-D","工作模式   485半双工","返回"},
             {"网络协议","IP地址","登录用户名","登录密码","返回"},
+             {"手动选择特征点","开始标定","返回"},
             {"检测区域设置","用鼠标指针左键框选、点选:增加区域","用鼠标指针右键框选、点选:删除区域","按回车保存设置，按2返回"}
-	};
+};
 
 	unsigned char resolbuf[maxresolid][128] = {
             "格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};

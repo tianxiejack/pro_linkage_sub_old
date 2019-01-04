@@ -96,7 +96,9 @@ typedef enum{
 	submenu_setball,
 	submenu_setcom,
 	submenu_setnet,
+	submenu_handleMatchPoints,// for handle calibrate match points 
 	submenu_setmtdrigion,
+	
 	menumaxid
 }AppMenuId;
 

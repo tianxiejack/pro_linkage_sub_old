@@ -696,8 +696,8 @@ void app_ctrl_enter()
 		}
 		else if (1 == pIStuts->menuarray[submenu_gunball].pointer)
 		{
-			
-			CVideoProcess::m_camCalibra->Set_Handler_Calibra = true ;
+			app_ctrl_setMenuStat(submenu_handleMatchPoints);
+			//CVideoProcess::m_camCalibra->Set_Handler_Calibra = true ;
 		}
 		else if(2 == pIStuts->menuarray[submenu_gunball].pointer)
 		{
@@ -706,6 +706,15 @@ void app_ctrl_enter()
 			CVideoProcess::m_camCalibra->Set_Handler_Calibra = false ;
 			g_displayMode = MENU_MAIN_VIEW;
 		}
+	}
+	else if(submenu_handleMatchPoints == pIStuts->MenuStat)
+	{
+		if(2 == pIStuts->menuarray[submenu_handleMatchPoints].pointer)
+		{
+			app_ctrl_setMenuStat(submenu_gunball);
+			
+		}
+
 	}
 	else if(submenu_mtd == pIStuts->MenuStat)
 	{
@@ -789,7 +798,7 @@ void app_ctrl_upMenu()
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
 	int menustate = pIStuts->MenuStat; 
-	if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
+	if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 	{
 
 		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
@@ -821,7 +830,7 @@ void app_ctrl_downMenu()
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
 
 	int menustate = pIStuts->MenuStat; 
-	if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
+	if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 	{
 		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
 		{

@@ -257,7 +257,7 @@ int CcCamCalibra::Run()
 	Mat gunDraw, ballDraw;
 	if( (!ball_frame.empty()) && (!gun_frame.empty()) )
 	{
-		if( (Set_Handler_Calibra || g_sysParam->isEnable_Undistortion() ) && (bool_Calibrate || g_sysParam->isEnable_calculateMatrix()) ) {		
+		if( (Set_Handler_Calibra /*|| g_sysParam->isEnable_Undistortion() */) && (bool_Calibrate /*|| g_sysParam->isEnable_calculateMatrix()*/) ) {		
 			printf("%s : start manual calibrate \n",__func__);
 			
 			if(key_points1.size() > 4 && key_points2.size() > 4){
@@ -291,8 +291,8 @@ int CcCamCalibra::Run()
 		
 		else 
 		{	
-			if( bool_Calibrate || g_sysParam->isEnable_calculateMatrix()) {
-				//printf("%s : start auto calibrate \n",__func__);
+			if( bool_Calibrate/* || g_sysParam->isEnable_calculateMatrix()*/) {
+				
 				vector<KeyPoint> keypoints_1, keypoints_2;
 				vector<DMatch> matches;
 				find_feature_matches ( undisImage, frame,  keypoints_1, keypoints_2, matches , 60.0, true);
@@ -307,7 +307,7 @@ int CcCamCalibra::Run()
 						pts.push_back(pt);
 					}					
 					bool_Calibrate = false;
-					g_sysParam->getSysParam().cameracalibrate.Enable_calculateMatrix = false;
+					//g_sysParam->getSysParam().cameracalibrate.Enable_calculateMatrix = false;
 					cout << "match points " << matches.size() << endl;
 //-----------------------------------------------------------------------------------------------------
 					SENDST trkmsg={0};

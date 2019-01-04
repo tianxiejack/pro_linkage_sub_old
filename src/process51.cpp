@@ -98,7 +98,7 @@ m_cofy(6320),m_bak_count(0)
 	pIStuts->MenuStat = -1;
 	memset(pIStuts->Passwd, 0, sizeof(pIStuts->Passwd));
 
-	int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,5};
+	int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,3,5};
 	memset(pIStuts->menuarray, 0, sizeof(pIStuts->menuarray));
 	for(int i = 0; i < menumaxid; i++)
 	{
@@ -2688,7 +2688,9 @@ void CProcess::Event_click2Move(int x, int y)
 	int point_X , point_Y , offset_x , offset_y,	zoomPos; 
 	int delta_X ;
 	Point opt;
-
+	zoomPos = 2849;   // Min  Zoom 
+	int ZoomMax = 65535;
+	int ZoomMin = 2849;
 	offset_x = 0;
 	offset_y = 0;
 	point_X = ( x-offset_x ) ;
@@ -2712,8 +2714,8 @@ void CProcess::Event_click2Move(int x, int y)
 	float fy = 1795.8556284573 +55;
 	float degperpixX = 36000/(2*CV_PI*fx);
 	float degperpixY = 36000/(2*CV_PI*fy);
-	float coefficientx = degperpixX*2;
-	float coefficienty = degperpixY*2;
+	float coefficientx = degperpixX*2;// * (ZoomMax / ZoomMin);
+	float coefficienty = degperpixY*2;// *(ZoomMax / ZoomMin);
 
 	//float tmpficientx = 1.0;
 
@@ -2767,7 +2769,7 @@ void CProcess::Event_click2Move(int x, int y)
 		if(DesTilPos > 8900)
 			DesTilPos = 8900;
 	}
-	zoomPos = 2849;  //  Use the const value to make the ball camera don't change Zoom
+	
 	trkmsg.cmd_ID = acqPosAndZoom;
 	memcpy(&trkmsg.param[0],&DesPanPos, 4);
 	memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
@@ -2891,7 +2893,6 @@ printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 	int CurrentTilt = tiltPos;
 	printf("\r\n[%s]=========After Move , Current Position is : < %d, %d >\r\n", __FUNCTION__, CurrentPano, CurrentTilt);
 #endif
-printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 }
 
@@ -3036,7 +3037,6 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
 	}
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
-	//printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 }
 
@@ -3044,8 +3044,6 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 //==========================================================================
 void CProcess::reMapCoords(int x, int y,bool mode)
 {	
-//	printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
-
 	int point_X , point_Y , offset_x , offset_y,zoomPos; 
 	int delta_X ;
 	Point opt;
@@ -3101,12 +3099,6 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 			break;
 	}
 
-	//printf("......................................>>>  Gun Image Point: < %d , %d >\r\n", opt.x, opt.y);
-	//cout << "g_camParams.cameraMatrix_gun = " << g_camParams.cameraMatrix_gun << endl;
-	//cout << "g_camParams.distCoeffs_gun = " << g_camParams.distCoeffs_gun << endl;
-	//cout << "g_camParams.cameraMatrix_ball = " << g_camParams.cameraMatrix_ball << endl;
-	//cout << "g_camParams.homography = " << g_camParams.homography << endl;
-
 	std::vector<cv::Point2d> distorted, normalizedUndistorted;
 	distorted.push_back(cv::Point2d(opt.x, opt.y));
 	undistortPoints(distorted,normalizedUndistorted,g_camParams.cameraMatrix_gun,g_camParams.distCoeffs_gun);
@@ -3133,7 +3125,6 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	
     	Point bpt( pt.x, pt.y );
 		
-	//printf("<< ......................................  Ball Image Point: < %d , %d >\r\n", bpt.x, bpt.y);
 
 	//dest_ballPoint.x = bpt.x ;
 	//dest_ballPoint.y = bpt.y;
@@ -3186,7 +3177,6 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	int Origin_PanPos = g_camParams.panPos;
 	int Origin_TilPos = g_camParams.tiltPos;
 
-//printf("inputX : %d    , Origin_PanPos  : %d  \n",inputX,Origin_PanPos);
 
 	if(inputX + Origin_PanPos < 0)
 	{
@@ -3196,10 +3186,9 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	{
 		DesPanPos = inputX - (36000 - Origin_PanPos);
 	}
-	else
+	else{
 		DesPanPos = Origin_PanPos + inputX;
-
-//printf("inputY : %d    , Origin_TilPos	: %d  \n",inputY,Origin_TilPos);
+	}
 
 	if(Origin_TilPos > 32768)
 	{
@@ -3261,8 +3250,6 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
 	}
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
-	//printf("%s   LINE:%d   Send Position = < %d, %d >,zoom = %d \r\n",__func__,__LINE__, DesPanPos , DesTilPos ,zoomPos);
-	printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 }
 
@@ -4272,7 +4259,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	{
 		int menustate = pIStuts->MenuStat;
 		int pointer = m_display.dismenuarray[menustate].pointer;
-		if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
+		if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 		{
 			if(pointer > 0)
 			{
@@ -4286,7 +4273,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	{
 		int menustate = pIStuts->MenuStat;
 		int pointer = m_display.dismenuarray[menustate].pointer;
-		if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
+		if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 		{
 			if(pointer < pIStuts->menuarray[menustate].submenu_cnt - 1)
 			{

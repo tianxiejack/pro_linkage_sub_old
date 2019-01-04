@@ -2708,35 +2708,30 @@ void CProcess::Event_click2Move(int x, int y)
 
 	int  inputX = opt.x;
 	int  inputY = opt.y;
-	int  tmpcofx = 6300;
-	int  tmpcofy = 6200;
+	//int  tmpcofx = 6300;
+	//int  tmpcofy = 6200;
 
 	inputX -= 474;//480;    /* 474 is from 948/2 , and 948 is from the camera intrinsic matrix: "Ox", same as  "Uo"*/
 	inputY -= 276;//270; 	/* 276 is from 552/2 , and 552 is from the camera intrinsic matrix: "Oy", same as  "Vo"*/
 
-	float coefficientx = (float)tmpcofx*0.001f;
-	float coefficienty = (float)tmpcofy*0.001f;
+	//float coefficientx = (float)tmpcofx*0.001f;
+	//float coefficienty = (float)tmpcofy*0.001f;
 	float fx = 1796.2317019134 + 10;
 	float fy = 1795.8556284573 +55;
 	float degperpixX = 36000/(2*CV_PI*fx);
 	float degperpixY = 36000/(2*CV_PI*fy);
-	coefficientx = degperpixX*2;
-	coefficienty = degperpixY*2;
+	float coefficientx = degperpixX*2;
+	float coefficienty = degperpixY*2;
 
-	float tmpficientx = 1.0;
+	//float tmpficientx = 1.0;
 
-	inputX = (int)((float)inputX * coefficientx * tmpficientx);
+	inputX = (int)((float)inputX * coefficientx );//* tmpficientx);
 	inputY = (int)((float)inputY * coefficienty);
-//====================================================================
-	QueryCurBallCamPosition();	
 
-	int Origin_PanPos = DesPanPos;
-	int Origin_TilPos = DesTilPos;
-	Origin_PanPos = panPos;	
-	Origin_TilPos = tiltPos;	
-	printf("\r\n[%s]=========Origin Move , Current Position is : < %d, %d >\r\n", __FUNCTION__, panPos, tiltPos);
+	QueryCurBallCamPosition();	//  Query Current Ball " Pano, Tilt, Zoom "  Value
 
-//===================================================================
+	int Origin_PanPos = panPos;	
+	int Origin_TilPos = tiltPos;	
 
 	if(inputX + Origin_PanPos < 0){
 		DesPanPos = 36000 + (inputX + Origin_PanPos);
@@ -2780,31 +2775,15 @@ void CProcess::Event_click2Move(int x, int y)
 		if(DesTilPos > 8900)
 			DesTilPos = 8900;
 	}
-
-	printf("\r\n[%s]=========Before Move , Destination Position is : < %d, %d >\r\n", __FUNCTION__, DesPanPos, DesTilPos);
-
 	zoomPos = 2849;  //  Use the const value to make the ball camera don't change Zoom
-
-	if(1)	{  
-		trkmsg.cmd_ID = acqPosAndZoom;
-		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-		memcpy(&trkmsg.param[8],&zoomPos  , 4); 	
-	}
-	else	{
-		trkmsg.cmd_ID = speedloop;
-		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-	}
-	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
-#if 0
-	OSA_waitMsecs(2000);
-	QueryCurBallCamPosition();
-	int CurrentPano = panPos;
-	int CurrentTilt = tiltPos;
-	printf("\r\n[%s]=========After Move , Current Position is : < %d, %d >\r\n", __FUNCTION__, CurrentPano, CurrentTilt);
-#endif
+	trkmsg.cmd_ID = acqPosAndZoom;
+	memcpy(&trkmsg.param[0],&DesPanPos, 4);
+	memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
+	memcpy(&trkmsg.param[8],&zoomPos  , 4); 	
+	
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);		
 }
+
 
 #else
 {
@@ -2929,7 +2908,6 @@ printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 {
-	//printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 	int point_X , point_Y , offset_x , offset_y,	zoomPos; 
 	int delta_X ;
 	Point opt;

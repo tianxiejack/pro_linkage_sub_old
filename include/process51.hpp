@@ -137,6 +137,7 @@ public:
 	static void Tcallback(void *p);
 	int setresol(int resoltype);
 	int udoutputresol(int resoltype);
+	int writeshell(int resoltype);
 
 
 protected:

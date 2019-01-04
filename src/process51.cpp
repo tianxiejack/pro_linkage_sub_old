@@ -4341,6 +4341,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	{
 		m_display.disresol_type = pMenuStatus->resol_type;
 		udoutputresol(m_display.disresol_type);
+		writeshell(m_display.disresol_type);
 	}
 	if(msgId == MSGID_EXT_SETBAUD){
 
@@ -5060,6 +5061,39 @@ int CProcess::udoutputresol(int resoltype)
 		memcpy(test.param, &cmdsetconfig, sizeof(cmdsetconfig));
 		ipc_sendmsg(&test, IPC_FRIMG_MSG);
 	}
+}
+
+int CProcess::writeshell(int resoltype)
+{
+	FILE *fp = NULL;
+	char contents[256] = {0};
+
+	switch(resoltype)
+	{
+		case r1920x1080_f60:
+			sprintf(contents,"#! /bin/bash\n" \
+               "xrandr -s 1920x1080_60.00\n");
+			break;
+		case r1024x768_f60:
+			sprintf(contents,"#! /bin/bash\n" \
+               "xrandr -s 1024x768_60.01\n");
+			break;
+		case r1280x1024_f60:
+			sprintf(contents,"#! /bin/bash\n" \
+               "xrandr -s 1280x1024_60.00\n");
+			break;
+		default:
+			break;	
+	}
+
+	if(( fp = fopen("/home/ubuntu/dss_bin/setresol.sh", "w"))==NULL)
+	{
+		fprintf(stderr,"create shell file error");
+		return -1;
+	}
+	fprintf(fp, "%s", contents);
+	fclose(fp);
+	return 0;
 }
 
 /////////////////////////////////////////////////////

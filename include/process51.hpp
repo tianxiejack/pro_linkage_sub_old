@@ -262,7 +262,7 @@ public:
 	PointNode polyRectbak[MAX_CHAN][100];
 	int polytempXbak, polytempYbak, polyrectnbak[MAX_CHAN];
 	DxTimer dtimer;
-	int resol_light_id, resol_apply_id;
+	int resol_light_id, resol_apply_id,baud_light_id;
 	int save_flag;
 	int cnt_down;
 

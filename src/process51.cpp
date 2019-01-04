@@ -473,12 +473,19 @@ void CProcess::TimerCreate()
 	resol_apply_id = dtimer.createTimer();
 	dtimer.registerTimer(resol_light_id, Tcallback, &resol_light_id);
 	dtimer.registerTimer(resol_apply_id, Tcallback, &resol_apply_id);
+
+	baud_light_id = dtimer.createTimer();
+	dtimer.registerTimer(baud_light_id, Tcallback, &baud_light_id);
 }
 
 
 void CProcess::Tcallback(void *p)
 {
 	static int resol_dianmie = 0;
+	static int baud_dianmie = 0;
+	
+	unsigned char baudlbuf[MAX_BAUDID][128] = {
+		"波特率	   2400","波特率 	4800","波特率	 9600","波特率	  115200"};
 	unsigned char resolbuf[maxresolid][128] = {
 			"格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
 	unsigned char resolapplybuf1[128] = "是否保存当前分辨率?";
@@ -510,6 +517,15 @@ void CProcess::Tcallback(void *p)
 			}
 		}
 	}
+	else if( a == sThis->baud_light_id ){
+		if(baud_dianmie)
+			swprintf(sThis->m_display.disMenu[submenu_setcom][0], 33, L"%s", baudlbuf[sThis->m_display.disbaud_type]);
+		else
+			memset(sThis->m_display.disMenu[submenu_setcom][0], 0, sizeof(sThis->m_display.disMenu[submenu_setcom][0]));
+		baud_dianmie = !baud_dianmie;
+
+	}
+		
 }
 
 void CProcess::Init_CameraMatrix()

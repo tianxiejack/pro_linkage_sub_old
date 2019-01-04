@@ -510,6 +510,23 @@ CDisplayer::CDisplayer()
 	}
 
 	disresol_type = disresol_type_tmp = oresoltype;
+	switch(curBaudRate) {
+		case 2400:
+			disbaud_type = 0;
+			break;
+		case 4800:
+			disbaud_type = 1;
+			break;
+		case 9600:
+			disbaud_type = 2;
+			break;
+		case 115200:
+			disbaud_type = 3;
+			break;
+		default:
+			break;
+	}
+	
 }
 
 CDisplayer::~CDisplayer()

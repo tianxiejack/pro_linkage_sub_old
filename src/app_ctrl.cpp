@@ -711,8 +711,7 @@ void app_ctrl_enter()
 	{
 		if(2 == pIStuts->menuarray[submenu_handleMatchPoints].pointer)
 		{
-			app_ctrl_setMenuStat(submenu_gunball);
-			
+			app_ctrl_setMenuStat(submenu_gunball);			
 		}
 
 	}
@@ -766,6 +765,17 @@ void app_ctrl_enter()
 	{
 		if(0 == pIStuts->menuarray[submenu_setcom].pointer){
 				pMenuStatus->baud_light= !pMenuStatus->baud_light;
+
+				if(pMenuStatus->baud_light){
+					plat->dtimer.startTimer(plat->baud_light_id,500);
+				}
+				else
+				{
+					plat->dtimer.stopTimer(plat->baud_light_id);
+					MSGDRIV_send(MSGID_EXT_SETBAUD, 0);
+				}
+
+				
 				if(setComBaud_select == true) {
 					setComBaud_select = false;
 					changeComBaud = true;
@@ -800,7 +810,6 @@ void app_ctrl_upMenu()
 	int menustate = pIStuts->MenuStat; 
 	if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 	{
-
 		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
 		{
 			pMenuStatus->resol_type_tmp = (pMenuStatus->resol_type_tmp + 1) % maxresolid;

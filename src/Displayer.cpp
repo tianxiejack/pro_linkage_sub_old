@@ -2329,7 +2329,7 @@ void CDisplayer::gl_init()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 960, 540, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG2.data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1920, 540, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG2.data);
 	
 	x11disbuffer=(unsigned char *)malloc(mallocwidth*mallocheight*4);
 
@@ -3206,6 +3206,9 @@ void CDisplayer::linkageSwitchMode(void)
 		case MENU_CALIBRA_RESULT:
 			displayMode = CALIBRATE_RESULT;
 			break;
+		case MENU_MATCH_POINT_VIEW:
+			displayMode = MATCH_POINT_VIEW;
+			break;
 		default:
 			break;
 	}
@@ -3215,8 +3218,6 @@ void CDisplayer::linkageSwitchMode(void)
 		case PREVIEW_MODE:
 			RenderVideoOnOrthoView(VIDEO_1, 0,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);
 			RenderVideoOnOrthoView(VIDEO_0, vdisWH[0][0]/2,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);	
-			RenderWarpImageView(0,0, vdisWH[0][0]/2, vdisWH[0][1]/2);
-			RenderMatchPointsImageView(960,0, vdisWH[0][0]/2, vdisWH[0][1]/2);
 			
 			setFontPosition(100, 640);
 			if( g_CurDisplayMode != PREVIEW_MODE)
@@ -3259,6 +3260,10 @@ void CDisplayer::linkageSwitchMode(void)
 			}
 			if( g_CurDisplayMode != CALIBRATE_RESULT)
 				g_CurDisplayMode = CALIBRATE_RESULT;
+			break;
+		case MATCH_POINT_VIEW:			
+			RenderWarpImageView(0,0, vdisWH[0][0]/2, vdisWH[0][1]/2);
+			RenderMatchPointsImageView(0,540, vdisWH[0][0], vdisWH[0][1]/2);
 			break;
 		default:
 			break;	

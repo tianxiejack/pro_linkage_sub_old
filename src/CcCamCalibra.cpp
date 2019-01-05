@@ -510,7 +510,7 @@ int CcCamCalibra::find_feature_matches ( const Mat& img_1, const Mat& img_2,
         //Mat img_match;
         Mat img_match;
         drawMatches ( img_1, keypoints_1, img_2, keypoints_2, matches, img_match );
-        resize(img_match, img_match, Size(img_match.cols/4, img_match.rows/2));		
+        resize(img_match, img_match, Size(img_match.cols/2, img_match.rows/2));		
        //imshow ( "matchWnd", img_match );
         img_match.copyTo(g_MatchImage);
 	g_bSubmitMatchTexture = true;

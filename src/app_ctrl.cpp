@@ -18,6 +18,7 @@ extern MenuDisplay g_displayMode;
 extern GB_WorkMode g_workMode;
 extern MenuDisplay g_displayMode;
 extern CProcess* plat;
+extern SelectMode mouse_workmode;
 
 CMD_EXT *msgextInCtrl;
 menu_param_t *msgextMenuCtrl;
@@ -629,6 +630,80 @@ void app_ctrl_setnumber(char key)
 
 		}
 	}
+	else if((submenu_setmtdrigion == pIStuts->MenuStat) && (key == '2'))
+	{
+		CMD_EXT tmpCmd = {0};
+		tmpCmd.MtdSetRigion = 0;
+		app_ctrl_setMtdRigionStat(&tmpCmd);
+		app_ctrl_setMenuStat(-1);
+		g_displayMode = MENU_MAIN_VIEW;
+		memset(plat->m_display.disMenu[submenu_setmtdrigion][4], 0, sizeof(plat->m_display.disMenu[submenu_setmtdrigion][4]));
+	}
+	else if((submenu_mtd == pIStuts->MenuStat) && (pMenuStatus->mtdnum_deng == 1))
+	{
+		int offset = strlen(pMenuStatus->mtdnum_arr) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->mtdnum_arr) - 1)
+			sprintf(pMenuStatus->mtdnum_arr + offset,"%c", key);
+		else
+			printf("mtdnum reached max length:128");
+
+		int num = atoi(pMenuStatus->mtdnum_arr);
+		pMenuStatus->osd_mudnum = atoi(pMenuStatus->mtdnum_arr);
+		printf("%s,%d,osd_mudnum=%d\n",__FILE__,__LINE__,pMenuStatus->osd_mudnum);
+		MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
+	}
+	else if((submenu_mtd == pIStuts->MenuStat) && (pMenuStatus->trktime_deng == 1))
+	{
+		int offset = strlen(pMenuStatus->trktime_arr) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->trktime_arr) - 1)
+			sprintf(pMenuStatus->trktime_arr + offset,"%c", key);
+		else
+			printf("trktime reached max length:128");
+
+		int num = atoi(pMenuStatus->trktime_arr);
+		pMenuStatus->osd_trktime = atoi(pMenuStatus->trktime_arr);
+		printf("%s,%d,osd_trktime=%d\n",__FILE__,__LINE__,pMenuStatus->osd_trktime);
+		MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
+	}
+	else if((submenu_mtd == pIStuts->MenuStat) && (pMenuStatus->maxsize_deng == 1))
+	{
+		int offset = strlen(pMenuStatus->maxsize_arr) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->maxsize_arr) - 1)
+			sprintf(pMenuStatus->maxsize_arr + offset,"%c", key);
+		else
+			printf("maxsize reached max length:128");
+
+		int num = atoi(pMenuStatus->maxsize_arr);
+		pMenuStatus->osd_maxsize = atoi(pMenuStatus->maxsize_arr);
+		printf("%s,%d,osd_maxsize=%d\n",__FILE__,__LINE__,pMenuStatus->osd_maxsize);
+		MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
+	}
+	else if((submenu_mtd == pIStuts->MenuStat) && (pMenuStatus->minsize_deng == 1))
+	{
+		int offset = strlen(pMenuStatus->minsize_arr) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->minsize_arr) - 1)
+			sprintf(pMenuStatus->minsize_arr + offset,"%c", key);
+		else
+			printf("minsize reached max length:128");
+
+		int num = atoi(pMenuStatus->minsize_arr);
+		pMenuStatus->osd_minsize = atoi(pMenuStatus->minsize_arr);
+		printf("%s,%d,osd_minsize=%d\n",__FILE__,__LINE__,pMenuStatus->osd_minsize);
+		MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
+	}
+	else if((submenu_mtd == pIStuts->MenuStat) && (pMenuStatus->sensi_deng == 1))
+	{
+		int offset = strlen(pMenuStatus->sensi_arr) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->sensi_arr) - 1)
+			sprintf(pMenuStatus->sensi_arr + offset,"%c", key);
+		else
+			printf("sensi reached max length:128");
+
+		int num = atoi(pMenuStatus->sensi_arr);
+		pMenuStatus->osd_sensi = atoi(pMenuStatus->sensi_arr);
+		printf("%s,%d,osd_sensi=%d\n",__FILE__,__LINE__,pMenuStatus->osd_sensi);
+		MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
+	}
 }
 
 void app_ctrl_enter()
@@ -713,9 +788,80 @@ void app_ctrl_enter()
 		{
 			CMD_EXT tmpCmd = {0};
 			tmpCmd.MtdSetRigion = 1;
+			mouse_workmode = SetMteRigion_Mode;
 			app_ctrl_setMtdRigionStat(&tmpCmd);
 			g_displayMode = MENU_GUN;
 			app_ctrl_setMenuStat(submenu_setmtdrigion);
+		}
+		else if(1 == pIStuts->menuarray[submenu_mtd].pointer)
+		{
+			pMenuStatus->mtdnum_deng = !pMenuStatus->mtdnum_deng;
+			if(pMenuStatus->mtdnum_deng)
+				plat->dtimer.startTimer(plat->mtdnum_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->mtdnum_light_id);
+				MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
+				if((pMenuStatus->osd_mudnum >= MIN_MTDTARGET_NUM) && (pMenuStatus->osd_mudnum <= MAX_MTDTARGET_NUM))
+					plat->detectNum = pMenuStatus->osd_mudnum;
+				memset(pMenuStatus->mtdnum_arr, 0, sizeof(pMenuStatus->mtdnum_arr));
+			}
+		}
+		else if(2 == pIStuts->menuarray[submenu_mtd].pointer)
+		{
+			pMenuStatus->trktime_deng = !pMenuStatus->trktime_deng;
+			if(pMenuStatus->trktime_deng)
+				plat->dtimer.startTimer(plat->trktime_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->trktime_light_id);
+				MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
+				if((pMenuStatus->osd_trktime >= MIN_MTDTRKTIME) && (pMenuStatus->osd_trktime <= MAX_MTDTRKTIME))
+					plat->m_display.processdurationMenu_osd(pMenuStatus->osd_trktime);
+				memset(pMenuStatus->trktime_arr, 0, sizeof(pMenuStatus->trktime_arr));
+			}
+		}
+		else if(3 == pIStuts->menuarray[submenu_mtd].pointer)
+		{
+			pMenuStatus->maxsize_deng = !pMenuStatus->maxsize_deng;
+			if(pMenuStatus->maxsize_deng)
+				plat->dtimer.startTimer(plat->maxsize_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->maxsize_light_id);
+				MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
+				if((pMenuStatus->osd_maxsize >= plat->minsize) && (pMenuStatus->osd_maxsize <= MAX_MTDMAXSIZE))
+					plat->maxsize = pMenuStatus->osd_maxsize;
+				memset(pMenuStatus->maxsize_arr, 0, sizeof(pMenuStatus->maxsize_arr));
+			}
+		}
+		else if(4 == pIStuts->menuarray[submenu_mtd].pointer)
+		{
+			pMenuStatus->minsize_deng = !pMenuStatus->minsize_deng;
+			if(pMenuStatus->minsize_deng)
+				plat->dtimer.startTimer(plat->minsize_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->minsize_light_id);
+				MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
+				if((pMenuStatus->osd_minsize >= MIN_MTDMINSIZE) && (pMenuStatus->osd_minsize <= MAX_MTDMAXSIZE))
+					plat->minsize = pMenuStatus->osd_minsize;
+				memset(pMenuStatus->minsize_arr, 0, sizeof(pMenuStatus->minsize_arr));
+			}
+		}
+		else if(5 == pIStuts->menuarray[submenu_mtd].pointer)
+		{
+			pMenuStatus->sensi_deng = !pMenuStatus->sensi_deng;
+			if(pMenuStatus->sensi_deng)
+				plat->dtimer.startTimer(plat->sensi_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->sensi_light_id);
+				MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
+				if((pMenuStatus->osd_sensi >= MIN_MTDSENSI) && (pMenuStatus->osd_sensi <= MAX_MTDSENSI))
+					plat->sensi = pMenuStatus->osd_sensi;
+				memset(pMenuStatus->sensi_arr, 0, sizeof(pMenuStatus->sensi_arr));
+			}
 		}
 		
 		else if(6 == pIStuts->menuarray[submenu_mtd].pointer)
@@ -791,8 +937,33 @@ void app_ctrl_upMenu()
 	int menustate = pIStuts->MenuStat; 
 	if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
 	{
+		if((submenu_mtd == menustate) && (pMenuStatus->mtdnum_deng == 1))
+		{
+			pMenuStatus->osd_mudnum = (pMenuStatus->osd_mudnum + 1) % MAX_MTDTARGET_NUM;
+			MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->trktime_deng == 1))
+		{
+			pMenuStatus->osd_trktime = (pMenuStatus->osd_trktime + 1) % MAX_MTDTRKTIME;
+			MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->maxsize_deng == 1))
+		{
+			pMenuStatus->osd_maxsize = (pMenuStatus->osd_maxsize + 1) % MAX_MTDMAXSIZE;
+			MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->minsize_deng == 1))
+		{
+			pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + 1) % MAX_MTDMAXSIZE;
+			MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->sensi_deng == 1))
+		{
+			pMenuStatus->osd_sensi = (pMenuStatus->osd_sensi + 1) % MAX_MTDSENSI;
+			MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
+		}
 
-		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
+		else if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
 		{
 			pMenuStatus->resol_type_tmp = (pMenuStatus->resol_type_tmp + 1) % maxresolid;
 			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
@@ -823,7 +994,33 @@ void app_ctrl_downMenu()
 	int menustate = pIStuts->MenuStat; 
 	if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
 	{
-		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
+		if((submenu_mtd == menustate) && (pMenuStatus->mtdnum_deng == 1))
+		{
+			pMenuStatus->osd_mudnum = (pMenuStatus->osd_mudnum + MAX_MTDTARGET_NUM - 1) % MAX_MTDTARGET_NUM;
+			MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->trktime_deng == 1))
+		{
+			pMenuStatus->osd_trktime = (pMenuStatus->osd_trktime + MAX_MTDTRKTIME - 1) % MAX_MTDTRKTIME;
+			MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->maxsize_deng == 1))
+		{
+			pMenuStatus->osd_maxsize = (pMenuStatus->osd_maxsize + MAX_MTDMAXSIZE - 1) % MAX_MTDMAXSIZE;
+			MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->minsize_deng == 1))
+		{
+			pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + MAX_MTDMAXSIZE - 1) % MAX_MTDMAXSIZE;
+			MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->sensi_deng == 1))
+		{
+			pMenuStatus->osd_sensi = (pMenuStatus->osd_sensi + MAX_MTDSENSI - 1) % MAX_MTDSENSI;
+			MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
+		}
+
+		else if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
 		{
 			pMenuStatus->resol_type_tmp = (pMenuStatus->resol_type_tmp + maxresolid - 1) % maxresolid;
 			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);

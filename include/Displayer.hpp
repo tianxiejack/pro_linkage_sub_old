@@ -493,6 +493,7 @@ public:
 	int OSDFunc();
 	void drawtriangle(Mat frame, char direction, char alpha);
 	int MenuFunc(int index);
+	void processdurationMenu_osd(int value);
 };
 
 #define mallocwidth 1920

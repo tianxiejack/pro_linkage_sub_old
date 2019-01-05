@@ -317,14 +317,15 @@ public:
 		static void NotifyFunc(void *context, int chId);
 		std::vector<TRK_RECT_INFO> detect_vect;
 		std::vector<TRK_RECT_INFO> detect_bak;
-		std::vector<TRK_RECT_INFO> mvList;
+		std::vector<TRK_RECT_INFO> mvListsum;
 		std::vector< std::vector<TRK_RECT_INFO> > detect_vect_arr;
 		std::vector< std::vector<TRK_RECT_INFO> > detect_vect_arr_bak;
 		std::vector< std::vector<TRK_RECT_INFO> > mvList_arr;
 		int detectNum;
-		char chooseDetect;
+		signed char chooseDetect;
 		int maxsize;
 		int minsize;
+		int sensi;
 
 		int setrigion_flagv20;
 		struct{

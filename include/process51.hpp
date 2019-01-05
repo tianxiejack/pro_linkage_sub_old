@@ -86,6 +86,8 @@ private:
 	 int tiltPos ;
 	 int zoomPos ;
 	int m_cofx , m_cofy;
+	int backMenuposX, backMenuposY;
+	
 public:
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
@@ -138,7 +140,6 @@ public:
 	int setresol(int resoltype);
 	int udoutputresol(int resoltype);
 	int writeshell(int resoltype);
-
 
 protected:
 	void msgdriv_event(MSG_PROC_ID msgId, void *prm);

@@ -194,7 +194,14 @@ private:
 	int fontPosX, fontPosY;
 	int captureBMP_channel;
 public:
+	typedef struct _MENU_POS{
+		int posX,posY;
+		bool isShow;
+	}MENU_POS;
 	int selected_PicIndex;
+	int m_currentSecondMenuIndex;	// add by swj
+	int m_currentFirstMenuIndex;
+	MENU_POS m_currentMenuPos[32][7];
 public:
 	int getSelectPicIndex(){
 		return selected_PicIndex;

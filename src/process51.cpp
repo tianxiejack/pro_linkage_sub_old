@@ -15,6 +15,7 @@
 #include <time.h>
 
 int gun_resolu[2] = {1920, 1080};
+extern bool show_circle_pointer;
 extern MenuDisplay g_displayMode;
 extern bool showDetectCorners;
 bool saveOnePicture = false;
@@ -79,7 +80,9 @@ m_cofy(6320),m_bak_count(0)
 //	coefficientx = degperpixX*2;
 //	coefficienty = degperpixY*2;
 //========================================	
-
+	backMenuposX=0; 
+	backMenuposY =0;
+	//show_circle_pointer= false;
 	memset(rcTrackBak, 0, sizeof(rcTrackBak));
 	memset(tgBak, 0, sizeof(tgBak));
 	memset(&extOutAck, 0, sizeof(ACK_EXT));
@@ -1916,6 +1919,36 @@ osdindex++;	//cross aim
 		Osdflag[osdindex]=1;
 	}
 #endif
+
+
+
+{
+#if 0
+	sprintf(Bak_CString,"%s","=>");
+	putText(m_display.m_imgOsd[1],Bak_CString,Point(backMenuposX,backMenuposY),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
+	backMenuposX = 1460;	
+	backMenuposY = m_display.m_currentMenuPos[m_display.m_currentFirstMenuIndex][m_display.m_currentSecondMenuIndex].posY +15;
+	putText(m_display.m_imgOsd[1],Bak_CString,Point(backMenuposX,backMenuposY),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,255,255,255), 1);
+#else
+if(show_circle_pointer &&
+	m_display.m_currentMenuPos[m_display.m_currentFirstMenuIndex][m_display.m_currentSecondMenuIndex].isShow)
+{	cv::circle(m_display.m_imgOsd[1],Point(backMenuposX,backMenuposY),8 ,cvScalar(0,0,0,0),-1,8,0);
+	backMenuposX = 1460;	
+	backMenuposY = m_display.m_currentMenuPos[m_display.m_currentFirstMenuIndex][m_display.m_currentSecondMenuIndex].posY +15;
+	cv::circle(m_display.m_imgOsd[1],Point(backMenuposX,backMenuposY),8 ,cvScalar(0,0,255,255),-1,8,0);
+}
+else{
+	
+	//backMenuposX = 1460;	
+	//backMenuposY = m_display.m_currentMenuPos[m_display.m_currentFirstMenuIndex][m_display.m_currentSecondMenuIndex].posY +15;
+	cv::circle(m_display.m_imgOsd[1],Point(backMenuposX,backMenuposY),8 ,cvScalar(0,0,0,0),-1,8,0);
+}
+#endif
+
+}
+
+
+
 #if 0
 	{
 		recIn.x=480;
@@ -4281,6 +4314,17 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 			{
 				m_display.disMenuBuf[menustate][pointer].color = 2;
 				m_display.dismenuarray[menustate].pointer= pIStuts->menuarray[menustate].pointer;
+				if(menustate == submenu_setcom){
+					m_display.m_currentMenuPos[menustate][m_display.dismenuarray[menustate].pointer].isShow = true;
+					show_circle_pointer = true;
+				}
+				else{
+					m_display.m_currentMenuPos[menustate][m_display.dismenuarray[menustate].pointer].isShow = false;
+					show_circle_pointer = false;
+				}
+				m_display.m_currentSecondMenuIndex = m_display.dismenuarray[menustate].pointer; // add by swj
+				m_display.m_currentFirstMenuIndex = menustate;
+				
 				m_display.disMenuBuf[menustate][m_display.dismenuarray[menustate].pointer].color = 3;
 			}
 		}
@@ -4296,6 +4340,19 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 				m_display.disMenuBuf[menustate][pointer].color = 2;
 				m_display.dismenuarray[menustate].pointer = pIStuts->menuarray[menustate].pointer;
 				m_display.disMenuBuf[menustate][m_display.dismenuarray[menustate].pointer].color = 3;
+
+				if(menustate == submenu_setcom){
+					m_display.m_currentMenuPos[menustate][m_display.dismenuarray[menustate].pointer].isShow = true;
+					show_circle_pointer = true;
+				}
+				else{
+					m_display.m_currentMenuPos[menustate][m_display.dismenuarray[menustate].pointer].isShow = false;
+					show_circle_pointer = false;
+				}
+				m_display.m_currentSecondMenuIndex = m_display.dismenuarray[menustate].pointer; // add by swj
+				m_display.m_currentFirstMenuIndex = menustate;
+
+
 			}
 		}
 	}

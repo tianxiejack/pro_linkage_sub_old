@@ -335,6 +335,9 @@ CDisplayer::CDisplayer()
  m_glProgram(0), m_bUpdateVertex(false),m_tmRender(0ul),m_waitSync(false),
  m_telapse(5.0), m_nSwapTimeOut(0),m_detectCorners(NULL)
 {
+	m_currentSecondMenuIndex=0;
+	m_currentFirstMenuIndex=0;
+	memset(m_currentMenuPos, 0, sizeof(m_currentMenuPos));
 	int i;
 	gThis = this;
 	memset(&m_initPrm, 0, sizeof(m_initPrm));
@@ -494,12 +497,12 @@ CDisplayer::CDisplayer()
 
 	run_Mode.workMode.push_back(run_Mode.text9);
 	run_Mode.text9._SN = run_Mode.workMode.size() -1;
-	//=======================================
+//=======================================
 
 	if(CurrentBallConfig.ballAdrress !=0 ){
 		curBaudRate = CurrentBallConfig.ballRate;
 		curBaudAddress = CurrentBallConfig.ballAdrress;
-		cout << " \n\nOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO: Recv BallRate Fome IPC !!!\n\n"<< endl;
+		cout << " \n\nOOOOOOOOOOOOOOOOOOOOOOO: Recv BallRate Fome IPC !!!\n\n"<< endl;
 	}
 	else
 	{
@@ -2512,6 +2515,8 @@ int CDisplayer::menu_init( )
 			disMenuBuf[i][j].posy = (j + 1) * 60;
 			setlocale(LC_ALL, "zh_CN.UTF-8");
 			swprintf(disMenu[i][j], 33, L"%s", menubuf[i][j]);
+			m_currentMenuPos[i][j].posX = disMenuBuf[i][j].posx;
+			m_currentMenuPos[i][j].posY = disMenuBuf[i][j].posy;
 		}
 	}
 

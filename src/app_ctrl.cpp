@@ -14,7 +14,7 @@ using namespace std;
 extern UI_CONNECT_ACTION g_connectAction;
 extern bool showDetectCorners;
 extern MenuDisplay g_displayMode;
-
+bool show_circle_pointer = false;;
 extern GB_WorkMode g_workMode;
 extern MenuDisplay g_displayMode;
 extern CProcess* plat;
@@ -754,8 +754,10 @@ void app_ctrl_enter()
 	}
 	else if(submenu_setball == pIStuts->MenuStat)
 	{
-		if(0 == pIStuts->menuarray[submenu_setball].pointer)
+		if(0 == pIStuts->menuarray[submenu_setball].pointer){
 			app_ctrl_setMenuStat(submenu_setcom);
+			show_circle_pointer = true;
+		}
 		else if(1 == pIStuts->menuarray[submenu_setball].pointer)
 			app_ctrl_setMenuStat(submenu_setnet);
 		else if(2 == pIStuts->menuarray[submenu_setball].pointer)
@@ -783,7 +785,9 @@ void app_ctrl_enter()
 				}
 		}
 		else if(4 == pIStuts->menuarray[submenu_setcom].pointer){
+			show_circle_pointer = false;
 			app_ctrl_setMenuStat(submenu_setball);
+			
 		}
 		
 	}
@@ -796,6 +800,9 @@ void app_ctrl_enter()
 	{
 		app_ctrl_savemtdrigion();
 	}
+
+
+	printf("\r\n[%s]: pIStuts->MenuStat = %d ",__FUNCTION__, pIStuts->MenuStat);
 }
 
 void app_ctrl_upMenu()

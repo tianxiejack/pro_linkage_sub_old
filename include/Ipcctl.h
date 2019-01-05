@@ -96,7 +96,9 @@ typedef enum{
 	submenu_setball,
 	submenu_setcom,
 	submenu_setnet,
+	submenu_handleMatchPoints,// for handle calibrate match points 
 	submenu_setmtdrigion,
+	
 	menumaxid
 }AppMenuId;
 
@@ -309,12 +311,16 @@ typedef struct{
 }IPC_Handl;
 
 typedef struct{
+	int areaSetBox;
 	int detectNum;
 	int detectSpeed;
 	int tmpUpdateSpeed;
 	int tmpMaxPixel;
 	int tmpMinPixel;
 	int sensitivityThreshold;
+	int TrkMaxTime;
+	int output;
+	int outputPolarity;
 	int detectArea_X;
 	int detectArea_Y;
 	int detectArea_wide;

@@ -91,6 +91,8 @@ private:
 	 int tiltPos ;
 	 int zoomPos ;
 	int m_cofx , m_cofy;
+	int backMenuposX, backMenuposY;
+	
 public:
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
@@ -143,7 +145,6 @@ public:
 	int setresol(int resoltype);
 	int udoutputresol(int resoltype);
 	int writeshell(int resoltype);
-
 
 protected:
 	void msgdriv_event(MSG_PROC_ID msgId, void *prm);
@@ -272,7 +273,7 @@ public:
 	PointNode polyRectbak[MAX_CHAN][100];
 	int polytempXbak, polytempYbak, polyrectnbak[MAX_CHAN];
 	DxTimer dtimer;
-	int resol_light_id, resol_apply_id, mtdnum_light_id, trktime_light_id, maxsize_light_id, minsize_light_id, sensi_light_id;
+    int resol_light_id, resol_apply_id, mtdnum_light_id, trktime_light_id, maxsize_light_id, minsize_light_id, sensi_light_id, baud_light_id;
 	int save_flag;
 	int cnt_down;
 };

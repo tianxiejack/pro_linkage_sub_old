@@ -15,6 +15,7 @@
 #include <time.h>
 
 int gun_resolu[2] = {1920, 1080};
+extern bool show_circle_pointer;
 extern MenuDisplay g_displayMode;
 extern bool showDetectCorners;
 bool saveOnePicture = false;
@@ -79,7 +80,9 @@ m_cofy(6320),m_bak_count(0)
 //	coefficientx = degperpixX*2;
 //	coefficienty = degperpixY*2;
 //========================================	
-
+	backMenuposX=0; 
+	backMenuposY =0;
+	//show_circle_pointer= false;
 	memset(rcTrackBak, 0, sizeof(rcTrackBak));
 	memset(tgBak, 0, sizeof(tgBak));
 	memset(&extOutAck, 0, sizeof(ACK_EXT));
@@ -98,7 +101,7 @@ m_cofy(6320),m_bak_count(0)
 	pIStuts->MenuStat = -1;
 	memset(pIStuts->Passwd, 0, sizeof(pIStuts->Passwd));
 
-	int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,5};
+	int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,3,5};
 	memset(pIStuts->menuarray, 0, sizeof(pIStuts->menuarray));
 	for(int i = 0; i < menumaxid; i++)
 	{
@@ -483,22 +486,28 @@ void CProcess::TimerCreate()
 	sensi_light_id = dtimer.createTimer();
 	dtimer.registerTimer(resol_light_id, Tcallback, &resol_light_id);
 	dtimer.registerTimer(resol_apply_id, Tcallback, &resol_apply_id);
-	dtimer.registerTimer(mtdnum_light_id, Tcallback, &mtdnum_light_id);
-	dtimer.registerTimer(trktime_light_id, Tcallback, &trktime_light_id);
-	dtimer.registerTimer(maxsize_light_id, Tcallback, &maxsize_light_id);
-	dtimer.registerTimer(minsize_light_id, Tcallback, &minsize_light_id);
-	dtimer.registerTimer(sensi_light_id, Tcallback, &sensi_light_id);
+    dtimer.registerTimer(mtdnum_light_id, Tcallback, &mtdnum_light_id);
+    dtimer.registerTimer(trktime_light_id, Tcallback, &trktime_light_id);
+    dtimer.registerTimer(maxsize_light_id, Tcallback, &maxsize_light_id);
+    dtimer.registerTimer(minsize_light_id, Tcallback, &minsize_light_id);
+    dtimer.registerTimer(sensi_light_id, Tcallback, &sensi_light_id);
+	baud_light_id = dtimer.createTimer();
+	dtimer.registerTimer(baud_light_id, Tcallback, &baud_light_id);
 }
 
 
 void CProcess::Tcallback(void *p)
 {
 	static int resol_dianmie = 0;
-	static int mtdnum_dianmie = 0;
-	static int trktime_dianmie = 0;
-	static int maxsize_dianmie = 0;
-	static int minsize_dianmie = 0;
-	static int sensi_dianmie = 0;
+    static int mtdnum_dianmie = 0;
+    static int trktime_dianmie = 0;
+    static int maxsize_dianmie = 0;
+    static int minsize_dianmie = 0;
+    static int sensi_dianmie = 0;
+	static int baud_dianmie = 0;
+	
+	unsigned char baudlbuf[MAX_BAUDID][128] = {
+		"波特率	   2400","波特率 	4800","波特率	 9600","波特率	  115200"};
 	unsigned char resolbuf[maxresolid][128] = {
 			"格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
 	unsigned char resolapplybuf1[128] = "是否保存当前分辨率?";
@@ -595,6 +604,15 @@ void CProcess::Tcallback(void *p)
 			swprintf(sThis->m_display.disMenu[submenu_mtd][5], 33, L"灵敏度");
 		sensi_dianmie = !sensi_dianmie;
 	}
+	else if( a == sThis->baud_light_id ){
+		if(baud_dianmie)
+			swprintf(sThis->m_display.disMenu[submenu_setcom][0], 33, L"%s", baudlbuf[sThis->m_display.disbaud_type]);
+		else
+			memset(sThis->m_display.disMenu[submenu_setcom][0], 0, sizeof(sThis->m_display.disMenu[submenu_setcom][0]));
+		baud_dianmie = !baud_dianmie;
+
+	}
+		
 }
 
 void CProcess::Init_CameraMatrix()
@@ -1911,7 +1929,7 @@ osdindex++;	//cross aim
 
 	osdindex++;
 	{		
-		if( open_handleCalibra == true || g_sysParam->isEnable_HandleCalibrate()){  
+		if( open_handleCalibra == true/* || g_sysParam->isEnable_HandleCalibrate()*/){  
 			sprintf(show_key[string_cnt1], "%d", string_cnt1);	
 			putText(m_display.m_imgOsd[1],show_key[string_cnt1],key1_pos,FONT_HERSHEY_TRIPLEX,0.8, cvScalar(255,0,0,255), 1);	
 			cv::circle( m_display.m_imgOsd[1], key1_pos, 3 , cvScalar(255,0,255,255), 2, 8, 0);
@@ -1937,16 +1955,6 @@ osdindex++;	//cross aim
 						textPos2_backup[m+1] = textPos2_record[m];
 					}
 					
-				#if 0
-					for(int i=0; i<AllPoints_Num; i++)
-					{
-						putText(m_display.m_imgOsd[1],show_key[i],textPos1_record[i],FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);	
-						cv::circle(m_display.m_imgOsd[1],textPos1_record[i],3 ,cvScalar(0,0,0,0),2,8,0);			
-						
-						putText(m_display.m_imgOsd[1],show_key2[i],textPos2_record[i],FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);	
-						cv::circle(m_display.m_imgOsd[1],textPos2_record[i],3 ,cvScalar(0,0,0,0),2,8,0);
-					}
-				#endif
 					for(int i=0; i<=key_point1_cnt; i++)
 					{
 						putText(m_display.m_imgOsd[1],show_key[i],textPos1_backup[i],FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);	
@@ -1974,14 +1982,16 @@ osdindex++;	//cross aim
 	}
 
 
-	if( (m_display.displayMode == CALIBRATE_CAPTURE) && (showDetectCorners == true)) {		
+	if( (m_display.displayMode == CALIBRATE_CAPTURE) && (showDetectCorners == true)){		
 		
-		putText(m_display.m_imgOsd[1],Bak_CString,Point(200,400),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
+		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
 
-		sprintf(Bak_CString,"Save Picture: %d",captureCount);			
+		sprintf(Bak_CString,"%d",captureCount);			
 						
-		putText(m_display.m_imgOsd[1],Bak_CString,Point(200,400),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,255,255,255), 1);
+		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,255,255,255), 1);
 			
+	}else {
+		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
 	}
 	
 }
@@ -1996,6 +2006,36 @@ osdindex++;	//cross aim
 		Osdflag[osdindex]=1;
 	}
 #endif
+
+
+
+{
+#if 0
+	sprintf(Bak_CString,"%s","=>");
+	putText(m_display.m_imgOsd[1],Bak_CString,Point(backMenuposX,backMenuposY),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
+	backMenuposX = 1460;	
+	backMenuposY = m_display.m_currentMenuPos[m_display.m_currentFirstMenuIndex][m_display.m_currentSecondMenuIndex].posY +15;
+	putText(m_display.m_imgOsd[1],Bak_CString,Point(backMenuposX,backMenuposY),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,255,255,255), 1);
+#else
+if(show_circle_pointer &&
+	m_display.m_currentMenuPos[m_display.m_currentFirstMenuIndex][m_display.m_currentSecondMenuIndex].isShow)
+{	cv::circle(m_display.m_imgOsd[1],Point(backMenuposX,backMenuposY),8 ,cvScalar(0,0,0,0),-1,8,0);
+	backMenuposX = 1460;	
+	backMenuposY = m_display.m_currentMenuPos[m_display.m_currentFirstMenuIndex][m_display.m_currentSecondMenuIndex].posY +15;
+	cv::circle(m_display.m_imgOsd[1],Point(backMenuposX,backMenuposY),8 ,cvScalar(0,0,255,255),-1,8,0);
+}
+else{
+	
+	//backMenuposX = 1460;	
+	//backMenuposY = m_display.m_currentMenuPos[m_display.m_currentFirstMenuIndex][m_display.m_currentSecondMenuIndex].posY +15;
+	cv::circle(m_display.m_imgOsd[1],Point(backMenuposX,backMenuposY),8 ,cvScalar(0,0,0,0),-1,8,0);
+}
+#endif
+
+}
+
+
+
 #if 0
 	{
 		recIn.x=480;
@@ -2784,7 +2824,9 @@ void CProcess::Event_click2Move(int x, int y)
 	int point_X , point_Y , offset_x , offset_y,	zoomPos; 
 	int delta_X ;
 	Point opt;
-
+	zoomPos = 2849;   // Min  Zoom 
+	int ZoomMax = 65535;
+	int ZoomMin = 2849;
 	offset_x = 0;
 	offset_y = 0;
 	point_X = ( x-offset_x ) ;
@@ -2796,35 +2838,30 @@ void CProcess::Event_click2Move(int x, int y)
 
 	int  inputX = opt.x;
 	int  inputY = opt.y;
-	int  tmpcofx = 6300;
-	int  tmpcofy = 6200;
+	//int  tmpcofx = 6300;
+	//int  tmpcofy = 6200;
 
 	inputX -= 474;//480;    /* 474 is from 948/2 , and 948 is from the camera intrinsic matrix: "Ox", same as  "Uo"*/
 	inputY -= 276;//270; 	/* 276 is from 552/2 , and 552 is from the camera intrinsic matrix: "Oy", same as  "Vo"*/
 
-	float coefficientx = (float)tmpcofx*0.001f;
-	float coefficienty = (float)tmpcofy*0.001f;
+	//float coefficientx = (float)tmpcofx*0.001f;
+	//float coefficienty = (float)tmpcofy*0.001f;
 	float fx = 1796.2317019134 + 10;
 	float fy = 1795.8556284573 +55;
 	float degperpixX = 36000/(2*CV_PI*fx);
 	float degperpixY = 36000/(2*CV_PI*fy);
-	coefficientx = degperpixX*2;
-	coefficienty = degperpixY*2;
+	float coefficientx = degperpixX*2;// * (ZoomMax / ZoomMin);
+	float coefficienty = degperpixY*2;// *(ZoomMax / ZoomMin);
 
-	float tmpficientx = 1.0;
+	//float tmpficientx = 1.0;
 
-	inputX = (int)((float)inputX * coefficientx * tmpficientx);
+	inputX = (int)((float)inputX * coefficientx );//* tmpficientx);
 	inputY = (int)((float)inputY * coefficienty);
-//====================================================================
-	QueryCurBallCamPosition();	
 
-	int Origin_PanPos = DesPanPos;
-	int Origin_TilPos = DesTilPos;
-	Origin_PanPos = panPos;	
-	Origin_TilPos = tiltPos;	
-	printf("\r\n[%s]=========Origin Move , Current Position is : < %d, %d >\r\n", __FUNCTION__, panPos, tiltPos);
+	QueryCurBallCamPosition();	//  Query Current Ball " Pano, Tilt, Zoom "  Value
 
-//===================================================================
+	int Origin_PanPos = panPos;	
+	int Origin_TilPos = tiltPos;	
 
 	if(inputX + Origin_PanPos < 0){
 		DesPanPos = 36000 + (inputX + Origin_PanPos);
@@ -2868,31 +2905,15 @@ void CProcess::Event_click2Move(int x, int y)
 		if(DesTilPos > 8900)
 			DesTilPos = 8900;
 	}
-
-	printf("\r\n[%s]=========Before Move , Destination Position is : < %d, %d >\r\n", __FUNCTION__, DesPanPos, DesTilPos);
-
-	zoomPos = 2849;  //  Use the const value to make the ball camera don't change Zoom
-
-	if(1)	{  
-		trkmsg.cmd_ID = acqPosAndZoom;
-		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-		memcpy(&trkmsg.param[8],&zoomPos  , 4); 	
-	}
-	else	{
-		trkmsg.cmd_ID = speedloop;
-		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-	}
-	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
-#if 0
-	OSA_waitMsecs(2000);
-	QueryCurBallCamPosition();
-	int CurrentPano = panPos;
-	int CurrentTilt = tiltPos;
-	printf("\r\n[%s]=========After Move , Current Position is : < %d, %d >\r\n", __FUNCTION__, CurrentPano, CurrentTilt);
-#endif
+	
+	trkmsg.cmd_ID = acqPosAndZoom;
+	memcpy(&trkmsg.param[0],&DesPanPos, 4);
+	memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
+	memcpy(&trkmsg.param[8],&zoomPos  , 4); 	
+	
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);		
 }
+
 
 #else
 {
@@ -3008,7 +3029,6 @@ printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 	int CurrentTilt = tiltPos;
 	printf("\r\n[%s]=========After Move , Current Position is : < %d, %d >\r\n", __FUNCTION__, CurrentPano, CurrentTilt);
 #endif
-printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 }
 
@@ -3017,7 +3037,6 @@ printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 {
-	//printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 	int point_X , point_Y , offset_x , offset_y,	zoomPos; 
 	int delta_X ;
 	Point opt;
@@ -3154,7 +3173,6 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
 	}
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
-	//printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 }
 
@@ -3162,8 +3180,6 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 //==========================================================================
 void CProcess::reMapCoords(int x, int y,bool mode)
 {	
-//	printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
-
 	int point_X , point_Y , offset_x , offset_y,zoomPos; 
 	int delta_X ;
 	Point opt;
@@ -3219,12 +3235,6 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 			break;
 	}
 
-	//printf("......................................>>>  Gun Image Point: < %d , %d >\r\n", opt.x, opt.y);
-	//cout << "g_camParams.cameraMatrix_gun = " << g_camParams.cameraMatrix_gun << endl;
-	//cout << "g_camParams.distCoeffs_gun = " << g_camParams.distCoeffs_gun << endl;
-	//cout << "g_camParams.cameraMatrix_ball = " << g_camParams.cameraMatrix_ball << endl;
-	//cout << "g_camParams.homography = " << g_camParams.homography << endl;
-
 	std::vector<cv::Point2d> distorted, normalizedUndistorted;
 	distorted.push_back(cv::Point2d(opt.x, opt.y));
 	undistortPoints(distorted,normalizedUndistorted,g_camParams.cameraMatrix_gun,g_camParams.distCoeffs_gun);
@@ -3251,7 +3261,6 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	
     	Point bpt( pt.x, pt.y );
 		
-	//printf("<< ......................................  Ball Image Point: < %d , %d >\r\n", bpt.x, bpt.y);
 
 	//dest_ballPoint.x = bpt.x ;
 	//dest_ballPoint.y = bpt.y;
@@ -3291,7 +3300,7 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	float coefficientx ;//= (float)tmpcofx*0.001f;
 	float coefficienty ;//= (float)tmpcofy*0.001f;
 	float fx = 1796.2317019134 + 10;
-	float fy = 1795.8556284573 +55;
+	float fy = 1795.8556284573 +55+20;;
 	float degperpixX = 36000/(2*CV_PI*fx);
 	float degperpixY = 36000/(2*CV_PI*fy);
 	coefficientx = degperpixX*2;
@@ -3304,7 +3313,6 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	int Origin_PanPos = g_camParams.panPos;
 	int Origin_TilPos = g_camParams.tiltPos;
 
-//printf("inputX : %d    , Origin_PanPos  : %d  \n",inputX,Origin_PanPos);
 
 	if(inputX + Origin_PanPos < 0)
 	{
@@ -3314,10 +3322,9 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 	{
 		DesPanPos = inputX - (36000 - Origin_PanPos);
 	}
-	else
+	else{
 		DesPanPos = Origin_PanPos + inputX;
-
-//printf("inputY : %d    , Origin_TilPos	: %d  \n",inputY,Origin_TilPos);
+	}
 
 	if(Origin_TilPos > 32768)
 	{
@@ -4381,12 +4388,23 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	{
 		int menustate = pIStuts->MenuStat;
 		int pointer = m_display.dismenuarray[menustate].pointer;
-		if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
+		if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 		{
 			if(pointer > 0)
 			{
 				m_display.disMenuBuf[menustate][pointer].color = 2;
 				m_display.dismenuarray[menustate].pointer= pIStuts->menuarray[menustate].pointer;
+				if(menustate == submenu_setcom){
+					m_display.m_currentMenuPos[menustate][m_display.dismenuarray[menustate].pointer].isShow = true;
+					show_circle_pointer = true;
+				}
+				else{
+					m_display.m_currentMenuPos[menustate][m_display.dismenuarray[menustate].pointer].isShow = false;
+					show_circle_pointer = false;
+				}
+				m_display.m_currentSecondMenuIndex = m_display.dismenuarray[menustate].pointer; // add by swj
+				m_display.m_currentFirstMenuIndex = menustate;
+				
 				m_display.disMenuBuf[menustate][m_display.dismenuarray[menustate].pointer].color = 3;
 			}
 		}
@@ -4395,13 +4413,26 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	{
 		int menustate = pIStuts->MenuStat;
 		int pointer = m_display.dismenuarray[menustate].pointer;
-		if((menustate >= mainmenu2) && (menustate <= submenu_setnet))
+		if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 		{
 			if(pointer < pIStuts->menuarray[menustate].submenu_cnt - 1)
 			{
 				m_display.disMenuBuf[menustate][pointer].color = 2;
 				m_display.dismenuarray[menustate].pointer = pIStuts->menuarray[menustate].pointer;
 				m_display.disMenuBuf[menustate][m_display.dismenuarray[menustate].pointer].color = 3;
+
+				if(menustate == submenu_setcom){
+					m_display.m_currentMenuPos[menustate][m_display.dismenuarray[menustate].pointer].isShow = true;
+					show_circle_pointer = true;
+				}
+				else{
+					m_display.m_currentMenuPos[menustate][m_display.dismenuarray[menustate].pointer].isShow = false;
+					show_circle_pointer = false;
+				}
+				m_display.m_currentSecondMenuIndex = m_display.dismenuarray[menustate].pointer; // add by swj
+				m_display.m_currentFirstMenuIndex = menustate;
+
+
 			}
 		}
 	}

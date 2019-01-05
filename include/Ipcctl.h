@@ -75,6 +75,7 @@ typedef enum
     reset_swtarget_timer,
     mtdFrame,
     ballbaud,
+    sceneTrk,
     invalid
 }CMD_ID;
 
@@ -96,9 +97,8 @@ typedef enum{
 	submenu_setball,
 	submenu_setcom,
 	submenu_setnet,
-	submenu_handleMatchPoints,// for handle calibrate match points 
+	submenu_handleMatchPoints, // for handle match points;
 	submenu_setmtdrigion,
-	
 	menumaxid
 }AppMenuId;
 
@@ -577,6 +577,8 @@ typedef struct
 	volatile unsigned int  AvtCfgSave;      	// eSaveMode
 	volatile unsigned int  AvtTrkCoast;
 	volatile unsigned int  TrkErrFeedback;  	// eTrkMode 
+
+	volatile unsigned int SceneAvtTrkStat; 
 
 	volatile float  trkerrx;
 	volatile float  trkerry;	

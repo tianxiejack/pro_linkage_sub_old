@@ -204,6 +204,7 @@ typedef enum _MenuDisplay{
 	MENU_BALL,
 	MENU_CALIBRA_CAP,
 	MENU_CALIBRA_RESULT,
+	MENU_MATCH_POINT_VIEW,
 	MENU_DISPLAY_COUNT		
 }MenuDisplay;
 typedef enum _GB_WorkMode{

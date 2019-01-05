@@ -12,7 +12,7 @@ using namespace vmath;
 
 extern UI_CONNECT_ACTION g_connectAction;
 bool showDetectCorners = false;
-SelectMode mouse_workmode = Click_Mode;
+SelectMode mouse_workmode = DrawRectangle_Mode;
 extern GB_WorkMode g_workMode;
 extern GB_MENU run_Mode;
 extern CMD_EXT *msgextInCtrl;
@@ -1126,9 +1126,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			 	}
 		 	}
 //================================================================================================
-		//pThis->OnMouseLeftDwn(x, y);   // add by swj
-		
-			if (pThis->open_handleCalibra || g_sysParam->isEnable_HandleCalibrate()) // Press 'y' or 'Y' , set this flag to 1
+				
+			if (pThis->open_handleCalibra /*|| g_sysParam->isEnable_HandleCalibrate()*/) // Press 'y' or 'Y' , set this flag to 1
 			{
 				pThis->OnMouseLeftDwn(x, y);
 			}

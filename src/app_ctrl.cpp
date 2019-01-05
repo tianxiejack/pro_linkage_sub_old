@@ -692,26 +692,44 @@ void app_ctrl_enter()
 			if(CVideoProcess::m_camCalibra->start_cloneVideoSrc = true){
 				OSA_waitMsecs(1500);	
 				CVideoProcess::m_camCalibra->bool_Calibrate = true;
+				g_displayMode = MENU_MATCH_POINT_VIEW;
 			}
 		}
 		else if (1 == pIStuts->menuarray[submenu_gunball].pointer)
 		{
+			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
+			g_displayMode = MENU_SBS;
 			app_ctrl_setMenuStat(submenu_handleMatchPoints);
 			//CVideoProcess::m_camCalibra->Set_Handler_Calibra = true ;
 		}
 		else if(2 == pIStuts->menuarray[submenu_gunball].pointer)
 		{
-			app_ctrl_setMenuStat(mainmenu2);
 			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
 			CVideoProcess::m_camCalibra->Set_Handler_Calibra = false ;
+			app_ctrl_setMenuStat(mainmenu2);			
 			g_displayMode = MENU_MAIN_VIEW;
 		}
 	}
 	else if(submenu_handleMatchPoints == pIStuts->MenuStat)
 	{
-		if(2 == pIStuts->menuarray[submenu_handleMatchPoints].pointer)
+		if(0 == pIStuts->menuarray[submenu_handleMatchPoints].pointer){
+			CVideoProcess::m_camCalibra->Set_Handler_Calibra = true ;
+			plat->open_handleCalibra = true;
+		}
+		else if( 1 == pIStuts->menuarray[submenu_handleMatchPoints].pointer){
+			plat->open_handleCalibra = false;
+			CVideoProcess::m_camCalibra->start_cloneVideoSrc = true;
+			OSA_waitMsecs(1500);	
+			CVideoProcess::m_camCalibra->bool_Calibrate = true;
+			g_displayMode = MENU_MATCH_POINT_VIEW;
+		}
+		else if(2 == pIStuts->menuarray[submenu_handleMatchPoints].pointer)
 		{
-			app_ctrl_setMenuStat(submenu_gunball);			
+			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
+			CVideoProcess::m_camCalibra->Set_Handler_Calibra = false ;
+			app_ctrl_setMenuStat(submenu_gunball);
+			g_displayMode = MENU_MAIN_VIEW;
+			
 		}
 
 	}

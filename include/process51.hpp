@@ -7,6 +7,7 @@
 
 #include "osa_sem.h"
 #include "DxTimer.hpp"
+#include <glut.h>
 
 
 using namespace cv;
@@ -19,6 +20,18 @@ using namespace cv;
 #define SPECIAL_KEY_PAGEDOWN 	105
 
 typedef struct{
+		int button;
+		int state;
+		int x;
+		int y;
+}mouse_t;
+
+typedef struct{
+	volatile unsigned int MenuStat;
+	AppMenu menuarray[menumaxid];
+	char Passwd[128];
+	mouse_t Mtdmouseclick;
+	
 	int resol_deng, mtdnum_deng,trktime_deng,maxsize_deng,minsize_deng,sensi_deng;//1:dianmie fanying
 	int resol_type_tmp, resol_type;
 	int osd_mudnum, osd_trktime, osd_maxsize, osd_minsize, osd_sensi;

@@ -1407,7 +1407,7 @@ void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
 {
 	//printf("mouse_eventv20 start, button=%d,state=%d,x,y(%d,%d)\n", button, state, x, y);
-	CMD_EXT tmpCmd = {0};
+	menu_param_t tmpCmd = {0};
 	tmpCmd.Mtdmouseclick.button = button;
 	tmpCmd.Mtdmouseclick.state = state;
 	tmpCmd.Mtdmouseclick.x = x;

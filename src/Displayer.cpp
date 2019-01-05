@@ -2493,7 +2493,7 @@ int CDisplayer::gl_updateVertex(void)
 int CDisplayer::menu_init( ) 
 {
 	m_menuindex = -1;
-	memcpy(&dismenuarray, plat->extInCtrl->menuarray, sizeof(dismenuarray));
+	memcpy(&dismenuarray, plat->extMenuCtrl.menuarray, sizeof(dismenuarray));
 	unsigned char menubuf[menumaxid][7][128] = {
             {"请输入密码呼出菜单", "按回车确认", "按F2退出"},
             {"请输入密码呼出菜单", "********", "密码输入错误，按回车后再次输入", "按回车确认", "按F2退出"},

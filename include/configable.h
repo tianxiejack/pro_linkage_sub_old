@@ -18,6 +18,32 @@
 #define MIN_MTDSENSI		10
 #define MAX_MTDSENSI		100
 
+typedef enum{
+	mainmenu0=0,
+	mainmenu1,
+	mainmenu2,
+	submenu_carli,
+	submenu_gunball,
+	submenu_mtd,
+	submenu_setimg,
+	submenu_setball,
+	submenu_setcom,
+	submenu_setnet,
+	submenu_handleMatchPoints,// for handle calibrate match points 
+	submenu_setmtdrigion,
+	
+	menumaxid
+}AppMenuId;
+
+typedef struct
+{
+	int id;
+	int pointer;
+	int submenu_cnt;
+	int start;
+	int end;
+}AppMenu;
+
 typedef struct _Resolution{
 	int raw, col ;
 }Resolution;

@@ -98,16 +98,22 @@ m_cofy(6320),m_bak_count(0)
 	memset(extInCtrl,0,sizeof(CMD_EXT));
 	CMD_EXT *pIStuts = extInCtrl;
 
-	pIStuts->MenuStat = -1;
-	memset(pIStuts->Passwd, 0, sizeof(pIStuts->Passwd));
+	extMenuCtrl.osd_mudnum = 1;
+	extMenuCtrl.osd_trktime = 1;
+	extMenuCtrl.osd_maxsize = 10000;
+	extMenuCtrl.osd_minsize = 9;
+	extMenuCtrl.osd_sensi = 30;
+	extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
+	extMenuCtrl.MenuStat = -1;
+	memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
 
 	int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,3,5};
-	memset(pIStuts->menuarray, 0, sizeof(pIStuts->menuarray));
+	memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
 	for(int i = 0; i < menumaxid; i++)
 	{
-		pIStuts->menuarray[i].id = i;
-		pIStuts->menuarray[i].pointer = 0;
-		pIStuts->menuarray[i].submenu_cnt = cnt[i];
+		extMenuCtrl.menuarray[i].id = i;
+		extMenuCtrl.menuarray[i].pointer = 0;
+		extMenuCtrl.menuarray[i].submenu_cnt = cnt[i];
 	}
 	
 		
@@ -173,13 +179,7 @@ m_cofy(6320),m_bak_count(0)
 
 	msgextInCtrl = extInCtrl;
 	msgextMenuCtrl = &extMenuCtrl;
-	memset(&extMenuCtrl, 0, sizeof(extMenuCtrl));
-	extMenuCtrl.osd_mudnum = 1;
-	extMenuCtrl.osd_trktime = 1;
-	extMenuCtrl.osd_maxsize = 10000;
-	extMenuCtrl.osd_minsize = 9;
-	extMenuCtrl.osd_sensi = 30;
-	extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
+
 	save_flag = 0;
 	cnt_down = 10;
 	
@@ -4364,7 +4364,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	}
 	if(msgId == MSGID_EXT_MVDETECT_SETRIGION)
 	{
-		memcpy(&mtdrigionv20, &pIStuts->Mtdmouseclick, sizeof(mtdrigionv20));
+		memcpy(&mtdrigionv20, &pMenuStatus->Mtdmouseclick, sizeof(mtdrigionv20));
 		updateredgrid();
 	/*	
 		if((0 == mtdrigionv20.button) && (0 == mtdrigionv20.state))
@@ -4382,18 +4382,18 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	
 	if(msgId == MSGID_EXT_MENUSWITCH)
 	{
-		m_display.m_menuindex = pIStuts->MenuStat;
+		m_display.m_menuindex = extMenuCtrl.MenuStat;
 	}
 	if(msgId == MSGID_EXT_UPMENU)
 	{
-		int menustate = pIStuts->MenuStat;
+		int menustate = extMenuCtrl.MenuStat;
 		int pointer = m_display.dismenuarray[menustate].pointer;
 		if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 		{
 			if(pointer > 0)
 			{
 				m_display.disMenuBuf[menustate][pointer].color = 2;
-				m_display.dismenuarray[menustate].pointer= pIStuts->menuarray[menustate].pointer;
+				m_display.dismenuarray[menustate].pointer= extMenuCtrl.menuarray[menustate].pointer;
 				if(menustate == submenu_setcom){
 					m_display.m_currentMenuPos[menustate][m_display.dismenuarray[menustate].pointer].isShow = true;
 					show_circle_pointer = true;
@@ -4411,14 +4411,14 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	}
 	if(msgId == MSGID_EXT_DOWNMENU)
 	{
-		int menustate = pIStuts->MenuStat;
+		int menustate = extMenuCtrl.MenuStat;
 		int pointer = m_display.dismenuarray[menustate].pointer;
 		if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 		{
-			if(pointer < pIStuts->menuarray[menustate].submenu_cnt - 1)
+			if(pointer < extMenuCtrl.menuarray[menustate].submenu_cnt - 1)
 			{
 				m_display.disMenuBuf[menustate][pointer].color = 2;
-				m_display.dismenuarray[menustate].pointer = pIStuts->menuarray[menustate].pointer;
+				m_display.dismenuarray[menustate].pointer = extMenuCtrl.menuarray[menustate].pointer;
 				m_display.disMenuBuf[menustate][m_display.dismenuarray[menustate].pointer].color = 3;
 
 				if(menustate == submenu_setcom){

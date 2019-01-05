@@ -27,6 +27,8 @@
 #include <vector>
 #include "freetype/ftglyph.h"
 #include <wchar.h>
+#include <glut.h>
+
 #include FT_GLYPH_H
 #include FT_TRUETYPE_TABLES_H
 #include FT_BITMAP_H

@@ -3216,8 +3216,8 @@ void CDisplayer::linkageSwitchMode(void)
 	switch(displayMode) 
 	{
 		case PREVIEW_MODE:
-			RenderVideoOnOrthoView(VIDEO_1, 0,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);
-			RenderVideoOnOrthoView(VIDEO_0, vdisWH[0][0]/2,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);	
+			RenderVideoOnOrthoView(VIDEO_1, 0,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
+			RenderVideoOnOrthoView(VIDEO_0, outputWHF[0]/2,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);	
 			
 			setFontPosition(100, 640);
 			if( g_CurDisplayMode != PREVIEW_MODE)
@@ -3226,27 +3226,27 @@ void CDisplayer::linkageSwitchMode(void)
 
 		case MAIN_VIEW:	
 		
-			RenderVideoOnOrthoView(VIDEO_1,vdisWH[0][0]/4,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);
-			RenderVideoOnOrthoView(VIDEO_0, 0,0,vdisWH[0][0],vdisWH[0][1]/2);
+			RenderVideoOnOrthoView(VIDEO_1,outputWHF[0]/4,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
+			RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]/2);
 			
 	
 			if( g_CurDisplayMode != MAIN_VIEW)
 				g_CurDisplayMode = MAIN_VIEW;			
 			break;
 		case GUN_FULL_SCREEN:				
-			RenderVideoOnOrthoView(VIDEO_0, 0,0,vdisWH[0][0],vdisWH[0][1]);
+			RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]);
 			if( g_CurDisplayMode != GUN_FULL_SCREEN)
 				g_CurDisplayMode = GUN_FULL_SCREEN;
 			break;
 		case BALL_FULL_SCREEN:		
-			RenderVideoOnOrthoView(VIDEO_1, 0,0,vdisWH[0][0],vdisWH[0][1]);	
+			RenderVideoOnOrthoView(VIDEO_1, 0,0,outputWHF[0],outputWHF[1]);	
 			if( g_CurDisplayMode != BALL_FULL_SCREEN)
 				g_CurDisplayMode = BALL_FULL_SCREEN;			
 			break;	
 		case CALIBRATE_CAPTURE:
 		{
 			RenderDetectCornerView(0,810,480,270);
-			RenderVideoOnOrthoView(g_connectAction.CurCalibraCam/*captureBMP_channel*/, 480,270,1440,810);
+			RenderVideoOnOrthoView(g_connectAction.CurCalibraCam/*captureBMP_channel*/, outputWHF[0]/4,outputWHF[1]/4,outputWHF[0]/4*3,outputWHF[1]/4*3);
 
 			if( g_CurDisplayMode != CALIBRATE_CAPTURE)
 				g_CurDisplayMode = CALIBRATE_CAPTURE;	

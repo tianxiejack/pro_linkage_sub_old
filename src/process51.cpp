@@ -5155,16 +5155,26 @@ int CProcess::setresol(int resoltype)
 	{
 		case r1920x1080_f60:
 			system("xrandr -s 1920x1080_60.00");
+			outputWHF[0] = 1920;
+			outputWHF[1] = 1080;
+			outputWHF[2] = 60;
 			break;
 		case r1024x768_f60:
 			system("xrandr -s 1024x768_60.01");
+			outputWHF[0] = 1024;
+			outputWHF[1] = 768;
+			outputWHF[2] = 60;
 			break;
 		case r1280x1024_f60:
 			system("xrandr -s 1280x1024_60.00");
+			outputWHF[0] = 1280;
+			outputWHF[1] = 1024;
+			outputWHF[2] = 60;
 			break;
 		default:
 			break;	
 	}
+	glutFullScreen();
 }
 
 int CProcess::udoutputresol(int resoltype)
@@ -5180,21 +5190,12 @@ int CProcess::udoutputresol(int resoltype)
 	switch(resoltype)
 	{
 		case r1920x1080_f60:
-			outputWHF[0] = 1920;
-			outputWHF[1] = 1080;
-			outputWHF[2] = 60;
 			cmdsetconfig.value = 5;
 			break;
 		case r1024x768_f60:
-			outputWHF[0] = 1024;
-			outputWHF[1] = 768;
-			outputWHF[2] = 60;
 			cmdsetconfig.value = 7;
 			break;
 		case r1280x1024_f60:
-			outputWHF[0] = 1280;
-			outputWHF[1] = 1024;
-			outputWHF[2] = 60;
 			cmdsetconfig.value = 6;
 			break;
 		default:

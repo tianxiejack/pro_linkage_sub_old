@@ -3335,23 +3335,24 @@ void CDisplayer::gl_display(void)
 	}		
 
 /***************************************************** Menu *******************************************************************/
+
 #if 0
-ArrayText::iterator itr = run_Mode._texts.begin();
+	   ArrayText::iterator itr = run_Mode._texts.begin();
 	   for(int i=0; i<run_Mode._texts.size()-1,itr != run_Mode._texts.end(); itr++, i++ )
 	   {
-	   		(*itr)._pos.x = fontPosX;
-			(*itr)._pos.y = fontPosY + i*60;
-		   if( textSelect[i] == 1) {
-	   			(*itr)._size = chinese_osd((*itr)._pos.x,(*itr)._pos.y,(*itr)._text,
-			   	 1,4,255,0,0,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-		   	}else{
-	   			(*itr)._size = chinese_osd((*itr)._pos.x,(*itr)._pos.y,(*itr)._text,
-			   	 1,4,(*itr).r,(*itr).g,(*itr).b,(*itr).a,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-		   	}
+	   	 (*itr)._pos.x = fontPosX;
+		 (*itr)._pos.y = fontPosY + i*60;
+		 if( textSelect[i] == 1) {
+	   		(*itr)._size = chinese_osd((*itr)._pos.x,(*itr)._pos.y,(*itr)._text,
+		   	 1,4,255,0,0,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+		 }else{
+	   		(*itr)._size = chinese_osd((*itr)._pos.x,(*itr)._pos.y,(*itr)._text,
+			   1,4,(*itr).r,(*itr).g,(*itr).b,(*itr).a,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+		 }
 	   }
 #endif
 #if 0
-ArrayText::iterator itr2 = run_Mode.workMode.begin();
+	   ArrayText::iterator itr2 = run_Mode.workMode.begin();
 	   for(int i=0; i<run_Mode.workMode.size()-1,itr2 != run_Mode.workMode.end(); itr2++, i++ )
 	   {
 	   		(*itr2)._pos.x = fontPosX;

@@ -255,7 +255,7 @@ void DxTimer::PTH_msgrecv()
     pth.pmsg = handle;
 
     assert(handle != NULL);
-    memset(handle->msgTab, 0, sizeof(TMSGTAB_Class) * MAX_MSG_NUM);
+    memset(handle->msgTab, 0, sizeof(TMSGTAB_Class) * MAX_MSG_NUM_T);
 	
     OSA_msgqCreate(&handle->msgQue);
     status = OSA_thrCreate(&handle->tskHndl,
@@ -319,7 +319,7 @@ void DxTimer::sig_func(void)
 
 void DxTimer::MSGDRIV_attachMsgFun(TMSGDRIV_Class *handle, int msgId, TMsgApiFun pRtnFun, void *context)
 {
-    assert(handle != NULL && msgId < MAX_MSG_NUM);
+    assert(handle != NULL && msgId < MAX_MSG_NUM_T);
 
     handle->msgTab[msgId].msgId = msgId;
     handle->msgTab[msgId].pRtnFun = pRtnFun;
@@ -342,7 +342,7 @@ void DxTimer::MSGDRIV_recv(void *pPrm)
         {
             msg.msgId = msg_recv.cmd;
             msg.refContext = msg_recv.pPrm;
-            assert(msg.msgId >= 0 && msg.msgId < MAX_MSG_NUM);
+            assert(msg.msgId >= 0 && msg.msgId < MAX_MSG_NUM_T);
             if (pMsgDrvObj->msgTab[msg.msgId].pRtnFun != NULL)
             {
                 pMsgDrvObj->msgTab[msg.msgId].pRtnFun(pMsgDrvObj->msgTab[msg.msgId].refContext);

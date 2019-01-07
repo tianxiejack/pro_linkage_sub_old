@@ -433,6 +433,10 @@ CVideoProcess::CVideoProcess()
 	memset(polwarn_count, 0, sizeof(polwarn_count));
 	memset(polwarn_count_bak, 0, sizeof(polwarn_count_bak));
 	setrigon_polygon = 0;
+
+	m_click_v20L = m_click_v20R = 0;
+	memset(&mRectv20L, 0, sizeof(mRectv20L));
+	memset(&mRectv20R, 0, sizeof(mRectv20R));
 }
 
 CVideoProcess::~CVideoProcess()
@@ -824,7 +828,6 @@ mouserect CVideoProcess::mapfullscreen2gun(mouserect rectcur)
 	rect1080p.y = 0;
 	rect1080p.w = 1920;
 	rect1080p.h = 1080;
-		
 	switch(dismode)
 	{
 		case PREVIEW_MODE:
@@ -835,9 +838,9 @@ mouserect CVideoProcess::mapfullscreen2gun(mouserect rectcur)
 			break;
 		case MAIN_VIEW:
 			rectgun.x = 0;
-			rectgun.y = 0;
+			rectgun.y = 540;
 			rectgun.w = 1920;
-			rectgun.h = 1080;
+			rectgun.h = 540;
 			break;
 		case SIDE_BY_SIDE:
 			rectgun.x = 960;
@@ -898,9 +901,9 @@ mouserect CVideoProcess::mapgun2fullscreen(mouserect rectcur)
 			break;
 		case MAIN_VIEW:
 			rectgun.x = 0;
-			rectgun.y = 0;
+			rectgun.y = 540;
 			rectgun.w = 1920;
-			rectgun.h = 1080;
+			rectgun.h = 540;
 			break;
 		case SIDE_BY_SIDE:
 			rectgun.x = 960;
@@ -1405,13 +1408,14 @@ void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
 
 void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 {
-	printf("mousemotion_event start, x,y(%d,%d)\n", xMouse, yMouse);
+	//printf("mousemotion_event start, x,y(%d,%d)\n", xMouse, yMouse);
 }
 
 
 void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
 {
 	//printf("mouse_eventv20 start, button=%d,state=%d,x,y(%d,%d)\n", button, state, x, y);
+	
 	menu_param_t tmpCmd = {0};
 	tmpCmd.Mtdmouseclick.button = button;
 	tmpCmd.Mtdmouseclick.state = state;
@@ -2139,6 +2143,8 @@ void	CVideoProcess::initMvDetect()
 					
 	std::vector<cv::Point> polyWarnRoi ;
 	polyWarnRoi.resize(4);
+	edge_contours.resize(1);
+	edge_contours[0].resize(4);
 
 	for(i=0; i<MAX_CHAN; i++)
 	{
@@ -2148,6 +2154,7 @@ void	CVideoProcess::initMvDetect()
 		recttmp.h = vdisWH[i][1] * (max_height_ratio - min_height_ratio); 
 
 		recttmp = mapfullscreen2gun(recttmp);
+		
 		pThis->polWarnRect[i][0].x = recttmp.x;
 		pThis->polWarnRect[i][0].y = recttmp.y;
 		pThis->polWarnRect[i][1].x = recttmp.x+recttmp.w;
@@ -2156,6 +2163,7 @@ void	CVideoProcess::initMvDetect()
 		pThis->polWarnRect[i][2].y = recttmp.y+recttmp.h;
 		pThis->polWarnRect[i][3].x = recttmp.x;
 		pThis->polWarnRect[i][3].y = recttmp.y+recttmp.h;
+
 		pThis->polwarn_count[i] = 4;
 
 		recttmp = mapgun2fullscreen(recttmp);
@@ -2165,9 +2173,32 @@ void	CVideoProcess::initMvDetect()
 	    polyWarnRoi[3]	= cv::Point(recttmp.x,recttmp.y+recttmp.h);
 
 		m_pMovDetector->setWarnMode(WARN_WARN_MODE, i);
-		m_pMovDetector->setWarningRoi(polyWarnRoi,	i);
+		//m_pMovDetector->setWarningRoi(polyWarnRoi,	i);
 	}
 
+
+		recttmp.x = vdisWH[0][0] * min_width_ratio;
+		recttmp.y = vdisWH[0][1] * min_height_ratio;
+		recttmp.w = vdisWH[0][0] * (max_width_ratio - min_width_ratio);
+		recttmp.h = vdisWH[0][1] * (max_height_ratio - min_height_ratio); 
+		recttmp = mapfullscreen2gun(recttmp);
+		pThis->edge_contours[0][0].x = recttmp.x;
+		pThis->edge_contours[0][0].y = recttmp.y;
+		pThis->edge_contours[0][1].x = recttmp.x+recttmp.w;
+		pThis->edge_contours[0][1].y = recttmp.y;
+		pThis->edge_contours[0][2].x = recttmp.x+recttmp.w;
+		pThis->edge_contours[0][2].y = recttmp.y+recttmp.h;
+		pThis->edge_contours[0][3].x = recttmp.x;
+		pThis->edge_contours[0][3].y = recttmp.y+recttmp.h;
+
+		recttmp = mapgun2fullscreen(recttmp);
+		polyWarnRoi[0]	= cv::Point(recttmp.x,recttmp.y);
+		polyWarnRoi[1]	= cv::Point(recttmp.x+recttmp.w,recttmp.y);
+		polyWarnRoi[2]	= cv::Point(recttmp.x+recttmp.w,recttmp.y+recttmp.h);
+		polyWarnRoi[3]	= cv::Point(recttmp.x,recttmp.y+recttmp.h);
+
+		m_pMovDetector->setWarnMode(WARN_WARN_MODE, 0);
+		m_pMovDetector->setWarningRoi(polyWarnRoi,	0);
 }
 
 void	CVideoProcess::DeInitMvDetect()

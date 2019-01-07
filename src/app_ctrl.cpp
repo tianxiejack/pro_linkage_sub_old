@@ -16,6 +16,7 @@ extern GB_WorkMode g_workMode;
 extern MenuDisplay g_displayMode;
 extern CProcess* plat;
 extern SelectMode mouse_workmode;
+extern int gun_resolu[2];
 
 CMD_EXT *msgextInCtrl;
 menu_param_t *msgextMenuCtrl;
@@ -569,7 +570,6 @@ void app_ctrl_setMenuStat(int index)
 	pMenuStatus->MenuStat = index;
 	
 	memset(pMenuStatus->Passwd, 0, sizeof(pMenuStatus->Passwd));
-
 	MSGDRIV_send(MSGID_EXT_MENUSWITCH, 0);
 }
 
@@ -581,6 +581,7 @@ void app_ctrl_setMenu()
 		return;
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
+
 	if(-1 == pMenuStatus->MenuStat)
 		app_ctrl_setMenuStat(mainmenu0);
 	else if(mainmenu0 == pMenuStatus->MenuStat)
@@ -1096,5 +1097,10 @@ void app_ctrl_downMenu()
 
 void app_ctrl_savemtdrigion()
 {
-	MSGDRIV_send(MSGID_EXT_SMR, 0);
+	if(msgextInCtrl==NULL)
+		return;
+	CMD_EXT *pIStuts = msgextInCtrl;
+
+	if(pIStuts->MtdState[pIStuts->SensorStat] == 0)
+		MSGDRIV_send(MSGID_EXT_SMR, 0);
 }

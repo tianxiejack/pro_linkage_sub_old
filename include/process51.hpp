@@ -31,6 +31,7 @@ typedef struct{
 	AppMenu menuarray[menumaxid];
 	char Passwd[128];
 	mouse_t Mtdmouseclick;
+	PointNode Mtdmousemotion;
 	
 	int resol_deng, mtdnum_deng,trktime_deng,maxsize_deng,minsize_deng,sensi_deng;//1:dianmie fanying
 	int resol_type_tmp, resol_type;
@@ -110,6 +111,7 @@ private:
 	Point m_bakClickPoint;
 	
 public:
+	void loadIPCParam();
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
 	void reMapCoords(int x, int y , bool mode);
@@ -194,6 +196,8 @@ protected:
 	float PiexltoWindowsxf(float x,int channel);
 	float PiexltoWindowsyf(float y,int channel);
 	int updateredgrid();
+	int updateredgridfrrectL();
+	int updateredgridfrrectR();
 	int updatemtdrigion();
 	int isborder(int rigionindex, int x, int y);
 	int createrigion(int rigionindex, int x, int y);

@@ -183,6 +183,11 @@ public:
 	PointNode polRect[MAX_CHAN][100];
 	int pol_tempX, pol_tempY, pol_rectn[MAX_CHAN];
 	int setrigon_polygon;
+	
+	int m_click_v20L, m_click_v20R;
+	RectfNode mRectv20L;
+	RectfNode mRectv20R;
+	
 protected:
 	MultiChVideo MultiCh;
 	//BigChVideo		BigChannel;	

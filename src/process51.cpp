@@ -4549,11 +4549,45 @@ int CProcess::updateredgrid()
 	if((0 == mtdrigionv20.button) && (0 == mtdrigionv20.state))
 	{
 			grid19x10[x][y].state= 1;
+			m_click_v20L = 1;
+			mRectv20L.x1 = x;
+			mRectv20L.y1 = y;
+	}
+	else if((0 == mtdrigionv20.button) && (1 == mtdrigionv20.state))
+	{
+			m_click_v20L = 0;
+			mRectv20L.x2 = x;
+			mRectv20L.y2 = y;
+			updateredgridfrrectL();
 	}
 	if((2 == mtdrigionv20.button) && (0 == mtdrigionv20.state))
 	{
 			grid19x10[x][y].state = 0;
+			m_click_v20R = 1;
+			mRectv20R.x1 = x;
+			mRectv20R.y1 = y;
 	}
+	if((2 == mtdrigionv20.button) && (1 == mtdrigionv20.state))
+	{
+			m_click_v20R = 0;
+			mRectv20R.x2 = x;
+			mRectv20R.y2 = y;
+			updateredgridfrrectR();
+	}
+}
+
+int CProcess::updateredgridfrrectL()
+{
+	for(int i = mRectv20L.x1; i <= mRectv20L.x2; i++)
+		for(int j = mRectv20L.y1; j <= mRectv20L.y2; j++)
+			grid19x10[i][j].state= 1;
+}
+
+int CProcess::updateredgridfrrectR()
+{
+	for(int i = mRectv20R.x1; i <= mRectv20R.x2; i++)
+		for(int j = mRectv20R.y1; j <= mRectv20R.y2; j++)
+			grid19x10[i][j].state= 0;
 }
 
 int CProcess::updatemtdrigion()

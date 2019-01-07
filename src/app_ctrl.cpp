@@ -16,6 +16,7 @@ extern GB_WorkMode g_workMode;
 extern MenuDisplay g_displayMode;
 extern CProcess* plat;
 extern SelectMode mouse_workmode;
+extern int gun_resolu[2];
 
 CMD_EXT *msgextInCtrl;
 menu_param_t *msgextMenuCtrl;

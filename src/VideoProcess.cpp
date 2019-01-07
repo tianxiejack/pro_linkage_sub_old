@@ -432,6 +432,10 @@ CVideoProcess::CVideoProcess()
 	memset(polwarn_count, 0, sizeof(polwarn_count));
 	memset(polwarn_count_bak, 0, sizeof(polwarn_count_bak));
 	setrigon_polygon = 0;
+
+	m_click_v20L = m_click_v20R = 0;
+	memset(&mRectv20L, 0, sizeof(mRectv20L));
+	memset(&mRectv20R, 0, sizeof(mRectv20R));
 }
 
 CVideoProcess::~CVideoProcess()
@@ -1399,13 +1403,14 @@ void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
 
 void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 {
-	printf("mousemotion_event start, x,y(%d,%d)\n", xMouse, yMouse);
+	//printf("mousemotion_event start, x,y(%d,%d)\n", xMouse, yMouse);
 }
 
 
 void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
 {
 	//printf("mouse_eventv20 start, button=%d,state=%d,x,y(%d,%d)\n", button, state, x, y);
+	
 	menu_param_t tmpCmd = {0};
 	tmpCmd.Mtdmouseclick.button = button;
 	tmpCmd.Mtdmouseclick.state = state;

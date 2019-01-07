@@ -1,4 +1,3 @@
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.hpp>
@@ -1346,6 +1345,17 @@ void CDisplayer::processdurationMenu(int value)
 		
 }
 
+void CDisplayer::processdurationMenu_osd(int value)
+{
+	SENDST test = {0};
+	CMD_MTDTRKTIME mtdtime;
+	
+	test.cmd_ID = mtdtrktime;
+	mtdtime.seconds = value;
+	memcpy(test.param, &mtdtime, sizeof(mtdtime));
+	ipc_sendmsg(&test, IPC_FRIMG_MSG);	
+}
+
 void CDisplayer::processmtdmodeMenu(int value)
 {
 	SENDST test = {0};
@@ -2483,14 +2493,14 @@ int CDisplayer::gl_updateVertex(void)
 int CDisplayer::menu_init( ) 
 {
 	m_menuindex = -1;
-	memcpy(&dismenuarray, plat->extInCtrl->menuarray, sizeof(dismenuarray));
+	memcpy(&dismenuarray, plat->extMenuCtrl.menuarray, sizeof(dismenuarray));
 	unsigned char menubuf[menumaxid][7][128] = {
             {"请输入密码呼出菜单", "按回车确认", "按F2退出"},
             {"请输入密码呼出菜单", "********", "密码输入错误，按回车后再次输入", "按回车确认", "按F2退出"},
             {"内参标定","枪球画面标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},
             {"枪机内参标定","球机内参标定","返回"},
             {"枪球自动标定","枪球手动标定","返回"},
-            {"检测区域选择","目标个数","跟踪持续时间","最大目标面积","最小目标面积","灵敏度","返回"},
+            {"检测区域选择","目标个数     1","跟踪持续时间 1秒","最大目标面积 10000像素","最小目标面积 9像素","灵敏度       30","返回"},
             {"扫描方式均为逐行扫描","格式 1920x1080@60Hz","应用","返回"},
             {"使用串口设置","使用网络设置","返回"},
             {"波特率     9600","球机地址   001","球机协议   PALCO-D","工作模式   485半双工","返回"},
@@ -3206,8 +3216,8 @@ void CDisplayer::linkageSwitchMode(void)
 	switch(displayMode) 
 	{
 		case PREVIEW_MODE:
-			RenderVideoOnOrthoView(VIDEO_1, 0,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);
-			RenderVideoOnOrthoView(VIDEO_0, vdisWH[0][0]/2,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);	
+			RenderVideoOnOrthoView(VIDEO_1, 0,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
+			RenderVideoOnOrthoView(VIDEO_0, outputWHF[0]/2,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);	
 			
 			setFontPosition(100, 640);
 			if( g_CurDisplayMode != PREVIEW_MODE)
@@ -3216,27 +3226,27 @@ void CDisplayer::linkageSwitchMode(void)
 
 		case MAIN_VIEW:	
 		
-			RenderVideoOnOrthoView(VIDEO_1,vdisWH[0][0]/4,vdisWH[0][1]/2,vdisWH[0][0]/2,vdisWH[0][1]/2);
-			RenderVideoOnOrthoView(VIDEO_0, 0,0,vdisWH[0][0],vdisWH[0][1]/2);
+			RenderVideoOnOrthoView(VIDEO_1,outputWHF[0]/4,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
+			RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]/2);
 			
 	
 			if( g_CurDisplayMode != MAIN_VIEW)
 				g_CurDisplayMode = MAIN_VIEW;			
 			break;
 		case GUN_FULL_SCREEN:				
-			RenderVideoOnOrthoView(VIDEO_0, 0,0,vdisWH[0][0],vdisWH[0][1]);
+			RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]);
 			if( g_CurDisplayMode != GUN_FULL_SCREEN)
 				g_CurDisplayMode = GUN_FULL_SCREEN;
 			break;
 		case BALL_FULL_SCREEN:		
-			RenderVideoOnOrthoView(VIDEO_1, 0,0,vdisWH[0][0],vdisWH[0][1]);	
+			RenderVideoOnOrthoView(VIDEO_1, 0,0,outputWHF[0],outputWHF[1]);	
 			if( g_CurDisplayMode != BALL_FULL_SCREEN)
 				g_CurDisplayMode = BALL_FULL_SCREEN;			
 			break;	
 		case CALIBRATE_CAPTURE:
 		{
 			RenderDetectCornerView(0,810,480,270);
-			RenderVideoOnOrthoView(g_connectAction.CurCalibraCam/*captureBMP_channel*/, 480,270,1440,810);
+			RenderVideoOnOrthoView(g_connectAction.CurCalibraCam/*captureBMP_channel*/, outputWHF[0]/4,outputWHF[1]/4,outputWHF[0]/4*3,outputWHF[1]/4*3);
 
 			if( g_CurDisplayMode != CALIBRATE_CAPTURE)
 				g_CurDisplayMode = CALIBRATE_CAPTURE;	

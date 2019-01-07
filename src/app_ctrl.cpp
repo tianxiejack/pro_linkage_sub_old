@@ -4,9 +4,6 @@
 #include "msgDriv.h"
 #include "configable.h"
 #include <iostream>
-//#include <glew.h>
-#include <glut.h>
-#include "process51.hpp"
 
 class CVideoProcess ;
 
@@ -18,6 +15,7 @@ bool show_circle_pointer = false;;
 extern GB_WorkMode g_workMode;
 extern MenuDisplay g_displayMode;
 extern CProcess* plat;
+extern SelectMode mouse_workmode;
 
 CMD_EXT *msgextInCtrl;
 menu_param_t *msgextMenuCtrl;
@@ -290,14 +288,18 @@ void app_ctrl_setMtdRigionStat(CMD_EXT * pInCmd)
 	return;
 }
 
-void app_ctrl_setMtdRigion(CMD_EXT * pInCmd)
+void app_ctrl_setMtdRigion(menu_param_t * pInCmd)
 {
 	//printf("app_ctrl_setMtdRigion start, button=%d,state=%d,x,y(%d,%d)\n", pInCmd->Mtdmouseclick.button, pInCmd->Mtdmouseclick.state, pInCmd->Mtdmouseclick.x, pInCmd->Mtdmouseclick.y);
 	if(msgextInCtrl==NULL)
 		return ;
-
+	if(msgextMenuCtrl==NULL)
+		return;
+	
 	CMD_EXT *pIStuts = msgextInCtrl;
-	memcpy(&pIStuts->Mtdmouseclick, &pInCmd->Mtdmouseclick, sizeof(pIStuts->Mtdmouseclick));
+	menu_param_t *pMenuStatus = msgextMenuCtrl;
+		
+	memcpy(&pMenuStatus->Mtdmouseclick, &pInCmd->Mtdmouseclick, sizeof(pMenuStatus->Mtdmouseclick));
 	if (pIStuts->MtdSetRigion)
 	{
 		MSGDRIV_send(MSGID_EXT_MVDETECT_SETRIGION, 0);
@@ -556,11 +558,15 @@ void app_ctrl_setMenuStat(int index)
 {
 	if(msgextInCtrl==NULL)
 		return;
-	CMD_EXT *pIStuts = msgextInCtrl;
 
-	pIStuts->MenuStat = index;
+	if(msgextMenuCtrl==NULL)
+		return;
+	CMD_EXT *pIStuts = msgextInCtrl;
+	menu_param_t *pMenuStatus = msgextMenuCtrl;
+
+	pMenuStatus->MenuStat = index;
 	
-	memset(pIStuts->Passwd, 0, sizeof(pIStuts->Passwd));
+	memset(pMenuStatus->Passwd, 0, sizeof(pMenuStatus->Passwd));
 
 	MSGDRIV_send(MSGID_EXT_MENUSWITCH, 0);
 }
@@ -569,15 +575,19 @@ void app_ctrl_setMenu()
 {
 	if(msgextInCtrl==NULL)
 		return;
+	if(msgextMenuCtrl==NULL)
+		return;
 	CMD_EXT *pIStuts = msgextInCtrl;
-	
-	if(-1 == pIStuts->MenuStat)
+	menu_param_t *pMenuStatus = msgextMenuCtrl;
+	if(-1 == pMenuStatus->MenuStat)
 		app_ctrl_setMenuStat(mainmenu0);
-	else if(mainmenu0 == pIStuts->MenuStat)
+	else if(mainmenu0 == pMenuStatus->MenuStat)
 		app_ctrl_setMenuStat(-1);
-	else if(mainmenu1 == pIStuts->MenuStat)
+	else if(mainmenu1 == pMenuStatus->MenuStat)
 		app_ctrl_setMenuStat(-1);
-	else if(mainmenu2 == pIStuts->MenuStat)
+	else if(mainmenu2 == pMenuStatus->MenuStat)
+		app_ctrl_setMenuStat(-1);
+	else if(submenu_mtd == pMenuStatus->MenuStat)
 		app_ctrl_setMenuStat(-1);
 }
 
@@ -590,17 +600,17 @@ void app_ctrl_setnumber(char key)
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
 	
-	if((mainmenu0 == pIStuts->MenuStat) || (mainmenu1 == pIStuts->MenuStat))
+	if((mainmenu0 == pMenuStatus->MenuStat) || (mainmenu1 == pMenuStatus->MenuStat))
 	{
-		int offset = strlen(pIStuts->Passwd) * sizeof(char);
-		if(offset < sizeof(pIStuts->Passwd) - 1)
-			sprintf(pIStuts->Passwd + offset,"%c", key);
+		int offset = strlen(pMenuStatus->Passwd) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->Passwd) - 1)
+			sprintf(pMenuStatus->Passwd + offset,"%c", key);
 		else
 			printf("password reached max length:128");
 		
-		printf("%s,%d,passwd=%s\n",__FILE__,__LINE__,pIStuts->Passwd);
+		printf("%s,%d,passwd=%s\n",__FILE__,__LINE__,pMenuStatus->Passwd);
 	}
-	else if(submenu_setimg == pIStuts->MenuStat)
+	else if(submenu_setimg == pMenuStatus->MenuStat)
 	{
 		if(key == '0')
 		{
@@ -629,6 +639,80 @@ void app_ctrl_setnumber(char key)
 
 		}
 	}
+	else if((submenu_setmtdrigion == pMenuStatus->MenuStat) && (key == '2'))
+	{
+		CMD_EXT tmpCmd = {0};
+		tmpCmd.MtdSetRigion = 0;
+		app_ctrl_setMtdRigionStat(&tmpCmd);
+		app_ctrl_setMenuStat(submenu_mtd);
+		g_displayMode = MENU_MAIN_VIEW;
+		memset(plat->m_display.disMenu[submenu_setmtdrigion][4], 0, sizeof(plat->m_display.disMenu[submenu_setmtdrigion][4]));
+	}
+	else if((submenu_mtd == pMenuStatus->MenuStat) && (pMenuStatus->mtdnum_deng == 1))
+	{
+		int offset = strlen(pMenuStatus->mtdnum_arr) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->mtdnum_arr) - 1)
+			sprintf(pMenuStatus->mtdnum_arr + offset,"%c", key);
+		else
+			printf("mtdnum reached max length:128");
+
+		int num = atoi(pMenuStatus->mtdnum_arr);
+		pMenuStatus->osd_mudnum = atoi(pMenuStatus->mtdnum_arr);
+		printf("%s,%d,osd_mudnum=%d\n",__FILE__,__LINE__,pMenuStatus->osd_mudnum);
+		MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
+	}
+	else if((submenu_mtd == pMenuStatus->MenuStat) && (pMenuStatus->trktime_deng == 1))
+	{
+		int offset = strlen(pMenuStatus->trktime_arr) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->trktime_arr) - 1)
+			sprintf(pMenuStatus->trktime_arr + offset,"%c", key);
+		else
+			printf("trktime reached max length:128");
+
+		int num = atoi(pMenuStatus->trktime_arr);
+		pMenuStatus->osd_trktime = atoi(pMenuStatus->trktime_arr);
+		printf("%s,%d,osd_trktime=%d\n",__FILE__,__LINE__,pMenuStatus->osd_trktime);
+		MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
+	}
+	else if((submenu_mtd == pMenuStatus->MenuStat) && (pMenuStatus->maxsize_deng == 1))
+	{
+		int offset = strlen(pMenuStatus->maxsize_arr) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->maxsize_arr) - 1)
+			sprintf(pMenuStatus->maxsize_arr + offset,"%c", key);
+		else
+			printf("maxsize reached max length:128");
+
+		int num = atoi(pMenuStatus->maxsize_arr);
+		pMenuStatus->osd_maxsize = atoi(pMenuStatus->maxsize_arr);
+		printf("%s,%d,osd_maxsize=%d\n",__FILE__,__LINE__,pMenuStatus->osd_maxsize);
+		MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
+	}
+	else if((submenu_mtd == pMenuStatus->MenuStat) && (pMenuStatus->minsize_deng == 1))
+	{
+		int offset = strlen(pMenuStatus->minsize_arr) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->minsize_arr) - 1)
+			sprintf(pMenuStatus->minsize_arr + offset,"%c", key);
+		else
+			printf("minsize reached max length:128");
+
+		int num = atoi(pMenuStatus->minsize_arr);
+		pMenuStatus->osd_minsize = atoi(pMenuStatus->minsize_arr);
+		printf("%s,%d,osd_minsize=%d\n",__FILE__,__LINE__,pMenuStatus->osd_minsize);
+		MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
+	}
+	else if((submenu_mtd == pMenuStatus->MenuStat) && (pMenuStatus->sensi_deng == 1))
+	{
+		int offset = strlen(pMenuStatus->sensi_arr) * sizeof(char);
+		if(offset < sizeof(pMenuStatus->sensi_arr) - 1)
+			sprintf(pMenuStatus->sensi_arr + offset,"%c", key);
+		else
+			printf("sensi reached max length:128");
+
+		int num = atoi(pMenuStatus->sensi_arr);
+		pMenuStatus->osd_sensi = atoi(pMenuStatus->sensi_arr);
+		printf("%s,%d,osd_sensi=%d\n",__FILE__,__LINE__,pMenuStatus->osd_sensi);
+		MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
+	}
 }
 
 void app_ctrl_enter()
@@ -642,9 +726,9 @@ void app_ctrl_enter()
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
 
-	if((mainmenu0 == pIStuts->MenuStat) || (mainmenu1 == pIStuts->MenuStat))
+	if((mainmenu0 == pMenuStatus->MenuStat) || (mainmenu1 == pMenuStatus->MenuStat))
 	{
-		if(strcmp(init_passwd, pIStuts->Passwd))
+		if(strcmp(init_passwd, pMenuStatus->Passwd))
 		{
 			app_ctrl_setMenuStat(mainmenu1);
 		}
@@ -654,25 +738,25 @@ void app_ctrl_enter()
 		}
 			
 	}
-	else if(mainmenu2 == pIStuts->MenuStat)
+	else if(mainmenu2 == pMenuStatus->MenuStat)
 	{
-		if((pIStuts->menuarray[mainmenu2].pointer >= 0) && (pIStuts->menuarray[mainmenu2].pointer <= 4))
-			app_ctrl_setMenuStat(pIStuts->menuarray[mainmenu2].pointer + 3);
+		if((pMenuStatus->menuarray[mainmenu2].pointer >= 0) && (pMenuStatus->menuarray[mainmenu2].pointer <= 4))
+			app_ctrl_setMenuStat(pMenuStatus->menuarray[mainmenu2].pointer + 3);
 	}
-	else if(submenu_carli == pIStuts->MenuStat)
+	else if(submenu_carli == pMenuStatus->MenuStat)
 	{
-		if(2 == pIStuts->menuarray[submenu_carli].pointer) {
+		if(2 == pMenuStatus->menuarray[submenu_carli].pointer) {
 			app_ctrl_setMenuStat(mainmenu2);
 			g_displayMode = MENU_MAIN_VIEW;
 			showDetectCorners = false;
 		}
-		else if(1 == pIStuts->menuarray[submenu_carli].pointer) {
+		else if(1 == pMenuStatus->menuarray[submenu_carli].pointer) {
 			g_displayMode = MENU_CALIBRA_CAP;
 			g_connectAction.CurCalibraCam = CAM_1;
 			//showDetectCorners = true;
 			//cout <<"@@@@@@@@@@@@@@@@@@@@@@@@@@ == 1" << endl;
 		}
-		else if(0 == pIStuts->menuarray[submenu_carli].pointer) {
+		else if(0 == pMenuStatus->menuarray[submenu_carli].pointer) {
 			g_displayMode = MENU_CALIBRA_CAP;
 			g_connectAction.CurCalibraCam = CAM_0;
 			//showDetectCorners = true;
@@ -683,11 +767,11 @@ void app_ctrl_enter()
 		 }
 		
 	}
-	else if(submenu_gunball == pIStuts->MenuStat)
+	else if(submenu_gunball == pMenuStatus->MenuStat)
 	{
 		g_displayMode = MENU_SBS;
 		CVideoProcess::m_camCalibra->start_cloneVideoSrc = true;
-		if(0 == pIStuts->menuarray[submenu_gunball].pointer) 
+		if(0 == pMenuStatus->menuarray[submenu_gunball].pointer) 
 		{
 			if(CVideoProcess::m_camCalibra->start_cloneVideoSrc = true){
 				OSA_waitMsecs(1500);	
@@ -695,14 +779,14 @@ void app_ctrl_enter()
 				g_displayMode = MENU_MATCH_POINT_VIEW;
 			}
 		}
-		else if (1 == pIStuts->menuarray[submenu_gunball].pointer)
+		else if (1 == pMenuStatus->menuarray[submenu_gunball].pointer)
 		{
 			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
 			g_displayMode = MENU_SBS;
 			app_ctrl_setMenuStat(submenu_handleMatchPoints);
 			//CVideoProcess::m_camCalibra->Set_Handler_Calibra = true ;
 		}
-		else if(2 == pIStuts->menuarray[submenu_gunball].pointer)
+		else if(2 == pMenuStatus->menuarray[submenu_gunball].pointer)
 		{
 			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
 			CVideoProcess::m_camCalibra->Set_Handler_Calibra = false ;
@@ -710,20 +794,20 @@ void app_ctrl_enter()
 			g_displayMode = MENU_MAIN_VIEW;
 		}
 	}
-	else if(submenu_handleMatchPoints == pIStuts->MenuStat)
+	else if(submenu_handleMatchPoints == pMenuStatus->MenuStat)
 	{
-		if(0 == pIStuts->menuarray[submenu_handleMatchPoints].pointer){
+        if(0 == pMenuStatus->menuarray[submenu_handleMatchPoints].pointer){
 			CVideoProcess::m_camCalibra->Set_Handler_Calibra = true ;
 			plat->open_handleCalibra = true;
 		}
-		else if( 1 == pIStuts->menuarray[submenu_handleMatchPoints].pointer){
+        else if( 1 == pMenuStatus->menuarray[submenu_handleMatchPoints].pointer){
 			plat->open_handleCalibra = false;
 			CVideoProcess::m_camCalibra->start_cloneVideoSrc = true;
 			OSA_waitMsecs(1500);	
 			CVideoProcess::m_camCalibra->bool_Calibrate = true;
 			g_displayMode = MENU_MATCH_POINT_VIEW;
 		}
-		else if(2 == pIStuts->menuarray[submenu_handleMatchPoints].pointer)
+        else if(2 == pMenuStatus->menuarray[submenu_handleMatchPoints].pointer)
 		{
 			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
 			CVideoProcess::m_camCalibra->Set_Handler_Calibra = false ;
@@ -733,23 +817,94 @@ void app_ctrl_enter()
 		}
 
 	}
-	else if(submenu_mtd == pIStuts->MenuStat)
+	else if(submenu_mtd == pMenuStatus->MenuStat)
 	{
-		if(0 == pIStuts->menuarray[submenu_mtd].pointer)
+		if(0 == pMenuStatus->menuarray[submenu_mtd].pointer)
 		{
 			CMD_EXT tmpCmd = {0};
 			tmpCmd.MtdSetRigion = 1;
+			mouse_workmode = SetMteRigion_Mode;
 			app_ctrl_setMtdRigionStat(&tmpCmd);
 			g_displayMode = MENU_GUN;
 			app_ctrl_setMenuStat(submenu_setmtdrigion);
 		}
+		else if(1 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		{
+			pMenuStatus->mtdnum_deng = !pMenuStatus->mtdnum_deng;
+			if(pMenuStatus->mtdnum_deng)
+				plat->dtimer.startTimer(plat->mtdnum_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->mtdnum_light_id);
+				MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
+				if((pMenuStatus->osd_mudnum >= MIN_MTDTARGET_NUM) && (pMenuStatus->osd_mudnum <= MAX_MTDTARGET_NUM))
+					plat->detectNum = pMenuStatus->osd_mudnum;
+				memset(pMenuStatus->mtdnum_arr, 0, sizeof(pMenuStatus->mtdnum_arr));
+			}
+		}
+		else if(2 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		{
+			pMenuStatus->trktime_deng = !pMenuStatus->trktime_deng;
+			if(pMenuStatus->trktime_deng)
+				plat->dtimer.startTimer(plat->trktime_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->trktime_light_id);
+				MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
+				if((pMenuStatus->osd_trktime >= MIN_MTDTRKTIME) && (pMenuStatus->osd_trktime <= MAX_MTDTRKTIME))
+					plat->m_display.processdurationMenu_osd(pMenuStatus->osd_trktime);
+				memset(pMenuStatus->trktime_arr, 0, sizeof(pMenuStatus->trktime_arr));
+			}
+		}
+		else if(3 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		{
+			pMenuStatus->maxsize_deng = !pMenuStatus->maxsize_deng;
+			if(pMenuStatus->maxsize_deng)
+				plat->dtimer.startTimer(plat->maxsize_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->maxsize_light_id);
+				MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
+				if((pMenuStatus->osd_maxsize >= plat->minsize) && (pMenuStatus->osd_maxsize <= MAX_MTDMAXSIZE))
+					plat->maxsize = pMenuStatus->osd_maxsize;
+				memset(pMenuStatus->maxsize_arr, 0, sizeof(pMenuStatus->maxsize_arr));
+			}
+		}
+		else if(4 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		{
+			pMenuStatus->minsize_deng = !pMenuStatus->minsize_deng;
+			if(pMenuStatus->minsize_deng)
+				plat->dtimer.startTimer(plat->minsize_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->minsize_light_id);
+				MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
+				if((pMenuStatus->osd_minsize >= MIN_MTDMINSIZE) && (pMenuStatus->osd_minsize <= MAX_MTDMAXSIZE))
+					plat->minsize = pMenuStatus->osd_minsize;
+				memset(pMenuStatus->minsize_arr, 0, sizeof(pMenuStatus->minsize_arr));
+			}
+		}
+		else if(5 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		{
+			pMenuStatus->sensi_deng = !pMenuStatus->sensi_deng;
+			if(pMenuStatus->sensi_deng)
+				plat->dtimer.startTimer(plat->sensi_light_id,500);
+			else
+			{
+				plat->dtimer.stopTimer(plat->sensi_light_id);
+				MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
+				if((pMenuStatus->osd_sensi >= MIN_MTDSENSI) && (pMenuStatus->osd_sensi <= MAX_MTDSENSI))
+					plat->sensi = pMenuStatus->osd_sensi;
+				memset(pMenuStatus->sensi_arr, 0, sizeof(pMenuStatus->sensi_arr));
+			}
+		}
 		
-		else if(6 == pIStuts->menuarray[submenu_mtd].pointer)
+		else if(6 == pMenuStatus->menuarray[submenu_mtd].pointer)
 			app_ctrl_setMenuStat(mainmenu2);
 	}
-	else if(submenu_setimg == pIStuts->MenuStat)
+	else if(submenu_setimg == pMenuStatus->MenuStat)
 	{
-		if(1 == pIStuts->menuarray[submenu_setimg].pointer)
+		if(1 == pMenuStatus->menuarray[submenu_setimg].pointer)
 		{
 			pMenuStatus->resol_deng = !pMenuStatus->resol_deng;
 			if(pMenuStatus->resol_deng)
@@ -760,30 +915,30 @@ void app_ctrl_enter()
 				MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
 			}
 		}
-		else if(2 == pIStuts->menuarray[submenu_setimg].pointer)
+		else if(2 == pMenuStatus->menuarray[submenu_setimg].pointer)
 		{	
 			plat->setresol(pMenuStatus->resol_type_tmp);
 			plat->save_flag = 1;
 			plat->cnt_down = 10;
 			plat->dtimer.startTimer(plat->resol_apply_id, 1000);
 		}
-		else if(3 == pIStuts->menuarray[submenu_setimg].pointer)
+		else if(3 == pMenuStatus->menuarray[submenu_setimg].pointer)
 			app_ctrl_setMenuStat(mainmenu2);
 	}
-	else if(submenu_setball == pIStuts->MenuStat)
+	else if(submenu_setball == pMenuStatus->MenuStat)
 	{
-		if(0 == pIStuts->menuarray[submenu_setball].pointer){
+		if(0 == pMenuStatus->menuarray[submenu_setball].pointer){
 			app_ctrl_setMenuStat(submenu_setcom);
 			show_circle_pointer = true;
 		}
-		else if(1 == pIStuts->menuarray[submenu_setball].pointer)
+		else if(1 == pMenuStatus->menuarray[submenu_setball].pointer)
 			app_ctrl_setMenuStat(submenu_setnet);
-		else if(2 == pIStuts->menuarray[submenu_setball].pointer)
+		else if(2 == pMenuStatus->menuarray[submenu_setball].pointer)
 			app_ctrl_setMenuStat(mainmenu2);
 	}
-	else if(submenu_setcom == pIStuts->MenuStat)
+	else if(submenu_setcom == pMenuStatus->MenuStat)
 	{
-		if(0 == pIStuts->menuarray[submenu_setcom].pointer){
+		if(0 == pMenuStatus->menuarray[submenu_setcom].pointer){
 				pMenuStatus->baud_light= !pMenuStatus->baud_light;
 
 				if(pMenuStatus->baud_light){
@@ -802,25 +957,25 @@ void app_ctrl_enter()
 					MSGDRIV_send(MSGID_EXT_SETBAUD, 0);
 				}
 		}
-		else if(4 == pIStuts->menuarray[submenu_setcom].pointer){
+		else if(4 == pMenuStatus->menuarray[submenu_setcom].pointer){
 			show_circle_pointer = false;
 			app_ctrl_setMenuStat(submenu_setball);
 			
 		}
 		
 	}
-	else if(submenu_setnet == pIStuts->MenuStat)
+	else if(submenu_setnet == pMenuStatus->MenuStat)
 	{
-		if(4 == pIStuts->menuarray[submenu_setnet].pointer)
+		if(4 == pMenuStatus->menuarray[submenu_setnet].pointer)
 			app_ctrl_setMenuStat(submenu_setball);
 	}
-	else if(submenu_setmtdrigion == pIStuts->MenuStat)
+	else if(submenu_setmtdrigion == pMenuStatus->MenuStat)
 	{
 		app_ctrl_savemtdrigion();
 	}
 
 
-	printf("\r\n[%s]: pIStuts->MenuStat = %d ",__FUNCTION__, pIStuts->MenuStat);
+	printf("\r\n[%s]: pIStuts->MenuStat = %d ",__FUNCTION__, pMenuStatus->MenuStat);
 }
 
 void app_ctrl_upMenu()
@@ -832,10 +987,36 @@ void app_ctrl_upMenu()
 		
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
-	int menustate = pIStuts->MenuStat; 
+	int menustate = pMenuStatus->MenuStat; 
 	if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 	{
-		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
+		if((submenu_mtd == menustate) && (pMenuStatus->mtdnum_deng == 1))
+		{
+			pMenuStatus->osd_mudnum = (pMenuStatus->osd_mudnum + 1) % MAX_MTDTARGET_NUM;
+			MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->trktime_deng == 1))
+		{
+			pMenuStatus->osd_trktime = (pMenuStatus->osd_trktime + 1) % MAX_MTDTRKTIME;
+			MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->maxsize_deng == 1))
+		{
+			pMenuStatus->osd_maxsize = (pMenuStatus->osd_maxsize + 1) % MAX_MTDMAXSIZE;
+			MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->minsize_deng == 1))
+		{
+			pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + 1) % MAX_MTDMAXSIZE;
+			MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->sensi_deng == 1))
+		{
+			pMenuStatus->osd_sensi = (pMenuStatus->osd_sensi + 1) % MAX_MTDSENSI;
+			MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
+		}
+
+		else if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
 		{
 			pMenuStatus->resol_type_tmp = (pMenuStatus->resol_type_tmp + 1) % maxresolid;
 			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
@@ -846,9 +1027,9 @@ void app_ctrl_upMenu()
 			pMenuStatus->baud_type = (pMenuStatus->baud_type + 1) % MAX_BAUDID;
 			MSGDRIV_send(MSGID_EXT_SETBAUD, 0);
 		}
-		else if(pIStuts->menuarray[menustate].pointer > 0)
+		else if(pMenuStatus->menuarray[menustate].pointer > 0)
 		{
-			pIStuts->menuarray[menustate].pointer--;
+			pMenuStatus->menuarray[menustate].pointer--;
 			MSGDRIV_send(MSGID_EXT_UPMENU, 0);
 		}
 	}
@@ -863,10 +1044,36 @@ void app_ctrl_downMenu()
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
 
-	int menustate = pIStuts->MenuStat; 
+	int menustate = pMenuStatus->MenuStat; 
 	if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 	{
-		if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
+		if((submenu_mtd == menustate) && (pMenuStatus->mtdnum_deng == 1))
+		{
+			pMenuStatus->osd_mudnum = (pMenuStatus->osd_mudnum + MAX_MTDTARGET_NUM - 1) % MAX_MTDTARGET_NUM;
+			MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->trktime_deng == 1))
+		{
+			pMenuStatus->osd_trktime = (pMenuStatus->osd_trktime + MAX_MTDTRKTIME - 1) % MAX_MTDTRKTIME;
+			MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->maxsize_deng == 1))
+		{
+			pMenuStatus->osd_maxsize = (pMenuStatus->osd_maxsize + MAX_MTDMAXSIZE - 1) % MAX_MTDMAXSIZE;
+			MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->minsize_deng == 1))
+		{
+			pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + MAX_MTDMAXSIZE - 1) % MAX_MTDMAXSIZE;
+			MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
+		}
+		else if((submenu_mtd == menustate) && (pMenuStatus->sensi_deng == 1))
+		{
+			pMenuStatus->osd_sensi = (pMenuStatus->osd_sensi + MAX_MTDSENSI - 1) % MAX_MTDSENSI;
+			MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
+		}
+
+		else if((submenu_setimg == menustate) && (pMenuStatus->resol_deng == 1))
 		{
 			pMenuStatus->resol_type_tmp = (pMenuStatus->resol_type_tmp + maxresolid - 1) % maxresolid;
 			MSGDRIV_send(MSGID_EXT_SETRESOL, 0);
@@ -877,9 +1084,9 @@ void app_ctrl_downMenu()
 			pMenuStatus->baud_type = (pMenuStatus->baud_type + MAX_BAUDID - 1) % MAX_BAUDID;
 			MSGDRIV_send(MSGID_EXT_SETBAUD, 0);
 		}
-		else if(pIStuts->menuarray[menustate].pointer < pIStuts->menuarray[menustate].submenu_cnt - 1)
+		else if(pMenuStatus->menuarray[menustate].pointer < pMenuStatus->menuarray[menustate].submenu_cnt - 1)
 		{
-			pIStuts->menuarray[menustate].pointer++;
+			pMenuStatus->menuarray[menustate].pointer++;
 			MSGDRIV_send(MSGID_EXT_DOWNMENU, 0);
 		}
 	}

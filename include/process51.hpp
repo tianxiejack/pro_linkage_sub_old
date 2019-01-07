@@ -7,6 +7,7 @@
 
 #include "osa_sem.h"
 #include "DxTimer.hpp"
+#include <glut.h>
 
 
 using namespace cv;
@@ -19,11 +20,28 @@ using namespace cv;
 #define SPECIAL_KEY_PAGEDOWN 	105
 
 typedef struct{
-	int resol_deng;//1:dianmie fanying
-	int resol_type_tmp, resol_type;
+		int button;
+		int state;
+		int x;
+		int y;
+}mouse_t;
 
+typedef struct{
+	volatile unsigned int MenuStat;
+	AppMenu menuarray[menumaxid];
+	char Passwd[128];
+	mouse_t Mtdmouseclick;
+	
+	int resol_deng, mtdnum_deng,trktime_deng,maxsize_deng,minsize_deng,sensi_deng;//1:dianmie fanying
+	int resol_type_tmp, resol_type;
+	int osd_mudnum, osd_trktime, osd_maxsize, osd_minsize, osd_sensi;
 	int baud_light;
 	int baud_type;// 2400,4800,9600, 115200
+	char mtdnum_arr[128];
+	char trktime_arr[128];
+	char maxsize_arr[128];
+	char minsize_arr[128];
+	char sensi_arr[128];
 }menu_param_t;
 
 
@@ -215,6 +233,11 @@ protected:
 	 static void MSGAPI_set_resol(long lParam);
 	 static void MSGAPI_set_baud(long lParam);
 	 static void MSGAPI_save_resol(long lParam);
+	 static void MSGAPI_set_mtdnum(long lParam);
+	 static void MSGAPI_set_mtdtrktime(long lParam);
+	 static void MSGAPI_set_mtdmaxsize(long lParam);
+	 static void MSGAPI_set_mtdminsize(long lParam);
+	 static void MSGAPI_set_mtdsensi(long lParam);
 
 private:
 	ACK_EXT extOutAck;
@@ -263,10 +286,9 @@ public:
 	PointNode polyRectbak[MAX_CHAN][100];
 	int polytempXbak, polytempYbak, polyrectnbak[MAX_CHAN];
 	DxTimer dtimer;
-	int resol_light_id, resol_apply_id,baud_light_id;
+    int resol_light_id, resol_apply_id, mtdnum_light_id, trktime_light_id, maxsize_light_id, minsize_light_id, sensi_light_id, baud_light_id;
 	int save_flag;
 	int cnt_down;
-
 };
 
 

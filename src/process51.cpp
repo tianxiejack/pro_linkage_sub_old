@@ -55,10 +55,10 @@ void getMmtTg(unsigned char index,int *x,int *y)
 #if __MOVE_DETECT__
 void getMtdxy(int *x,int *y,int *w,int *h)
 {
-	*x = plat->mvList_arr[0][plat->chooseDetect].targetRect.x + plat->mvList_arr[0][plat->chooseDetect].targetRect.width/2;
-	*y = plat->mvList_arr[0][plat->chooseDetect].targetRect.y + plat->mvList_arr[0][plat->chooseDetect].targetRect.height/2;
-	*w = plat->mvList_arr[0][plat->chooseDetect].targetRect.width;
-	*h = plat->mvList_arr[0][plat->chooseDetect].targetRect.height;
+	*x = plat->mvListsum[plat->chooseDetect].targetRect.x + plat->mvListsum[plat->chooseDetect].targetRect.width/2;
+	*y = plat->mvListsum[plat->chooseDetect].targetRect.y + plat->mvListsum[plat->chooseDetect].targetRect.height/2;
+	*w = plat->mvListsum[plat->chooseDetect].targetRect.width;
+	*h = plat->mvListsum[plat->chooseDetect].targetRect.height;
 }
 #endif
 
@@ -99,16 +99,22 @@ m_cofy(6320),m_bak_count(0)
 	memset(extInCtrl,0,sizeof(CMD_EXT));
 	CMD_EXT *pIStuts = extInCtrl;
 
-	pIStuts->MenuStat = -1;
-	memset(pIStuts->Passwd, 0, sizeof(pIStuts->Passwd));
+	extMenuCtrl.osd_mudnum = 1;
+	extMenuCtrl.osd_trktime = 1;
+	extMenuCtrl.osd_maxsize = 10000;
+	extMenuCtrl.osd_minsize = 9;
+	extMenuCtrl.osd_sensi = 30;
+	extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
+	extMenuCtrl.MenuStat = -1;
+	memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
 
 	int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,3,5};
-	memset(pIStuts->menuarray, 0, sizeof(pIStuts->menuarray));
+	memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
 	for(int i = 0; i < menumaxid; i++)
 	{
-		pIStuts->menuarray[i].id = i;
-		pIStuts->menuarray[i].pointer = 0;
-		pIStuts->menuarray[i].submenu_cnt = cnt[i];
+		extMenuCtrl.menuarray[i].id = i;
+		extMenuCtrl.menuarray[i].pointer = 0;
+		extMenuCtrl.menuarray[i].submenu_cnt = cnt[i];
 	}
 	
 		
@@ -174,8 +180,7 @@ m_cofy(6320),m_bak_count(0)
 
 	msgextInCtrl = extInCtrl;
 	msgextMenuCtrl = &extMenuCtrl;
-	extMenuCtrl.resol_deng = 0;
-	extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
+
 	save_flag = 0;
 	cnt_down = 10;
 	
@@ -475,9 +480,18 @@ void CProcess::TimerCreate()
 {
 	resol_light_id = dtimer.createTimer();
 	resol_apply_id = dtimer.createTimer();
+	mtdnum_light_id = dtimer.createTimer();
+	trktime_light_id = dtimer.createTimer();
+	maxsize_light_id = dtimer.createTimer();
+	minsize_light_id = dtimer.createTimer();
+	sensi_light_id = dtimer.createTimer();
 	dtimer.registerTimer(resol_light_id, Tcallback, &resol_light_id);
 	dtimer.registerTimer(resol_apply_id, Tcallback, &resol_apply_id);
-
+    dtimer.registerTimer(mtdnum_light_id, Tcallback, &mtdnum_light_id);
+    dtimer.registerTimer(trktime_light_id, Tcallback, &trktime_light_id);
+    dtimer.registerTimer(maxsize_light_id, Tcallback, &maxsize_light_id);
+    dtimer.registerTimer(minsize_light_id, Tcallback, &minsize_light_id);
+    dtimer.registerTimer(sensi_light_id, Tcallback, &sensi_light_id);
 	baud_light_id = dtimer.createTimer();
 	dtimer.registerTimer(baud_light_id, Tcallback, &baud_light_id);
 }
@@ -486,6 +500,11 @@ void CProcess::TimerCreate()
 void CProcess::Tcallback(void *p)
 {
 	static int resol_dianmie = 0;
+    static int mtdnum_dianmie = 0;
+    static int trktime_dianmie = 0;
+    static int maxsize_dianmie = 0;
+    static int minsize_dianmie = 0;
+    static int sensi_dianmie = 0;
 	static int baud_dianmie = 0;
 	
 	unsigned char baudlbuf[MAX_BAUDID][128] = {
@@ -501,7 +520,7 @@ void CProcess::Tcallback(void *p)
 		if(resol_dianmie)
 			swprintf(sThis->m_display.disMenu[submenu_setimg][1], 33, L"%s", resolbuf[sThis->m_display.disresol_type_tmp]);
 		else
-			memset(sThis->m_display.disMenu[submenu_setimg][1], 0, sizeof(sThis->m_display.disMenu[submenu_setimg][1]));
+			swprintf(sThis->m_display.disMenu[submenu_setimg][1], 33, L"格式");
 		resol_dianmie = !resol_dianmie;
 	}
 	else if(a == sThis->resol_apply_id)
@@ -520,6 +539,71 @@ void CProcess::Tcallback(void *p)
 				memset(sThis->m_display.disMenu[submenu_setimg][5], 0, sizeof(sThis->m_display.disMenu[submenu_setimg][5]));
 			}
 		}
+	}
+	else if(a == sThis->mtdnum_light_id)
+	{
+		if(mtdnum_dianmie)
+		{
+			if((sThis->extMenuCtrl.osd_mudnum < MIN_MTDTARGET_NUM) || (sThis->extMenuCtrl.osd_mudnum > MAX_MTDTARGET_NUM))
+				swprintf(sThis->m_display.disMenu[submenu_mtd][1], 33, L"目标个数     %d(超出范围%d~%d)", sThis->extMenuCtrl.osd_mudnum,MIN_MTDTARGET_NUM,MAX_MTDTARGET_NUM);
+			else
+				swprintf(sThis->m_display.disMenu[submenu_mtd][1], 33, L"目标个数     %d", sThis->extMenuCtrl.osd_mudnum);
+		}
+		else
+			swprintf(sThis->m_display.disMenu[submenu_mtd][1], 33, L"目标个数");
+		mtdnum_dianmie = !mtdnum_dianmie;
+	}
+	else if(a == sThis->trktime_light_id)
+	{
+		if(trktime_dianmie)
+		{
+			if((sThis->extMenuCtrl.osd_trktime < MIN_MTDTRKTIME) || (sThis->extMenuCtrl.osd_trktime > MAX_MTDTRKTIME))
+				swprintf(sThis->m_display.disMenu[submenu_mtd][2], 33, L"跟踪持续时间 %d秒(超出范围%d~%d秒)", sThis->extMenuCtrl.osd_trktime,MIN_MTDTRKTIME,MAX_MTDTRKTIME);
+			else
+				swprintf(sThis->m_display.disMenu[submenu_mtd][2], 33, L"跟踪持续时间 %d秒", sThis->extMenuCtrl.osd_trktime);
+		}
+		else
+			swprintf(sThis->m_display.disMenu[submenu_mtd][2], 33, L"跟踪持续时间  秒");
+		trktime_dianmie = !trktime_dianmie;
+	}
+	else if(a == sThis->maxsize_light_id)
+	{
+		if(maxsize_dianmie)
+		{
+			if((sThis->extMenuCtrl.osd_maxsize < sThis->minsize) || (sThis->extMenuCtrl.osd_maxsize > MAX_MTDMAXSIZE))
+				swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d像素(超出范围%d~%d像素)", sThis->extMenuCtrl.osd_maxsize, sThis->minsize,MAX_MTDMAXSIZE);
+			else
+				swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d像素", sThis->extMenuCtrl.osd_maxsize);
+		}
+		else
+			swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积      像素");
+		maxsize_dianmie = !maxsize_dianmie;
+	}
+	else if(a == sThis->minsize_light_id)
+	{
+		if(minsize_dianmie)
+		{
+			if((sThis->extMenuCtrl.osd_minsize < MIN_MTDMINSIZE) || (sThis->extMenuCtrl.osd_minsize > MAX_MTDMAXSIZE))
+				swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d像素(超出范围%d~%d像素)", sThis->extMenuCtrl.osd_minsize,MIN_MTDMINSIZE,MAX_MTDMAXSIZE);
+			else
+				swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d像素", sThis->extMenuCtrl.osd_minsize);
+		}
+		else
+			swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积  像素");
+		minsize_dianmie = !minsize_dianmie;
+	}
+	else if(a == sThis->sensi_light_id)
+	{
+		if(sensi_dianmie)
+		{
+			if((sThis->extMenuCtrl.osd_sensi < MIN_MTDSENSI) || (sThis->extMenuCtrl.osd_sensi > MAX_MTDSENSI))
+				swprintf(sThis->m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d(超出范围%d~%d)", sThis->extMenuCtrl.osd_sensi,MIN_MTDSENSI,MAX_MTDSENSI);
+			else
+				swprintf(sThis->m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d", sThis->extMenuCtrl.osd_sensi);
+		}
+		else
+			swprintf(sThis->m_display.disMenu[submenu_mtd][5], 33, L"灵敏度");
+		sensi_dianmie = !sensi_dianmie;
 	}
 	else if( a == sThis->baud_light_id ){
 		if(baud_dianmie)
@@ -1741,28 +1825,23 @@ osdindex++;	//cross aim
 					endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
 					DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,0,3);
 				}
-/*
+
 			cv::Rect tmp;
 			mouserect recttmp;
-			for(int i = 0; i < cnt; i++)
-			{
-				for(std::vector<TRK_RECT_INFO>::iterator plist = mvList_arr[i].begin(); plist != mvList_arr[i].end(); ++plist)
-				{		
-						recttmp.x = (*plist).targetRect.x;
-						recttmp.y = (*plist).targetRect.y;
-						recttmp.w = (*plist).targetRect.width;
-						recttmp.h = (*plist).targetRect.height;
-						recttmp = mapfullscreen2gunv20(recttmp);
-						tmp.x = recttmp.x;
-						tmp.y = recttmp.y;
-						tmp.width = recttmp.w;
-						tmp.height = recttmp.h;
+			for(std::vector<TRK_RECT_INFO>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
+			{		
+					recttmp.x = (*plist).targetRect.x;
+					recttmp.y = (*plist).targetRect.y;
+					recttmp.w = (*plist).targetRect.width;
+					recttmp.h = (*plist).targetRect.height;
+					recttmp = mapfullscreen2gunv20(recttmp);
+					tmp.x = recttmp.x;
+					tmp.y = recttmp.y;
+					tmp.width = recttmp.w;
+					tmp.height = recttmp.h;
 					DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);
-				}
 			}
-*/
 			Osdflag[osdindex]=0;
-
 		}
 
 		if(m_bMoveDetect)
@@ -1781,16 +1860,27 @@ osdindex++;	//cross aim
 					endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
 					DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,5,3);
 				}
-/*
+
 			detect_vect_arr_bak = detect_vect_arr;
 			mvList_arr = detect_vect_arr_bak;
-
-			mvIndexHandle(mvList_arr[0],detect_vect_arr_bak[0],detectNum);
-				
-	
+			mvListsum.clear();
+			int num = 0;
+			for(int i = 0; i <mvList_arr.size(); i++)
+			{
+				mvIndexHandle(mvList_arr[i],detect_vect_arr_bak[i],detectNum);
+				for(int j = 0; j < mvList_arr[i].size(); j++)
+				{
+					if(num < detectNum)
+						mvListsum.push_back(mvList_arr[i][j]);
+					num++;
+				}
+			}
+			
+			
+			
 			if(forwardflag)
 			{
-				if(++chooseDetect > mvList_arr[0].size())
+				if(++chooseDetect > mvListsum.size())
 					chooseDetect = 0;
 				
 				forwardflag = 0;
@@ -1798,44 +1888,41 @@ osdindex++;	//cross aim
 			else if(backflag)
 			{
 				if( --chooseDetect < 0)
-					chooseDetect = mvList_arr[0].size()-1;		
+				{
+					chooseDetect = mvListsum.size()-1;	
+				}
 					
 				backflag = 0;
 			}
-			
-			if(chooseDetect > mvList_arr[0].size())
-				chooseDetect = mvList_arr[0].size()-1 ;
-			
+			if(chooseDetect > mvListsum.size())
+				chooseDetect = mvListsum.size()-1 ;
+
 			char tmpNum = 0;
 			cv::Rect tmp;
 			mouserect recttmp;
-			for(int i = 0; i < cnt; i++)
-			{
-				tmpNum = 0;
-				for(std::vector<TRK_RECT_INFO>::iterator plist = mvList_arr[i].begin(); plist != mvList_arr[i].end(); ++plist)
-				{	
-					if( chooseDetect == tmpNum++)
-						color = 6;
-					else
-						color = 3;
+			tmpNum = 0;
+			for(std::vector<TRK_RECT_INFO>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
+			{	
+				if( chooseDetect == tmpNum++)
+					color = 6;
+				else
+					color = 3;
 
-					recttmp.x = (*plist).targetRect.x;
-					recttmp.y = (*plist).targetRect.y;
-					recttmp.w = (*plist).targetRect.width;
-					recttmp.h = (*plist).targetRect.height;
-					recttmp = mapfullscreen2gunv20(recttmp);
-					tmp.x = recttmp.x;
-					tmp.y = recttmp.y;
-					tmp.width = recttmp.w;
-					tmp.height = recttmp.h;
+				recttmp.x = (*plist).targetRect.x;
+				recttmp.y = (*plist).targetRect.y;
+				recttmp.w = (*plist).targetRect.width;
+				recttmp.h = (*plist).targetRect.height;
+				recttmp = mapfullscreen2gunv20(recttmp);
+				tmp.x = recttmp.x;
+				tmp.y = recttmp.y;
+				tmp.width = recttmp.w;
+				tmp.height = recttmp.h;
 
-					if(color == 6)
-						reMapCoords(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
+				if(color == 6)
+					reMapCoords(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
 
-					DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
-				}
+				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 			}
-*/
 			Osdflag[osdindex]=1;
 		}
 	}
@@ -3300,6 +3387,8 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
 	}
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
+	//printf("%s   LINE:%d   Send Position = < %d, %d >,zoom = %d \r\n",__func__,__LINE__, DesPanPos , DesTilPos ,zoomPos);
+	//printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 }
 
@@ -3562,15 +3651,6 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 		if((key >= '0') && (key <= '9'))
 			app_ctrl_setnumber(key);
-
-		if(key == '2')
-		{
-			tmpCmd.MtdSetRigion = 0;
-			app_ctrl_setMtdRigionStat(&tmpCmd);
-			app_ctrl_setMenuStat(-1);
-			g_displayMode = MENU_MAIN_VIEW;
-			memset(m_display.disMenu[submenu_setmtdrigion][4], 0, sizeof(m_display.disMenu[submenu_setmtdrigion][4]));
-		}
 		
 		if(key == 13)
 		{
@@ -4288,7 +4368,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	}
 	if(msgId == MSGID_EXT_MVDETECT_SETRIGION)
 	{
-		memcpy(&mtdrigionv20, &pIStuts->Mtdmouseclick, sizeof(mtdrigionv20));
+		memcpy(&mtdrigionv20, &pMenuStatus->Mtdmouseclick, sizeof(mtdrigionv20));
 		updateredgrid();
 	/*	
 		if((0 == mtdrigionv20.button) && (0 == mtdrigionv20.state))
@@ -4306,18 +4386,18 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	
 	if(msgId == MSGID_EXT_MENUSWITCH)
 	{
-		m_display.m_menuindex = pIStuts->MenuStat;
+		m_display.m_menuindex = extMenuCtrl.MenuStat;
 	}
 	if(msgId == MSGID_EXT_UPMENU)
 	{
-		int menustate = pIStuts->MenuStat;
+		int menustate = extMenuCtrl.MenuStat;
 		int pointer = m_display.dismenuarray[menustate].pointer;
 		if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 		{
 			if(pointer > 0)
 			{
 				m_display.disMenuBuf[menustate][pointer].color = 2;
-				m_display.dismenuarray[menustate].pointer= pIStuts->menuarray[menustate].pointer;
+				m_display.dismenuarray[menustate].pointer= extMenuCtrl.menuarray[menustate].pointer;
 				if(menustate == submenu_setcom){
 					m_display.m_currentMenuPos[menustate][m_display.dismenuarray[menustate].pointer].isShow = true;
 					show_circle_pointer = true;
@@ -4335,14 +4415,14 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	}
 	if(msgId == MSGID_EXT_DOWNMENU)
 	{
-		int menustate = pIStuts->MenuStat;
+		int menustate = extMenuCtrl.MenuStat;
 		int pointer = m_display.dismenuarray[menustate].pointer;
 		if((menustate >= mainmenu2) && (menustate <= submenu_handleMatchPoints))
 		{
-			if(pointer < pIStuts->menuarray[menustate].submenu_cnt - 1)
+			if(pointer < extMenuCtrl.menuarray[menustate].submenu_cnt - 1)
 			{
 				m_display.disMenuBuf[menustate][pointer].color = 2;
-				m_display.dismenuarray[menustate].pointer = pIStuts->menuarray[menustate].pointer;
+				m_display.dismenuarray[menustate].pointer = extMenuCtrl.menuarray[menustate].pointer;
 				m_display.disMenuBuf[menustate][m_display.dismenuarray[menustate].pointer].color = 3;
 
 				if(menustate == submenu_setcom){
@@ -4377,6 +4457,42 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 		udoutputresol(m_display.disresol_type);
 		writeshell(m_display.disresol_type);
 	}
+	if(msgId == MSGID_EXT_SETMTDNUM)
+	{
+		if((pMenuStatus->osd_mudnum < MIN_MTDTARGET_NUM) || (pMenuStatus->osd_mudnum > MAX_MTDTARGET_NUM))
+			swprintf(m_display.disMenu[submenu_mtd][1], 33, L"目标个数     %d(超出范围%d~%d)", pMenuStatus->osd_mudnum,MIN_MTDTARGET_NUM,MAX_MTDTARGET_NUM);
+		else
+			swprintf(m_display.disMenu[submenu_mtd][1], 33, L"目标个数     %d", pMenuStatus->osd_mudnum);
+	}
+	if(msgId == MSGID_EXT_SETMTDTRKTIME)
+	{
+		if((pMenuStatus->osd_trktime < MIN_MTDTRKTIME) || (pMenuStatus->osd_trktime > MAX_MTDTRKTIME))
+			swprintf(m_display.disMenu[submenu_mtd][2], 33, L"跟踪持续时间 %d秒(超出范围%d~%d)", pMenuStatus->osd_trktime,MIN_MTDTRKTIME,MAX_MTDTRKTIME);
+		else
+			swprintf(m_display.disMenu[submenu_mtd][2], 33, L"跟踪持续时间 %d秒", pMenuStatus->osd_trktime);
+	}
+	if(msgId == MSGID_EXT_SETMTDMAXSIZE)
+	{
+		if((pMenuStatus->osd_maxsize < minsize) || (pMenuStatus->osd_maxsize > MAX_MTDMAXSIZE))
+			swprintf(m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d像素(超出范围%d~%d)", pMenuStatus->osd_maxsize,minsize,MAX_MTDMAXSIZE);
+		else
+			swprintf(m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d像素", pMenuStatus->osd_maxsize);
+	}
+	if(msgId == MSGID_EXT_SETMTDMINSIZE)
+	{
+		if((pMenuStatus->osd_minsize < MIN_MTDMINSIZE) || (pMenuStatus->osd_minsize > MAX_MTDMAXSIZE))
+			swprintf(m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d像素(超出范围%d~%d)", pMenuStatus->osd_minsize,MIN_MTDMINSIZE,MAX_MTDMAXSIZE);
+		else
+			swprintf(m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d像素", pMenuStatus->osd_minsize);
+	}
+	if(msgId == MSGID_EXT_SETMTDSENSI)
+	{
+		if((pMenuStatus->osd_sensi < MIN_MTDSENSI) || (pMenuStatus->osd_sensi > MAX_MTDSENSI))
+			swprintf(m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d(超出范围%d~%d)", pMenuStatus->osd_sensi,MIN_MTDMINSIZE,MAX_MTDMAXSIZE);
+		else
+			swprintf(m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d", pMenuStatus->osd_sensi);
+	}
+	
 	if(msgId == MSGID_EXT_SETBAUD){
 
 		unsigned char baudlbuf[MAX_BAUDID][128] = {
@@ -5043,16 +5159,26 @@ int CProcess::setresol(int resoltype)
 	{
 		case r1920x1080_f60:
 			system("xrandr -s 1920x1080_60.00");
+			outputWHF[0] = 1920;
+			outputWHF[1] = 1080;
+			outputWHF[2] = 60;
 			break;
 		case r1024x768_f60:
 			system("xrandr -s 1024x768_60.01");
+			outputWHF[0] = 1024;
+			outputWHF[1] = 768;
+			outputWHF[2] = 60;
 			break;
 		case r1280x1024_f60:
 			system("xrandr -s 1280x1024_60.00");
+			outputWHF[0] = 1280;
+			outputWHF[1] = 1024;
+			outputWHF[2] = 60;
 			break;
 		default:
 			break;	
 	}
+	glutFullScreen();
 }
 
 int CProcess::udoutputresol(int resoltype)
@@ -5068,21 +5194,12 @@ int CProcess::udoutputresol(int resoltype)
 	switch(resoltype)
 	{
 		case r1920x1080_f60:
-			outputWHF[0] = 1920;
-			outputWHF[1] = 1080;
-			outputWHF[2] = 60;
 			cmdsetconfig.value = 5;
 			break;
 		case r1024x768_f60:
-			outputWHF[0] = 1024;
-			outputWHF[1] = 768;
-			outputWHF[2] = 60;
 			cmdsetconfig.value = 7;
 			break;
 		case r1280x1024_f60:
-			outputWHF[0] = 1280;
-			outputWHF[1] = 1024;
-			outputWHF[2] = 60;
 			cmdsetconfig.value = 6;
 			break;
 		default:
@@ -5177,6 +5294,11 @@ int CProcess::writeshell(int resoltype)
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SETRESOL,     MSGAPI_set_resol,        	0);
 	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SETBAUD, 	MSGAPI_set_baud,			0);
 	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SAVERESOL, 	MSGAPI_save_resol,			0);
+	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SETMTDNUM, 	MSGAPI_set_mtdnum,			0);
+	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SETMTDTRKTIME, 	MSGAPI_set_mtdtrktime,			0);
+	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SETMTDMAXSIZE, 	MSGAPI_set_mtdmaxsize,			0);
+	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SETMTDMINSIZE, 	MSGAPI_set_mtdminsize,			0);
+	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SETMTDSENSI, 	MSGAPI_set_mtdsensi,			0);
 
     return 0;
 }
@@ -6070,4 +6192,29 @@ void CProcess::MSGAPI_set_baud(long lParam)
 void CProcess::MSGAPI_save_resol(long lParam)
 {
 	sThis->msgdriv_event(MSGID_EXT_SAVERESOL,NULL);
+}
+
+void CProcess::MSGAPI_set_mtdnum(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_SETMTDNUM,NULL);
+}
+
+void CProcess::MSGAPI_set_mtdtrktime(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_SETMTDTRKTIME,NULL);
+}
+
+void CProcess::MSGAPI_set_mtdmaxsize(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_SETMTDMAXSIZE,NULL);
+}
+
+void CProcess::MSGAPI_set_mtdminsize(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_SETMTDMINSIZE,NULL);
+}
+
+void CProcess::MSGAPI_set_mtdsensi(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_SETMTDSENSI,NULL);
 }

@@ -9,6 +9,40 @@
 
 #define AVT_TRK_AIM_SIZE			2
 #define MAX_MTDRIGION_NUM 		3
+#define MIN_MTDTARGET_NUM		1
+#define MAX_MTDTARGET_NUM		10
+#define MIN_MTDTRKTIME		1
+#define MAX_MTDTRKTIME		5
+#define MIN_MTDMINSIZE		9
+#define MAX_MTDMAXSIZE		70000
+#define MIN_MTDSENSI		10
+#define MAX_MTDSENSI		100
+
+typedef enum{
+	mainmenu0=0,
+	mainmenu1,
+	mainmenu2,
+	submenu_carli,
+	submenu_gunball,
+	submenu_mtd,
+	submenu_setimg,
+	submenu_setball,
+	submenu_setcom,
+	submenu_setnet,
+	submenu_handleMatchPoints,// for handle calibrate match points 
+	submenu_setmtdrigion,
+	
+	menumaxid
+}AppMenuId;
+
+typedef struct
+{
+	int id;
+	int pointer;
+	int submenu_cnt;
+	int start;
+	int end;
+}AppMenu;
 
 typedef struct _Resolution{
 	int raw, col ;
@@ -228,6 +262,7 @@ typedef enum _GB_CLICK_MODE{
 typedef enum _SelectMode{
 	Click_Mode =0,
 	DrawRectangle_Mode,
+	SetMteRigion_Mode,
 	Mode_Count
 }SelectMode;
 

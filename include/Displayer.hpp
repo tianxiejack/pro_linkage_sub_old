@@ -27,6 +27,8 @@
 #include <vector>
 #include "freetype/ftglyph.h"
 #include <wchar.h>
+#include <glut.h>
+
 #include FT_GLYPH_H
 #include FT_TRUETYPE_TABLES_H
 #include FT_BITMAP_H
@@ -506,6 +508,7 @@ public:
 	int OSDFunc();
 	void drawtriangle(Mat frame, char direction, char alpha);
 	int MenuFunc(int index);
+	void processdurationMenu_osd(int value);
 };
 
 #define mallocwidth 1920

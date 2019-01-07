@@ -86,38 +86,6 @@ typedef enum
 	shm_rdwr
 }shm_perms;
 
-typedef enum{
-	mainmenu0=0,
-	mainmenu1,
-	mainmenu2,
-	submenu_carli,
-	submenu_gunball,
-	submenu_mtd,
-	submenu_setimg,
-	submenu_setball,
-	submenu_setcom,
-	submenu_setnet,
-	submenu_handleMatchPoints, // for handle match points;
-	submenu_setmtdrigion,
-	menumaxid
-}AppMenuId;
-
-typedef struct{
-		int button;
-		int state;
-		int x;
-		int y;
-}mouse_t;
-
-typedef struct
-{
-	int id;
-	int pointer;
-	int submenu_cnt;
-	int start;
-	int end;
-}AppMenu;
-
 typedef struct{
 	unsigned int panPos;
 	unsigned int tilPos;
@@ -626,12 +594,6 @@ typedef struct
 	
 	volatile unsigned int  	ImgMmtshow[ipc_eSen_Max];	//not sure show what
 	volatile unsigned char 	MmtOffsetXY[20]; 		//not sure the func
-
-	volatile unsigned int MenuStat;
-	AppMenu menuarray[menumaxid];
-	char Passwd[128];
-
-	mouse_t Mtdmouseclick;
 	
 } IMGSTATUS;
 

@@ -295,7 +295,7 @@ void CVideoProcess::main_proc_func()
 			{
 				for(int i = 0; i < MAX_MTDRIGION_NUM; i++)
 				{
-					m_pMovDetector->setFrame(frame_gray,i,2,minsize,maxsize,16);
+					m_pMovDetector->setFrame(frame_gray,i,2,minsize,maxsize,sensi);
 				}
 			}
 		#endif
@@ -405,9 +405,10 @@ CVideoProcess::CVideoProcess()
 #endif
 
 #if __MOVE_DETECT__
-	detectNum = 10;
-	maxsize = 50000;
-	minsize = 1000;
+	detectNum = 1;
+	maxsize = 10000;
+	minsize = 9;
+	sensi = 30;
 	setrigion_flagv20 = mtdcnt = 0;	
 	memset(&mtdrigionv20, 0, sizeof(mtdrigionv20));
 	memset(grid19x10, 0, sizeof(grid19x10));
@@ -1049,16 +1050,18 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
-	if(mouse_workmode == DrawRectangle_Mode)
+	if(mouse_workmode == SetMteRigion_Mode)
 	{
-		unsigned int curId;
-		int Critical_Point;
-
 		if(pThis->setrigion_flagv20)
 		{
 			pThis->mouse_eventv20(button, state, x, y);
 			return;
 		}
+	}
+	else if(mouse_workmode == DrawRectangle_Mode)
+	{
+		unsigned int curId;
+		int Critical_Point;
 
 		if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW) {
 			curId = 1;	
@@ -1404,7 +1407,7 @@ void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
 {
 	//printf("mouse_eventv20 start, button=%d,state=%d,x,y(%d,%d)\n", button, state, x, y);
-	CMD_EXT tmpCmd = {0};
+	menu_param_t tmpCmd = {0};
 	tmpCmd.Mtdmouseclick.button = button;
 	tmpCmd.Mtdmouseclick.state = state;
 	tmpCmd.Mtdmouseclick.x = x;
@@ -2171,14 +2174,9 @@ void	CVideoProcess::DeInitMvDetect()
 void CVideoProcess::NotifyFunc(void *context, int chId)
 {
 	CVideoProcess *pParent = (CVideoProcess*)context;
-	pThis->detect_vect_arr.clear();
 	int cnt = pThis->detect_vect_arr.size() > 3 ? 3 : pThis->detect_vect_arr.size();
-	//for(int i = 0; i < cnt; i++)
-	for(int i = 0; i < 1; i++)
-	{
-		pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect_arr[i],i);
-	}
-
+	pThis->detect_vect_arr[chId].clear();
+	pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect_arr[chId],chId);
 	
 	//pParent->m_display.m_bOsd = true;
 	//pThis->m_display.UpDateOsd(0);

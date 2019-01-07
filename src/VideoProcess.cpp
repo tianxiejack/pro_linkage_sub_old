@@ -1050,6 +1050,11 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
+	if(mouse_workmode == Click_Mode && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		
+		pThis->setClickPoint(x,y);
+	}
+	
 	if(mouse_workmode == SetMteRigion_Mode)
 	{
 		if(pThis->setrigion_flagv20)

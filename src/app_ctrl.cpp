@@ -475,7 +475,9 @@ void app_ctrl_setDispColor(CMD_EXT * pInCmd )
 		    pIStuts->DispColor[1] = pInCmd->DispColor[1]; 
 		}
 	}
+	
    return ;
+   
 }
 
 

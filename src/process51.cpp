@@ -88,6 +88,10 @@ m_cofy(6320),m_bak_count(0)
 	memset(tgBak, 0, sizeof(tgBak));
 	memset(&extOutAck, 0, sizeof(ACK_EXT));
 	memset(&extMenuCtrl, 0, sizeof(menu_param_t));
+
+	m_bakClickPoint = Point(-20,-20);
+	m_curClickPoint = Point(-30.-30);
+	
 	prisensorstatus=0;//tv
 	m_castTm=0;
 	m_bCast=false;
@@ -1997,7 +2001,7 @@ osdindex++;	//cross aim
 	
 }
 //=============================================================================================
-#if 1
+#if 0
 	{
 		recIn.x=948;//960;
  		recIn.y=276;//270;
@@ -2007,6 +2011,27 @@ osdindex++;	//cross aim
 		Osdflag[osdindex]=1;
 	}
 #endif
+
+	
+	{
+		recIn.x=m_bakClickPoint.x;
+ 		recIn.y=m_bakClickPoint.y;
+		recIn.width = 60;
+		recIn.height = 60;
+		DrawCross(recIn,frcolor,1,false);
+		Osdflag[osdindex]=1;	
+		osdindex++;
+			
+		m_bakClickPoint = getCurClickPoint();
+
+		recIn.x=m_bakClickPoint.x;
+ 		recIn.y=m_bakClickPoint.y;
+		recIn.width = 60;
+		recIn.height = 60;
+		DrawCross(recIn,frcolor,1,true);
+		Osdflag[osdindex]=1;	
+	}
+
 
 
 
@@ -2034,44 +2059,9 @@ else{
 #endif
 
 }
-
-
-
-#if 0
-	{
-		recIn.x=480;
- 		recIn.y=270;
-		recIn.width = 200;
-		recIn.height = 100;
-		DrawCross(recIn,frcolor,1,true);
-		Osdflag[osdindex]=1;
-	}
-
-	{
-		recIn.x=580;
- 		recIn.y=270;
-		recIn.width = 200;
-		recIn.height = 100;
-		DrawCross(recIn,frcolor,1,true);
-		Osdflag[osdindex]=1;
-	}
-
-	{
-		recIn.x=680;
- 		recIn.y=270;
-		recIn.width = 200;
-		recIn.height = 100;
-		DrawCross(recIn,frcolor,1,true);
-		Osdflag[osdindex]=1;
-	}
-#endif
-
-
-
 /* 
 *   Here draw circle to Mark the point after remap on the ball image 
 */
-
 
 	if( m_bMarkCircle == true) {
 		cv::circle(m_display.m_imgOsd[1],dest_ballPoint,3 ,cvScalar(0,255,255,255),2,8,0);

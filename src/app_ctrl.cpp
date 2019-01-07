@@ -587,6 +587,8 @@ void app_ctrl_setMenu()
 		app_ctrl_setMenuStat(-1);
 	else if(mainmenu2 == pMenuStatus->MenuStat)
 		app_ctrl_setMenuStat(-1);
+	else if(submenu_mtd == pMenuStatus->MenuStat)
+		app_ctrl_setMenuStat(-1);
 }
 
 void app_ctrl_setnumber(char key)
@@ -642,7 +644,7 @@ void app_ctrl_setnumber(char key)
 		CMD_EXT tmpCmd = {0};
 		tmpCmd.MtdSetRigion = 0;
 		app_ctrl_setMtdRigionStat(&tmpCmd);
-		app_ctrl_setMenuStat(-1);
+		app_ctrl_setMenuStat(submenu_mtd);
 		g_displayMode = MENU_MAIN_VIEW;
 		memset(plat->m_display.disMenu[submenu_setmtdrigion][4], 0, sizeof(plat->m_display.disMenu[submenu_setmtdrigion][4]));
 	}

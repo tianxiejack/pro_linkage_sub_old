@@ -111,6 +111,7 @@ private:
 	Point m_bakClickPoint;
 	
 public:
+	void loadIPCParam();
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
 	void reMapCoords(int x, int y , bool mode);

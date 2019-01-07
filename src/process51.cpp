@@ -65,193 +65,198 @@ void getMtdxy(int *x,int *y,int *w,int *h)
 CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6200),
 m_cofy(6320),m_bak_count(0)
 {
-
-//=======================================
-
-
-//	tmpcofx = 6300;
-//	tmpcofy = 6200;
-//
-//	coefficientx = (float)tmpcofx*0.001f;
-//	coefficienty = (float)tmpcofy*0.001f;
-//	fx = 1796.2317019134 + 10;
-//	fy = 1795.8556284573 +55;
-//	degperpixX = 36000/(2*CV_PI*fx);
-//	degperpixY = 36000/(2*CV_PI*fy);
-//	coefficientx = degperpixX*2;
-//	coefficienty = degperpixY*2;
-//========================================	
-	backMenuposX=0; 
-	backMenuposY =0;
-	//show_circle_pointer= false;
-	memset(rcTrackBak, 0, sizeof(rcTrackBak));
-	memset(tgBak, 0, sizeof(tgBak));
-	memset(&extOutAck, 0, sizeof(ACK_EXT));
-	memset(&extMenuCtrl, 0, sizeof(menu_param_t));
-
-	m_bakClickPoint = Point(-20,-20);
-	m_curClickPoint = Point(-30.-30);
-	
-	prisensorstatus=0;//tv
-	m_castTm=0;
-	m_bCast=false;
-	rememflag=false;
-	rememtime=0;
-	m_rectSelectPic = Rect(0,540,192,54);
-	// default cmd value
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
-	CMD_EXT *pIStuts = extInCtrl;
-
-	extMenuCtrl.osd_mudnum = 1;
-	extMenuCtrl.osd_trktime = 1;
-	extMenuCtrl.osd_maxsize = 10000;
-	extMenuCtrl.osd_minsize = 9;
-	extMenuCtrl.osd_sensi = 30;
-	extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
-	extMenuCtrl.MenuStat = -1;
-	memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
-
-	int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,3,5};
-	memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
-	for(int i = 0; i < menumaxid; i++)
-	{
-		extMenuCtrl.menuarray[i].id = i;
-		extMenuCtrl.menuarray[i].pointer = 0;
-		extMenuCtrl.menuarray[i].submenu_cnt = cnt[i];
-	}
-	
-		
-	for(int i = 0; i < MAX_CHAN; i++)
-	{
-		pIStuts->opticAxisPosX[i] = vdisWH[i][0]/2;
-		pIStuts->opticAxisPosY[i] = vdisWH[i][1]/2;
-	}
-	
-	pIStuts->unitAimW 		= 	AIM_WIDTH;
-	pIStuts->unitAimH 		= 	AIM_HEIGHT;
-	pIStuts->unitAimX		=	vdisWH[video_pal][0]/2;
-	pIStuts->unitAimY		=	vdisWH[video_pal][1]/2;
-
-	pIStuts->SensorStat 	=   MAIN_CHID;
-	pIStuts->SensorStatpri  =   pIStuts->SensorStat;
-	pIStuts->PicpSensorStatpri	=	pIStuts->PicpSensorStat = 0xFF;
-	
-	pIStuts->changeSensorFlag = 0;
-	crossBak.x = pIStuts->opticAxisPosX[pIStuts->SensorStat ];
-	crossBak.y = pIStuts->opticAxisPosY[pIStuts->SensorStat ];
-	pIStuts->AvtTrkAimSize= AVT_TRK_AIM_SIZE;
-
-	for(int i = 0; i < MAX_CHAN; i++)
-	{
-		pIStuts->AvtPosX[i] = pIStuts->AxisPosX[i] = pIStuts->opticAxisPosX[i];
-		pIStuts->AvtPosY[i] = pIStuts->AxisPosY[i] = pIStuts->opticAxisPosY[i];
-	}
-	
-	pIStuts->PicpPosStat = 0;
-	pIStuts->validChId = MAIN_CHID;
-	pIStuts->FovStat=1;
-
-	pIStuts->FrCollimation=2;
-	pIStuts->PicpSensorStatpri=2;
-	pIStuts->axisMoveStepX = 0;
-	pIStuts->axisMoveStepY = 0;
-
-	memset(secBak,0,sizeof(secBak));
-	memset(Osdflag,0,sizeof(Osdflag));
-	
-	Mmtsendtime=0;
-
-	rendpos[0].x=vdisWH[0][0]*2/3;
-	rendpos[0].y=vdisWH[0][1]*2/3;
-	rendpos[0].w=vdisWH[0][0]/3;
-	rendpos[0].h=vdisWH[0][1]/3;
-
-	rendpos[1].x=vdisWH[0][0]*2/3;
-	rendpos[1].y=0;
-	rendpos[1].w=vdisWH[0][0]/3;
-	rendpos[1].h=vdisWH[0][1]/3;
-
-	rendpos[2].x=0;
-	rendpos[2].y=0;
-	rendpos[2].w=vdisWH[0][0]/3;
-	rendpos[2].h=vdisWH[0][1]/3;
-
-	rendpos[3].x=0;
-	rendpos[3].y=vdisWH[0][1]*2/3;
-	rendpos[3].w=vdisWH[0][0]/3;
-	rendpos[3].h=vdisWH[0][1]/3;
-
-	msgextInCtrl = extInCtrl;
-	msgextMenuCtrl = &extMenuCtrl;
-
-	save_flag = 0;
-	cnt_down = 10;
-	
+	msgextInCtrl = extInCtrl;	
 	sThis = this;
 	plat = this;
-
-	update_param_osd();
-
-	pIStuts->DispGrp[0] = 1;
-	pIStuts->DispGrp[1] = 1;
-	pIStuts->DispColor[0]=2;
-	pIStuts->DispColor[1]=2;
-
-	m_tempXbak = m_tempYbak = 0;
-	memset(m_rectnbak, 0, sizeof(m_rectnbak));
-	memset(mRectbak, 0, sizeof(mRectbak));
-	memset(timearr, 0, sizeof(timearr));
-	memset(timearrbak, 0, sizeof(timearrbak));
-	timexbak = timeybak = 0;
-	memset(polyrectnbak, 0, sizeof(polyrectnbak));
-#if __MOVE_DETECT__
-	chooseDetect = 0;
-#endif
-	forwardflag = backflag = false;
-	
-	key_point1_cnt =0;
-	key_point2_cnt =0;
-	AllPoints_Num =0;
-	m_bMarkCircle = false ;
-	string_cnt1 =0;
-	string_cnt2 =0;
-	key1_pos = Point(-30,-30);
-	key2_pos = Point(-80,-80);
-	key1_backup = key1_pos;
-	key2_backup = key2_pos;
-	
-	if(!readParams("SysParm.yml")) {
-		printf("read param error\n");
-	}
-	else
-	{	
-		 vcapWH[0][0] = m_sysparm.gun_camera.raw;
-		 vcapWH[0][1] = m_sysparm.gun_camera.col;
-		 vcapWH[1][0] = m_sysparm.ball_camera.raw;
-		 vcapWH[1][1] = m_sysparm.ball_camera.col;
-
-		 vdisWH[0][0] = m_sysparm.gun_camera.raw;
-		 vdisWH[0][1] = m_sysparm.gun_camera.col;
-		 vdisWH[1][0] = m_sysparm.ball_camera.raw;
-		 vdisWH[1][1] = m_sysparm.ball_camera.col;
-		// printf("[%s]:=============================== m_sysparm.gun_camera.raw = %d \r\n",
-		// 	__FUNCTION__,m_sysparm.gun_camera.raw);
-	}
-
-	if(m_camCalibra != NULL) {
-		m_camCalibra->key_points1.clear();
-		m_camCalibra->key_points2.clear();
-	}
-
-	OSA_semCreate(&g_linkage_getPos, 1, 0);
-
 }
 
 CProcess::~CProcess()
 {
 	sThis=NULL;
 }
+
+
+void CProcess::loadIPCParam()
+{
+	//=======================================
+
+
+	//	tmpcofx = 6300;
+	//	tmpcofy = 6200;
+	//
+	//	coefficientx = (float)tmpcofx*0.001f;
+	//	coefficienty = (float)tmpcofy*0.001f;
+	//	fx = 1796.2317019134 + 10;
+	//	fy = 1795.8556284573 +55;
+	//	degperpixX = 36000/(2*CV_PI*fx);
+	//	degperpixY = 36000/(2*CV_PI*fy);
+	//	coefficientx = degperpixX*2;
+	//	coefficienty = degperpixY*2;
+	//========================================	
+		backMenuposX=0; 
+		backMenuposY =0;
+		//show_circle_pointer= false;
+		memset(rcTrackBak, 0, sizeof(rcTrackBak));
+		memset(tgBak, 0, sizeof(tgBak));
+		memset(&extOutAck, 0, sizeof(ACK_EXT));
+		memset(&extMenuCtrl, 0, sizeof(menu_param_t));
+
+		m_bakClickPoint = Point(-20,-20);
+		m_curClickPoint = Point(-30.-30);
+		
+		prisensorstatus=0;//tv
+		m_castTm=0;
+		m_bCast=false;
+		rememflag=false;
+		rememtime=0;
+		m_rectSelectPic = Rect(0,540,192,54);
+		// default cmd value
+
+		CMD_EXT *pIStuts = extInCtrl;
+
+		extMenuCtrl.osd_mudnum = 1;
+		extMenuCtrl.osd_trktime = 1;
+		extMenuCtrl.osd_maxsize = 10000;
+		extMenuCtrl.osd_minsize = 9;
+		extMenuCtrl.osd_sensi = 30;
+		extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
+		extMenuCtrl.MenuStat = -1;
+		memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
+
+		int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,3,5};
+		memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
+		for(int i = 0; i < menumaxid; i++)
+		{
+			extMenuCtrl.menuarray[i].id = i;
+			extMenuCtrl.menuarray[i].pointer = 0;
+			extMenuCtrl.menuarray[i].submenu_cnt = cnt[i];
+		}
+		
+			
+		for(int i = 0; i < MAX_CHAN; i++)
+		{
+			pIStuts->opticAxisPosX[i] = vdisWH[i][0]/2;
+			pIStuts->opticAxisPosY[i] = vdisWH[i][1]/2;
+		}
+		
+		pIStuts->unitAimW 		= 	AIM_WIDTH;
+		pIStuts->unitAimH 		= 	AIM_HEIGHT;
+		pIStuts->unitAimX		=	vdisWH[video_pal][0]/2;
+		pIStuts->unitAimY		=	vdisWH[video_pal][1]/2;
+
+		pIStuts->SensorStat 	=   MAIN_CHID;
+		pIStuts->SensorStatpri  =   pIStuts->SensorStat;
+		pIStuts->PicpSensorStatpri	=	pIStuts->PicpSensorStat = 0xFF;
+		
+		pIStuts->changeSensorFlag = 0;
+		crossBak.x = pIStuts->opticAxisPosX[pIStuts->SensorStat ];
+		crossBak.y = pIStuts->opticAxisPosY[pIStuts->SensorStat ];
+		pIStuts->AvtTrkAimSize= AVT_TRK_AIM_SIZE;
+
+		for(int i = 0; i < MAX_CHAN; i++)
+		{
+			pIStuts->AvtPosX[i] = pIStuts->AxisPosX[i] = pIStuts->opticAxisPosX[i];
+			pIStuts->AvtPosY[i] = pIStuts->AxisPosY[i] = pIStuts->opticAxisPosY[i];
+		}
+		
+		pIStuts->PicpPosStat = 0;
+		pIStuts->validChId = MAIN_CHID;
+		pIStuts->FovStat=1;
+
+		pIStuts->FrCollimation=2;
+		pIStuts->PicpSensorStatpri=2;
+		pIStuts->axisMoveStepX = 0;
+		pIStuts->axisMoveStepY = 0;
+
+		memset(secBak,0,sizeof(secBak));
+		memset(Osdflag,0,sizeof(Osdflag));
+		
+		Mmtsendtime=0;
+
+		rendpos[0].x=vdisWH[0][0]*2/3;
+		rendpos[0].y=vdisWH[0][1]*2/3;
+		rendpos[0].w=vdisWH[0][0]/3;
+		rendpos[0].h=vdisWH[0][1]/3;
+
+		rendpos[1].x=vdisWH[0][0]*2/3;
+		rendpos[1].y=0;
+		rendpos[1].w=vdisWH[0][0]/3;
+		rendpos[1].h=vdisWH[0][1]/3;
+
+		rendpos[2].x=0;
+		rendpos[2].y=0;
+		rendpos[2].w=vdisWH[0][0]/3;
+		rendpos[2].h=vdisWH[0][1]/3;
+
+		rendpos[3].x=0;
+		rendpos[3].y=vdisWH[0][1]*2/3;
+		rendpos[3].w=vdisWH[0][0]/3;
+		rendpos[3].h=vdisWH[0][1]/3;
+
+
+		msgextMenuCtrl = &extMenuCtrl;
+
+		save_flag = 0;
+		cnt_down = 10;
+
+		update_param_osd();
+
+		pIStuts->DispGrp[0] = 1;
+		pIStuts->DispGrp[1] = 1;
+		pIStuts->DispColor[0]=2;
+		pIStuts->DispColor[1]=2;
+
+		m_tempXbak = m_tempYbak = 0;
+		memset(m_rectnbak, 0, sizeof(m_rectnbak));
+		memset(mRectbak, 0, sizeof(mRectbak));
+		memset(timearr, 0, sizeof(timearr));
+		memset(timearrbak, 0, sizeof(timearrbak));
+		timexbak = timeybak = 0;
+		memset(polyrectnbak, 0, sizeof(polyrectnbak));
+#if __MOVE_DETECT__
+		chooseDetect = 0;
+#endif
+		forwardflag = backflag = false;
+		
+		key_point1_cnt =0;
+		key_point2_cnt =0;
+		AllPoints_Num =0;
+		m_bMarkCircle = false ;
+		string_cnt1 =0;
+		string_cnt2 =0;
+		key1_pos = Point(-30,-30);
+		key2_pos = Point(-80,-80);
+		key1_backup = key1_pos;
+		key2_backup = key2_pos;
+		
+		if(!readParams("SysParm.yml")) {
+			printf("read param error\n");
+		}
+		else
+		{	
+			 vcapWH[0][0] = m_sysparm.gun_camera.raw;
+			 vcapWH[0][1] = m_sysparm.gun_camera.col;
+			 vcapWH[1][0] = m_sysparm.ball_camera.raw;
+			 vcapWH[1][1] = m_sysparm.ball_camera.col;
+
+			 vdisWH[0][0] = m_sysparm.gun_camera.raw;
+			 vdisWH[0][1] = m_sysparm.gun_camera.col;
+			 vdisWH[1][0] = m_sysparm.ball_camera.raw;
+			 vdisWH[1][1] = m_sysparm.ball_camera.col;
+			// printf("[%s]:=============================== m_sysparm.gun_camera.raw = %d \r\n",
+			// 	__FUNCTION__,m_sysparm.gun_camera.raw);
+		}
+
+		if(m_camCalibra != NULL) {
+			m_camCalibra->key_points1.clear();
+			m_camCalibra->key_points2.clear();
+		}
+
+		OSA_semCreate(&g_linkage_getPos, 1, 0);
+}
+
 
 int  CProcess::WindowstoPiexlx(int x,int channel)
 {
@@ -4310,15 +4315,12 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 					tv.tv_usec = (10%1000)*1000;
 					select(0, NULL, NULL, NULL, &tv);
 				}
-
 				if(m_pMovDetector->isWait(i))
 				{
 					m_pMovDetector->mvOpen(i);	
 					dynamic_config(VP_CFG_MvDetect, 1,NULL);
-					tmpCmd.MtdState[pIStuts->SensorStat] = 1;
 				}
 			}
-
 		}
 		else
 		{
@@ -4327,8 +4329,6 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 				if(m_pMovDetector->isRun(i))
 				{
 					dynamic_config(VP_CFG_MvDetect, 0,NULL);
-					tmpCmd.MtdState[pIStuts->SensorStat] = 0;
-					//app_ctrl_setMtdStat(&tmpCmd);
 					m_pMovDetector->mvClose(i);
 					chooseDetect = i;
 				}	

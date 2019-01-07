@@ -107,6 +107,9 @@ private:
 	int m_cofx , m_cofy;
 	int backMenuposX, backMenuposY;
 	
+	Point m_curClickPoint;
+	Point m_bakClickPoint;
+	
 public:
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
@@ -119,6 +122,12 @@ public:
 	void setBallPos(int in_panPos, int in_tilPos, int in_zoom);
 	void Set_K_ByDeltaX( int delta_x);
 
+	void setClickPoint(int x, int y){
+		m_curClickPoint = Point(x, y);
+	};
+	Point getCurClickPoint(){
+		return m_curClickPoint;
+	};
 
 
 	void Init_CameraMatrix();

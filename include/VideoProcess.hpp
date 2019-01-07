@@ -136,6 +136,9 @@ public:
 	virtual void OnMouseRightUp(int x, int y){};
 	virtual void OnKeyDwn(unsigned char key){};
 	virtual void OnSpecialKeyDwn(int key,int  x,int  y){};
+
+	virtual void setClickPoint(int x, int y){};
+	virtual Point getCurClickPoint(){};
 	
 	virtual void Event_click2Move(int x, int y){};
 	virtual void reMapCoords(int x, int y,bool mode){ };

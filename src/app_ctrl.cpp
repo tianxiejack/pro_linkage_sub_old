@@ -476,7 +476,9 @@ void app_ctrl_setDispColor(CMD_EXT * pInCmd )
 		    pIStuts->DispColor[1] = pInCmd->DispColor[1]; 
 		}
 	}
+	
    return ;
+   
 }
 
 
@@ -754,13 +756,13 @@ void app_ctrl_enter()
 		else if(1 == pMenuStatus->menuarray[submenu_carli].pointer) {
 			g_displayMode = MENU_CALIBRA_CAP;
 			g_connectAction.CurCalibraCam = CAM_1;
-			showDetectCorners = true;
+			//showDetectCorners = true;
 			//cout <<"@@@@@@@@@@@@@@@@@@@@@@@@@@ == 1" << endl;
 		}
 		else if(0 == pMenuStatus->menuarray[submenu_carli].pointer) {
 			g_displayMode = MENU_CALIBRA_CAP;
 			g_connectAction.CurCalibraCam = CAM_0;
-			showDetectCorners = true;
+			//showDetectCorners = true;
 			//cout <<"@@@@@@@@@@@@@@@@@@@@@@@@@@ == 0" << endl;
 		}
 		else

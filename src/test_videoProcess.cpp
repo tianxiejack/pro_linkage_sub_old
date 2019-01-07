@@ -13,13 +13,17 @@
 #include <time.h> 
 #include <signal.h>
 
+
 using namespace std;
 using namespace cv;
+
+CProcess *proc;
 
 bool startEnable = false;
 
 volatile bool cloneOneFrame = false;
-uint32 count1=0,count2,count3,count4,count5;
+
+uint32 count1=0;
 static void timer_op(int signum)
 {   
    if( count1 == 60){
@@ -44,24 +48,34 @@ int timer_init(void)
 int main(int argc, char **argv)
 {
 	struct timeval tv;
+	
 	tv.tv_sec = 0;
+	
 	tv.tv_usec = 50000;
+	
 	MSGDRIV_create();
+	
 #ifdef __IPC__
 	Ipc_pthread_start();
 #endif
+
+
 	while(false == startEnable)
 	{
 		select( 0, NULL, NULL, NULL, &tv );
 	};
 
 	timer_init();
-	CProcess proc;
-	proc.creat();
-	proc.init();
-	proc.run();
+	
+	proc = new CProcess;
+	proc->creat();
+	proc->init();
+	proc->run();
+	
 	glutMainLoop();
-	proc.destroy();
+	
+	proc->destroy();
+	
 #ifdef __IPC__
 	Ipc_pthread_stop();
 #endif

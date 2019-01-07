@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+int capIndex =0;
 int gun_resolu[2] = {1920, 1080};
 extern bool show_circle_pointer;
 extern MenuDisplay g_displayMode;
@@ -3360,6 +3361,9 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		case 6:
 			imageListForCalibra.clear();
 			captureCount = 0;
+			break;
+		case 7:
+			capIndex = (capIndex+1) %2;
 			break;
 		case SPECIAL_KEY_DOWN:
 			app_ctrl_downMenu();

@@ -10,6 +10,7 @@
 #include <vector>
 using namespace vmath;
 
+extern int capIndex;
 extern UI_CONNECT_ACTION g_connectAction;
 bool showDetectCorners = false;
 SelectMode mouse_workmode = DrawRectangle_Mode;
@@ -1950,13 +1951,17 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 				}
 			}
 /********************************************************************************************/
-#if 0
-	if( (chId == m_display.getCapBMPChannel() ) && (captureOnePicture == true)/*(m_display.savePic_once == true)*/ ){
+#if 1
+	if( (chId == capIndex/*m_display.getCapBMPChannel()*/ ) &&/* (captureOnePicture == true)*/(m_display.savePic_once == true) ){
 			m_display.savePic_once = false;
-			captureOnePicture = false;
-		//	memset(m_display.savePicName, 0, 20);
-			//sprintf(m_display.savePicName,"%02d.bmp",saveCount);
-			//saveCount ++;
+			//captureOnePicture = false;
+			memset(m_display.savePicName, 0, 20);
+			sprintf(m_display.savePicName,"%02d.bmp",saveCount);
+			saveCount ++;
+			Mat Dst(1080,1920,CV_8UC3);
+			cvtColor(frame,Dst,CV_YUV2BGR_YUYV);
+			imwrite(m_display.savePicName,Dst);
+			#if 0
 			int nsize = imageListForCalibra.size();
 			if(nsize<50){
 				m_cutIMG[nsize] = cv::Mat(frame.rows,frame.cols,CV_8UC3);
@@ -1964,6 +1969,7 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 				imageListForCalibra.push_back(m_cutIMG[nsize]);				
 				m_display.SetCutDisplay(nsize, true);
 			}
+			#endif
 	}
 #endif
 

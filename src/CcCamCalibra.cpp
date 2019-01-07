@@ -1133,7 +1133,7 @@ int DetectCorners::Run()
 					memset(savePicname, 0, sizeof(savePicname));
 					sprintf(savePicname, "%02d.bmp",saveCount);					
 					saveCount ++;
-					imwrite(savePicname,corner_frame);
+					//imwrite(savePicname,corner_frame);
 		
 	//				m_cutIMG[nsize] = cv::Mat(corner_frame.rows,corner_frame.cols,CV_8UC3);
 	//				cvtColor(corner_frame,m_cutIMG[nsize],CV_YUV2BGR_YUYV);

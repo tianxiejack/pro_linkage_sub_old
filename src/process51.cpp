@@ -4758,6 +4758,7 @@ int CProcess::usopencvapi2()
 	
 	Mat mask = Mat::zeros(gun_resolu[1], gun_resolu[0], CV_8UC1);
 	Rect rect;
+	int flag = 0;
 
 	for(int i = 0; i < GRID_CNT_X; i++)
 		for(int j = 0; j < GRID_CNT_Y; j++)
@@ -4769,9 +4770,13 @@ int CProcess::usopencvapi2()
 				rect.width = interval_w;
 				rect.height = interval_h;
 				mask(rect).setTo(255);
+				flag = 1;
 			}
 		}
 
+	if(flag == 0)
+		return -1;
+	
 	for(int i = 1; i < GRID_CNT_X; i++)
 		for(int j = 1; j < GRID_CNT_Y; j++)
 			{

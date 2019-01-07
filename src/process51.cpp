@@ -4315,15 +4315,12 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 					tv.tv_usec = (10%1000)*1000;
 					select(0, NULL, NULL, NULL, &tv);
 				}
-
 				if(m_pMovDetector->isWait(i))
 				{
 					m_pMovDetector->mvOpen(i);	
 					dynamic_config(VP_CFG_MvDetect, 1,NULL);
-					tmpCmd.MtdState[pIStuts->SensorStat] = 1;
 				}
 			}
-
 		}
 		else
 		{
@@ -4332,8 +4329,6 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 				if(m_pMovDetector->isRun(i))
 				{
 					dynamic_config(VP_CFG_MvDetect, 0,NULL);
-					tmpCmd.MtdState[pIStuts->SensorStat] = 0;
-					//app_ctrl_setMtdStat(&tmpCmd);
 					m_pMovDetector->mvClose(i);
 					chooseDetect = i;
 				}	

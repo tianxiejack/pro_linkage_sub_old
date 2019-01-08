@@ -2660,7 +2660,7 @@ void CProcess::QueryCurBallCamPosition()
 	SENDST trkmsg={0};
 	trkmsg.cmd_ID = querypos;
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-	flag = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/200);
+	flag = OSA_semWait(&g_linkage_getPos, OSA_TIMEOUT_FOREVER/*200*/);
 	if( -1 == flag ) {		
 		printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );
 	}
@@ -2804,7 +2804,7 @@ void CProcess::Event_click2Move(int x, int y)
 	zoomPos = 2849;   // Min  Zoom 
 	int ZoomMax = 65535;
 	int ZoomMin = 2849;
-	offset_x = 0;
+	offset_x = 480;
 	offset_y = 0;
 	point_X = ( x-offset_x ) ;
 	point_Y = ( y-offset_y ) ;
@@ -2815,24 +2815,25 @@ void CProcess::Event_click2Move(int x, int y)
 
 	int  inputX = opt.x;
 	int  inputY = opt.y;
-	//int  tmpcofx = 6300;
-	//int  tmpcofy = 6200;
+	int  tmpcofx = 6300;
+	int  tmpcofy = 6200;
 
-	inputX -= 474;//480;    /* 474 is from 948/2 , and 948 is from the camera intrinsic matrix: "Ox", same as  "Uo"*/
-	inputY -= 276;//270; 	/* 276 is from 552/2 , and 552 is from the camera intrinsic matrix: "Oy", same as  "Vo"*/
+	inputX -=480;		// 474;   
+	inputY -= 270;		//276; 	
 
-	//float coefficientx = (float)tmpcofx*0.001f;
-	//float coefficienty = (float)tmpcofy*0.001f;
+	float coefficientx = (float)tmpcofx*0.001f;
+	float coefficienty = (float)tmpcofy*0.001f;
+	#if 0
 	float fx = 1796.2317019134 + 10;
 	float fy = 1795.8556284573 +55;
 	float degperpixX = 36000/(2*CV_PI*fx);
 	float degperpixY = 36000/(2*CV_PI*fy);
-	float coefficientx = degperpixX*2;// * (ZoomMax / ZoomMin);
-	float coefficienty = degperpixY*2;// *(ZoomMax / ZoomMin);
+	float coefficientx = degperpixX*2;
+	float coefficienty = degperpixY*2;
+	#endif
+	
 
-	//float tmpficientx = 1.0;
-
-	inputX = (int)((float)inputX * coefficientx );//* tmpficientx);
+	inputX = (int)((float)inputX * coefficientx );
 	inputY = (int)((float)inputY * coefficienty);
 
 	QueryCurBallCamPosition();	//  Query Current Ball " Pano, Tilt, Zoom "  Value

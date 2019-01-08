@@ -8,7 +8,7 @@
 #define AIM_HEIGHT				64
 
 #define AVT_TRK_AIM_SIZE			2
-#define MAX_MTDRIGION_NUM 		3
+#define MAX_MTDRIGION_NUM 		1
 #define MIN_MTDTARGET_NUM		1
 #define MAX_MTDTARGET_NUM		10
 #define MIN_MTDTRKTIME		1

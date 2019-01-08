@@ -116,7 +116,11 @@ public:
 	bool writeParams(const char* file);
 	void reMapCoords(int x, int y , bool mode);
 	void ClickGunMove2Ball(int x, int y,bool mode);
-
+	
+	void CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords);
+	
+	void TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom);
+	
 	void Event_click2Move(int x, int y);
 	void moveToDest( );
 	void QueryCurBallCamPosition();

@@ -2646,34 +2646,23 @@ void CProcess::Set_K_ByDeltaX( int delta_x)
 
 void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 {
-//printf("[%s] : ==============>>>Enter ! \r\n", __FUNCTION__);
-
 	panPos = in_panPos ;
 	tiltPos = in_tilPos ;
 	zoomPos = in_zoom ;
 	//OSA_semSignal(&g_linkage_getPos);
-//printf("[%s] : ==============<<< Exit ! \r\n", __FUNCTION__);
-
 }
 
 void CProcess::QueryCurBallCamPosition()
 {
-//printf("[%s] : ==============>>>Enter ! \r\n",__FUNCTION__);
-	char flag =0;
-	
-	
+	char flag =0;	
 	SENDST trkmsg={0};
 	trkmsg.cmd_ID = querypos;
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-	
-
 	flag = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/200);
-	if( -1 == flag ) 
-	{		
+	if( -1 == flag ) {		
 		printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );
 	}
-	else
-	{		
+	else	{		
 		setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);
 		memset(&linkagePos,0, sizeof(LinkagePos_t));
 	#if 0
@@ -2684,20 +2673,14 @@ void CProcess::QueryCurBallCamPosition()
 		cout << "*****************************************************************\n\n" << endl;
 	#endif
 	}
-	//printf("[%s] : ==============<<< Exit ! \r\n", __FUNCTION__);
-
 }
 
 void CProcess::moveToDest( )
 {
-printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
-
 	static int static_cofx = 6320;
 	static int static_cofy = 6200;
-
 	int point_X , point_Y , offset_x , offset_y,zoomPos; 
 	int delta_X ;	
-
 	switch(m_display.g_CurDisplayMode) 
 	{
 		case PREVIEW_MODE:
@@ -2810,7 +2793,6 @@ printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 		
 	//printf("[%s]: ======>>> Send Set PTZ ( DestPanoPos : %d, DesTilPos: %d, DesZoom: %d )\r\n", __FUNCTION__,
 										//	DesPanPos , DesTilPos , zoomPos );
-printf("\r\n[%s]===Exit >> \r\n",__FUNCTION__);
 
 }
 
@@ -3030,52 +3012,11 @@ printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
 
 #endif
 //==========================================================================
-
-void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
+void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 {
-	int point_X , point_Y , offset_x , offset_y,	zoomPos; 
-	int delta_X ;
-	Point opt;
-
-	offset_x = 0;
-	offset_y = 540;
-	point_X = ( x-offset_x ) ;
-	point_Y = ( y-offset_y ) *2;
-
-	opt = Point( point_X ,  point_Y );	
-
-//================================================
-	std::vector<cv::Point2d> distorted, normalizedUndistorted;
-	distorted.push_back(cv::Point2d(opt.x, opt.y));
-	undistortPoints(distorted,normalizedUndistorted,g_camParams.cameraMatrix_gun,g_camParams.distCoeffs_gun);
-	std::vector<cv::Point3d> objectPoints;
-
-	for (std::vector<cv::Point2d>::const_iterator itPnt = normalizedUndistorted.begin();
-	itPnt != normalizedUndistorted.end(); ++itPnt)
-	{
-		objectPoints.push_back(cv::Point3d(itPnt->x, itPnt->y, 1));
-	}
-	std::vector<cv::Point2d> imagePoints(objectPoints.size());
-	projectPoints(objectPoints, cv::Vec3d(0,0,0),cv::Vec3d(0,0,0),g_camParams.cameraMatrix_ball,cv::Mat(),imagePoints);
-	std::vector<cv::Point2d> ballImagePoints(imagePoints.size());
-	perspectiveTransform(imagePoints, ballImagePoints, g_camParams.homography);
-	std::vector<cv::Point2d>::iterator itp = imagePoints.begin();
-	cv::Point2d pt = *itp;
-	Point upt( pt.x, pt.y );			
-	itp = ballImagePoints.begin();
-	pt = *itp;
-
-	 pt.x /= 2.0;	//+ 960;
-	 pt.y /= 2.0;
-	 
-	Point bpt( pt.x, pt.y );
-	
-//================================================
-
-	int DesPanPos, DesTilPos ;	
-
-	int  inputX = bpt.x;
-	int  inputY = bpt.y;
+	int DesPanPos, DesTilPos , zoomPos;	
+	int  inputX = X ;//bpt.x;
+	int  inputY = Y ;//bpt.y;
 	
 	//int  tmpcofx = 6300;
 	//int  tmpcofy = 6200;
@@ -3155,7 +3096,9 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 		if(DesTilPos > 8900)
 			DesTilPos = 8900;
 	}
-	if(1)
+	
+	zoomPos = 2849;
+	if(needChangeZoom)
 	{
 		trkmsg.cmd_ID = acqPosAndZoom;
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
@@ -3169,11 +3112,54 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
 	}
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
-
+}
+void CProcess::CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords)
+{
+		Point opt = imgCoords;
+		std::vector<cv::Point2d> distorted, normalizedUndistorted;
+		distorted.push_back(cv::Point2d(opt.x, opt.y));
+		undistortPoints(distorted,normalizedUndistorted,g_camParams.cameraMatrix_gun,g_camParams.distCoeffs_gun);
+		std::vector<cv::Point3d> objectPoints;
+	
+		for (std::vector<cv::Point2d>::const_iterator itPnt = normalizedUndistorted.begin();
+		itPnt != normalizedUndistorted.end(); ++itPnt)
+		{
+			objectPoints.push_back(cv::Point3d(itPnt->x, itPnt->y, 1));
+		}
+		std::vector<cv::Point2d> imagePoints(objectPoints.size());
+		projectPoints(objectPoints, cv::Vec3d(0,0,0),cv::Vec3d(0,0,0),g_camParams.cameraMatrix_ball,cv::Mat(),imagePoints);
+		std::vector<cv::Point2d> ballImagePoints(imagePoints.size());
+		perspectiveTransform(imagePoints, ballImagePoints, g_camParams.homography);
+		std::vector<cv::Point2d>::iterator itp = imagePoints.begin();
+		cv::Point2d pt = *itp;
+		Point upt( pt.x, pt.y );			
+		itp = ballImagePoints.begin();
+		pt = *itp;
+		pt.x /= 2.0;	//+ 960;
+	 	pt.y /= 2.0;	 
+		camCoords = Point( pt.x, pt.y );
+		return ;
 }
 
 
-//==========================================================================
+void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
+{
+	int point_X , point_Y , offset_x , offset_y,	zoomPos; 
+	int delta_X ;
+
+	Point imgCoords , camCoords;
+
+	offset_x = 0;
+	offset_y = 540;
+	point_X = ( x-offset_x ) ;
+	point_Y = ( y-offset_y ) *2;
+
+		
+	imgCoords = Point( point_X ,  point_Y );	
+
+	CvtImgCoords2CamCoords(imgCoords, camCoords);
+	TransformPixByOriginPoints(camCoords.x, camCoords.y, true);
+}
 void CProcess::reMapCoords(int x, int y,bool mode)
 {	
 	int point_X , point_Y , offset_x , offset_y,zoomPos; 
@@ -3230,7 +3216,7 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 		default:
 			break;
 	}
-
+#if 0
 	std::vector<cv::Point2d> distorted, normalizedUndistorted;
 	distorted.push_back(cv::Point2d(opt.x, opt.y));
 	undistortPoints(distorted,normalizedUndistorted,g_camParams.cameraMatrix_gun,g_camParams.distCoeffs_gun);
@@ -3253,9 +3239,11 @@ void CProcess::reMapCoords(int x, int y,bool mode)
 
 	 pt.x /= 2.0;	//+ 960;
 	 pt.y /= 2.0;
+#endif
+	Point bpt;
 
-	
-    	Point bpt( pt.x, pt.y );
+	CvtImgCoords2CamCoords(opt, bpt);
+    	//Point bpt( pt.x, pt.y );
 		
 
 	//dest_ballPoint.x = bpt.x ;

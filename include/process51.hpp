@@ -121,6 +121,7 @@ public:
 	
 	void TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom);
 	
+	void SetDestPosScope(int &inputX, int &inputY, int &Origin_PanPos, int &Origin_TilPos,int &DesPanPos, int &DesTilPos);
 	void Event_click2Move(int x, int y);
 	void moveToDest( );
 	void QueryCurBallCamPosition();

@@ -183,6 +183,7 @@ typedef struct _ds_init_param{
 		CALIBRATE_CAPTURE,  // get camera intrinsic matrix, and save picture of patterns
 		CALIBRATE_RESULT, // display camera calibrate result and average error  
 		MATCH_POINT_VIEW,
+		TEST_RESULT_VIEW,
 		
 		TOTAL_MODE_COUNT
 	}DISPLAYMODE;

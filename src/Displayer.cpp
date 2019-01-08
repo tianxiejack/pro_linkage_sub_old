@@ -30,6 +30,7 @@
 #include "freetype.hpp"
 using namespace CELL;
 
+extern SelectMode mouse_workmode;
 extern int captureCount;
 UI_CONNECT_ACTION g_connectAction;
 extern vector<Mat> imageListForCalibra;
@@ -3395,6 +3396,20 @@ void CDisplayer::gl_display(void)
 		chinese_osd(100,400,L"已保存图片:",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 		chinese_osd(280,400,L"张",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 
+	}
+
+	switch(mouse_workmode){
+		case Click_Mode:
+			chinese_osd(10,550,L"*",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		case DrawRectangle_Mode:
+			chinese_osd(10,550,L"-",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		case SetMteRigion_Mode:
+			chinese_osd(10,550,L"=",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		default:
+			break;
 	}
 
 /******************************************************************************************************************************/

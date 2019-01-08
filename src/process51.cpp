@@ -2013,7 +2013,7 @@ osdindex++;	//cross aim
 	}
 #endif
 
-	
+	if(mouse_workmode == Click_Mode)
 	{
 		recIn.x=m_bakClickPoint.x;
  		recIn.y=m_bakClickPoint.y;
@@ -2024,18 +2024,24 @@ osdindex++;	//cross aim
 		osdindex++;
 			
 		m_bakClickPoint = getCurClickPoint();
-
 		recIn.x=m_bakClickPoint.x;
  		recIn.y=m_bakClickPoint.y;
 		recIn.width = 60;
 		recIn.height = 60;
 		DrawCross(recIn,frcolor,1,true);
 		Osdflag[osdindex]=1;	
+		
 	}
-
-
-
-
+	else{
+		recIn.x=m_bakClickPoint.x;
+ 		recIn.y=m_bakClickPoint.y;
+		recIn.width = 60;
+		recIn.height = 60;
+		DrawCross(recIn,frcolor,1,false);
+		Osdflag[osdindex]=1;	
+		osdindex++;
+		
+	}
 {
 #if 0
 	sprintf(Bak_CString,"%s","=>");

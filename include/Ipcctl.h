@@ -76,6 +76,7 @@ typedef enum
     mtdFrame,
     ballbaud,
     sceneTrk,
+    ipcjoyevent,
     invalid
 }CMD_ID;
 
@@ -270,6 +271,16 @@ typedef enum ipc_Dram_saveMode
 	ipc_eSave_Enable        = 0x01,
 	ipc_eSave_Cancel        = 0x02,
 } ipc_eSaveMode;
+
+typedef enum {
+	IPC_JS_EVENT_BUTTON = 1,
+	IPC_JS_EVENT_AXIS = 2,
+}JOY_EVENT_TYPE;
+
+typedef enum{
+	IPC_MSGID_INPUT_AXISX = 0,
+	IPC_MSGID_INPUT_AXISY = 1,
+}JOY_EVENT_AXIS_NUMBER;
 
 typedef struct{
 	char *name;
@@ -469,6 +480,12 @@ typedef struct{
 	volatile unsigned char field;
 	volatile float value;
 }CMD_SETCONFIG;
+
+typedef struct{
+    signed short value;
+    unsigned char type;
+    unsigned char number;
+}CMD_JOY_EVENT;
 
 typedef struct{
     unsigned char cmd_ID;

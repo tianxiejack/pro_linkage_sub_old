@@ -215,6 +215,7 @@ void CProcess::loadIPCParam()
 		memset(timearrbak, 0, sizeof(timearrbak));
 		timexbak = timeybak = 0;
 		memset(polyrectnbak, 0, sizeof(polyrectnbak));
+		
 #if __MOVE_DETECT__
 		chooseDetect = 0;
 #endif
@@ -2229,13 +2230,55 @@ unsigned int drawpolyRectId ;
 		}
 	}
 
+//virtual joystick
+	DrawJoys();
+
 	static unsigned int count = 0;
 	if((count & 1) == 1)
 		OSA_semSignal(&(sThis->m_display.tskdisSemmain));
 	count++;
 	return true;
 }
+
+void CProcess::DrawJoys()
+{
+	Mat frame = m_display.m_imgOsd[1];
+	int jradius = get_joyradius();
+	int jradius_s = 10;
+	cv::Point jcenter = get_joycenter();
+	int thickness = 2;
 	
+	Line_Param_fb lineparm;
+	lineparm.x = jcenter.x;
+	lineparm.y = jcenter.y;
+	lineparm.width = jradius*2;
+	int dashlen = 2;
+
+	static cv::Point jcenter_s_bak;
+	static int jradius_s_bak;
+
+	lineparm.frcolor = 0;
+	DrawCircle(frame, jcenter_s_bak, jradius_s_bak, lineparm.frcolor, thickness);
+	DrawCircle(frame, jcenter, jradius, lineparm.frcolor, thickness);
+	DrawcvDashcross(frame, &lineparm, dashlen, dashlen);
+	
+	if(m_display.displayMode == MAIN_VIEW)
+	{		
+		jcenter_s_bak = jcenter_s;
+		jradius_s_bak= jradius_s;
+		lineparm.frcolor = 7;
+		DrawCircle(frame, jcenter_s_bak, jradius_s_bak, lineparm.frcolor, thickness);
+		DrawCircle(frame, jcenter, jradius, lineparm.frcolor, thickness);
+		DrawcvDashcross(frame, &lineparm, dashlen, dashlen);
+	}
+}
+
+void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness)
+{
+	CvScalar colour1=GetcvColour(colour);
+	cv::circle(frame, center, radius ,colour1, thickness, 8, 0);
+}
+
 void CProcess::DrawMtdYellowGrid(int flag)
 {
 	unsigned int drawmtdgridId; 

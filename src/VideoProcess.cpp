@@ -437,6 +437,9 @@ CVideoProcess::CVideoProcess()
 	m_click_v20L = m_click_v20R = 0;
 	memset(&mRectv20L, 0, sizeof(mRectv20L));
 	memset(&mRectv20R, 0, sizeof(mRectv20R));
+
+	jcenter_s = get_joycenter();
+	joys_click = 0;
 }
 
 CVideoProcess::~CVideoProcess()
@@ -1053,12 +1056,28 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
-	if(mouse_workmode == Click_Mode && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+	if((pThis->m_display.g_CurDisplayMode == MAIN_VIEW) && (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) && pThis->InJoys(x,y))
+	{
+		pThis->joys_click = 1;
+		cv::Point tmp = cv::Point(x, y);
+		pThis->mapout2inresol(&tmp);
+		pThis->jcenter_s = tmp;
+		pThis->sendjoyevent(tmp);
+
+	}
+	else if((pThis->m_display.g_CurDisplayMode == MAIN_VIEW) && (button == GLUT_LEFT_BUTTON && state == GLUT_UP) && pThis->InJoys(x,y) && pThis->joys_click)
+	{
+		pThis->joys_click = 0;
+		pThis->jcenter_s = pThis->get_joycenter();
+		//pThis->sendjoyevent(pThis->jcenter_s);
+	}
+
+	else if(mouse_workmode == Click_Mode && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		
 		pThis->setClickPoint(x,y);
 	}
 	
-	if(mouse_workmode == SetMteRigion_Mode)
+	else if(mouse_workmode == SetMteRigion_Mode)
 	{
 		if(pThis->setrigion_flagv20)
 		{
@@ -1409,6 +1428,13 @@ void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
 void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 {
 	//printf("mousemotion_event start, x,y(%d,%d)\n", xMouse, yMouse);
+	if((pThis->m_display.g_CurDisplayMode == MAIN_VIEW) && pThis->InJoys(xMouse,yMouse) && pThis->joys_click)
+	{
+		cv::Point tmp = cv::Point(xMouse, yMouse);
+		pThis->mapout2inresol(&tmp);
+		pThis->jcenter_s = tmp;
+		pThis->sendjoyevent(tmp);
+	}
 }
 
 
@@ -1451,6 +1477,84 @@ void CVideoProcess::processrigionpolygonMenu(int value)
 {
 	//printf("%s start, value=%d\n", __FUNCTION__, value);
 	pThis->setrigon_polygon = 1;
+}
+
+int CVideoProcess::InJoys(int x, int y)
+{
+	int tmpx = x;
+	int tmpy = y;
+	cv::Point tmp = cv::Point(x, y);
+	int jradius = get_joyradius();
+	cv::Point jcenter = get_joycenter();
+
+	mapout2inresol(&tmp);
+	tmp.x = abs(tmp.x - jcenter.x);
+	tmp.y = abs(tmp.y - jcenter.y);
+	if(sqrt(tmp.x * tmp.x + tmp.y * tmp.y) <= jradius)
+	{
+		printf("%s,%d,int joy\n", __FILE__,__LINE__);
+		return 1;
+	}
+	else
+	{
+		printf("%s,%d, not in joy\n", __FILE__,__LINE__);
+		return 0;
+	}
+}
+
+void CVideoProcess::mapout2inresol(cv::Point *tmppoint)
+{
+	int outputWHF_bak[3];
+	memcpy(&outputWHF_bak, &outputWHF, sizeof(outputWHF_bak));
+	tmppoint->x = tmppoint->x * vdisWH[1][0] / outputWHF_bak[0];
+	tmppoint->y = tmppoint->y * vdisWH[1][1] / outputWHF_bak[1];	
+}
+
+void CVideoProcess::sendjoyevent(cv::Point tmppoint)
+{
+	SENDST test;
+	test.cmd_ID = ipcjoyevent;
+
+	mapcapresol2joy(&tmppoint);
+		
+	CMD_JOY_EVENT cmd_joyevent;
+	cmd_joyevent.type = IPC_JS_EVENT_AXIS;
+
+	if(tmppoint.x)
+	{
+		cmd_joyevent.number = IPC_MSGID_INPUT_AXISX;
+		cmd_joyevent.value = tmppoint.x;
+		memcpy(test.param, &cmd_joyevent, sizeof(cmd_joyevent));
+		ipc_sendmsg(&test, IPC_FRIMG_MSG);
+	}
+
+	if(tmppoint.y)
+	{
+		cmd_joyevent.number = IPC_MSGID_INPUT_AXISY;
+		cmd_joyevent.value = tmppoint.y;
+		memcpy(test.param, &cmd_joyevent, sizeof(cmd_joyevent));
+		ipc_sendmsg(&test, IPC_FRIMG_MSG);
+	}
+}
+
+void CVideoProcess::mapcapresol2joy(cv::Point *tmppoint)
+{
+	int jradius = get_joyradius();
+	cv::Point jcenter = get_joycenter();
+	int ratio = 32767 / jradius;
+
+	tmppoint->x = (tmppoint->x - jcenter.x) * ratio;
+	tmppoint->y = (tmppoint->y - jcenter.y) * ratio;
+}
+
+int CVideoProcess::get_joyradius()
+{
+	return vdisWH[0][1]/8;
+}
+
+cv::Point CVideoProcess::get_joycenter()
+{
+	return cv::Point(vdisWH[0][0]/8, vdisWH[0][1]/2 - vdisWH[0][0]/8);
 }
 
 #if __MOVE_DETECT__

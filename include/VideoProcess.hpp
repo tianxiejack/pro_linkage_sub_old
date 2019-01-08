@@ -263,6 +263,13 @@ protected:
 	static void processrigionMenu(int value);
 	static void processrigionselMenu(int value);
 	static void processrigionpolygonMenu(int value);
+	int InJoys(int x, int y);
+	void mapout2inresol(cv::Point *tmppoint);
+	void sendjoyevent(cv::Point tmppoint);
+	void mapcapresol2joy(cv::Point *tmppoint);
+	int get_joyradius();
+	cv::Point get_joycenter();
+		
 #if __MOVE_DETECT__
 	static void processmaxnumMenu(int value);
 	static void processmaxtargetsizeMenu(int value);
@@ -348,6 +355,8 @@ public:
 		int mtdcnt;
 		std::vector< std::vector< cv::Point > > edge_contours;
 		std::vector< std::vector< cv::Point > > edge_contours_bak;
+		cv::Point jcenter_s;
+		int joys_click;
 #endif
 
 

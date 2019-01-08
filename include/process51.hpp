@@ -163,6 +163,8 @@ public:
 	void OnSpecialKeyDwn(int key,int x, int y);
 	void DrawMtdYellowGrid(int flag);
 	void DrawMtdRedGrid(int flag);
+	void DrawJoys();
+	void DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness);
 	
 	CMD_EXT* extInCtrl;
 	menu_param_t extMenuCtrl;

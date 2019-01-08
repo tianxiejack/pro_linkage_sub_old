@@ -27,6 +27,9 @@
 		case 6:
 			return cvScalar(0,255,0,255);
 			break;
+		case 7:
+			return cvScalar(250,255,200,255);
+			break;
 		default:
 			return cvScalar(255,255,255,255);
 			break;

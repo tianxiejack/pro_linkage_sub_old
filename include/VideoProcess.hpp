@@ -141,7 +141,7 @@ public:
 	virtual Point getCurClickPoint(){};
 	
 	virtual void Event_click2Move(int x, int y){};
-	virtual void reMapCoords(int x, int y,bool mode){ };
+	virtual void reMapCoords(int x, int y,bool needChangeZoom){ };
 	virtual void ClickGunMove2Ball(int x, int y,bool mode){ };
 
 	virtual void moveToDest( ){ };

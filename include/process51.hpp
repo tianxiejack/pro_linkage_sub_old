@@ -114,7 +114,7 @@ public:
 	void loadIPCParam();
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
-	void reMapCoords(int x, int y , bool mode);
+	void reMapCoords(int x, int y,bool needChangeZoom);
 	void ClickGunMove2Ball(int x, int y,bool mode);
 	
 	void CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords);

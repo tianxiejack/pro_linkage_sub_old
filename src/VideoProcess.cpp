@@ -1385,10 +1385,9 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 	}
 	else  /*  click on gun image , ball camera move*/
 	{
-		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-		{
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)  {
 			if(y > 0 && y< 540) {
-				pThis->Event_click2Move(x - 480, y);
+				pThis->Event_click2Move(x , y);
 			}
 			else{
 				pThis->ClickGunMove2Ball(x,y,false);

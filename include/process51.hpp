@@ -114,13 +114,14 @@ public:
 	void loadIPCParam();
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
-	void reMapCoords(int x, int y , bool mode);
+	void reMapCoords(int x, int y,bool needChangeZoom);
 	void ClickGunMove2Ball(int x, int y,bool mode);
 	
 	void CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords);
 	
 	void TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom);
 	
+	void SetDestPosScope(int &inputX, int &inputY, int &Origin_PanPos, int &Origin_TilPos,int &DesPanPos, int &DesTilPos);
 	void Event_click2Move(int x, int y);
 	void moveToDest( );
 	void QueryCurBallCamPosition();

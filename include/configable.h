@@ -239,6 +239,7 @@ typedef enum _MenuDisplay{
 	MENU_CALIBRA_CAP,
 	MENU_CALIBRA_RESULT,
 	MENU_MATCH_POINT_VIEW,
+	MENU_TEST_RESULT_VIEW,
 	MENU_DISPLAY_COUNT		
 }MenuDisplay;
 typedef enum _GB_WorkMode{

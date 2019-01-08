@@ -30,6 +30,7 @@
 #include "freetype.hpp"
 using namespace CELL;
 
+extern SelectMode mouse_workmode;
 extern int captureCount;
 UI_CONNECT_ACTION g_connectAction;
 extern vector<Mat> imageListForCalibra;
@@ -3187,7 +3188,8 @@ void CDisplayer::linkageSwitchMode(void)
 {
 	int winId, chId;
 	unsigned int mask = 0;
-	switch( g_displayMode ){
+	switch( g_displayMode )
+	{
 		case MENU_MAIN_VIEW:
 			displayMode = MAIN_VIEW;
 			break;
@@ -3209,6 +3211,9 @@ void CDisplayer::linkageSwitchMode(void)
 		case MENU_MATCH_POINT_VIEW:
 			displayMode = MATCH_POINT_VIEW;
 			break;
+		case MENU_TEST_RESULT_VIEW:
+			displayMode = TEST_RESULT_VIEW;
+			break;
 		default:
 			break;
 	}
@@ -3227,9 +3232,7 @@ void CDisplayer::linkageSwitchMode(void)
 		case MAIN_VIEW:	
 		
 			RenderVideoOnOrthoView(VIDEO_1,outputWHF[0]/4,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
-			RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]/2);
-			
-	
+			RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]/2);	
 			if( g_CurDisplayMode != MAIN_VIEW)
 				g_CurDisplayMode = MAIN_VIEW;			
 			break;
@@ -3264,6 +3267,10 @@ void CDisplayer::linkageSwitchMode(void)
 		case MATCH_POINT_VIEW:			
 			RenderWarpImageView(0,0, vdisWH[0][0]/2, vdisWH[0][1]/2);
 			RenderMatchPointsImageView(0,540, vdisWH[0][0], vdisWH[0][1]/2);
+			break;
+		case TEST_RESULT_VIEW:			
+			RenderVideoOnOrthoView(VIDEO_1, 0,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
+			RenderVideoOnOrthoView(VIDEO_0, outputWHF[0]/2,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);	
 			break;
 		default:
 			break;	
@@ -3389,6 +3396,20 @@ void CDisplayer::gl_display(void)
 		chinese_osd(100,400,L"已保存图片:",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 		chinese_osd(280,400,L"张",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 
+	}
+
+	switch(mouse_workmode){
+		case Click_Mode:
+			chinese_osd(10,550,L"*",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		case DrawRectangle_Mode:
+			chinese_osd(10,550,L"-",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		case SetMteRigion_Mode:
+			chinese_osd(10,550,L"=",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		default:
+			break;
 	}
 
 /******************************************************************************************************************************/

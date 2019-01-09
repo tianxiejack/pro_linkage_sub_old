@@ -1088,14 +1088,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			curId = pThis->m_curChId;
 		}
 	
-		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
-		{
-			pThis->OnMouseLeftUp(x, y);
-		}
 		if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP)
 		{
-			//pThis->OnMouseRightUp(x,  y);
-
 			run_Mode._mouseDown = CELL::int2(x,y);
 		 	ArrayText::iterator itr = run_Mode._texts.begin();
 		 	for(; itr != run_Mode._texts.end(); ++itr){

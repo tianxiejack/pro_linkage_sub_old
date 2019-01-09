@@ -3299,9 +3299,6 @@ void CProcess::OnMouseLeftDwn(int x, int y)
 		manualHandleKeyPoints(x,y);		
 	}	
 };
-void CProcess::OnMouseLeftUp(int x, int y){ };
-void CProcess::OnMouseRightDwn(int x, int y){};
-void CProcess::OnMouseRightUp(int x, int y){};
 void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 {
 	switch( key ) {

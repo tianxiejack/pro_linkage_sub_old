@@ -157,9 +157,6 @@ public:
 	bool OnPreProcess(int chId, Mat &frame);
 	bool OnProcess(int chId, Mat &frame);
 	void OnMouseLeftDwn(int x, int y);
-	void OnMouseLeftUp(int x, int y);
-	void OnMouseRightDwn(int x, int y);
-	void OnMouseRightUp(int x, int y);
 	void OnKeyDwn(unsigned char key);
 	void OnSpecialKeyDwn(int key,int x, int y);
 	void DrawMtdYellowGrid(int flag);

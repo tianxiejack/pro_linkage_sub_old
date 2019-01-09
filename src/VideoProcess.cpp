@@ -1198,9 +1198,9 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			pThis->m_draw = 1;
 		}
 	}
-	else  /*  click on gun image , ball camera move*/
-	{
-		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)  {
+	//else  /*  click on gun image , ball camera move*/
+	//{
+		if(mouse_workmode == Click_Mode && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)  {
 			if(y > 0 && y< 540) {
 				pThis->Event_click2Move(x , y);
 			}
@@ -1208,7 +1208,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				pThis->ClickGunMove2Ball(x,y,false);
 			}
 		}	
-	}
+	//}
 }
 
 void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)

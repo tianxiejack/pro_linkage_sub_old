@@ -1069,7 +1069,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 	{
 		pThis->joys_click = 0;
 		pThis->jcenter_s = pThis->get_joycenter();
-		//pThis->sendjoyevent(pThis->jcenter_s);
+		pThis->sendjoyevent(pThis->jcenter_s);
 	}
 
 	else if(mouse_workmode == Click_Mode && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
@@ -1519,20 +1519,24 @@ void CVideoProcess::sendjoyevent(cv::Point tmppoint)
 	CMD_JOY_EVENT cmd_joyevent;
 	cmd_joyevent.type = IPC_JS_EVENT_AXIS;
 
-	if(tmppoint.x)
+	static cv::Point tmppoint_old = cv::Point(0,0);
+
+	if(tmppoint.x != tmppoint_old.x)
 	{
 		cmd_joyevent.number = IPC_MSGID_INPUT_AXISX;
 		cmd_joyevent.value = tmppoint.x;
 		memcpy(test.param, &cmd_joyevent, sizeof(cmd_joyevent));
 		ipc_sendmsg(&test, IPC_FRIMG_MSG);
+		tmppoint_old.x = tmppoint.x;
 	}
 
-	if(tmppoint.y)
+	if(tmppoint.y != tmppoint_old.y)
 	{
 		cmd_joyevent.number = IPC_MSGID_INPUT_AXISY;
 		cmd_joyevent.value = tmppoint.y;
 		memcpy(test.param, &cmd_joyevent, sizeof(cmd_joyevent));
 		ipc_sendmsg(&test, IPC_FRIMG_MSG);
+		tmppoint_old.y = tmppoint.y;
 	}
 }
 

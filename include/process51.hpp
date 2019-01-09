@@ -30,6 +30,7 @@ typedef struct{
 	volatile unsigned int MenuStat;
 	AppMenu menuarray[menumaxid];
 	char Passwd[128];
+	char disPasswd[128];
 	mouse_t Mtdmouseclick;
 	PointNode Mtdmousemotion;
 	

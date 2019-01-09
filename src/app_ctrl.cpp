@@ -570,6 +570,8 @@ void app_ctrl_setMenuStat(int index)
 	pMenuStatus->MenuStat = index;
 	
 	memset(pMenuStatus->Passwd, 0, sizeof(pMenuStatus->Passwd));
+	memset(pMenuStatus->disPasswd, 0, sizeof(pMenuStatus->disPasswd));
+	memset(plat->m_display.disMenu[mainmenu0][1], 0, sizeof(plat->m_display.disMenu[mainmenu0][1]));
 	MSGDRIV_send(MSGID_EXT_MENUSWITCH, 0);
 }
 
@@ -603,11 +605,15 @@ void app_ctrl_setnumber(char key)
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
 	
-	if((mainmenu0 == pMenuStatus->MenuStat) || (mainmenu1 == pMenuStatus->MenuStat))
+	if(mainmenu0 == pMenuStatus->MenuStat)
 	{
-		int offset = strlen(pMenuStatus->Passwd) * sizeof(char);
+		int offset = strlen(pMenuStatus->Passwd) * sizeof(char);		
 		if(offset < sizeof(pMenuStatus->Passwd) - 1)
+		{
 			sprintf(pMenuStatus->Passwd + offset,"%c", key);
+			sprintf(pMenuStatus->disPasswd + offset,"%c", '*');
+			swprintf(plat->m_display.disMenu[mainmenu0][1], 33, L"%s", pMenuStatus->disPasswd);
+		}
 		else
 			printf("password reached max length:128");
 		
@@ -729,7 +735,7 @@ void app_ctrl_enter()
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
 
-	if((mainmenu0 == pMenuStatus->MenuStat) || (mainmenu1 == pMenuStatus->MenuStat))
+	if(mainmenu0 == pMenuStatus->MenuStat)
 	{
 		if(strcmp(init_passwd, pMenuStatus->Passwd))
 		{
@@ -738,8 +744,11 @@ void app_ctrl_enter()
 		else
 		{
 			app_ctrl_setMenuStat(mainmenu2);
-		}
-			
+		}	
+	}
+	else if(mainmenu1 == pMenuStatus->MenuStat)
+	{
+		app_ctrl_setMenuStat(mainmenu0);
 	}
 	else if(mainmenu2 == pMenuStatus->MenuStat)
 	{

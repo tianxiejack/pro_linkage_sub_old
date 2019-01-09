@@ -2496,8 +2496,8 @@ int CDisplayer::menu_init( )
 	m_menuindex = -1;
 	memcpy(&dismenuarray, plat->extMenuCtrl.menuarray, sizeof(dismenuarray));
 	unsigned char menubuf[menumaxid][7][128] = {
-            {"请输入密码呼出菜单", "按回车确认", "按F2退出"},
-            {"请输入密码呼出菜单", "********", "密码输入错误，按回车后再次输入", "按回车确认", "按F2退出"},
+            {"请输入密码呼出菜单", "", "按回车确认", "按F2退出"},
+            {"请输入密码呼出菜单", "密码输入错误，","按回车后再次输入", "按回车确认", "按F2退出"},
             {"内参标定","枪球画面标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},
             {"枪机内参标定","球机内参标定","返回"},
             {"枪球自动标定","枪球手动标定","返回"},
@@ -2533,8 +2533,8 @@ int CDisplayer::menu_init( )
 
 	swprintf(disMenu[submenu_setimg][1], 33, L"%s", resolbuf[oresoltype]);
 
-	disMenuBuf[mainmenu0][1].posy = 4 * 60;
-	disMenuBuf[mainmenu0][2].posy = 5 * 60;
+	disMenuBuf[mainmenu0][2].posy = 4 * 60;
+	disMenuBuf[mainmenu0][3].posy = 5 * 60;
 	disMenuBuf[submenu_carli][2].posy = 4 * 60;
 	disMenuBuf[submenu_gunball][2].posy = 4 * 60;
 	disMenuBuf[submenu_setball][2].posy = 4 * 60;
@@ -2553,6 +2553,7 @@ int CDisplayer::menu_init( )
 	disMenuBuf[submenu_setmtdrigion][3].color = 1;
 	disMenuBuf[submenu_setmtdrigion][4].color = 3;
 
+	disMenuBuf[mainmenu1][1].color= 3;
 	disMenuBuf[mainmenu1][2].color= 3;
 	disMenuBuf[mainmenu2][0].color= 3;
 	disMenuBuf[submenu_carli][0].color= 3;

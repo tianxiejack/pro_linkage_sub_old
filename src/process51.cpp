@@ -124,8 +124,9 @@ void CProcess::loadIPCParam()
 		extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
 		extMenuCtrl.MenuStat = -1;
 		memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
+		memset(extMenuCtrl.disPasswd, 0, sizeof(extMenuCtrl.disPasswd));
 
-		int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,3,5};
+		int cnt[menumaxid] = {4,5,7,3,3,7,6,3,5,5,3,5};
 		memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
 		for(int i = 0; i < menumaxid; i++)
 		{

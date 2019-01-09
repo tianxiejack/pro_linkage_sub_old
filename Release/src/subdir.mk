@@ -14,7 +14,8 @@ CPP_SRCS += \
 ../src/cuda_mem.cpp \
 ../src/process51.cpp \
 ../src/test_videoProcess.cpp \
-../src/v4l2camera.cpp 
+../src/v4l2camera.cpp \
+../src/IntrinsicMatrix.cpp
 
 CU_SRCS += \
 ../src/cuda.cu 
@@ -34,7 +35,8 @@ OBJS += \
 ./src/cuda_mem.o \
 ./src/process51.o \
 ./src/test_videoProcess.o \
-./src/v4l2camera.o 
+./src/v4l2camera.o \
+./src/IntrinsicMatrix.o 
 
 CPP_DEPS += \
 ./src/CcCamCalibra.d \
@@ -47,7 +49,8 @@ CPP_DEPS += \
 ./src/cuda_mem.d \
 ./src/process51.d \
 ./src/test_videoProcess.d \
-./src/v4l2camera.d 
+./src/v4l2camera.d \
+./src/IntrinsicMatrix.d
 
 
 # Each subdirectory must supply rules for building sources it contributes

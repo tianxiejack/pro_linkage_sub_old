@@ -34,6 +34,7 @@ extern osdbuffer_t disOsdBuf[32];
 extern osdbuffer_t disOsdBufbak[32];
 extern wchar_t disOsd[32][33];
 vector<Mat> imageListForCalibra;
+
 extern bool showDetectCorners;
 extern OSA_SemHndl g_detectCorners;
 extern volatile bool cloneOneFrame;
@@ -1916,17 +1917,20 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 			memset(m_display.savePicName, 0, 20);
 			sprintf(m_display.savePicName,"%02d.bmp",saveCount);
 			saveCount ++;
-			Mat Dst(1080,1920,CV_8UC3);
-			cvtColor(frame,Dst,CV_YUV2BGR_YUYV);
-			imwrite(m_display.savePicName,Dst);
-			#if 0
-			int nsize = imageListForCalibra.size();
-			if(nsize<50){
-				m_cutIMG[nsize] = cv::Mat(frame.rows,frame.cols,CV_8UC3);
-				cvtColor(frame,m_cutIMG[nsize],CV_YUV2BGR_YUYV);
-				imageListForCalibra.push_back(m_cutIMG[nsize]);				
-				m_display.SetCutDisplay(nsize, true);
-			}
+			
+			#if 1
+				int nsize = imageListForCalibra.size();
+				if(nsize<50){
+					m_detectCorners->m_cutIMG[nsize] = cv::Mat(frame.rows,frame.cols,CV_8UC3);
+					cvtColor(frame,m_detectCorners->m_cutIMG[nsize],CV_YUV2BGR_YUYV);
+					imageListForCalibra.push_back(m_detectCorners->m_cutIMG[nsize]);
+					m_camCalibra->ImageLists.push_back(m_detectCorners->m_cutIMG[nsize]);
+					m_detectCorners->SetCutDisplay(nsize, true);
+				}
+			#else
+				Mat Dst(1080,1920,CV_8UC3);
+				cvtColor(frame,Dst,CV_YUV2BGR_YUYV);
+				imwrite(m_display.savePicName,Dst);
 			#endif
 	}
 #endif

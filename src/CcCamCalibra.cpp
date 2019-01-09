@@ -55,6 +55,13 @@ CcCamCalibra::CcCamCalibra():scale(0.5),bCal(false),ret1(false),ret2(false),
 	
 	OSA_semCreate(&m_linkage_getPos, 1, 0);
 	getCurrentPosFlag = 0 ;
+	ImageLists.clear();
+	corner_points_of_all_imgs.clear();
+	corner_points_buf.clear();
+	
+	int pattern_cols = 13;
+  	int pattern_raws = 8;
+   	pattern_size = Size(pattern_cols,pattern_raws);     
 }
 
 CcCamCalibra::~CcCamCalibra() {
@@ -825,7 +832,7 @@ if(imageListForCalibra.size() != 0){
 
 void CcCamCalibra::FindCorners()
 {
-
+#if 1
 	while(image_num < imgList.size()) {
 
 	        filename = imgList[image_num++];
@@ -854,7 +861,7 @@ void CcCamCalibra::FindCorners()
 //	            cv::find4QuadCornerSubpix(gray, corner_points_buf, cv::Size(5, 5));
 
 	            cornerSubPix(gray, corner_points_buf, Size(11, 11), Size(-1, -1),
-	            		TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+	            							TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
 
 
 	            corner_points_of_all_imgs.push_back(corner_points_buf);
@@ -866,14 +873,46 @@ void CcCamCalibra::FindCorners()
 */	            
 	        }
 	    }
-	
+	#else
+			cv::Mat imageInput = ImageLists[0];
+	image_size.width = imageInput.cols;
+	image_size.height = imageInput.rows;
+
+	 if (findChessboardCorners(imageInput, pattern_size, corner_points_buf) == 0) {
+	            cout << "can not find chessboard corners!\n";   //找不到角点
+	            return ;	            
+	        }
+	        else  
+		{
+			printf("))))))))))))))))))))))))))))))))))))))))))))))))))))))))   find corners!!!\r\n");
+	            cv::Mat gray;
+
+	            cv::cvtColor(imageInput, gray, CV_RGB2GRAY);
+
+//	            cv::find4QuadCornerSubpix(gray, corner_points_buf, cv::Size(5, 5));
+
+	            cornerSubPix(gray, corner_points_buf, Size(11, 11), Size(-1, -1),
+	            							TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+
+
+	            corner_points_of_all_imgs.push_back(corner_points_buf);
+/*	            cv::drawChessboardCorners(gray, pattern_size, corner_points_buf, true);
+	            PrintMs();
+           		cv::imshow("camera calibration", gray);
+	            PrintMs("imshow");
+	            cv::waitKey(100);
+*/	            
+	        }
+
+	#endif
 
 	        cout << endl << "=============== <<  Complete Find All Chess Board Corners >> =============" << endl;
 }
 void CcCamCalibra::getObjectCoordinates()
 {
 	int i, j, k;
-	
+	square_size = Size(40,40);
+	#if 1
 		for (k = 0;k < image_num;k++) { 		 //遍历每一张图片
 			vector<cv::Point3f> tempCornerPoints;//每一幅图片对应的角点数组
 												//遍历所有的角点
@@ -888,6 +927,22 @@ void CcCamCalibra::getObjectCoordinates()
 			}
 			objectPoints.push_back(tempCornerPoints);
 		}
+	#else
+			vector<cv::Point3f> tempCornerPoints;
+												
+			for (i = 0;i < pattern_size.height;i++)	{
+				for (j = 0;j < pattern_size.width;j++) {
+					cv::Point3f singleRealPoint;	
+					singleRealPoint.x = i *square_size.width;
+					singleRealPoint.y = j *square_size.height;
+					singleRealPoint.z = 0;			
+					tempCornerPoints.push_back(singleRealPoint);
+				}
+			}
+			objectPoints.push_back(tempCornerPoints);
+
+	#endif
+		
 	
 }
 
@@ -922,7 +977,7 @@ void CcCamCalibra::calibrate()
 	        fout << "每幅图像的标定误差：" << endl;
 	        double err = 0;//单张图像的误差
 	        double total_err = 0;//所有图像的平均误差
-	        for (int i = 0;i < image_num;i++)
+	      for (int i = 0;i < image_num;i++)
 	        {
 	            vector<cv::Point2f> image_points_calculated;//存放新计算出的投影点的坐标
 	            vector<cv::Point3f> tempPointSet = objectPoints[i];
@@ -952,7 +1007,7 @@ cout<<"============================== << Calculate Average Eoor Complite !!! >> 
 	        Mat R = Mat::eye(3, 3, CV_32F);
 	        string imageFileName;
 	        std::stringstream StrStm;
-	        for (int i = 0;i < image_num;i++)
+	      for (int i = 0;i < image_num;i++)
 	        {
 	            cout << "Frame #" << i + 1 << endl;
 	            initUndistortRectifyMap(cameraMatrix, distCoefficients, R, cameraMatrix, image_size, CV_32FC1, mapx, mapy);
@@ -1013,6 +1068,7 @@ void CcCamCalibra::showUndistortImages()
 //============================================================================================
 
 //DetectCorners
+
 DetectCorners::DetectCorners()
 {
 	OSA_semCreate(&g_detectCorners, 1, 0);

@@ -45,11 +45,13 @@ public:
 	void PrintMs( const char* text ="");
 	void undistortion(Mat distortionImage,Mat &unDistortionImage);
 	void showUndistortImages();
+	vector<Mat> ImageLists;
 private:
 //	PictureCalibrate *BMPCalibrate;
 	vector<string> imgList;
 	ifstream inImgPath;
 	ofstream fout;
+	
 	int image_num ;
 	Mat imageInput;
 	Mat gray;
@@ -203,8 +205,9 @@ class DetectCorners:public WorkThread
    		int height;  // detect Height wodth
    		Size pattern_size;
    		vector<Point2f> corners; 
-		Mat m_cutIMG[100];
+		
 	public:
+		Mat m_cutIMG[100];
 		bool _bCutIMG[100];
 	public:
 		DetectCorners();
@@ -226,4 +229,6 @@ class DetectCorners:public WorkThread
 	bool chessBoardCornersDetect(Mat image,Mat &cornerImage,int &successImages);
 	
 };
+
+
 #endif /* CCCAMCALIBRA_H_ */

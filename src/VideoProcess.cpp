@@ -1056,7 +1056,7 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
-	if((pThis->m_display.g_CurDisplayMode == MAIN_VIEW) && (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) && pThis->InJoys(x,y))
+	if((pThis->m_display.g_CurDisplayMode == MAIN_VIEW) && (pThis->m_display.m_menuindex == -1)&&(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) && pThis->InJoys(x,y))
 	{
 		pThis->joys_click = 1;
 		cv::Point tmp = cv::Point(x, y);
@@ -1065,7 +1065,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		pThis->sendjoyevent(tmp);
 
 	}
-	else if((pThis->m_display.g_CurDisplayMode == MAIN_VIEW) && (button == GLUT_LEFT_BUTTON && state == GLUT_UP) && pThis->InJoys(x,y) && pThis->joys_click)
+	else if((pThis->m_display.g_CurDisplayMode == MAIN_VIEW) && (pThis->m_display.m_menuindex == -1)&&(button == GLUT_RIGHT_BUTTON && state == GLUT_UP) && pThis->InJoys(x,y) && pThis->joys_click)
 	{
 		pThis->joys_click = 0;
 		pThis->jcenter_s = pThis->get_joycenter();

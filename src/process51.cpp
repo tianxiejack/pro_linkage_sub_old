@@ -2264,7 +2264,7 @@ void CProcess::DrawJoys()
 	DrawCircle(frame, jcenter, jradius, lineparm.frcolor, thickness);
 	DrawcvDashcross(frame, &lineparm, dashlen, dashlen);
 	
-	if(m_display.displayMode == MAIN_VIEW)
+	if((m_display.displayMode == MAIN_VIEW)&&(m_display.m_menuindex == -1))
 	{		
 		jcenter_s_bak = jcenter_s;
 		jradius_s_bak= jradius_s;

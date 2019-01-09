@@ -1156,79 +1156,76 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			}
 			else
 			{
-					if(pThis->m_click == 0)
+				if(pThis->m_click == 0)
+				{
+					if(pThis->click_legal(x,y))
 					{
-						if(pThis->click_legal(x,y))
-						{
-							pThis->LeftPoint.x = x;
-							pThis->LeftPoint.y = y;
-
-							pThis->m_click = 1;
-							pThis->m_rectn[curId] = 0;
-							pThis->mRect[curId][pThis->m_rectn[curId]].x1 = x;
-							pThis->mRect[curId][pThis->m_rectn[curId]].y1 = y;
-							cout<<" start:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x1<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y1<<")"<<endl;
-						}
-						else
-							printf("click illegal!!!\n");
+						pThis->LeftPoint.x = x;
+						pThis->LeftPoint.y = y;
+						pThis->m_click = 1;
+						pThis->m_rectn[curId] = 0;
+						pThis->mRect[curId][pThis->m_rectn[curId]].x1 = x;
+						pThis->mRect[curId][pThis->m_rectn[curId]].y1 = y;
+						cout<<" start:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x1<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y1<<")"<<endl;
 					}
 					else
+						printf("click illegal!!!\n");
+				}
+				else
+				{
+					if(pThis->move_legal(x,y))
 					{
-						if(pThis->move_legal(x,y))
-						{
 						
-							pThis->RightPoint.x = x;
-							pThis->RightPoint.y = y;
+						pThis->RightPoint.x = x;
+						pThis->RightPoint.y = y;
 
-							pThis->m_click = 0;
-							pThis->mRect[curId][pThis->m_rectn[curId]].x2 = x;
-							pThis->mRect[curId][pThis->m_rectn[curId]].y2 = y;
-							cout<<" end:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x2<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y2<<")\n"<<endl;
+						pThis->m_click = 0;
+						pThis->mRect[curId][pThis->m_rectn[curId]].x2 = x;
+						pThis->mRect[curId][pThis->m_rectn[curId]].y2 = y;
+						cout<<" end:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x2<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y2<<")\n"<<endl;
 
-							mouserect rectsrc, recvdest;
-							rectsrc.x = pThis->mRect[curId][pThis->m_rectn[curId]].x1;
-							rectsrc.y = pThis->mRect[curId][pThis->m_rectn[curId]].y1;
-							rectsrc.w = pThis->mRect[curId][pThis->m_rectn[curId]].x2 - pThis->mRect[curId][pThis->m_rectn[curId]].x1;
-							rectsrc.h = pThis->mRect[curId][pThis->m_rectn[curId]].y2 - pThis->mRect[curId][pThis->m_rectn[curId]].y1;
+						mouserect rectsrc, recvdest;
+						rectsrc.x = pThis->mRect[curId][pThis->m_rectn[curId]].x1;
+						rectsrc.y = pThis->mRect[curId][pThis->m_rectn[curId]].y1;
+						rectsrc.w = pThis->mRect[curId][pThis->m_rectn[curId]].x2 - pThis->mRect[curId][pThis->m_rectn[curId]].x1;
+						rectsrc.h = pThis->mRect[curId][pThis->m_rectn[curId]].y2 - pThis->mRect[curId][pThis->m_rectn[curId]].y1;
 
-							recvdest = pThis->map2preview(rectsrc);
-							
-							pThis->m_rectn[curId]++;  
-							if(pThis->m_rectn[curId]>=sizeof(pThis->mRect[0]))
-							{
-								printf("mouse rect reached maxnum:100!\n");
-								pThis->m_rectn[curId]--;
-							}
-							pThis->m_draw = 1;	
+						recvdest = pThis->map2preview(rectsrc);
+						
+						pThis->m_rectn[curId]++;  
+						if(pThis->m_rectn[curId]>=sizeof(pThis->mRect[0]))
+						{
+							printf("mouse rect reached maxnum:100!\n");
+							pThis->m_rectn[curId]--;
+						}
+						pThis->m_draw = 1;	
 					/********************************************************************************************************************/	
-							if(g_workMode == HANDLE_LINK_MODE ) {
-								if(y > 540) {							
-									pThis->reMapCoords(x,y,true);								
-								}
+						if(g_workMode == HANDLE_LINK_MODE ) {
+							if(y > 540) {							
+								pThis->reMapCoords(x,y,true);								
 							}
-							else if(g_workMode == ONLY_BALL_MODE) {
-								if(x>480 && x <1440 && y<540) {							
-									pThis->moveToDest();					
-								}
+						}
+						else if(g_workMode == ONLY_BALL_MODE) {
+							if(x>480 && x <1440 && y<540) {							
+								pThis->moveToDest();					
 							}
+						}
 					/*******************************************************************************************************************/		
 					}
 					else
-						printf("move illegal!!!\n");
-					
+						printf("move illegal!!!\n");	
+				}
 			}
 		}
-		
-	}
 
-	if(button == 3)
-	{
-		pThis->m_click = 0;
-		pThis->m_rectn[curId] = 0;
-		pThis->m_draw = 1;
+		if(button == 3)
+		{
+			pThis->m_click = 0;
+			pThis->m_rectn[curId] = 0;
+			pThis->m_draw = 1;
+		}
 	}
-
-	}
+	
 	else  /*  click on gun image , ball camera move*/
 	{
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)  {

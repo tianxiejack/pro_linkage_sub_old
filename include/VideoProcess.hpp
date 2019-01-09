@@ -263,6 +263,8 @@ protected:
 	void mapcapresol2joy(cv::Point *tmppoint);
 	int get_joyradius();
 	cv::Point get_joycenter();
+	void addstartpoint(int x, int y, int curId);
+	void addendpoint(int x, int y, int curId);
 		
 #if __MOVE_DETECT__
 	static void processmaxnumMenu(int value);

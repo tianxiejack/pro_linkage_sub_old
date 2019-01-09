@@ -131,9 +131,6 @@ public:
 	virtual bool OnPreProcess(int chId, Mat &frame){return true;}
 	virtual bool OnProcess(int chId, Mat &frame){return true;}
 	virtual void OnMouseLeftDwn(int x, int y){};
-	virtual void OnMouseLeftUp(int x, int y){};
-	virtual void OnMouseRightDwn(int x, int y){};
-	virtual void OnMouseRightUp(int x, int y){};
 	virtual void OnKeyDwn(unsigned char key){};
 	virtual void OnSpecialKeyDwn(int key,int  x,int  y){};
 
@@ -266,6 +263,8 @@ protected:
 	void mapcapresol2joy(cv::Point *tmppoint);
 	int get_joyradius();
 	cv::Point get_joycenter();
+	void addstartpoint(int x, int y, int curId);
+	void addendpoint(int x, int y, int curId);
 		
 #if __MOVE_DETECT__
 	static void processmaxnumMenu(int value);

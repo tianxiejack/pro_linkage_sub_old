@@ -619,6 +619,8 @@ int CVideoProcess::move_legal(int x, int y)
 		else
 			return 0;
 	}
+	else
+		return 0;
 }
 
 int CVideoProcess::in_gun_area(int x, int y)
@@ -633,7 +635,7 @@ int CVideoProcess::in_gun_area(int x, int y)
 				return 0;
 			break;
 		case MAIN_VIEW:
-			if(((x > 0 && x < 1440) && (y > 0 && y < 1080)) ||((x > 1440 && x < 1920) && (y > 0 && y < 810)))
+			if((x > 0 && x < 1920) && (y > 0 && y < 540))
 				return 1;
 			else
 				return 0;
@@ -669,7 +671,7 @@ int CVideoProcess::in_ball_area(int x, int y)
 				return 0;
 			break;
 		case MAIN_VIEW:
-			if((x > 1440 && x < 1920) && (y > 810 && y < 1080))
+			if((x > 480 && x < 1440) && (y > 540 && y < 1080))
 				return 1;
 			else
 				return 0;
@@ -1049,6 +1051,12 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
+	unsigned int curId;
+	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW)
+		curId = 1;	
+	else
+		curId = pThis->m_curChId;
+
 	if((pThis->m_display.g_CurDisplayMode == MAIN_VIEW) && (pThis->m_display.m_menuindex == -1)&&(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) && pThis->InJoys(x,y))
 	{
 		pThis->joys_click = 1;
@@ -1064,12 +1072,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		pThis->jcenter_s = pThis->get_joycenter();
 		pThis->sendjoyevent(pThis->jcenter_s);
 	}
-
-	else if(mouse_workmode == Click_Mode && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		
-		pThis->setClickPoint(x,y);
-	}
-	
 	else if(mouse_workmode == SetMteRigion_Mode)
 	{
 		if(pThis->setrigion_flagv20)
@@ -1078,25 +1080,18 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			return;
 		}
 	}
+
+	else if(mouse_workmode == Click_Mode && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		
+		pThis->setClickPoint(x,y);
+	}
+
 	else if(mouse_workmode == DrawRectangle_Mode)
 	{
-		unsigned int curId;
 		int Critical_Point;
-
-		if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW) {
-			curId = 1;	
-		}else{
-			curId = pThis->m_curChId;
-		}
 	
-		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
-		{
-			pThis->OnMouseLeftUp(x, y);
-		}
 		if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP)
 		{
-			//pThis->OnMouseRightUp(x,  y);
-
 			run_Mode._mouseDown = CELL::int2(x,y);
 		 	ArrayText::iterator itr = run_Mode._texts.begin();
 		 	for(; itr != run_Mode._texts.end(); ++itr){
@@ -1157,78 +1152,51 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			}
 			else
 			{
-					if(pThis->m_click == 0)
-					{
-						if(pThis->click_legal(x,y))
-						{
-							pThis->LeftPoint.x = x;
-							pThis->LeftPoint.y = y;
 
-							pThis->m_click = 1;
-							pThis->m_rectn[curId] = 0;
-							pThis->mRect[curId][pThis->m_rectn[curId]].x1 = x;
-							pThis->mRect[curId][pThis->m_rectn[curId]].y1 = y;
-							cout<<" start:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x1<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y1<<")"<<endl;
-						}
-						else
-							printf("click illegal!!!\n");
-					}
-					else
-					{
-						if(pThis->move_legal(x,y))
-						{
-						
-							pThis->RightPoint.x = x;
-							pThis->RightPoint.y = y;
+				if(pThis->click_legal(x,y))
+				{
+					pThis->m_click = 1;
+					pThis->addstartpoint(x, y, curId);
 
-							pThis->m_click = 0;
-							pThis->mRect[curId][pThis->m_rectn[curId]].x2 = x;
-							pThis->mRect[curId][pThis->m_rectn[curId]].y2 = y;
-							cout<<" end:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x2<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y2<<")\n"<<endl;
-
-							mouserect rectsrc, recvdest;
-							rectsrc.x = pThis->mRect[curId][pThis->m_rectn[curId]].x1;
-							rectsrc.y = pThis->mRect[curId][pThis->m_rectn[curId]].y1;
-							rectsrc.w = pThis->mRect[curId][pThis->m_rectn[curId]].x2 - pThis->mRect[curId][pThis->m_rectn[curId]].x1;
-							rectsrc.h = pThis->mRect[curId][pThis->m_rectn[curId]].y2 - pThis->mRect[curId][pThis->m_rectn[curId]].y1;
-
-							recvdest = pThis->map2preview(rectsrc);
-							
-							pThis->m_rectn[curId]++;  
-							if(pThis->m_rectn[curId]>=sizeof(pThis->mRect[0]))
-							{
-								printf("mouse rect reached maxnum:100!\n");
-								pThis->m_rectn[curId]--;
-							}
-							pThis->m_draw = 1;	
-					/********************************************************************************************************************/	
-							if(g_workMode == HANDLE_LINK_MODE ) {
-								if(y > 540) {							
-									pThis->reMapCoords(x,y,true);								
-								}
-							}
-							else if(g_workMode == ONLY_BALL_MODE) {
-								if(x>480 && x <1440 && y<540) {							
-									pThis->moveToDest();					
-								}
-							}
-					/*******************************************************************************************************************/		
-					}
-					else
-						printf("move illegal!!!\n");
-					
+					pThis->LeftPoint.x = x;
+					pThis->LeftPoint.y = y;
+				}
+				else
+					printf("click illegal!!!\n");
 			}
 		}
-		
-	}
+		else if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+		{
+			if(pThis->move_legal(x,y))
+			{
+				pThis->m_click = 0;
+				pThis->addendpoint(x, y, curId);
+				pThis->m_draw = 1;	
 
-	if(button == 3)
-	{
-		pThis->m_click = 0;
-		pThis->m_rectn[curId] = 0;
-		pThis->m_draw = 1;
-	}
+				pThis->RightPoint.x = x;
+				pThis->RightPoint.y = y;
 
+				if(g_workMode == HANDLE_LINK_MODE ) {
+					if(y > 540) {							
+						pThis->reMapCoords(x,y,true);								
+					}
+				}
+				else if(g_workMode == ONLY_BALL_MODE) {
+					if(x>480 && x <1440 && y<540) {							
+						pThis->moveToDest();					
+					}
+				}
+			}
+			else
+				printf("move illegal!!!\n");	
+		}
+
+		if(button == 3)
+		{
+			pThis->m_click = 0;
+			pThis->m_rectn[curId] = 0;
+			pThis->m_draw = 1;
+		}
 	}
 	else  /*  click on gun image , ball camera move*/
 	{
@@ -1245,34 +1213,38 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 
 void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
 {
+
+}
+
+void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
+{
+
 	unsigned int curId;
 	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW)
 		curId = 1;
 	else
 		curId = pThis->m_curChId;
-
-	float floatx,floaty;
-	floatx = xMouse;
-	floaty = yMouse;	
-	pThis->map1080p2normal_point(&floatx, &floaty);
-	pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);	
-
-	if(pThis->m_click == 1)
-	{
-		pThis->m_tempX = floatx;
-		pThis->m_tempY = floaty;
-		pThis->m_draw = 1;
-	}
-}
-
-void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
-{
+	
 	if((pThis->m_display.g_CurDisplayMode == MAIN_VIEW) && pThis->InJoys(xMouse,yMouse) && pThis->joys_click)
 	{
 		cv::Point tmp = cv::Point(xMouse, yMouse);
 		pThis->mapout2inresol(&tmp);
 		pThis->jcenter_s = tmp;
 		pThis->sendjoyevent(tmp);
+	}
+	else
+	{
+		float floatx,floaty;
+		floatx = xMouse;
+		floaty = yMouse;	
+		pThis->map1080p2normal_point(&floatx, &floaty);
+		pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);	
+		if(pThis->m_click == 1)
+		{
+			pThis->m_tempX = floatx;
+			pThis->m_tempY = floaty;
+			pThis->m_draw = 1;
+		}
 	}
 }
 
@@ -1298,6 +1270,35 @@ void CVideoProcess::menu_event(int value)
 			break;
 		default:
 			break;
+	}
+}
+void CVideoProcess::addstartpoint(int x, int y, int curId)
+{
+	pThis->m_rectn[curId] = 0;
+	pThis->mRect[curId][pThis->m_rectn[curId]].x1 = x;
+	pThis->mRect[curId][pThis->m_rectn[curId]].y1 = y;
+	cout<<" start:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x1<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y1<<")"<<endl;
+}
+
+void CVideoProcess::addendpoint(int x, int y, int curId)
+{
+	pThis->mRect[curId][pThis->m_rectn[curId]].x2 = x;
+	pThis->mRect[curId][pThis->m_rectn[curId]].y2 = y;
+	cout<<" end:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x2<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y2<<")\n"<<endl;
+
+	mouserect rectsrc, recvdest;
+	rectsrc.x = pThis->mRect[curId][pThis->m_rectn[curId]].x1;
+	rectsrc.y = pThis->mRect[curId][pThis->m_rectn[curId]].y1;
+	rectsrc.w = pThis->mRect[curId][pThis->m_rectn[curId]].x2 - pThis->mRect[curId][pThis->m_rectn[curId]].x1;
+	rectsrc.h = pThis->mRect[curId][pThis->m_rectn[curId]].y2 - pThis->mRect[curId][pThis->m_rectn[curId]].y1;
+
+	recvdest = pThis->map2preview(rectsrc);
+		
+	pThis->m_rectn[curId]++;  
+	if(pThis->m_rectn[curId]>=sizeof(pThis->mRect[0]))
+	{
+		printf("mouse rect reached maxnum:100!\n");
+		pThis->m_rectn[curId]--;
 	}
 }
 

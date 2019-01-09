@@ -124,8 +124,9 @@ void CProcess::loadIPCParam()
 		extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
 		extMenuCtrl.MenuStat = -1;
 		memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
+		memset(extMenuCtrl.disPasswd, 0, sizeof(extMenuCtrl.disPasswd));
 
-		int cnt[menumaxid] = {3,5,7,3,3,7,6,3,5,5,3,5};
+		int cnt[menumaxid] = {4,5,7,3,3,7,6,3,5,5,3,5};
 		memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
 		for(int i = 0; i < menumaxid; i++)
 		{
@@ -3299,9 +3300,6 @@ void CProcess::OnMouseLeftDwn(int x, int y)
 		manualHandleKeyPoints(x,y);		
 	}	
 };
-void CProcess::OnMouseLeftUp(int x, int y){ };
-void CProcess::OnMouseRightDwn(int x, int y){};
-void CProcess::OnMouseRightUp(int x, int y){};
 void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 {
 	switch( key ) {

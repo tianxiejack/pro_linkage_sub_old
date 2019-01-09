@@ -201,14 +201,7 @@ protected:
 	int updateredgrid();
 	int updateredgridfrrectL();
 	int updateredgridfrrectR();
-	int updatemtdrigion();
-	int isborder(int rigionindex, int x, int y);
-	int createrigion(int rigionindex, int x, int y);
-	int mergenode(int rigionindex, int x, int y);
-	int mergerigion(int rigionindex_dst, int rigionindex_src);
 	int getmtdedge();
-	int cp2pointarray();
-	int usopencvapi();
 	int usopencvapi2();
 
 
@@ -298,13 +291,11 @@ public:
 	void update_param_alg();
 	void update_param_osd();
 	RectfNode mRectbak[MAX_CHAN][100];
-	int m_tempXbak, m_tempYbak, m_rectnbak[MAX_CHAN];
+	int m_rectnbak[MAX_CHAN];
 	char timearr[128];
 	char timearrbak[128];
 	int timexbak, timeybak;
 
-	PointNode polyRectbak[MAX_CHAN][100];
-	int polytempXbak, polytempYbak, polyrectnbak[MAX_CHAN];
 	DxTimer dtimer;
     int resol_light_id, resol_apply_id, mtdnum_light_id, trktime_light_id, maxsize_light_id, minsize_light_id, sensi_light_id, baud_light_id;
 	int save_flag;

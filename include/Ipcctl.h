@@ -526,6 +526,8 @@ typedef struct
 	volatile bool osdTextShow;
 	volatile bool osdDrawShow;
 	volatile bool crossDrawShow;
+	volatile bool osdUserShow;
+	volatile bool osdBoxShow;
 	volatile int osdTextColor;
 	volatile int osdTextAlpha;
 	volatile int osdTextFont;
@@ -624,6 +626,8 @@ typedef struct {
 	int OSD_text_size;
 	bool OSD_draw_show;
 	bool CROSS_draw_show;
+	bool osdUserShow;
+	bool osdBoxShow;
 	int OSD_draw_color;
 	int CROSS_AXIS_WIDTH;
 	int CROSS_AXIS_HEIGHT;

@@ -62,16 +62,16 @@ void getMtdxy(int *x,int *y,int *w,int *h)
 }
 #endif
 
-CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6200),
-m_cofy(6320),m_bak_count(0)
+CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6320),
+m_cofy(6200),m_bak_count(0)
 {
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
 	msgextInCtrl = extInCtrl;	
 	sThis = this;
 	plat = this;
-	m_iDelta_X = 0;
-	m_iZoom = 2849;
+	m_iDelta_X = 1920; // imgae width :1920
+	m_iZoom = 2849; // Max view zoom:2849
 }
 
 CProcess::~CProcess()
@@ -2768,6 +2768,9 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 	static int static_cofy = 6200;
 	int point_X , point_Y , offset_x , offset_y,zoomPos; 
 	int delta_X ;	
+	int cur_Kx = 6320;
+	int cur_Ky = 6200;
+	
 	switch(m_display.g_CurDisplayMode) 
 	{
 		case PREVIEW_MODE:
@@ -2791,6 +2794,7 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 	int flag = 0;		
 //-----------------------------------Query Current Position --------------------------------------	
 	QueryCurBallCamPosition();	
+	
 //-------------------------------------------------------------------------
 	static int DesPanPos = 0;
 	static int DesTilPos =0;	
@@ -2800,16 +2804,20 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 
 	curPanPos = panPos;	//sThis->m_ptz->m_iPanPos;
 	curTilPos = tiltPos;		//sThis->m_ptz->m_iTiltPos;
+
+	Set_K_ByDeltaX(m_iDelta_X);
+	cur_Kx = m_cofx;
+	cur_Ky = m_cofy;
 	
 	int  inputX = point_X;	
 	int  inputY = point_Y;	
-	int  tmpcofx = static_cofx;
-	int  tmpcofy = static_cofy;
+	int  tmpcofx = cur_Kx;//static_cofx;
+	int  tmpcofy = cur_Ky;//static_cofy;
 //------------------------------------------------------	
-	Set_K_ByDeltaX(m_iDelta_X);
+	
 //-----------------------------------------------------	
-	static_cofx = m_cofx;
-	static_cofy = m_cofy;
+	//static_cofx = m_cofx;
+	//static_cofy = m_cofy;
 
 	inputX -= 480;//474;
 	inputY -= 270;//276;	
@@ -3292,10 +3300,6 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 	
 	Point bpt;
 	CvtImgCoords2CamCoords(opt, bpt);
-	
-    	//Point bpt( pt.x, pt.y );
-	//dest_ballPoint.x = bpt.x ;
-	//dest_ballPoint.y = bpt.y;
 	
 	int DesPanPos, DesTilPos ;
 		

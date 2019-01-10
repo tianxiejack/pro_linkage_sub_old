@@ -3399,20 +3399,6 @@ void CDisplayer::gl_display(void)
 
 	}
 
-	switch(mouse_workmode){
-		case Click_Mode:
-			chinese_osd(10,550,L"*",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-			break;
-		case DrawRectangle_Mode:
-			chinese_osd(10,550,L"-",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-			break;
-		case SetMteRigion_Mode:
-			chinese_osd(10,550,L"=",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-			break;
-		default:
-			break;
-	}
-
 /******************************************************************************************************************************/
 	   
 	glUseProgram(0);	

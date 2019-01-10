@@ -1054,7 +1054,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
 	unsigned int curId;
 	static int tempX=0,tempY=0;
-
 	
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP){
 		m_bLDown = false;
@@ -1080,7 +1079,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		pThis->jcenter_s = pThis->get_joycenter();
 		pThis->sendjoyevent(pThis->jcenter_s);
 	}
-	else if(mouse_workmode == SetMteRigion_Mode)
+	//else if(mouse_workmode == SetMteRigion_Mode)
+	else if( pThis->m_display.g_CurDisplayMode == GUN_FULL_SCREEN && pThis->m_display.m_menuindex == submenu_setmtdrigion)
 	{
 		if(pThis->setrigion_flagv20)
 		{
@@ -1088,67 +1088,10 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			return;
 		}
 	}	
-
-	else if(mouse_workmode == DrawRectangle_Mode)
+	else
 	{
-		int Critical_Point;
-	
-		if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP)
-		{
-			run_Mode._mouseDown = CELL::int2(x,y);
-		 	ArrayText::iterator itr = run_Mode._texts.begin();
-		 	for(; itr != run_Mode._texts.end(); ++itr){
-			 	CELL::trect<float> rt((*itr)._pos.x, (*itr)._pos.y, (*itr)._pos.x +(*itr)._size.x, (*itr)._pos.y + (*itr)._size.y);
-			 	if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
-					 if(run_Mode._LDown == &(*itr)) {
-						 (*itr)._clickDown(run_Mode._LDown);		
-					 }
-			 		break;
-			 	}
-		 	}
-			ArrayText::iterator itr2 = run_Mode.workMode.begin();
-			for(; itr2 != run_Mode.workMode.end(); ++itr2) {
-				CELL::trect<float> rt((*itr2)._pos.x, (*itr2)._pos.y, (*itr2)._pos.x +(*itr2)._size.x, (*itr2)._pos.y + (*itr2)._size.y);
-			 	if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
-					 if(run_Mode._LDown == &(*itr2)) {
-						 (*itr2)._clickDown(run_Mode._LDown);		
-					 }
-			 		break;
-			 	}
-				
-			}
-		 	run_Mode._pSelect = 0;
-		 	run_Mode._bRButton = false;
-		}
-
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
-			run_Mode._bRButton = true;
-		 	run_Mode._mouseDown = CELL::int2(x,y);
-			run_Mode._pSelect = 0;		
-			ArrayText::iterator itr = run_Mode._texts.begin();			
-		 	for(; itr != run_Mode._texts.end(); ++itr){
-				CELL::trect<float> rt((*itr)._pos.x, (*itr)._pos.y, (*itr)._pos.x +(*itr)._size.x, (*itr)._pos.y + (*itr)._size.y);
-				 if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
-					 run_Mode._pSelect = &(*itr);
-					 run_Mode._LDown = &(*itr);				
-					 (*itr)._eventDown(run_Mode._pSelect);				 
-					 break;
-			 	}
-		 	}
-
-			ArrayText::iterator itr2 = run_Mode.workMode.begin();		
-		 	for(; itr2 != run_Mode.workMode.end(); ++itr2){
-				CELL::trect<float> rt((*itr2)._pos.x, (*itr2)._pos.y, (*itr2)._pos.x +(*itr2)._size.x, (*itr2)._pos.y + (*itr2)._size.y);
-				 if( rt.ptInRect(run_Mode._mouseDown.x, run_Mode._mouseDown.y)) {
-					 run_Mode._pSelect = &(*itr2);
-					 run_Mode._LDown = &(*itr2);				
-					 (*itr2)._eventDown(run_Mode._pSelect);				 
-					 break;
-			 	}
-		 	}
-//================================================================================================
-				
 			if (pThis->open_handleCalibra /*|| g_sysParam->isEnable_HandleCalibrate()*/) // Press 'y' or 'Y' , set this flag to 1
 			{
 				pThis->OnMouseLeftDwn(x, y);
@@ -1156,13 +1099,15 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			else
 			{
 
-				if(pThis->click_legal(x,y))
+				if(pThis->click_legal(x,y) )
 				{
-					pThis->m_click = 1;
-					pThis->addstartpoint(x, y, curId);
+					if(y >540) {
+						pThis->m_click = 1;
+						pThis->addstartpoint(x, y, curId);
 
-					pThis->LeftPoint.x = x;
-					pThis->LeftPoint.y = y;
+						pThis->LeftPoint.x = x;
+						pThis->LeftPoint.y = y;
+					}
 					tempX = x;
 					tempY = y;
 					m_bLDown = true;
@@ -1172,49 +1117,58 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				}
 			}
 		}
-		else if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 		{
-			if(tempX == x && tempY == y) {
-				m_bLDown = false;
-				m_bIsClickMode = true;
-				pThis->setClickPoint(x,y);
-				if(y > 0 && y< 540) {
-					pThis->Event_click2Move(x , y);
-				}
-				else{
-					pThis->ClickGunMove2Ball(x,y,false);
-				}
-			}
-			else if(pThis->move_legal(x,y) && m_bLDown == true)
+			if(pThis->move_legal(x,y))
 			{
-				m_bIsClickMode = false;
-				pThis->m_click = 0;
-				pThis->addendpoint(x, y, curId);
-				pThis->m_draw = 1;	
+				if(y > 540) {
+					pThis->m_click = 0;
+					pThis->addendpoint(x, y, curId);
+					pThis->m_draw = 1;	
+				}
 
-				pThis->RightPoint.x = x;
-				pThis->RightPoint.y = y;
-				
-/* Mouse Click gun or ball Image , ball camera move */
-
-				if(g_workMode == HANDLE_LINK_MODE ) {
-					if(y > 540) {							
-						pThis->reMapCoords(x,y,true);								
+				if(tempX == x && tempY == y) {
+					m_bLDown = false;
+					m_bIsClickMode = true;
+					if(y>540) {
+						pThis->setClickPoint(x,y);
+					}
+					
+					if(y > 0 && y< 540) {
+						//pThis->Event_click2Move(x , y);
+						pThis->GUN_MOVE_Event(x,y);
+					}
+					else{
+						pThis->ClickGunMove2Ball(x,y,false);
 					}
 				}
-				else if(g_workMode == ONLY_BALL_MODE) {
-					if(x>480 && x <1440 && y<540) {							
-						pThis->moveToDest();					
+				else
+				{
+					m_bIsClickMode = false;
+					if(y > 540) {
+						pThis->RightPoint.x = x;
+						pThis->RightPoint.y = y;
+					}
+					
+	/* Mouse Click gun or ball Image , ball camera move */
+
+					if(g_workMode == HANDLE_LINK_MODE ) {
+						if(y > 540) {							
+							pThis->reMapCoords(x,y,true);								
+						}
+					}
+					else if(g_workMode == ONLY_BALL_MODE) {
+						if(x>480 && x <1440 && y<540) {							
+							//pThis->moveToDest();					
+						}
 					}
 				}
 			}
 			else{
 				printf("move illegal!!!\n");	
 			}
-
-			
 		}
-
+		
 		if(button == 3)
 		{
 			pThis->m_click = 0;
@@ -1222,19 +1176,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			pThis->m_draw = 1;
 		}
 	}
-	//else  /*  click on gun image , ball camera move*/
-	//{
-	#if 0
-		if(mouse_workmode == Click_Mode && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)  {
-			if(y > 0 && y< 540) {
-				pThis->Event_click2Move(x , y);
-			}
-			else{
-				pThis->ClickGunMove2Ball(x,y,false);
-			}
-		}	
-	#endif
-	//}
+	
 }
 
 void CVideoProcess::mousemove_event(GLint xMouse, GLint yMouse)
@@ -1265,7 +1207,7 @@ void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 		floaty = yMouse;	
 		pThis->map1080p2normal_point(&floatx, &floaty);
 		pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);	
-		if(pThis->m_click == 1)
+		if(pThis->m_click == 1 && yMouse > 540)
 		{
 			pThis->m_tempX = floatx;
 			pThis->m_tempY = floaty;

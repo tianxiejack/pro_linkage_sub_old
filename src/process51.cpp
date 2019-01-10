@@ -70,6 +70,8 @@ m_cofy(6320),m_bak_count(0)
 	msgextInCtrl = extInCtrl;	
 	sThis = this;
 	plat = this;
+	m_iDelta_X = 0;
+	m_iZoom = 2849;
 }
 
 CProcess::~CProcess()
@@ -2760,6 +2762,119 @@ void CProcess::moveToDest( )
 
 }
 
+void CProcess::GUN_MOVE_Event(int x, int y)
+{
+	static int static_cofx = 6320;
+	static int static_cofy = 6200;
+	int point_X , point_Y , offset_x , offset_y,zoomPos; 
+	int delta_X ;	
+	switch(m_display.g_CurDisplayMode) 
+	{
+		case PREVIEW_MODE:
+			offset_x = 0;	
+			offset_y = 0;
+			break;
+		case MAIN_VIEW:
+			offset_x = 480;
+			offset_y = 0;
+			break;		
+		default:
+			break;
+	}	
+
+	point_X  = x - offset_x;
+	point_Y  = y - offset_y;
+	
+	//delta_X = abs(LeftPoint.x - RightPoint.x) ;
+	
+	
+	int flag = 0;		
+//-----------------------------------Query Current Position --------------------------------------	
+	QueryCurBallCamPosition();	
+//-------------------------------------------------------------------------
+	static int DesPanPos = 0;
+	static int DesTilPos =0;	
+
+	int curPanPos = DesPanPos;
+	int curTilPos = DesTilPos;
+
+	curPanPos = panPos;	//sThis->m_ptz->m_iPanPos;
+	curTilPos = tiltPos;		//sThis->m_ptz->m_iTiltPos;
+	
+	int  inputX = point_X;	
+	int  inputY = point_Y;	
+	int  tmpcofx = static_cofx;
+	int  tmpcofy = static_cofy;
+//------------------------------------------------------	
+	Set_K_ByDeltaX(m_iDelta_X);
+//-----------------------------------------------------	
+	static_cofx = m_cofx;
+	static_cofy = m_cofy;
+
+	inputX -= 480;//474;
+	inputY -= 270;//276;	
+
+	float coefficientx = (float)tmpcofx*0.001f;
+	float coefficienty = (float)tmpcofy*0.001f;
+	float tmpficientx = 1.0;
+	inputX = (int)((float)inputX * coefficientx * tmpficientx);
+	inputY = (int)((float)inputY * coefficienty);		
+	
+	if(inputX + curPanPos < 0)
+	{
+		DesPanPos = 36000 + (inputX + curPanPos);
+	}
+	else if(inputX + curPanPos > 35999)
+	{
+		DesPanPos = inputX - (36000 - curPanPos);
+	}
+	else
+		DesPanPos = curPanPos + inputX;
+
+	if(curTilPos > 32768)
+	{
+		if(inputY < 0)
+		{			
+			DesTilPos = curTilPos - inputY ;
+		}
+		else
+		{
+			if(curTilPos - inputY < 32769)
+				DesTilPos = inputY - (curTilPos - 32768);
+			else
+				DesTilPos = curTilPos - inputY;
+		}
+	}
+	else
+	{
+		if(inputY < 0)
+		{
+			if(curTilPos + inputY < 0)
+			{
+				DesTilPos = -inputY - curTilPos + 32768; 
+			}
+			else 
+			{
+				DesTilPos = curTilPos + inputY;
+			}
+		}
+		else
+		{
+			DesTilPos = curTilPos + inputY;
+		}
+	}
+//-------------------------------------------------------------------------------
+		//zoomPos = checkZoomPosTable(delta_X);
+		zoomPos = m_iZoom;
+//-------------------------------------------------------------------------------
+		trkmsg.cmd_ID = acqPosAndZoom;
+		memcpy(&trkmsg.param[0],&DesPanPos, 4);
+		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
+		memcpy(&trkmsg.param[8],&zoomPos  , 4); 
+		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
+
+}
+
 void CProcess::Event_click2Move(int x, int y)
 #if 1
 {
@@ -3058,62 +3173,8 @@ void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 	int Origin_TilPos = g_camParams.tiltPos;
 
 	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
-#if 0	
-	if(inputX + Origin_PanPos < 0)
-	{
-		DesPanPos = 36000 + (inputX + Origin_PanPos);
-	}
-	else if(inputX + Origin_PanPos > 35999)
-	{
-		DesPanPos = inputX - (36000 - Origin_PanPos);
-	}
-	else{
-		DesPanPos = Origin_PanPos + inputX;
-	}
-
-	if(Origin_TilPos > 32768)
-	{
-		if(inputY < 0)
-		{			
-			DesTilPos = Origin_TilPos - inputY ;
-		}
-		else
-		{
-			if(Origin_TilPos - inputY < 32769)
-				DesTilPos = inputY - (Origin_TilPos - 32768);
-			else
-				DesTilPos = Origin_TilPos - inputY;
-		}
-	}
-	else
-	{
-		if(inputY < 0)
-		{
-			if(Origin_TilPos + inputY < 0)
-			{
-				DesTilPos = -inputY - Origin_TilPos + 32768; 
-			}
-			else
-				DesTilPos = Origin_TilPos + inputY;
-		}
-		else
-		{
-			DesTilPos = Origin_TilPos + inputY;
-		}
-	}
-
-	if(DesTilPos > 20000)
-	{
-		if(DesTilPos > 32768 + 1900)
-			DesTilPos = 32768 + 1900;
-	}
-	else
-	{
-		if(DesTilPos > 8900)
-			DesTilPos = 8900;
-	}
-	#endif
-	zoomPos = 2849;
+	zoomPos = m_iZoom;//2849;
+	
 	if(needChangeZoom)
 	{
 		trkmsg.cmd_ID = acqPosAndZoom;
@@ -3197,9 +3258,11 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 	RightPoint.y -=offset_y;
 	
 	delta_X = abs(LeftPoint.x - RightPoint.x) ;
-
+	m_iDelta_X = delta_X;
+	
 	if(needChangeZoom == true ) {
-		zoomPos = checkZoomPosTable(delta_X);		
+		zoomPos = checkZoomPosTable(delta_X);
+		m_iZoom = zoomPos;
 	}
 	if(needChangeZoom == true)
 	{
@@ -3335,8 +3398,8 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			break;
 		case 4:	
 		{
-			SelectMode nextmode = SelectMode((int)(mouse_workmode+1) %Mode_Count );
-			mouse_workmode = nextmode;
+			//SelectMode nextmode = SelectMode((int)(mouse_workmode+1) %Mode_Count );
+			//mouse_workmode = nextmode;
 		}	
 			//showDetectCorners = true;			
 			//printf("++++++++++++++++++++ showDetectCorners = %d \r\n", showDetectCorners);

@@ -142,6 +142,7 @@ public:
 	virtual void ClickGunMove2Ball(int x, int y,bool mode){ };
 
 	virtual void moveToDest( ){ };
+	virtual void GUN_MOVE_Event(int x, int y){};
 	//virtual void QueryCurBallCamPosition() { };
 	//virtual void setBallPos(int in_panPos, int in_tilPos, int in_zoom) { };
 

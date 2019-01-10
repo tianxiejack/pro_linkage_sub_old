@@ -152,6 +152,8 @@ public:
 	int m_SensorStat;
 	int m_acqRectW;
 	int m_acqRectH;
+	static bool m_bLDown;
+	static bool m_bIsClickMode;
 public :
 	//CMSTracker trackInit;
 	int detState ;

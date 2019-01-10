@@ -2011,7 +2011,8 @@ osdindex++;	//cross aim
 	}
 #endif
 
-	if(mouse_workmode == Click_Mode)
+	//if(mouse_workmode == Click_Mode)
+	if(m_bIsClickMode == true)
 	{
 		recIn.x=m_bakClickPoint.x;
  		recIn.y=m_bakClickPoint.y;

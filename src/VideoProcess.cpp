@@ -367,7 +367,8 @@ void CVideoProcess::linkage_init()
 
 CcCamCalibra* CVideoProcess::m_camCalibra = new CcCamCalibra();
 DetectCorners* CVideoProcess::m_detectCorners = new DetectCorners();
-
+bool CVideoProcess::m_bLDown = false;
+bool CVideoProcess::m_bIsClickMode = false;
 CVideoProcess::CVideoProcess()
 	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40)		
 {
@@ -1052,6 +1053,13 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
 	unsigned int curId;
+	static int tempX=0,tempY=0;
+
+	
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP){
+		m_bLDown = false;
+	}
+	
 	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW)
 		curId = 1;	
 	else
@@ -1079,12 +1087,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			pThis->mouse_eventv20(button, state, x, y);
 			return;
 		}
-	}
-
-	else if(mouse_workmode == Click_Mode && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		
-		pThis->setClickPoint(x,y);
-	}
+	}	
 
 	else if(mouse_workmode == DrawRectangle_Mode)
 	{
@@ -1160,21 +1163,39 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 
 					pThis->LeftPoint.x = x;
 					pThis->LeftPoint.y = y;
+					tempX = x;
+					tempY = y;
+					m_bLDown = true;
 				}
-				else
+				else{
 					printf("click illegal!!!\n");
+				}
 			}
 		}
 		else if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 		{
-			if(pThis->move_legal(x,y))
+			if(tempX == x && tempY == y) {
+				m_bLDown = false;
+				m_bIsClickMode = true;
+				pThis->setClickPoint(x,y);
+				if(y > 0 && y< 540) {
+					pThis->Event_click2Move(x , y);
+				}
+				else{
+					pThis->ClickGunMove2Ball(x,y,false);
+				}
+			}
+			else if(pThis->move_legal(x,y) && m_bLDown == true)
 			{
+				m_bIsClickMode = false;
 				pThis->m_click = 0;
 				pThis->addendpoint(x, y, curId);
 				pThis->m_draw = 1;	
 
 				pThis->RightPoint.x = x;
 				pThis->RightPoint.y = y;
+				
+/* Mouse Click gun or ball Image , ball camera move */
 
 				if(g_workMode == HANDLE_LINK_MODE ) {
 					if(y > 540) {							
@@ -1187,8 +1208,11 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					}
 				}
 			}
-			else
+			else{
 				printf("move illegal!!!\n");	
+			}
+
+			
 		}
 
 		if(button == 3)
@@ -1200,6 +1224,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 	}
 	//else  /*  click on gun image , ball camera move*/
 	//{
+	#if 0
 		if(mouse_workmode == Click_Mode && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)  {
 			if(y > 0 && y< 540) {
 				pThis->Event_click2Move(x , y);
@@ -1208,6 +1233,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				pThis->ClickGunMove2Ball(x,y,false);
 			}
 		}	
+	#endif
 	//}
 }
 

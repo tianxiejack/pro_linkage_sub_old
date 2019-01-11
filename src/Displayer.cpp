@@ -3393,10 +3393,33 @@ void CDisplayer::gl_display(void)
 		}
 	}
 
-	if(displayMode == CALIBRATE_CAPTURE){
-		chinese_osd(100,400,L"已保存图片:",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-		chinese_osd(280,400,L"张",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+	switch(displayMode){
+		case CALIBRATE_CAPTURE:
+			chinese_osd(100,400,L"已保存图片:",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			chinese_osd(280,400,L"张",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			chinese_osd(1500,880,L"棋盘格图片采集-界面 ",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 
+			break;
+		case TEST_RESULT_VIEW:
+			chinese_osd(1500,600,L"测试 特征点 标定-界面",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		case PREVIEW_MODE:
+			chinese_osd(1500,600,L"预览-界面 ",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		case GUN_FULL_SCREEN:
+			chinese_osd(1700,100,L"枪机 全屏-界面",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		case BALL_FULL_SCREEN:
+			chinese_osd(1700,100,L"球机 全屏-界面 ",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		case CALIBRATE_RESULT:
+			chinese_osd(1500,300,L"采集到的棋盘格-浏览-界面 ",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		case MATCH_POINT_VIEW:
+			chinese_osd(1500,800,L"特征点匹配 结果-界面 ",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			break;
+		default:
+			break;
 	}
 
 /******************************************************************************************************************************/

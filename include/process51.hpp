@@ -110,6 +110,9 @@ private:
 	
 	Point m_curClickPoint;
 	Point m_bakClickPoint;
+
+	cv::Point2d m_ballDestPoint;
+	cv::Point2d m_bakballDestPoint;
 	int m_iDelta_X;
 	int m_iZoom;
 	
@@ -121,13 +124,14 @@ public:
 	void ClickGunMove2Ball(int x, int y,bool mode);
 	
 	void CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords);
-	
+	void CvtImgPoint2Camera(cv::Point2d &imgCoords, cv::Point2d &camCoords);
 	void TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom);
 	
 	void SetDestPosScope(int &inputX, int &inputY, int &Origin_PanPos, int &Origin_TilPos,int &DesPanPos, int &DesTilPos);
 	void Event_click2Move(int x, int y);
 	void moveToDest( );
 	void GUN_MOVE_Event(int x, int y);
+	void Test_Match_result(int x, int y);
 	void QueryCurBallCamPosition();
 	void setBallPos(int in_panPos, int in_tilPos, int in_zoom);
 	void Set_K_ByDeltaX( int delta_x);
@@ -139,7 +143,13 @@ public:
 		return m_curClickPoint;
 	};
 
-
+	void setBallImagePoint(int &x, int &y) {
+		m_ballDestPoint.x = x;
+		m_ballDestPoint.y = y;
+	};
+	Point getBallImagePoint(){
+		return m_ballDestPoint;
+	};
 	void Init_CameraMatrix();
 	Mat undisImageGun;
 	

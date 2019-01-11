@@ -143,6 +143,8 @@ public:
 
 	virtual void moveToDest( ){ };
 	virtual void GUN_MOVE_Event(int x, int y){};
+	virtual void Test_Match_result(int x, int y){};
+
 	//virtual void QueryCurBallCamPosition() { };
 	//virtual void setBallPos(int in_panPos, int in_tilPos, int in_zoom) { };
 

@@ -107,7 +107,8 @@ void CProcess::loadIPCParam()
 
 		m_bakClickPoint = Point(-20,-20);
 		m_curClickPoint = Point(-30.-30);
-		
+		m_ballDestPoint = Point(-20,-30);
+		m_bakballDestPoint = Point(-20,-30);
 		prisensorstatus=0;//tv
 		m_castTm=0;
 		m_bCast=false;
@@ -2043,6 +2044,20 @@ osdindex++;	//cross aim
 		osdindex++;
 		
 	}
+//--------------------------------------------------------
+
+	if( m_display.g_CurDisplayMode == TEST_RESULT_VIEW)
+	{
+		cv::circle(m_display.m_imgOsd[1],m_bakballDestPoint,3 ,cvScalar(0,0,0,0),2,8,0);
+		m_bakballDestPoint = getBallImagePoint();
+		cv::circle(m_display.m_imgOsd[1],m_bakballDestPoint,3 ,cvScalar(255,0,0,255),2,8,0);		
+	}
+	else
+	{		
+		cv::circle(m_display.m_imgOsd[1],m_bakballDestPoint,3 ,cvScalar(0,0,0,0),2,8,0);
+	}
+	
+//--------------------------------------------------------
 {
 #if 0
 	sprintf(Bak_CString,"%s","=>");
@@ -2758,9 +2773,36 @@ void CProcess::moveToDest( )
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
 		memcpy(&trkmsg.param[8],&zoomPos  , 4); 
-		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);		
+		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+		return ;
 
 }
+
+void CProcess::Test_Match_result(int x, int y)
+{
+	int offsetX = 960;
+	int offsetY = 0;
+	int gunImage_pointX = x- offsetX;
+	int gunImage_pointY = y- offsetY;
+	cv::Point2d gunImagePoint = cv::Point2d(gunImage_pointX*2, gunImage_pointY*2);
+	cv::Point2d ballImagePoint;
+	
+	cv::Point2d temp;
+	
+	//printf("[%s]:))))))))))))))))))   gunImage_point = <%d, %d> \r\n", __FUNCTION__,gunImagePoint.x, gunImagePoint.y);
+
+	//CvtImgCoords2CamCoords(gunImagePoint, ballImagePoint);	
+	CvtImgPoint2Camera(gunImagePoint, ballImagePoint);
+	
+
+	//printf("[%s]:))))))))))))))))))   BallImage_point = <%d, %d> \r\n", __FUNCTION__,ballImagePoint.x, ballImagePoint.y);
+	int destX = ballImagePoint.x;
+	int destY = ballImagePoint.y;
+	setBallImagePoint(destX, destY);
+	
+	return ;
+}
+
 
 void CProcess::GUN_MOVE_Event(int x, int y)
 {
@@ -3198,6 +3240,35 @@ void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 	}
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
 }
+
+void CProcess::CvtImgPoint2Camera(cv::Point2d &imgCoords, cv::Point2d &camCoords)
+{
+	cv::Point2d opt = imgCoords;
+	std::vector<cv::Point2d> distorted, normalizedUndistorted;
+	distorted.push_back(cv::Point2d(opt.x, opt.y));
+	undistortPoints(distorted,normalizedUndistorted,g_camParams.cameraMatrix_gun,g_camParams.distCoeffs_gun);
+	std::vector<cv::Point3d> objectPoints;
+
+	for (std::vector<cv::Point2d>::const_iterator itPnt = normalizedUndistorted.begin();
+	itPnt != normalizedUndistorted.end(); ++itPnt)
+	{
+		objectPoints.push_back(cv::Point3d(itPnt->x, itPnt->y, 1));
+	}
+	std::vector<cv::Point2d> imagePoints(objectPoints.size());
+	projectPoints(objectPoints, cv::Vec3d(0,0,0),cv::Vec3d(0,0,0),g_camParams.cameraMatrix_ball,cv::Mat(),imagePoints);
+	std::vector<cv::Point2d> ballImagePoints(imagePoints.size());
+	perspectiveTransform(imagePoints, ballImagePoints, g_camParams.homography);
+	std::vector<cv::Point2d>::iterator itp = imagePoints.begin();
+	cv::Point2d pt = *itp;
+	cv::Point2d upt( pt.x, pt.y );			
+	itp = ballImagePoints.begin();
+	pt = *itp;
+	pt.x /= 2.0;	//+ 960;
+ 	pt.y /= 2.0;	 
+	camCoords = cv::Point2d( pt.x, pt.y );
+	return ;
+}
+
 void CProcess::CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords)
 {
 	Point opt = imgCoords;
@@ -3237,7 +3308,14 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 	int point_Y = ( y-offset_y ) *2;		
 	Point imgCoords = Point( point_X ,  point_Y );
 	Point camCoords;
+	
+	//printf("[%s]:))))))))))))))))))   gunImage_point = <%d, %d> \r\n", __FUNCTION__,imgCoords.x, imgCoords.y);
+
 	CvtImgCoords2CamCoords(imgCoords, camCoords);
+
+
+	//printf("[%s]:))))))))))))))))))   BallImage_point = <%d, %d> \r\n", __FUNCTION__,camCoords.x, camCoords.y);
+
 	TransformPixByOriginPoints(camCoords.x, camCoords.y, true);
 }
 void CProcess::reMapCoords(int x, int y,bool needChangeZoom)

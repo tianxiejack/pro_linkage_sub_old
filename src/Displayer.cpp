@@ -3268,10 +3268,16 @@ void CDisplayer::linkageSwitchMode(void)
 		case MATCH_POINT_VIEW:			
 			RenderWarpImageView(0,0, vdisWH[0][0]/2, vdisWH[0][1]/2);
 			RenderMatchPointsImageView(0,540, vdisWH[0][0], vdisWH[0][1]/2);
+			if( g_CurDisplayMode != MATCH_POINT_VIEW){
+				g_CurDisplayMode = MATCH_POINT_VIEW;	
+			}
 			break;
 		case TEST_RESULT_VIEW:			
 			RenderVideoOnOrthoView(VIDEO_1, 0,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
-			RenderVideoOnOrthoView(VIDEO_0, outputWHF[0]/2,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);	
+			RenderVideoOnOrthoView(VIDEO_0, outputWHF[0]/2,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
+			if( g_CurDisplayMode != TEST_RESULT_VIEW){
+				g_CurDisplayMode = TEST_RESULT_VIEW;	
+			}
 			break;
 		default:
 			break;	
@@ -3398,7 +3404,6 @@ void CDisplayer::gl_display(void)
 			chinese_osd(100,400,L"已保存图片:",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 			chinese_osd(280,400,L"张",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 			chinese_osd(1500,880,L"棋盘格图片采集-界面 ",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-
 			break;
 		case TEST_RESULT_VIEW:
 			chinese_osd(1500,600,L"测试 特征点 标定-界面",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);

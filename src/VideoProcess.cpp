@@ -1088,34 +1088,41 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			return;
 		}
 	}	
+	else if ( (pThis->m_display.g_CurDisplayMode == TEST_RESULT_VIEW) ) {
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+			printf("Click  IN  TEST_RESULT_VIEW  DisplayMode\r\n");
+			pThis->Test_Match_result(x,y);
+			return ;
+		}
+	}
 	else
 	{
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
-			if (pThis->open_handleCalibra /*|| g_sysParam->isEnable_HandleCalibrate()*/) // Press 'y' or 'Y' , set this flag to 1
-			{
-				pThis->OnMouseLeftDwn(x, y);
-			}
-			else
-			{
-
-				if(pThis->click_legal(x,y) )
+				if (pThis->open_handleCalibra /*|| g_sysParam->isEnable_HandleCalibrate()*/) // Press 'y' or 'Y' , set this flag to 1
 				{
-					if(y >540) {
-						pThis->m_click = 1;
-						pThis->addstartpoint(x, y, curId);
+					pThis->OnMouseLeftDwn(x, y);
+				}
+				else
+				{
 
-						pThis->LeftPoint.x = x;
-						pThis->LeftPoint.y = y;
+					if(pThis->click_legal(x,y) )
+					{
+						if(y >540) {
+							pThis->m_click = 1;
+							pThis->addstartpoint(x, y, curId);
+
+							pThis->LeftPoint.x = x;
+							pThis->LeftPoint.y = y;
+						}
+						tempX = x;
+						tempY = y;
+						m_bLDown = true;
 					}
-					tempX = x;
-					tempY = y;
-					m_bLDown = true;
+					else{
+						printf("click illegal!!!\n");
+					}
 				}
-				else{
-					printf("click illegal!!!\n");
-				}
-			}
 		}
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 		{
@@ -1167,7 +1174,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			else{
 				printf("move illegal!!!\n");	
 			}
-		}
+		
+	}
 		
 		if(button == 3)
 		{

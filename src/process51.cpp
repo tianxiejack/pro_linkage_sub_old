@@ -74,6 +74,17 @@ m_cofy(6200),m_bak_count(0)
 	m_iZoom = 2849; // Max view zoom:2849
 }
 
+CProcess::CProcess(int window_width, int window_height):m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6320),
+m_cofy(6200),m_bak_count(0),m_winWidth(window_width),m_winHeight(window_height),CVideoProcess(window_width,window_height)
+{
+	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
+	memset(extInCtrl,0,sizeof(CMD_EXT));
+	msgextInCtrl = extInCtrl;	
+	sThis = this;
+	plat = this;
+	m_iDelta_X = 1920; // imgae width :1920
+	m_iZoom = 2849; // Max view zoom:2849
+}
 CProcess::~CProcess()
 {
 	sThis=NULL;
@@ -455,7 +466,10 @@ int  CProcess::PiexltoWindowsyzoom_TrkRect(int y,int channel)
 
 	return  ret;
 }
-
+void CProcess::setDisplayResolution(CDisplayer &displayObject, int w, int h)
+{
+	displayObject.setDisplayResolution(w, h);
+}
 void CProcess::OnCreate()
 {
 	MSGAPI_initial();
@@ -722,7 +736,34 @@ void CProcess::osd_mtd_show(TARGET tg[], bool bShow)
 		}
 	}
 }
+void CProcess::GB_DrawCross(Mat &textureImg,cv::Point center, bool needShow)
+{
+	int space = 10;
+	int cross_width = 60;
+	int linewidth = 1;
+	int x = center.x;
+	int y = center.y;
+	CvScalar color = cvScalar(0,0,0,0);
+	if(needShow == true){
+		color =  cvScalar(0,255,0,255);
+	}
+	
+	line(textureImg, cv::Point(x+space, y), cv::Point(x+cross_width, y),color, linewidth, 8, 0 );
+	line(textureImg, cv::Point(x+space, y+1), cv::Point(x+cross_width, y+1),color, linewidth, 8, 0 );
+	
+	line(textureImg, cv::Point(x-space, y), cv::Point(x-cross_width, y),color, linewidth, 8, 0 );
+	line(textureImg, cv::Point(x-space, y+1), cv::Point(x-cross_width, y+1),color, linewidth, 8, 0 );
 
+	line(textureImg, cv::Point(x, y+space), cv::Point(x, y+cross_width),color, linewidth, 8, 0 );
+	line(textureImg, cv::Point(x+1, y+space), cv::Point(x+1, y+cross_width),color, linewidth, 8, 0 );
+	
+	line(textureImg, cv::Point(x, y-space), cv::Point(x, y-cross_width),color, linewidth, 8, 0 );
+	line(textureImg, cv::Point(x+1, y+space), cv::Point(x+1, y+cross_width),color, linewidth, 8, 0 );
+
+	line(textureImg, cv::Point(x-1, y), cv::Point(x+1, y),color, linewidth, 8, 0 );
+	line(textureImg, cv::Point(x, y-1), cv::Point(x, y+1),color, linewidth, 8, 0 );
+
+}
 
 void CProcess::DrawCross(cv::Rect rec,int fcolour ,int sensor,bool bShow /*= true*/)
 {
@@ -2017,32 +2058,44 @@ osdindex++;	//cross aim
 	//if(mouse_workmode == Click_Mode)
 	if(m_bIsClickMode == true)
 	{
-		recIn.x=m_bakClickPoint.x;
- 		recIn.y=m_bakClickPoint.y;
-		recIn.width = 60;
-		recIn.height = 60;
-		DrawCross(recIn,frcolor,1,false);
-		Osdflag[osdindex]=1;	
-		osdindex++;
-			
-		m_bakClickPoint = getCurClickPoint();
-		recIn.x=m_bakClickPoint.x;
- 		recIn.y=m_bakClickPoint.y;
-		recIn.width = 60;
-		recIn.height = 60;
-		DrawCross(recIn,frcolor,1,true);
-		Osdflag[osdindex]=1;	
+		#if 1
+			recIn.x=m_bakClickPoint.x;
+	 		recIn.y=m_bakClickPoint.y;
+			recIn.width = 60;
+			recIn.height = 60;
+			DrawCross(recIn,frcolor,1,false);
+			Osdflag[osdindex]=1;	
+			osdindex++;
+				
+			m_bakClickPoint = getCurClickPoint();
+			recIn.x=m_bakClickPoint.x;
+	 		recIn.y=m_bakClickPoint.y;
+			recIn.width = 60;
+			recIn.height = 60;
+			DrawCross(recIn,frcolor,1,true);
+			Osdflag[osdindex]=1;	
+		#else
+			//GB_DrawCross(m_display.m_imgOsd[1],cv::Point(m_bakClickPoint.x, m_bakClickPoint.y), true);
+
+			cv::circle(m_display.m_imgOsd[1],m_bakClickPoint,3 ,cvScalar(0,0,0,0),2,8,0);
+			m_bakClickPoint = getCurClickPoint();
+			cv::circle(m_display.m_imgOsd[1],m_bakballDestPoint,3 ,cvScalar(255,0,0,255),2,8,0);
+		#endif
 		
 	}
 	else{
-		recIn.x=m_bakClickPoint.x;
- 		recIn.y=m_bakClickPoint.y;
-		recIn.width = 60;
-		recIn.height = 60;
-		DrawCross(recIn,frcolor,1,false);
-		Osdflag[osdindex]=1;	
-		osdindex++;
-		
+		#if 1
+			recIn.x=m_bakClickPoint.x;
+	 		recIn.y=m_bakClickPoint.y;
+			recIn.width = 60;
+			recIn.height = 60;
+			DrawCross(recIn,frcolor,1,false);
+			Osdflag[osdindex]=1;	
+			osdindex++;
+		#else
+			//GB_DrawCross(m_display.m_imgOsd[1],cv::Point(m_bakClickPoint.x, m_bakClickPoint.y), false);
+			cv::circle(m_display.m_imgOsd[1],m_bakClickPoint,3 ,cvScalar(0,0,0,0),2,8,0);
+		#endif
 	}
 //--------------------------------------------------------
 
@@ -4773,6 +4826,7 @@ int CProcess::setresol(int resoltype)
 		default:
 			break;	
 	}
+	this->setDisplayResolution(m_display, outputWHF[0],outputWHF[1]);
 	glutFullScreen();
 }
 
@@ -5248,7 +5302,17 @@ void CProcess::update_param_osd()
 	pIStuts->SensorStatBegin 		= gConfig_Osd_param.MAIN_Sensor;
 	pIStuts->osdTextShow 			= gConfig_Osd_param.OSD_text_show;
 	pIStuts->osdDrawShow 			= gConfig_Osd_param.OSD_draw_show;
-	pIStuts->crossDrawShow 			= gConfig_Osd_param.CROSS_draw_show;
+	//pIStuts->crossDrawShow 			= gConfig_Osd_param.CROSS_draw_show;
+	//memcpy((void *)pIStuts->crossDrawShow, (void *)&gConfig_Osd_param.CROSS_draw_show, sizeof(gConfig_Osd_param.CROSS_draw_show));
+	for(int i=0; i< 5; i++) {
+		pIStuts->crossDrawShow[i]=gConfig_Osd_param.CROSS_draw_show[i];
+		pIStuts->osdBoxShow[i] = gConfig_Osd_param.osdBoxShow[i];
+		pIStuts->osdChidIDShow[i] = gConfig_Osd_param.osdChidIDShow[i];
+		pIStuts->osdChidNameShow[i] = gConfig_Osd_param.osdChidNmaeShow[i];
+		
+	}
+
+
 	pIStuts->osdTextColor 			=  gConfig_Osd_param.OSD_text_color;
 	pIStuts->osdTextAlpha			=  gConfig_Osd_param.OSD_text_alpha;
 	pIStuts->osdTextFont			= gConfig_Osd_param.OSD_text_font;
@@ -5286,7 +5350,9 @@ void CProcess::update_param_osd()
 	m_display.disptimeEnable = gConfig_Osd_param.Timedisp_9;
 	m_display.m_bOsd = pIStuts->osdDrawShow;
 	m_display.m_crossOsd = pIStuts->crossDrawShow;
-
+	for(int i=0; i< 5; i++) {
+		//m_display.m_crossOsd[i] = pIStuts->crossDraShow[i];		
+	}
 
 	//pIStuts->crossAxisWidth 		= gConfig_Osd_param.CROSS_AXIS_WIDTH;
 	//pIStuts->crossAxisHeight		= gConfig_Osd_param.CROSS_AXIS_HEIGHT;

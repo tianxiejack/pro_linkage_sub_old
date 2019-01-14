@@ -100,9 +100,10 @@ private:
 	Mat m_GrayMat;
 	Mat m_Gun_GrayMat;
 	Mat m_rgbMat;
-	
+	//int m_width,m_height;
 public:
 	CVideoProcess();
+	CVideoProcess(int w, int h);
 	~CVideoProcess();
 	int creat();
 	int destroy();
@@ -121,6 +122,7 @@ public:
 	int stop();
 
 public:
+	virtual void setDisplayResolution(CDisplayer &displayObject, int w, int h ){};
 	virtual void OnCreate(){};
 	virtual void OnDestroy(){};
 	virtual void OnInit(){};

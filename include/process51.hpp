@@ -156,11 +156,14 @@ public:
 	void manualHandleKeyPoints(int &x,int &y);
 	
 	int checkZoomPosTable(int delta);
+private:
+	int m_winWidth, m_winHeight;
 
 public:
 	CProcess();
+	CProcess(int window_width, int window_height);
 	~CProcess();
-
+	void setDisplayResolution(CDisplayer &displayObject ,int w, int h);
 	void OnCreate();
 	void OnDestroy();
 	void OnInit();
@@ -191,6 +194,7 @@ public:
 protected:
 	void msgdriv_event(MSG_PROC_ID msgId, void *prm);
 	void osd_mtd_show(TARGET tg[], bool bShow = true);
+	void GB_DrawCross(Mat &textureImg,cv::Point center, bool needShow);
 	void DrawCross(cv::Rect rec,int fcolour ,int sensor,bool bShow /*= true*/);
 	void drawmmt(TARGET tg[], bool bShow = true);
 	void drawmmtnew(TARGET tg[], bool bShow = true);

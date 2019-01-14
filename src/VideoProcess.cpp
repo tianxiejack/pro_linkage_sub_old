@@ -369,6 +369,74 @@ CcCamCalibra* CVideoProcess::m_camCalibra = new CcCamCalibra();
 DetectCorners* CVideoProcess::m_detectCorners = new DetectCorners();
 bool CVideoProcess::m_bLDown = false;
 bool CVideoProcess::m_bIsClickMode = false;
+
+CVideoProcess::CVideoProcess(int w, int h):m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_display(CDisplayer(w,h))
+{
+	imageListForCalibra.clear();
+	pThis = this;
+	memset(m_mtd, 0, sizeof(m_mtd));
+	memset(&mainProcThrObj, 0, sizeof(MAIN_ProcThrObj));
+	
+	detState = TRUE;
+	trackEnd = FALSE;
+	trackStart = TRUE;
+	nextDetect = FALSE;
+	lastFrameBox=0;
+	moveStat = FALSE;
+	m_acqRectW			= 	60;
+	m_acqRectH			= 	60;
+
+	m_intervalFrame 			= 0;
+	m_intervalFrame_change 	= 0;
+	m_bakChId = m_curChId;
+	trackchange		=0;
+	m_searchmod		=0;
+	tvzoomStat		=0;
+	wFileFlag			=0;
+	preAcpSR	={0};
+	algOsdRect = false;
+
+	
+#if __MOVE_DETECT__
+	m_pMovDetector	=NULL;
+	detect_vect_arr.resize(MAX_MTDRIGION_NUM);
+#endif
+
+#if __MMT__
+	memset(m_tgtBox, 0, sizeof(TARGETBOX)*MAX_TARGET_NUMBER);
+#endif
+
+#if __MOVE_DETECT__
+	detectNum = 1;
+	maxsize = 10000;
+	minsize = 9;
+	sensi = 30;
+	setrigion_flagv20 = mtdcnt = 0;	
+	memset(&mtdrigionv20, 0, sizeof(mtdrigionv20));
+	memset(grid19x10, 0, sizeof(grid19x10));
+	memset(grid19x10_bak, 0, sizeof(grid19x10_bak));
+#endif
+
+	m_curChId = video_gaoqing ;
+	m_curSubChId = video_gaoqing0 ;
+	Set_SelectByRect = false ;
+	open_handleCalibra = false ;
+	linkage_init();
+	m_click = m_draw = m_tempX = m_tempY = 0;
+	memset(m_rectn, 0, sizeof(m_rectn));
+	memset(mRect, 0, sizeof(mRect));
+	setrigon_flag = 0;
+	setrigon_polygon = 0;
+
+	m_click_v20L = m_click_v20R = 0;
+	memset(&mRectv20L, 0, sizeof(mRectv20L));
+	memset(&mRectv20R, 0, sizeof(mRectv20R));
+
+	jcenter_s = get_joycenter();
+	joys_click = 0;
+
+
+}
 CVideoProcess::CVideoProcess()
 	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40)		
 {

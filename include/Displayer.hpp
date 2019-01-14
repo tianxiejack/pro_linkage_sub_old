@@ -280,10 +280,12 @@ private:
 	void sendIPC_Videoname(int value);
 	void sendIPC_VideoName_pos();
 	void sendIPC_Time_pos();
-
+	int m_WinWidth, m_WinHeight;
 public:
 	CDisplayer();
+	CDisplayer(int window_width, int window_height);
 	~CDisplayer();
+	void setDisplayResolution(int w, int h);
 	int create();
 	int destroy();
 	int init(DS_InitPrm *pPrm);

@@ -54,7 +54,9 @@ int main(int argc, char **argv)
 #endif
 
 	timer_init();	
-	proc = new CProcess;
+	//proc = new CProcess(vdisWH[0][0], vdisWH[0][1]);
+	proc = new CProcess(outputWHF[0], outputWHF[1]);
+	
 	while(false == startEnable)
 	{
 		tv.tv_sec = 0;

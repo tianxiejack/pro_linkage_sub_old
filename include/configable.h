@@ -18,6 +18,7 @@
 #define MIN_MTDSENSI		10
 #define MAX_MTDSENSI		100
 
+
 typedef enum{
 	mainmenu0=0,
 	mainmenu1,

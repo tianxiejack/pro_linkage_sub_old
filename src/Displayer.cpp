@@ -532,6 +532,207 @@ CDisplayer::CDisplayer()
 	
 }
 
+CDisplayer::CDisplayer(int window_width, int window_height):m_WinWidth(window_width),m_WinHeight(window_height),
+	captureBMP_channel(0),selected_PicIndex(0),m_renderCount(0),m_bRun(false),m_bFullScreen(false),m_bOsd(false),
+ m_glProgram(0), m_bUpdateVertex(false),m_tmRender(0ul),m_waitSync(false),
+ m_telapse(5.0), m_nSwapTimeOut(0),m_detectCorners(NULL)
+{
+	m_currentSecondMenuIndex=0;
+	m_currentFirstMenuIndex=0;
+	memset(m_currentMenuPos, 0, sizeof(m_currentMenuPos));
+	int i;
+	gThis = this;
+	memset(&m_initPrm, 0, sizeof(m_initPrm));
+	memset(cuda_pbo_resource, 0, sizeof(cuda_pbo_resource));
+	//memset(m_dev_src_rgb, 0, sizeof(m_dev_src_rgb));
+	memset(m_cuStream, 0, sizeof(m_cuStream));
+	memset(m_bEnh, 0, sizeof(m_bEnh));
+	memset(m_Mmt, 0, sizeof(m_Mmt));
+	for(i=0; i<DS_DC_CNT; i++)
+		buffId_osd[i] = -1;
+	memset(updata_osd, 0, sizeof(updata_osd));
+	dismodchanagcount=0;
+	tv_pribuffid0=-1;
+	tv_pribuffid1=-1;
+	tv_pribuffid2=-1;
+	tv_pribuffid3=-1;
+	fir_pribuffid=-1;
+	freezeonece=0;
+
+	frameCount = 0;
+	frameRate = 0.0;
+	ballAddressID = 0x01;
+	linkage_init();
+	g_sysParam->getSysParam().gunposition.leftUp.x = 1440;
+	g_sysParam->getSysParam().gunposition.leftUp.y = 810;
+	g_sysParam->getSysParam().gun_camera.col = 1920;
+	g_sysParam->getSysParam().gun_camera.raw = 1080;
+	g_sysParam->getSysParam().gunposition.general.width = 480;
+	g_sysParam->getSysParam().gunposition.general.height = 270;
+	g_sysParam->setGunSize(SingletonSysParam::ONE_4);
+	g_sysParam->setGunPosition(SingletonSysParam::RU);
+	savePic_once = false;
+	showDetectCorners  = false;
+	
+	g_connectAction.CurCalibraCam = CAM_0;
+	
+/************************************Add 20181219**************************/
+	for(i=0; i<DS_DC_CNT;	i++){
+		pp[i] = 0;
+		m_code[i] = -1;
+	}
+	m_initPrm.disSched =33;// 3.5;
+/*************************************************************************/
+	_bCornerDetect = false;
+/************************************************************************/
+	run_Mode._bRButton = false;
+	run_Mode.showSubMenu = false;
+	run_Mode._pSelect = NULL;
+	run_Mode._LDown = NULL;
+/*************************************************************************/
+	setFontPosition(100, 100);	
+	run_Mode._texts.clear();
+	run_Mode.text1._pos = FLOAT2(fontPosX,fontPosY);
+	run_Mode.text1.r = 0;
+	run_Mode.text1.g = 0;
+	run_Mode.text1.b = 255;
+	run_Mode.text1.a = 255;
+	run_Mode.text1._eventDown = TextDown;
+	run_Mode.text1._clickDown = ClickDown;
+	wcscpy(run_Mode.text1._text, L"主界面");
+
+	run_Mode.text2._pos = FLOAT2(fontPosX,fontPosY+60);
+	run_Mode.text2.r = 0;
+	run_Mode.text2.g = 0;
+	run_Mode.text2.b = 255;
+	run_Mode.text2.a = 255;
+	run_Mode.text2._eventDown = TextDown2;
+	run_Mode.text2._clickDown = ClickDown2;
+	wcscpy(run_Mode.text2._text, L"标定界面");
+
+	run_Mode.text3._pos = FLOAT2(fontPosX,fontPosY+120);
+	run_Mode.text3.r = 0;
+	run_Mode.text3.g = 0;
+	run_Mode.text3.b = 255;
+	run_Mode.text3.a = 255;
+	run_Mode.text3._eventDown = TextDown3;
+	run_Mode.text3._clickDown = ClickDown3;
+	wcscpy(run_Mode.text3._text, L"枪机画面");
+
+	run_Mode.text4._pos = FLOAT2(fontPosX,fontPosY+180);
+	run_Mode.text4.r = 0;
+	run_Mode.text4.g = 0;
+	run_Mode.text4.b = 255;
+	run_Mode.text4.a = 255;
+	run_Mode.text4._eventDown = TextDown4;
+	run_Mode.text4._clickDown = ClickDown4;
+	wcscpy(run_Mode.text4._text, L"球机画面");
+
+	run_Mode.text5._pos = FLOAT2(fontPosX,fontPosY+240);
+	run_Mode.text5.r = 0;
+	run_Mode.text5.g = 0;
+	run_Mode.text5.b = 255;
+	run_Mode.text5.a = 255;
+	run_Mode.text5._eventDown = TextDown5;
+	run_Mode.text5._clickDown = ClickDown5;
+	wcscpy(run_Mode.text5._text, L"拍摄标定图片");
+
+	run_Mode.text6._pos = FLOAT2(fontPosX,fontPosY+300);
+	run_Mode.text6.r = 0;
+	run_Mode.text6.g = 0;
+	run_Mode.text6.b = 255;
+	run_Mode.text6.a = 255;
+	run_Mode.text6._eventDown = TextDown6;
+	run_Mode.text6._clickDown = ClickDown6;
+	wcscpy(run_Mode.text6._text, L"显示标定结果");
+
+	run_Mode.text7._pos = FLOAT2(fontPosX,fontPosY+360);
+	run_Mode.text7.r = 0;
+	run_Mode.text7.g = 0;
+	run_Mode.text7.b = 255;
+	run_Mode.text7.a = 255;
+	run_Mode.text7._eventDown = TextDown7;
+	run_Mode.text7._clickDown = ClickDown7;
+	wcscpy(run_Mode.text7._text, L"手动联动模式");
+
+	run_Mode.text8._pos = FLOAT2(fontPosX,fontPosY+420);
+	run_Mode.text8.r = 0;
+	run_Mode.text8.g = 0;
+	run_Mode.text8.b = 255;
+	run_Mode.text8.a = 255;
+	run_Mode.text8._eventDown = TextDown8;
+	run_Mode.text8._clickDown = ClickDown8;
+	wcscpy(run_Mode.text8._text, L"球机单控模式");
+
+	run_Mode.text9._pos = FLOAT2(fontPosX,fontPosY+480);
+	run_Mode.text9.r = 0;
+	run_Mode.text9.g = 0;
+	run_Mode.text9.b = 255;
+	run_Mode.text9.a = 255;
+	run_Mode.text9._eventDown = TextDown9;
+	run_Mode.text9._clickDown = ClickDown9;
+	wcscpy(run_Mode.text9._text, L"自动联动模式");
+
+	run_Mode._texts.push_back(run_Mode.text1);
+	run_Mode.text1._SN = run_Mode._texts.size() -1;	
+	
+	run_Mode._texts.push_back(run_Mode.text2);
+	run_Mode.text2._SN = run_Mode._texts.size() -1;	
+	
+	run_Mode._texts.push_back(run_Mode.text3);
+	run_Mode.text3._SN = run_Mode._texts.size() -1;	
+	
+	run_Mode._texts.push_back(run_Mode.text4);
+	run_Mode.text4._SN = run_Mode._texts.size() -1;
+	
+	run_Mode._texts.push_back(run_Mode.text5);
+	run_Mode.text5._SN = run_Mode._texts.size() -1;
+
+	run_Mode._texts.push_back(run_Mode.text6);
+	run_Mode.text6._SN = run_Mode._texts.size() -1;
+
+	run_Mode.workMode.push_back(run_Mode.text7);
+	run_Mode.text7._SN = run_Mode.workMode.size() -1;
+
+	run_Mode.workMode.push_back(run_Mode.text8);
+	run_Mode.text8._SN = run_Mode.workMode.size() -1;
+
+	run_Mode.workMode.push_back(run_Mode.text9);
+	run_Mode.text9._SN = run_Mode.workMode.size() -1;
+//=======================================
+
+	if(CurrentBallConfig.ballAdrress !=0 ){
+		curBaudRate = CurrentBallConfig.ballRate;
+		curBaudAddress = CurrentBallConfig.ballAdrress;
+		cout << " \n\nOOOOOOOOOOOOOOOOOOOOOOO: Recv BallRate Fome IPC !!!\n\n"<< endl;
+	}
+	else
+	{
+		bool retValue = LoadComConfigs("ctrl_config.yml");
+		if(!retValue){
+			cout << " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Read ctrl_config.yml Failed !!!"<< endl;
+		}
+	}
+
+	disresol_type = disresol_type_tmp = oresoltype;
+	switch(curBaudRate) {
+		case 2400:
+			disbaud_type = 0;
+			break;
+		case 4800:
+			disbaud_type = 1;
+			break;
+		case 9600:
+			disbaud_type = 2;
+			break;
+		case 115200:
+			disbaud_type = 3;
+			break;
+		default:
+			break;
+	}
+
+}
 CDisplayer::~CDisplayer()
 {
 	//destroy();
@@ -3232,7 +3433,9 @@ void CDisplayer::linkageSwitchMode(void)
 
 		case MAIN_VIEW:	
 		
-			RenderVideoOnOrthoView(VIDEO_1,outputWHF[0]/4,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
+			//RenderVideoOnOrthoView(VIDEO_1,outputWHF[0]/4,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
+			
+			RenderVideoOnOrthoView(VIDEO_1, m_WinWidth/4, m_WinHeight/2, m_WinWidth/2, m_WinHeight/2);
 			RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]/2);	
 			if( g_CurDisplayMode != MAIN_VIEW)
 				g_CurDisplayMode = MAIN_VIEW;			
@@ -3306,7 +3509,12 @@ void CDisplayer::linkageSwitchMode(void)
 #endif
 	
 }
-
+void CDisplayer::setDisplayResolution(int w, int h)
+{
+	m_WinWidth = w;	
+	m_WinHeight = h;
+	return ;
+}
 void CDisplayer::gl_display(void)
 {	
 	

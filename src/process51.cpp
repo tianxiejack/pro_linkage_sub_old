@@ -41,6 +41,10 @@ extern menu_param_t *msgextMenuCtrl;
 extern SelectMode mouse_workmode;
 extern bool setComBaud_select ;
 extern bool changeComBaud ;
+extern CProcess *proc;
+
+bool send_signal_flag = true;
+
 void inputtmp(unsigned char cmdid)
 {
 	plat->OnKeyDwn(cmdid);
@@ -2691,43 +2695,73 @@ void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 	panPos = in_panPos ;
 	tiltPos = in_tilPos ;
 	zoomPos = in_zoom ;
-	//OSA_semSignal(&g_linkage_getPos);
+
+	//printf("send sem time stamp = %d\n",OSA_getCurTimeInMsec());
+	
+	 struct timeval tv;
+	 while(send_signal_flag)
+	 {	
+	 	OSA_semSignal(&g_linkage_getPos);
+	 	tv.tv_sec = 0;
+    		tv.tv_usec = (30%1000)*1000;
+   		select(0, NULL, NULL, NULL, &tv);			
+		if(send_signal_flag == false)
+		{
+			break;
+		}		
+	 }	
 }
 
 void CProcess::QueryCurBallCamPosition()
 {
-	char flag =0;	
+	int flag =0;	
 	int ret =0;
 	SENDST trkmsg={0};
 	trkmsg.cmd_ID = querypos;
+	//struct timeval time1, time2;
+	
+	//gettimeofday(&time1,NULL);
+	//printf("Before SendMsg:   sem count = %d \n",g_linkage_getPos.count);	
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-	flag = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
-	if( -1 == flag ) {		
-		printf("%s:Line :%d    First time: could not get the ball current Pos \n",__func__,__LINE__ );
 
-		
+	//printf("wait time stamp = %d\n",OSA_getCurTimeInMsec());
+	//printf("After SendMsg: sem count = %d \n",g_linkage_getPos.count);
+	
+	flag = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
+	//printf("flag = %d \n",flag);
+	if( -1 == flag ) {		
+		printf("%s:Line :%d    First time: could not get the ball current Pos \n",__func__,__LINE__ );		
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 		ret = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
 		if(ret == -1){
 			printf("[%s] :Line :%d    Second time: could not get the ball current Pos \n",__func__,__LINE__ );
 		}
-		else
-		{
-			setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);
-			memset(&linkagePos,0, sizeof(LinkagePos_t));
-		}
-		
+		else	{		
+			send_signal_flag = false;
+			//printf("Recieve PTZ Sencond Time !!!");
+		#if 0
+			cout << "\n\n===============Query Ball Camera Position Twice Sucess ! ============(Second)" << endl;
+			cout << "Current : panPos = "<< panPos << endl;
+			cout << "Current : tiltPos = "<< tiltPos << endl;
+			cout << "Current : zoomPos = "<< zoomPos << endl;
+			cout << "====================================================\n\n" << endl;
+		#endif
+			memset(&linkagePos,0, sizeof(LinkagePos_t));			
+		}		
 	}
-	else	{		
-		setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);
-		memset(&linkagePos,0, sizeof(LinkagePos_t));
-	#if 0
-		cout << "\n\n******************Query Ball Camera Position Sucess ! *****************" << endl;
-		cout << "Current : panPos = "<< panPos << endl;
-		cout << "Current : tiltPos = "<< tiltPos << endl;
-		cout << "Current : zoomPos = "<< zoomPos << endl;
-		cout << "*****************************************************************\n\n" << endl;
-	#endif
+	else	{	
+			send_signal_flag = false;
+			//gettimeofday(&time2,NULL);
+			//printf("Delta Time  = %ld ms;\r\n", (time2.tv_sec - time1.tv_sec)*1000 + (time2.tv_usec - time1.tv_usec)/1000 );
+			
+			memset(&linkagePos,0, sizeof(LinkagePos_t));			
+		#if 0
+			cout << "\n\n===============Query Ball Camera Position Sucess ! ============(1)" << endl;
+			cout << "Current : panPos = "<< panPos << endl;
+			cout << "Current : tiltPos = "<< tiltPos << endl;
+			cout << "Current : zoomPos = "<< zoomPos << endl;
+			cout << "====================================================\n\n" << endl;
+		#endif
 	}
 }
 
@@ -2880,7 +2914,7 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 {
 	static int static_cofx = 6320;
 	static int static_cofy = 6200;
-	int point_X , point_Y , offset_x , offset_y,zoomPos; 
+	int point_X , point_Y , offset_x , offset_y,ZoomPos; 
 	int delta_X ;	
 	int cur_Kx = 6320;
 	int cur_Ky = 6200;
@@ -2898,38 +2932,35 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 		default:
 			break;
 	}	
-
+	
 	point_X  = x - offset_x;
-	point_Y  = y - offset_y;
-	
-	//delta_X = abs(LeftPoint.x - RightPoint.x) ;
-	
+	point_Y  = y - offset_y;	
 	
 	int flag = 0;		
-//-----------------------------------Query Current Position --------------------------------------	
+//-----------------------------------Query Current Position -------------------
+
 	QueryCurBallCamPosition();	
 	
 //-------------------------------------------------------------------------
-	static int DesPanPos = 0;
-	static int DesTilPos =0;	
+	 int DesPanPos = 0;
+	 int DesTilPos =0;	
 
-	int curPanPos = DesPanPos;
-	int curTilPos = DesTilPos;
+	int Origin_PanPos = panPos;
+	int Origin_TilPos = tiltPos;
 
-	curPanPos = panPos;	//sThis->m_ptz->m_iPanPos;
-	curTilPos = tiltPos;		//sThis->m_ptz->m_iTiltPos;
+	int curPanPos = panPos;	//sThis->m_ptz->m_iPanPos;
+	int curTilPos = tiltPos;		//sThis->m_ptz->m_iTiltPos;
 
 	Set_K_ByDeltaX(m_iDelta_X);
+	
 	cur_Kx = m_cofx;
 	cur_Ky = m_cofy;
 	
 	int  inputX = point_X;	
 	int  inputY = point_Y;	
-	int  tmpcofx = cur_Kx;//static_cofx;
-	int  tmpcofy = cur_Ky;//static_cofy;
-//------------------------------------------------------	
-	
-//-----------------------------------------------------	
+	int  tmpcofx = cur_Kx;		//static_cofx;
+	int  tmpcofy = cur_Ky;		//static_cofy;
+
 	//static_cofx = m_cofx;
 	//static_cofy = m_cofy;
 
@@ -2942,57 +2973,29 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 	inputX = (int)((float)inputX * coefficientx * tmpficientx);
 	inputY = (int)((float)inputY * coefficienty);		
 	
-	if(inputX + curPanPos < 0)
-	{
-		DesPanPos = 36000 + (inputX + curPanPos);
-	}
-	else if(inputX + curPanPos > 35999)
-	{
-		DesPanPos = inputX - (36000 - curPanPos);
-	}
-	else
-		DesPanPos = curPanPos + inputX;
+	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
+//-------------------------------------------------------------------------------
+//	zoomPos = checkZoomPosTable(delta_X);
+	
+	ZoomPos = m_iZoom;
 
-	if(curTilPos > 32768)
-	{
-		if(inputY < 0)
-		{			
-			DesTilPos = curTilPos - inputY ;
-		}
-		else
-		{
-			if(curTilPos - inputY < 32769)
-				DesTilPos = inputY - (curTilPos - 32768);
-			else
-				DesTilPos = curTilPos - inputY;
-		}
-	}
-	else
-	{
-		if(inputY < 0)
-		{
-			if(curTilPos + inputY < 0)
-			{
-				DesTilPos = -inputY - curTilPos + 32768; 
-			}
-			else 
-			{
-				DesTilPos = curTilPos + inputY;
-			}
-		}
-		else
-		{
-			DesTilPos = curTilPos + inputY;
-		}
-	}
 //-------------------------------------------------------------------------------
-		//zoomPos = checkZoomPosTable(delta_X);
-		zoomPos = m_iZoom;
-//-------------------------------------------------------------------------------
+printf("\r\n===============Destination====================(2)\r\n");
+
+printf("DesPanPos = %d\r\nDesTilPos = %d\r\nZoomPos  = %d \r\n",DesPanPos,DesTilPos,ZoomPos);
+printf("\r\n==========================================\r\n");
+
+
 		trkmsg.cmd_ID = acqPosAndZoom;
+#if 1
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
+		memcpy(&trkmsg.param[8],&ZoomPos  , 4); 
+#else
+		memcpy(&trkmsg.param[0],&panPos, 4);
+		memcpy(&trkmsg.param[4],&tiltPos, 4); 	
 		memcpy(&trkmsg.param[8],&zoomPos  , 4); 
+#endif
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
 
 }
@@ -5783,11 +5786,8 @@ void CProcess::MSGAPI_update_camera(long lParam)
 
 void CProcess::MSGAPI_update_ballPos(long lParam)
 {
-	m_camCalibra->setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);
-	
-	//setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);
-	OSA_semSignal(&g_linkage_getPos);
-	//printf("[%s]: ----------------->>>>>>>    OSA_semSignal  (&g_linkage_getPos )\r\n\r\n\r\n",__FUNCTION__);
+	proc->setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);	
+	m_camCalibra->setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);	
 }
 
 

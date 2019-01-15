@@ -11,7 +11,7 @@ int OSA_semCreate(OSA_SemHndl *hndl, Uint32 maxCount, Uint32 initVal)
  
   status |= pthread_mutexattr_init(&mutex_attr);
   status |= pthread_condattr_init(&cond_attr);  
-  pthread_condattr_setclock(&cond_attr, CLOCK_REALTIME);
+  pthread_condattr_setclock(&cond_attr, CLOCK_REALTIME/*CLOCK_REALTIME*/);
   status |= pthread_mutex_init(&hndl->lock, &mutex_attr);
   status |= pthread_cond_init(&hndl->cond, &cond_attr);  
 
@@ -36,13 +36,12 @@ int OSA_semCreate(OSA_SemHndl *hndl, Uint32 maxCount, Uint32 initVal)
 void maketimeout(struct timespec *tsp,long msec)
 {
 	struct timeval now;
-
 	gettimeofday(&now, NULL);
-	tsp->tv_sec = now.tv_sec;
-	tsp->tv_nsec= now.tv_usec;
-	tsp->tv_nsec *= 1000u;
-	tsp->tv_sec += msec/1000;
-	tsp->tv_nsec+= (msec%1000) * 1000000u;
+	tsp->tv_sec = now.tv_sec +( msec/1000);
+	tsp->tv_nsec= now.tv_usec *1000 +  (msec%1000) * 1000000u;
+	//tsp->tv_nsec *= 1000u;
+	//tsp->tv_sec += msec/1000;
+	//tsp->tv_nsec+= (msec%1000) * 1000000u;
 }
 
 int OSA_semWait(OSA_SemHndl *hndl, Uint32 timeout)
@@ -78,7 +77,25 @@ int OSA_semWait(OSA_SemHndl *hndl, Uint32 timeout)
 	while(1) {
 		if(hndl->count > 0) {
 			hndl->count--;
-			status = OSA_SOK;
+#if 0
+			ret = pthread_cond_timedwait(&hndl->cond, &hndl->lock,&timer);
+			if(ret==ETIMEDOUT)
+			{
+				status = OSA_EFAIL;				
+				break;
+			}
+			else
+			{				
+				if(hndl->count > 0){
+					hndl->count--;
+					status = OSA_SOK;
+				} 
+				break;
+			}
+
+#endif
+			
+			status = OSA_SOK;  
 			break;
 		} 
 		else {
@@ -86,12 +103,12 @@ int OSA_semWait(OSA_SemHndl *hndl, Uint32 timeout)
 			if(ret==ETIMEDOUT)
 			{
 				status = OSA_EFAIL;
-				//OSA_printf(" %s time out !!!\r\n",__func__);
+				OSA_printf(" %s time out !!!\r\n",__func__);
 				break;
 			}
 			else
 			{
-				//OSA_printf(" %s hndl->count %d!!!\r\n",__func__,hndl->count);
+				OSA_printf(" %s hndl->count %d!!!\r\n",__func__,hndl->count);
 				if(hndl->count > 0){
 					hndl->count--;
 					status = OSA_SOK;

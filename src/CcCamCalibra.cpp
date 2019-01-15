@@ -322,7 +322,7 @@ int CcCamCalibra::Run()
 					ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 					printf("\r\n [%s]===== Send Message to Ball Camera : MsgID =  querypos \r\n",__FUNCTION__);
 
-					flag = OSA_semWait(&m_linkage_getPos, OSA_TIMEOUT_FOREVER/*200*/);
+					flag = OSA_semWait(&m_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/500);
 					if( -1 == flag ) {
 						getCurrentPosFlag = false;
 						printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );

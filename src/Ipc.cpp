@@ -38,7 +38,8 @@ OSA_BufHndl msgSendBuf;
 OSA_ThrHndl thrHandleDataIn_recv;
 OSA_ThrHndl thrHandleDataIn_send;
 
-	extern SingletonSysParam* g_sysParam;
+extern SingletonSysParam* g_sysParam;
+extern LinkagePos_t linkagePos ; 
 
 void initmessage()
 {
@@ -574,6 +575,7 @@ void* recv_msg(SENDST *RS422)
 			
 		case querypos:
 				memcpy(&posOfLinkage,RS422->param,sizeof(posOfLinkage));
+				
 				//printf("[%s]:Query IPC Rcv :>> panPos ,tilPos , zoom = (%d ,%d ,%d) \n",__FUNCTION__,posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
 				app_ctrl_setLinkagePos(posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
 			break;

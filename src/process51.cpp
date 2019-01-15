@@ -2044,15 +2044,20 @@ osdindex++;	//cross aim
 	}	
 }
 //=============================================================================================
+
 #if 0
+	for(int i =0; i< 19; i++) 
 	{
-		recIn.x=960;//948;
- 		recIn.y=270;//276;
-		recIn.width = 100;
-		recIn.height = 100;
-		DrawCross(recIn,frcolor,1,true);
-		Osdflag[osdindex]=1;
+		for(int j=0; j<10; j++){
+			recIn.x=2+i*100;		//948;
+	 		recIn.y=2+j*100;		//276;
+			recIn.width = 1920;
+			recIn.height = 1080;
+			DrawCross(recIn,frcolor,1,true);
+			Osdflag[osdindex]=1;
+		}
 	}
+	
 #endif
 
 	//if(mouse_workmode == Click_Mode)
@@ -2692,12 +2697,26 @@ void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 void CProcess::QueryCurBallCamPosition()
 {
 	char flag =0;	
+	int ret =0;
 	SENDST trkmsg={0};
 	trkmsg.cmd_ID = querypos;
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-	flag = OSA_semWait(&g_linkage_getPos, OSA_TIMEOUT_FOREVER/*200*/);
+	flag = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
 	if( -1 == flag ) {		
-		printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );
+		printf("%s:Line :%d    First time: could not get the ball current Pos \n",__func__,__LINE__ );
+
+		
+		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+		ret = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
+		if(ret == -1){
+			printf("[%s] :Line :%d    Second time: could not get the ball current Pos \n",__func__,__LINE__ );
+		}
+		else
+		{
+			setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);
+			memset(&linkagePos,0, sizeof(LinkagePos_t));
+		}
+		
 	}
 	else	{		
 		setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);
@@ -5350,10 +5369,7 @@ void CProcess::update_param_osd()
 	m_display.disptimeEnable = gConfig_Osd_param.Timedisp_9;
 	m_display.m_bOsd = pIStuts->osdDrawShow;
 	m_display.m_crossOsd = pIStuts->crossDrawShow;
-	for(int i=0; i< 5; i++) {
-		//m_display.m_crossOsd[i] = pIStuts->crossDraShow[i];		
-	}
-
+	
 	//pIStuts->crossAxisWidth 		= gConfig_Osd_param.CROSS_AXIS_WIDTH;
 	//pIStuts->crossAxisHeight		= gConfig_Osd_param.CROSS_AXIS_HEIGHT;
 	//pIStuts->picpCrossAxisWidth		= gConfig_Osd_param.Picp_CROSS_AXIS_WIDTH;

@@ -15,6 +15,9 @@
 #define DATAIN_TSK_STACK_SIZE       (0)
 #define SDK_MEM_MALLOC(size)                                            OSA_memAlloc(size)
 
+extern pthread_cond_t event_cond;
+extern pthread_mutex_t event_mutex;
+
 extern  bool startEnable;
 extern OSDSTATUS gConfig_Osd_param ;
 extern UTCTRKSTATUS gConfig_Alg_param;
@@ -40,7 +43,8 @@ OSA_ThrHndl thrHandleDataIn_send;
 
 extern SingletonSysParam* g_sysParam;
 extern LinkagePos_t linkagePos ; 
-
+class CProcess ;
+extern CProcess *proc;
 void initmessage()
 {
     int status;
@@ -574,10 +578,18 @@ void* recv_msg(SENDST *RS422)
 			break;
 			
 		case querypos:
+			{
 				memcpy(&posOfLinkage,RS422->param,sizeof(posOfLinkage));
+				pthread_mutex_lock(&event_mutex);
+				
+				proc->RefreshBallPTZ(posOfLinkage.panPos,posOfLinkage.tilPos,posOfLinkage.zoom);
+
+				pthread_cond_signal(&event_cond);
+				pthread_mutex_unlock(&event_mutex);				
 				
 				//printf("[%s]:Query IPC Rcv :>> panPos ,tilPos , zoom = (%d ,%d ,%d) \n",__FUNCTION__,posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
-				app_ctrl_setLinkagePos(posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
+			//app_ctrl_setLinkagePos(posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
+			}
 			break;
 		case switchtarget:
 			pMsg->MtdSelect[pMsg->SensorStat] = ipc_eMTD_Next;

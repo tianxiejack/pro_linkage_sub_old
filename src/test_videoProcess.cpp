@@ -12,13 +12,13 @@
 #include <errno.h>  
 #include <time.h> 
 #include <signal.h>
-
+#include "EventLoop.h"
 
 using namespace std;
 using namespace cv;
 
-CProcess *proc;
-
+CProcess *proc = NULL;
+EventLoop *eventLoop = NULL;
 bool startEnable = false;
 
 volatile bool cloneOneFrame = false;
@@ -56,6 +56,12 @@ int main(int argc, char **argv)
 	timer_init();	
 	//proc = new CProcess(vdisWH[0][0], vdisWH[0][1]);
 	proc = new CProcess(outputWHF[0], outputWHF[1]);
+	if(proc == NULL){
+		printf("\r\nCreate Main App Failed !!!");
+		return -1;
+	}
+
+	
 	
 	while(false == startEnable)
 	{
@@ -67,10 +73,17 @@ int main(int argc, char **argv)
 	proc->creat();
 	proc->init();
 	proc->run();
+	eventLoop = new EventLoop(proc);
+	if(eventLoop == NULL){
+		printf("\r\nCreate Event Loop Failed !!!");
+	}
+	eventLoop->Init();
+	eventLoop->RunService();
 	
 	glutMainLoop();
 	
 	proc->destroy();
+	eventLoop->StopService();
 	
 #ifdef __IPC__
 	Ipc_pthread_stop();

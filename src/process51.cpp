@@ -67,7 +67,7 @@ void getMtdxy(int *x,int *y,int *w,int *h)
 #endif
 
 CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6320),
-m_cofy(6200),m_bak_count(0)
+m_cofy(6200),m_bak_count(0),m_capX(960),m_capY(540)
 {
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
@@ -2690,6 +2690,12 @@ void CProcess::Set_K_ByDeltaX( int delta_x)
 
 }
 
+void CProcess::RefreshBallPTZ(int in_panPos, int in_tilPos, int in_zoom)
+{
+	panPos = in_panPos ;
+	tiltPos = in_tilPos ;
+	zoomPos = in_zoom ;
+}
 void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 {
 	panPos = in_panPos ;
@@ -2716,6 +2722,12 @@ void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 	 #endif
 }
 
+void CProcess::refreshClickPoint(int x, int y)
+{
+	m_capX = x;
+	m_capY = y;
+	return ;
+}
 void CProcess::QueryCurBallCamPosition()
 {
 	int flag =0;	
@@ -2728,8 +2740,10 @@ void CProcess::QueryCurBallCamPosition()
 	
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 
-	//printf("wait time stamp = %d\n",OSA_getCurTimeInMsec());
-	//printf("After SendMsg: sem count = %d \n",g_linkage_getPos.count);
+
+#if 0
+	printf("wait time stamp = %d\n",OSA_getCurTimeInMsec());
+	printf("After SendMsg: sem count = %d \n",g_linkage_getPos.count);
 	
 	//flag = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
 	flag=GB_CondTimedWait(&g_linkage_getPos, 200);
@@ -2746,8 +2760,8 @@ void CProcess::QueryCurBallCamPosition()
 		else	
 		{		
 			//send_signal_flag = false;
-			//printf("Recieve PTZ Sencond Time !!!");
-			#if 0
+			printf("Recieve PTZ Sencond Time !!!");
+			#if 1
 			cout << "\n\n===============Query Ball Camera Position Twice Sucess ! ============(Second)" << endl;
 			cout << "Current : panPos = "<< panPos << endl;
 			cout << "Current : tiltPos = "<< tiltPos << endl;
@@ -2759,10 +2773,10 @@ void CProcess::QueryCurBallCamPosition()
 	}
 	else	{	
 			//send_signal_flag = false;
-			//gettimeofday(&time2,NULL);
-			//printf("Delta Time  = %ld ms;\r\n", (time2.tv_sec - time1.tv_sec)*1000 + (time2.tv_usec - time1.tv_usec)/1000 );
+			gettimeofday(&time2,NULL);
+			printf("Delta Time  = %ld ms;\r\n", (time2.tv_sec - time1.tv_sec)*1000 + (time2.tv_usec - time1.tv_usec)/1000 );
 							
-		#if 0
+		#if 1
 			cout << "\n\n===============Query Ball Camera Position Sucess ! ============(1)" << endl;
 			cout << "Current : panPos = "<< panPos << endl;
 			cout << "Current : tiltPos = "<< tiltPos << endl;
@@ -2771,6 +2785,8 @@ void CProcess::QueryCurBallCamPosition()
 		#endif
 		memset(&linkagePos,0, sizeof(LinkagePos_t));	
 	}
+#endif
+	
 }
 
 void CProcess::moveToDest( )
@@ -2917,7 +2933,60 @@ void CProcess::Test_Match_result(int x, int y)
 	return ;
 }
 
+void CProcess::MoveBall()
+{
+	static int static_cofx = 6320;
+	static int static_cofy = 6200;
+	int  offset_x , offset_y,ZoomPos; 
+	int delta_X ;	
+	int cur_Kx = 6320;
+	int cur_Ky = 6200;
+	 int DesPanPos = 0;
+	 int DesTilPos =0;	
 
+	int Origin_PanPos = panPos;
+	int Origin_TilPos = tiltPos;
+
+	int curPanPos = panPos;	
+	int curTilPos = tiltPos;		
+
+	Set_K_ByDeltaX(m_iDelta_X);
+	
+	cur_Kx = m_cofx;
+	cur_Ky = m_cofy;
+
+	int  inputX = m_capX;	
+	int  inputY = m_capY;	
+	int  tmpcofx = cur_Kx;		
+	int  tmpcofy = cur_Ky;		
+
+	inputX -= 480;
+	inputY -= 270;	
+
+	float coefficientx = (float)tmpcofx*0.001f;
+	float coefficienty = (float)tmpcofy*0.001f;
+	float tmpficientx = 1.0;
+	inputX = (int)((float)inputX * coefficientx * tmpficientx);
+	inputY = (int)((float)inputY * coefficienty);		
+	
+	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
+	
+	ZoomPos = m_iZoom;//zoomPos ;//
+	//m_iZoom = zoomPos;
+
+#if 1
+	printf("\r\n===============Destination====================(2)\r\n");
+	printf("DesPanPos = %d\r\nDesTilPos = %d\r\nZoomPos  = %d \r\n",DesPanPos,DesTilPos,ZoomPos);
+	printf("\r\n==========================================\r\n");
+#endif	
+	trkmsg.cmd_ID = acqPosAndZoom;
+
+	memcpy(&trkmsg.param[0],&DesPanPos, 4);
+	memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
+	memcpy(&trkmsg.param[8],&ZoomPos  , 4); 
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+
+}
 void CProcess::GUN_MOVE_Event(int x, int y)
 {
 	static int static_cofx = 6320;
@@ -2946,11 +3015,14 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 	
 	int flag = 0;		
 //-----------------------------------Query Current Position -------------------
+	refreshClickPoint(point_X, point_Y);
 
 	QueryCurBallCamPosition();	
 	
 //-------------------------------------------------------------------------
-	 int DesPanPos = 0;
+
+#if 0
+	int DesPanPos = 0;
 	 int DesTilPos =0;	
 
 	int Origin_PanPos = panPos;
@@ -2985,28 +3057,27 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 //-------------------------------------------------------------------------------
 //	zoomPos = checkZoomPosTable(delta_X);
 	
-	ZoomPos = m_iZoom;
+	ZoomPos = zoomPos ;//m_iZoom;
+	m_iZoom = zoomPos;
 
 //-------------------------------------------------------------------------------
-#if 0
-printf("\r\n===============Destination====================(2)\r\n");
-
-printf("DesPanPos = %d\r\nDesTilPos = %d\r\nZoomPos  = %d \r\n",DesPanPos,DesTilPos,ZoomPos);
-printf("\r\n==========================================\r\n");
-#endif
-
-		trkmsg.cmd_ID = acqPosAndZoom;
 #if 1
-		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-		memcpy(&trkmsg.param[8],&ZoomPos  , 4); 
+	printf("\r\n===============Destination====================(2)\r\n");
+	printf("DesPanPos = %d\r\nDesTilPos = %d\r\nZoomPos  = %d \r\n",DesPanPos,DesTilPos,ZoomPos);
+	printf("\r\n==========================================\r\n");
+#endif	
+	trkmsg.cmd_ID = acqPosAndZoom;
+#if 1
+	memcpy(&trkmsg.param[0],&DesPanPos, 4);
+	memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
+	memcpy(&trkmsg.param[8],&ZoomPos  , 4); 
 #else
-		memcpy(&trkmsg.param[0],&panPos, 4);
-		memcpy(&trkmsg.param[4],&tiltPos, 4); 	
-		memcpy(&trkmsg.param[8],&zoomPos  , 4); 
+	memcpy(&trkmsg.param[0],&panPos, 4);
+	memcpy(&trkmsg.param[4],&tiltPos, 4); 	
+	memcpy(&trkmsg.param[8],&zoomPos  , 4); 
 #endif
-		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
-
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
+#endif
 }
 
 void CProcess::Event_click2Move(int x, int y)

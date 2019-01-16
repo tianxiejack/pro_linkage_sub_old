@@ -60,8 +60,6 @@ int main(int argc, char **argv)
 		printf("\r\nCreate Main App Failed !!!");
 		return -1;
 	}
-
-	
 	
 	while(false == startEnable)
 	{

@@ -2448,6 +2448,82 @@ void CProcess::manualHandleKeyPoints(int &x,int &y)
 	
 }
 
+
+int CProcess::checkZoomPozNewTable(int delta)
+{
+	int Delta_X = delta;
+	int setZoom = 2849 ;
+	
+	if(Delta_X >= 960){
+		setZoom = 2849;
+	}
+	else if( 420 <= Delta_X && Delta_X<960){		
+		setZoom = 2849;
+	}
+	else if(320 <= Delta_X && Delta_X < 420){ 
+		setZoom = 2849;//6268;
+	}
+	else if(240 <= Delta_X && Delta_X <320){
+		setZoom = 2849;//9117;
+	}
+	else if(200 <= Delta_X && Delta_X <240){
+		setZoom = 2849;//11967;
+	}
+	else if(170 <= Delta_X && Delta_X <200){
+		setZoom = 2849;//15101;
+	}
+	else  if(145 <= Delta_X && Delta_X <170){
+		setZoom = 2849;//18520;
+	}
+	else  if(140 <= Delta_X && Delta_X <145){
+		setZoom = 6268;//21058;
+	}
+	else  if(112 <= Delta_X && Delta_X <140){
+		setZoom = 9117;//24504;
+	}
+	else  if(104 <= Delta_X && Delta_X <112){
+		setZoom = 11967;//28208;
+	}
+	else  if(96 <= Delta_X && Delta_X <104){
+		setZoom = 15101;//33330;
+	}
+	else  if(90 <= Delta_X && Delta_X <96){
+		setZoom = 18520;//36750;
+	}
+	else  if(84 <= Delta_X && Delta_X <90){
+		setZoom = 21058;//39320;
+	}
+	else  if(76 <= Delta_X && Delta_X <84){
+		setZoom = 24504;//43870;
+	}
+	else  if(68 <= Delta_X && Delta_X <76){
+		setZoom = 28208;//46440;
+	}
+	else  if(62 <= Delta_X && Delta_X <68){
+		setZoom = 33330;//49230;
+	}
+	else  if(56<= Delta_X && Delta_X <62 ){
+		setZoom = 36750;//52265;
+	}
+	else  if(50 <= Delta_X && Delta_X < 56){
+		setZoom = 39320;//55560;
+	}
+	else  if(44 <= Delta_X && Delta_X <50){
+		setZoom = 43870;//58520;
+	}
+	else  if(38 <= Delta_X && Delta_X < 44){
+		setZoom = 46440;//61240;
+	}
+	else  if(32 <= Delta_X && Delta_X < 38){
+		setZoom = 49230;//63890;
+	}
+	else  if(0 <= Delta_X && Delta_X <32){
+		setZoom = 52265;//65535;
+	}
+	return setZoom;
+
+
+}
 int CProcess::checkZoomPosTable(int delta)
 {
 	int Delta_X = delta;
@@ -2586,6 +2662,89 @@ int CProcess::checkZoomPosTable(int delta)
 	
 	
 	return setZoom;
+}
+
+void CProcess::Set_K_ByNewDeltaX(int delta_x)
+{
+	int  tmpcofx   ;		
+	int  tmpcofy    ;
+	int Delta_X = delta_x;
+	
+	if(Delta_X >= 960){
+		 tmpcofx =6320 ;
+		 tmpcofy =6200 ;
+	}
+	else if(  Delta_X >= 420  && Delta_X < 960){
+		 tmpcofx =6320 ;
+		 tmpcofy =6200 ;
+	}
+	else if(Delta_X >= 320 && Delta_X <420) { 
+		 tmpcofx =6320 ;
+		 tmpcofy =6200 ;
+	}
+	else if(240 <= Delta_X && Delta_X <320){
+		 tmpcofx =6320 ;
+		 tmpcofy =6200 ;
+	}
+	else if(200 <= Delta_X && Delta_X <240){
+		 tmpcofx =6320 ;
+		 tmpcofy =6200 ;
+	}
+	else if(170 <= Delta_X && Delta_X <200 ){
+		 tmpcofx =6320 ;
+		 tmpcofy =6200 ;
+	}
+	else  if(145 <= Delta_X && Delta_X < 170){
+		 tmpcofx =6320 ;
+		 tmpcofy =6200 ;
+	}
+	else  if(140 <= Delta_X && Delta_X <145){
+		 tmpcofx =3300 ;
+		 tmpcofy =3400 ;
+	}
+	else  if(112 < Delta_X && Delta_X <140){
+		 tmpcofx =2400 ;
+		 tmpcofy =2400 ;
+	}
+	else  if(104 <= Delta_X && Delta_X <112){
+		 tmpcofx =1850 ;
+		 tmpcofy =1850 ;
+	}
+	else  if(96 <= Delta_X && Delta_X <104){
+		 tmpcofx =1500 ;
+		 tmpcofy =1500 ;
+	}
+	else  if(90 <= Delta_X && Delta_X <96){
+		 tmpcofx =1350 ;
+		 tmpcofy =1360 ;
+	}
+	else  if(84 <= Delta_X && Delta_X <90){
+		 tmpcofx =1160 ;
+		 tmpcofy =1230 ;
+	}
+	else  if(76 <= Delta_X && Delta_X <84){
+		 tmpcofx =1000 ;
+		 tmpcofy =1020 ;
+	}
+	else  if(68 <= Delta_X && Delta_X <76){
+		 tmpcofx =900 ;
+		 tmpcofy =920 ;
+	}
+	else  if(62 <= Delta_X && Delta_X < 68){
+		 tmpcofx =820 ;
+		 tmpcofy =830 ;
+	}
+	else  if(56<= Delta_X && Delta_X < 62){
+		 tmpcofx =760 ;
+		 tmpcofy =750 ;
+	}
+	else  if(0 <= Delta_X && Delta_X < 56){
+		 tmpcofx =700 ;
+		 tmpcofy =710 ;
+	}
+	
+	m_cofx = tmpcofx;
+	m_cofy = tmpcofy;
 }
 
 
@@ -2950,7 +3109,9 @@ void CProcess::MoveBall()
 	int curPanPos = panPos;	
 	int curTilPos = tiltPos;		
 
-	Set_K_ByDeltaX(m_iDelta_X);
+	//Set_K_ByDeltaX(m_iDelta_X);
+	
+	Set_K_ByNewDeltaX( m_iDelta_X );
 	
 	cur_Kx = m_cofx;
 	cur_Ky = m_cofy;
@@ -3502,7 +3663,7 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 	m_iDelta_X = delta_X;
 	
 	if(needChangeZoom == true ) {
-		zoomPos = checkZoomPosTable(delta_X);
+		zoomPos = checkZoomPozNewTable( delta_X );//checkZoomPosTable(delta_X);
 		m_iZoom = zoomPos;
 	}
 	if(needChangeZoom == true)
@@ -3515,8 +3676,7 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
 		}		
 	}
-	else
-	{
+	else  {
 		point_X = (x - offset_x);
 		point_Y = (y- offset_y);		
 	}

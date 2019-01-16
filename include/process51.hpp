@@ -141,7 +141,7 @@ public:
 	void refreshClickPoint(int x, int y);
 
 	void Set_K_ByDeltaX( int delta_x);
-
+       void Set_K_ByNewDeltaX(int delta_x);
 	void setClickPoint(int x, int y){
 		m_curClickPoint = Point(x, y);
 	};
@@ -162,6 +162,8 @@ public:
 	void manualHandleKeyPoints(int &x,int &y);
 	
 	int checkZoomPosTable(int delta);
+	int checkZoomPozNewTable(int delta);
+
 private:
 	int m_winWidth, m_winHeight;
 

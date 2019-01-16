@@ -833,12 +833,15 @@ void app_ctrl_enter()
 	{
 		if(0 == pMenuStatus->menuarray[submenu_mtd].pointer)
 		{
-			CMD_EXT tmpCmd = {0};
-			tmpCmd.MtdSetRigion = 1;
-			mouse_workmode = SetMteRigion_Mode;
-			app_ctrl_setMtdRigionStat(&tmpCmd);
-			g_displayMode = MENU_GUN;
-			app_ctrl_setMenuStat(submenu_setmtdrigion);
+			if(0 == pIStuts->MtdState[pIStuts->SensorStat])
+			{
+				CMD_EXT tmpCmd = {0};
+				tmpCmd.MtdSetRigion = 1;
+				mouse_workmode = SetMteRigion_Mode;
+				app_ctrl_setMtdRigionStat(&tmpCmd);
+				g_displayMode = MENU_GUN;
+				app_ctrl_setMenuStat(submenu_setmtdrigion);
+			}
 		}
 		else if(1 == pMenuStatus->menuarray[submenu_mtd].pointer)
 		{

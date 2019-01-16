@@ -93,6 +93,7 @@ class CProcess : public CVideoProcess
 	Point textPos2_backup[64];
 	Point circle_point;
 private:
+	int m_capX, m_capY;
 	Rect m_rectSelectPic;
 	bool m_bMarkCircle;
 	void Cmp_SysParam();
@@ -131,9 +132,14 @@ public:
 	void Event_click2Move(int x, int y);
 	void moveToDest( );
 	void GUN_MOVE_Event(int x, int y);
+	void MoveBall();
+
 	void Test_Match_result(int x, int y);
 	void QueryCurBallCamPosition();
 	void setBallPos(int in_panPos, int in_tilPos, int in_zoom);
+	void RefreshBallPTZ(int in_panPos, int in_tilPos, int in_zoom);
+	void refreshClickPoint(int x, int y);
+
 	void Set_K_ByDeltaX( int delta_x);
 
 	void setClickPoint(int x, int y){

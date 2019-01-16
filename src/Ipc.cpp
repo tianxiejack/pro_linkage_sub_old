@@ -580,15 +580,17 @@ void* recv_msg(SENDST *RS422)
 		case querypos:
 			{
 				memcpy(&posOfLinkage,RS422->param,sizeof(posOfLinkage));
-				pthread_mutex_lock(&event_mutex);
+				if(proc->getPTZflag()){
+					proc->setPTZflag(false);
+					pthread_mutex_lock(&event_mutex);
 				
-				proc->RefreshBallPTZ(posOfLinkage.panPos,posOfLinkage.tilPos,posOfLinkage.zoom);
-
-				pthread_cond_signal(&event_cond);
-				pthread_mutex_unlock(&event_mutex);				
-				
+					proc->RefreshBallPTZ(posOfLinkage.panPos,posOfLinkage.tilPos,posOfLinkage.zoom);
+					
+					pthread_cond_signal(&event_cond);
+					pthread_mutex_unlock(&event_mutex);				
+				}
 				//printf("[%s]:Query IPC Rcv :>> panPos ,tilPos , zoom = (%d ,%d ,%d) \n",__FUNCTION__,posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
-			//app_ctrl_setLinkagePos(posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
+				app_ctrl_setLinkagePos(posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
 			}
 			break;
 		case switchtarget:

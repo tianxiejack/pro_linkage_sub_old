@@ -93,6 +93,7 @@ class CProcess : public CVideoProcess
 	Point textPos2_backup[64];
 	Point circle_point;
 private:
+	bool m_bRefreshPTZ;
 	int m_capX, m_capY;
 	Rect m_rectSelectPic;
 	bool m_bMarkCircle;
@@ -118,6 +119,13 @@ private:
 	int m_iZoom;
 	
 public:
+	void setPTZflag(bool flag){
+		m_bRefreshPTZ = flag;
+		return ;
+	};
+	bool getPTZflag(){
+		return m_bRefreshPTZ;
+	};
 	void loadIPCParam();
 	bool readParams(const char* file);
 	bool writeParams(const char* file);

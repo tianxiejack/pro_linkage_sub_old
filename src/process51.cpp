@@ -78,7 +78,7 @@ m_cofy(6200),m_bak_count(0),m_capX(960),m_capY(540)
 	m_iZoom = 2849; // Max view zoom:2849
 }
 
-CProcess::CProcess(int window_width, int window_height):m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6320),
+CProcess::CProcess(int window_width, int window_height):m_bRefreshPTZ(false),m_capX(960),m_capY(540),m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6320),
 m_cofy(6200),m_bak_count(0),m_winWidth(window_width),m_winHeight(window_height),CVideoProcess(window_width,window_height)
 {
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
@@ -3177,7 +3177,7 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 	int flag = 0;		
 //-----------------------------------Query Current Position -------------------
 	refreshClickPoint(point_X, point_Y);
-
+	setPTZflag(true);
 	QueryCurBallCamPosition();	
 	
 //-------------------------------------------------------------------------
@@ -6026,7 +6026,7 @@ void CProcess::MSGAPI_update_camera(long lParam)
 
 void CProcess::MSGAPI_update_ballPos(long lParam)
 {
-	proc->setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);	
+	//proc->setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);	
 	m_camCalibra->setBallPos(linkagePos.panPos, linkagePos.tilPos, linkagePos.zoom);	
 }
 

@@ -1004,27 +1004,39 @@ void app_ctrl_upMenu()
 	{
 		if((submenu_mtd == menustate) && (pMenuStatus->mtdnum_deng == 1))
 		{
-			pMenuStatus->osd_mudnum = (pMenuStatus->osd_mudnum + 1) % MAX_MTDTARGET_NUM;
+			pMenuStatus->osd_mudnum = (pMenuStatus->osd_mudnum + 1) % (MAX_MTDTARGET_NUM+1);
+			if(pMenuStatus->osd_mudnum < MIN_MTDTARGET_NUM)
+				pMenuStatus->osd_mudnum = MIN_MTDTARGET_NUM;
 			MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
 		}
 		else if((submenu_mtd == menustate) && (pMenuStatus->trktime_deng == 1))
 		{
-			pMenuStatus->osd_trktime = (pMenuStatus->osd_trktime + 1) % MAX_MTDTRKTIME;
+			pMenuStatus->osd_trktime = (pMenuStatus->osd_trktime + 1) % (MAX_MTDTRKTIME+1);
+			if(pMenuStatus->osd_trktime < MIN_MTDTRKTIME)
+				pMenuStatus->osd_trktime = MIN_MTDTRKTIME;
 			MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
 		}
 		else if((submenu_mtd == menustate) && (pMenuStatus->maxsize_deng == 1))
 		{
-			pMenuStatus->osd_maxsize = (pMenuStatus->osd_maxsize + 1) % MAX_MTDMAXSIZE;
+			pMenuStatus->osd_maxsize = (pMenuStatus->osd_maxsize + 1) % (MAX_MTDMAXSIZE+1);
+			if(pMenuStatus->osd_maxsize < plat->minsize)
+				pMenuStatus->osd_maxsize = plat->minsize;
+						
 			MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
 		}
 		else if((submenu_mtd == menustate) && (pMenuStatus->minsize_deng == 1))
 		{
-			pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + 1) % MAX_MTDMAXSIZE;
+			if(MAX_MTDMAXSIZE == pMenuStatus->osd_minsize)
+				pMenuStatus->osd_minsize = MIN_MTDMINSIZE;
+			else
+				pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + 1) % (MAX_MTDMAXSIZE+1);
 			MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
 		}
 		else if((submenu_mtd == menustate) && (pMenuStatus->sensi_deng == 1))
 		{
-			pMenuStatus->osd_sensi = (pMenuStatus->osd_sensi + 1) % MAX_MTDSENSI;
+			pMenuStatus->osd_sensi = (pMenuStatus->osd_sensi + 1) % (MAX_MTDSENSI+1);
+			if(pMenuStatus->osd_sensi < MIN_MTDSENSI)
+				pMenuStatus->osd_sensi = MIN_MTDSENSI;
 			MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
 		}
 
@@ -1061,27 +1073,44 @@ void app_ctrl_downMenu()
 	{
 		if((submenu_mtd == menustate) && (pMenuStatus->mtdnum_deng == 1))
 		{
-			pMenuStatus->osd_mudnum = (pMenuStatus->osd_mudnum + MAX_MTDTARGET_NUM - 1) % MAX_MTDTARGET_NUM;
+			if(MIN_MTDTARGET_NUM == pMenuStatus->osd_mudnum)
+				pMenuStatus->osd_mudnum = MAX_MTDTARGET_NUM;
+			else
+				pMenuStatus->osd_mudnum = (pMenuStatus->osd_mudnum + MAX_MTDTARGET_NUM - 1) % MAX_MTDTARGET_NUM;
+
+
 			MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
 		}
 		else if((submenu_mtd == menustate) && (pMenuStatus->trktime_deng == 1))
 		{
-			pMenuStatus->osd_trktime = (pMenuStatus->osd_trktime + MAX_MTDTRKTIME - 1) % MAX_MTDTRKTIME;
+			if(MIN_MTDTRKTIME == pMenuStatus->osd_trktime)
+				pMenuStatus->osd_trktime = MAX_MTDTRKTIME;
+			else
+				pMenuStatus->osd_trktime = (pMenuStatus->osd_trktime + MAX_MTDTRKTIME - 1) % MAX_MTDTRKTIME;
 			MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
 		}
 		else if((submenu_mtd == menustate) && (pMenuStatus->maxsize_deng == 1))
 		{
-			pMenuStatus->osd_maxsize = (pMenuStatus->osd_maxsize + MAX_MTDMAXSIZE - 1) % MAX_MTDMAXSIZE;
+			if(pMenuStatus->osd_maxsize == plat->minsize)
+				pMenuStatus->osd_maxsize = MAX_MTDMAXSIZE;
+			else
+				pMenuStatus->osd_maxsize = (pMenuStatus->osd_maxsize + MAX_MTDMAXSIZE - 1) % MAX_MTDMAXSIZE;
 			MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
 		}
 		else if((submenu_mtd == menustate) && (pMenuStatus->minsize_deng == 1))
 		{
-			pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + MAX_MTDMAXSIZE - 1) % MAX_MTDMAXSIZE;
+			if(MIN_MTDMINSIZE == pMenuStatus->osd_minsize)
+				pMenuStatus->osd_minsize = MAX_MTDMAXSIZE;
+			else
+				pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + MAX_MTDMAXSIZE - 1) % MAX_MTDMAXSIZE;
 			MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
 		}
 		else if((submenu_mtd == menustate) && (pMenuStatus->sensi_deng == 1))
 		{
-			pMenuStatus->osd_sensi = (pMenuStatus->osd_sensi + MAX_MTDSENSI - 1) % MAX_MTDSENSI;
+			if(MIN_MTDSENSI == pMenuStatus->osd_sensi)
+				pMenuStatus->osd_sensi = MAX_MTDSENSI;
+			else
+				pMenuStatus->osd_sensi = (pMenuStatus->osd_sensi + MAX_MTDSENSI - 1) % MAX_MTDSENSI;
 			MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
 		}
 

@@ -44,6 +44,63 @@ void maketimeout(struct timespec *tsp,long msec)
 	//tsp->tv_nsec+= (msec%1000) * 1000000u;
 }
 
+int GB_CondTimedWait(OSA_SemHndl *hndl, Uint32 timeout)
+{
+	int ret;
+	int status = OSA_EFAIL;
+	struct timespec timer;
+	maketimeout(&timer,timeout);
+	pthread_mutex_lock(&hndl->lock);
+	while(1) {
+		if(hndl->count > 0) {
+			hndl->count--;
+		#if 1
+			ret = pthread_cond_timedwait(&hndl->cond, &hndl->lock,&timer);
+			if(ret==ETIMEDOUT)
+			{
+				status = OSA_EFAIL;
+				OSA_printf(" [%s]: time out !!!\r\n",__func__);
+				break;
+			}
+			else
+			{		
+				OSA_printf(" [%s]: hndl->count %d!!!\r\n",__func__,hndl->count);
+				if(hndl->count > 0){
+					hndl->count--;
+					status = OSA_SOK;
+				} 
+				break;
+			}
+
+		#endif			
+			//status = OSA_SOK;  
+			break;
+		} 
+		else {
+			ret = pthread_cond_timedwait(&hndl->cond, &hndl->lock,&timer);
+			if(ret==ETIMEDOUT)
+			{
+				status = OSA_EFAIL;
+				OSA_printf(" %s time out !!!\r\n",__func__);
+				break;
+			}
+			else
+			{
+				OSA_printf(" %s hndl->count %d!!!\r\n",__func__,hndl->count);
+				if(hndl->count > 0){
+					hndl->count--;
+					status = OSA_SOK;
+				} 
+				break;
+			}
+		}
+	}
+
+	pthread_mutex_unlock(&hndl->lock);
+
+	return status;
+
+}
 int OSA_semWait(OSA_SemHndl *hndl, Uint32 timeout)
 {
 	int ret;
@@ -76,25 +133,7 @@ int OSA_semWait(OSA_SemHndl *hndl, Uint32 timeout)
 	pthread_mutex_lock(&hndl->lock);
 	while(1) {
 		if(hndl->count > 0) {
-			hndl->count--;
-#if 0
-			ret = pthread_cond_timedwait(&hndl->cond, &hndl->lock,&timer);
-			if(ret==ETIMEDOUT)
-			{
-				status = OSA_EFAIL;				
-				break;
-			}
-			else
-			{				
-				if(hndl->count > 0){
-					hndl->count--;
-					status = OSA_SOK;
-				} 
-				break;
-			}
-
-#endif
-			
+			hndl->count--;			
 			status = OSA_SOK;  
 			break;
 		} 

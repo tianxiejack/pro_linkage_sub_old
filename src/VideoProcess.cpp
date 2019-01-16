@@ -370,7 +370,8 @@ DetectCorners* CVideoProcess::m_detectCorners = new DetectCorners();
 bool CVideoProcess::m_bLDown = false;
 bool CVideoProcess::m_bIsClickMode = false;
 
-CVideoProcess::CVideoProcess(int w, int h):m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_display(CDisplayer(w,h))
+CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
+	m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_display(CDisplayer(w,h))
 {
 	imageListForCalibra.clear();
 	pThis = this;
@@ -653,7 +654,7 @@ void CVideoProcess::processsautocarliMenu(int value)
 
 int CVideoProcess::click_legal(int x, int y)
 {
-	y = 1080 - y;
+	y = m_ScreenHeight - y;
 	if(in_gun_area(x, y))
 	{
 		click_in_area = 1;	//click in gun area
@@ -673,7 +674,7 @@ int CVideoProcess::click_legal(int x, int y)
 
 int CVideoProcess::move_legal(int x, int y)
 {
-	y = 1080 - y;
+	y = m_ScreenHeight - y;
 	if(1 == click_in_area)
 	{
 		if(in_gun_area(x, y))
@@ -698,25 +699,25 @@ int CVideoProcess::in_gun_area(int x, int y)
 	switch(dismode)
 	{
 		case PREVIEW_MODE:
-			if((x > 960 && x < 1920) && (y > 540 && y < 1080))
+			if((x > m_ScreenWidth/2 && x < m_ScreenWidth) && (y > m_ScreenHeight/2 && y < m_ScreenHeight))
 				return 1;
 			else
 				return 0;
 			break;
 		case MAIN_VIEW:
-			if((x > 0 && x < 1920) && (y > 0 && y < 540))
+			if((x > 0 && x < m_ScreenWidth) && (y > 0 && y < m_ScreenHeight/2))
 				return 1;
 			else
 				return 0;
 			break;
 		case SIDE_BY_SIDE:
-			if((x > 960 && x < 1920) && (y > 0 && y < 1080))
+			if((x > m_ScreenWidth/2 && x < m_ScreenWidth) && (y > 0 && y < m_ScreenHeight))
 				return 1;
 			else
 				return 0;
 			break;
 		case LEFT_BALL_RIGHT_GUN:
-			if((x > 480 && x < 1920) && (y > 270 && y < 1080))
+			if((x > m_ScreenWidth/4 && x < m_ScreenWidth) && (y > 270 && y < m_ScreenHeight))
 				return 1;
 			else
 				return 0;
@@ -734,25 +735,25 @@ int CVideoProcess::in_ball_area(int x, int y)
 	switch(dismode)
 	{
 		case PREVIEW_MODE:
-			if((x > 0 && x < 960) && (y > 540 && y < 1080))
+			if((x > 0 && x < m_ScreenWidth/2) && (y > m_ScreenHeight/2 && y < m_ScreenHeight))
 				return 1;
 			else
 				return 0;
 			break;
 		case MAIN_VIEW:
-			if((x > 480 && x < 1440) && (y > 540 && y < 1080))
+			if((x > m_ScreenWidth/4 && x < (m_ScreenWidth*3/4)) && (y > m_ScreenHeight/2 && y < m_ScreenHeight))
 				return 1;
 			else
 				return 0;
 			break;
 		case SIDE_BY_SIDE:
-			if((x > 0 && x < 960) && (y > 0 && y < 1080))
+			if((x > 0 && x < m_ScreenWidth/2) && (y > 0 && y < m_ScreenHeight))
 				return 1;
 			else
 				return 0;
 			break;
 		case LEFT_BALL_RIGHT_GUN:
-			if((x > 0 && x < 480) && (y > 810 && y < 1080))
+			if((x > 0 && x < m_ScreenWidth/4) && (y > (m_ScreenHeight*3/4) && y < m_ScreenHeight))
 				return 1;
 			else
 				return 0;
@@ -796,26 +797,26 @@ mouserect CVideoProcess::mappip2preview(mouserect rectcur)
 	{
 		rectpip.x = 0;
 		rectpip.y = 0;
-		rectpip.w = 1920;
-		rectpip.h = 1080;
+		rectpip.w = m_ScreenWidth;
+		rectpip.h = m_ScreenHeight;
 		
-		rectpreview.x = 960;
+		rectpreview.x = m_ScreenWidth/2;
 		rectpreview.y = 0;
-		rectpreview.w = 960;
-		rectpreview.h = 540;
+		rectpreview.w = m_ScreenWidth/2;
+		rectpreview.h = m_ScreenHeight/2;
 	}
 	else if(2 == click_in_area)
 	{
 	
 		rectpip.x = 1440;
 		rectpip.y = 0;
-		rectpip.w = 480;
+		rectpip.w = m_ScreenWidth/4;
 		rectpip.h = 270;
 		
 		rectpreview.x = 0;
 		rectpreview.y = 0;
-		rectpreview.w = 960;
-		rectpreview.h = 540;
+		rectpreview.w = m_ScreenWidth/2;//960;
+		rectpreview.h = m_ScreenHeight/2;
 	}
 
 	return maprect(rectcur, rectpip, rectpreview);
@@ -827,27 +828,27 @@ mouserect CVideoProcess::mapsbs2preview(mouserect rectcur)
 	mouserect rectpreview;
 	if(1 == click_in_area)
 	{
-		rectsbs.x = 960;
+		rectsbs.x =m_ScreenWidth/2 ;//960;
 		rectsbs.y = 0;
-		rectsbs.w = 960;
-		rectsbs.h = 1080;
+		rectsbs.w =m_ScreenWidth/2;// 960;
+		rectsbs.h = m_ScreenHeight;
 		
-		rectpreview.x = 960;
+		rectpreview.x = m_ScreenWidth/2;//960;
 		rectpreview.y = 0;
-		rectpreview.w = 960;
-		rectpreview.h = 540;
+		rectpreview.w = m_ScreenWidth/2;//960;
+		rectpreview.h = m_ScreenHeight/2;
 	}
 	else if(2 == click_in_area)
 	{
 		rectsbs.x = 0;
 		rectsbs.y = 0;
-		rectsbs.w = 960;
-		rectsbs.h = 1080;
+		rectsbs.w = m_ScreenWidth/2;//960;
+		rectsbs.h = m_ScreenHeight;
 		
 		rectpreview.x = 0;
 		rectpreview.y = 0;
-		rectpreview.w = 960;
-		rectpreview.h = 540;
+		rectpreview.w = m_ScreenWidth/2;//960;
+		rectpreview.h = m_ScreenHeight/2;
 	}
 
 	return maprect(rectcur, rectsbs, rectpreview);
@@ -859,27 +860,27 @@ mouserect CVideoProcess::maplbrg2preview(mouserect rectcur)
 	mouserect rectpreview;
 	if(1 == click_in_area)
 	{
-		rectlbrg.x = 480;
+		rectlbrg.x = m_ScreenWidth/4;//480;
 		rectlbrg.y = 0;
 		rectlbrg.w = 1440;
 		rectlbrg.h = 810;
 		
-		rectpreview.x = 960;
+		rectpreview.x = m_ScreenWidth/2;//960;
 		rectpreview.y = 0;
-		rectpreview.w = 960;
-		rectpreview.h = 540;
+		rectpreview.w = m_ScreenWidth/2;//960;
+		rectpreview.h = m_ScreenHeight/2;
 	}
 	else if(2 == click_in_area)
 	{
 		rectlbrg.x = 0;
 		rectlbrg.y = 0;
-		rectlbrg.w = 480;
+		rectlbrg.w = m_ScreenWidth/4;//480;
 		rectlbrg.h = 270;
 		
 		rectpreview.x = 0;
 		rectpreview.y = 0;
-		rectpreview.w = 960;
-		rectpreview.h = 540;
+		rectpreview.w = m_ScreenWidth/2;//960;
+		rectpreview.h = m_ScreenHeight/2;
 	}
 
 	return maprect(rectcur, rectlbrg, rectpreview);
@@ -893,30 +894,30 @@ mouserect CVideoProcess::mapfullscreen2gun(mouserect rectcur)
 	int dismode = m_display.displayMode;
 	rect1080p.x = 0;
 	rect1080p.y = 0;
-	rect1080p.w = 1920;
-	rect1080p.h = 1080;
+	rect1080p.w = m_ScreenWidth;
+	rect1080p.h = m_ScreenHeight;
 	switch(dismode)
 	{
 		case PREVIEW_MODE:
-			rectgun.x = 960;
+			rectgun.x =m_ScreenWidth/2;// 960;
 			rectgun.y = 0;
-			rectgun.w = 960;
-			rectgun.h = 540;
+			rectgun.w =m_ScreenWidth/2;// 960;
+			rectgun.h = m_ScreenHeight/2;
 			break;
 		case MAIN_VIEW:
 			rectgun.x = 0;
-			rectgun.y = 540;
-			rectgun.w = 1920;
-			rectgun.h = 540;
+			rectgun.y = m_ScreenHeight/2;
+			rectgun.w = m_ScreenWidth;
+			rectgun.h = m_ScreenHeight/2;
 			break;
 		case SIDE_BY_SIDE:
-			rectgun.x = 960;
+			rectgun.x = m_ScreenWidth/2;//960;
 			rectgun.y = 0;
-			rectgun.w = 960;
-			rectgun.h = 1080;
+			rectgun.w =m_ScreenWidth/2;// 960;
+			rectgun.h = m_ScreenHeight;
 			break;
 		case LEFT_BALL_RIGHT_GUN:
-			rectgun.x = 480;
+			rectgun.x = m_ScreenWidth/4;//480;
 			rectgun.y = 0;
 			rectgun.w = 1440;
 			rectgun.h = 810;
@@ -936,13 +937,13 @@ mouserect CVideoProcess::mapfullscreen2gunv20(mouserect rectcur)
 
 	rect1080p.x = 0;
 	rect1080p.y = 0;
-	rect1080p.w = 1920;
-	rect1080p.h = 1080;
+	rect1080p.w = m_ScreenWidth;//1920;
+	rect1080p.h = m_ScreenHeight;
 
 	rectgun.x = 0;
-	rectgun.y = 540;
-	rectgun.w = 1920;
-	rectgun.h = 540;
+	rectgun.y = m_ScreenHeight/2;
+	rectgun.w = m_ScreenWidth;//1920;
+	rectgun.h = m_ScreenHeight/2;
 	
 	return maprect(rectcur, rect1080p, rectgun);
 }
@@ -955,31 +956,31 @@ mouserect CVideoProcess::mapgun2fullscreen(mouserect rectcur)
 	int dismode = m_display.displayMode;
 	rect1080p.x = 0;
 	rect1080p.y = 0;
-	rect1080p.w = 1920;
-	rect1080p.h = 1080;
+	rect1080p.w = m_ScreenWidth;//1920;
+	rect1080p.h = m_ScreenHeight;
 		
 	switch(dismode)
 	{
 		case PREVIEW_MODE:
-			rectgun.x = 960;
+			rectgun.x =m_ScreenWidth/2;// 960;
 			rectgun.y = 0;
-			rectgun.w = 960;
-			rectgun.h = 540;
+			rectgun.w =m_ScreenWidth/2;// 960;
+			rectgun.h = m_ScreenHeight/2;
 			break;
 		case MAIN_VIEW:
 			rectgun.x = 0;
-			rectgun.y = 540;
-			rectgun.w = 1920;
-			rectgun.h = 540;
+			rectgun.y = m_ScreenHeight/2;
+			rectgun.w = m_ScreenWidth;//1920;
+			rectgun.h = m_ScreenHeight/2;
 			break;
 		case SIDE_BY_SIDE:
-			rectgun.x = 960;
+			rectgun.x = m_ScreenWidth/2;//960;
 			rectgun.y = 0;
-			rectgun.w = 960;
-			rectgun.h = 1080;
+			rectgun.w =m_ScreenWidth/2;// 960;
+			rectgun.h = m_ScreenHeight;
 			break;
 		case LEFT_BALL_RIGHT_GUN:
-			rectgun.x = 480;
+			rectgun.x = m_ScreenWidth/4;//480;
 			rectgun.y = 0;
 			rectgun.w = 1440;
 			rectgun.h = 810;
@@ -998,31 +999,31 @@ int CVideoProcess::mapgun2fullscreen_point(int *x, int *y)
 	int dismode = m_display.displayMode;
 	rect1080p.x = 0;
 	rect1080p.y = 0;
-	rect1080p.w = 1920;
-	rect1080p.h = 1080;
+	rect1080p.w = m_ScreenWidth;//1920;
+	rect1080p.h = m_ScreenHeight;
 		
 	switch(dismode)
 	{
 		case PREVIEW_MODE:
-			rectgun.x = 960;
+			rectgun.x =m_ScreenWidth/2;// 960;
 			rectgun.y = 0;
-			rectgun.w = 960;
-			rectgun.h = 540;
+			rectgun.w =m_ScreenWidth/2;// 960;
+			rectgun.h = m_ScreenHeight/2;
 			break;
 		case MAIN_VIEW:
 			rectgun.x = 0;
 			rectgun.y = 0;
-			rectgun.w = 1920;
-			rectgun.h = 1080;
+			rectgun.w =m_ScreenWidth;// 1920;
+			rectgun.h = m_ScreenHeight;
 			break;
 		case SIDE_BY_SIDE:
-			rectgun.x = 960;
+			rectgun.x =m_ScreenWidth/2;// 960;
 			rectgun.y = 0;
-			rectgun.w = 960;
-			rectgun.h = 1080;
+			rectgun.w =m_ScreenWidth/2;// 960;
+			rectgun.h = m_ScreenHeight;
 			break;
 		case LEFT_BALL_RIGHT_GUN:
-			rectgun.x = 480;
+			rectgun.x = m_ScreenWidth/4;//480;
 			rectgun.y = 0;
 			rectgun.w = 1440;
 			rectgun.h = 810;
@@ -1040,13 +1041,13 @@ int CVideoProcess::mapfullscreen2gun_pointv20(int *x, int *y)
 	
 	rect1080p.x = 0;
 	rect1080p.y = 0;
-	rect1080p.w = 1920;
-	rect1080p.h = 1080;
+	rect1080p.w =m_ScreenWidth;// 1920;
+	rect1080p.h = m_ScreenHeight;
 
 	rectgun.x = 0;
-	rectgun.y = 540;
-	rectgun.w = 1920;
-	rectgun.h = 540;
+	rectgun.y = m_ScreenHeight/2;
+	rectgun.w =m_ScreenWidth;// 1920;
+	rectgun.h = m_ScreenHeight/2;
 	
 	return maprect_point(x, y, rect1080p, rectgun);
 }
@@ -1074,9 +1075,9 @@ int CVideoProcess::maprect_point(int *x, int *y, mouserect rectsrc,mouserect rec
 int CVideoProcess::map1080p2normal_point(float *x, float *y)
 {
 	if(NULL != x)
-		*x /= 1920;
+		*x /= m_ScreenWidth;//1920;
 	if(NULL != y)
-		*y /= 1080;
+		*y /= m_ScreenHeight;
 
 	return 0;
 }
@@ -1095,10 +1096,10 @@ int CVideoProcess::map1080p2normal_rect(mouserectf *rect)
 {
 	if(NULL != rect)
 	{
-		rect->x /= 1920;
-		rect->w /= 1920;
-		rect->y /= 1080;
-		rect->h /= 1080;
+		rect->x /= m_ScreenWidth;//1920;
+		rect->w /= m_ScreenWidth;//1920;
+		rect->y /= m_ScreenHeight;
+		rect->h /= m_ScreenHeight;
 		return 0;
 	}
 
@@ -1202,11 +1203,9 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					m_bIsClickMode = true;
 					if(y>540) {
 						pThis->setClickPoint(x,y);
-					}
-					
-					if(y > 0 && y< 540) {
-						//pThis->Event_click2Move(x , y);
-						pThis->GUN_MOVE_Event(x,y);
+					}					
+					if(y > 0 && y< 540) {										
+						pThis->GUN_MOVE_Event(x,y); 	//pThis->Event_click2Move(x , y);
 					}
 					else{
 						pThis->ClickGunMove2Ball(x,y,false);

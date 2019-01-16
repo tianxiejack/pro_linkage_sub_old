@@ -2697,7 +2697,10 @@ void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 	zoomPos = in_zoom ;
 
 	//printf("send sem time stamp = %d\n",OSA_getCurTimeInMsec());
-	
+
+	#if 1
+		OSA_semSignal(&g_linkage_getPos);
+	#else	
 	 struct timeval tv;
 	 while(send_signal_flag)
 	 {	
@@ -2709,7 +2712,8 @@ void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 		{
 			break;
 		}		
-	 }	
+	 }
+	 #endif
 }
 
 void CProcess::QueryCurBallCamPosition()
@@ -2718,43 +2722,46 @@ void CProcess::QueryCurBallCamPosition()
 	int ret =0;
 	SENDST trkmsg={0};
 	trkmsg.cmd_ID = querypos;
-	//struct timeval time1, time2;
-	
+	//struct timeval time1, time2;	
 	//gettimeofday(&time1,NULL);
 	//printf("Before SendMsg:   sem count = %d \n",g_linkage_getPos.count);	
+	
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 
 	//printf("wait time stamp = %d\n",OSA_getCurTimeInMsec());
 	//printf("After SendMsg: sem count = %d \n",g_linkage_getPos.count);
 	
-	flag = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
-	//printf("flag = %d \n",flag);
-	if( -1 == flag ) {		
-		printf("%s:Line :%d    First time: could not get the ball current Pos \n",__func__,__LINE__ );		
+	//flag = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
+	flag=GB_CondTimedWait(&g_linkage_getPos, 200);
+	if( -1 == flag )
+	{		
+		printf("%s:Line :%d    First time: could not get the ball current Pos ======= Try Again !!!\n",__func__,__LINE__ );		
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-		ret = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
-		if(ret == -1){
-			printf("[%s] :Line :%d    Second time: could not get the ball current Pos \n",__func__,__LINE__ );
+		//ret = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
+		ret = GB_CondTimedWait(&g_linkage_getPos, 200);
+		if(ret == -1)
+		{
+			printf("[%s] :Line :%d    Second time: could not get the ball current Pos ======= Stop Wait Message !!!\n",__func__,__LINE__ );
 		}
-		else	{		
-			send_signal_flag = false;
+		else	
+		{		
+			//send_signal_flag = false;
 			//printf("Recieve PTZ Sencond Time !!!");
-		#if 0
+			#if 0
 			cout << "\n\n===============Query Ball Camera Position Twice Sucess ! ============(Second)" << endl;
 			cout << "Current : panPos = "<< panPos << endl;
 			cout << "Current : tiltPos = "<< tiltPos << endl;
 			cout << "Current : zoomPos = "<< zoomPos << endl;
 			cout << "====================================================\n\n" << endl;
-		#endif
+			#endif
 			memset(&linkagePos,0, sizeof(LinkagePos_t));			
 		}		
 	}
 	else	{	
-			send_signal_flag = false;
+			//send_signal_flag = false;
 			//gettimeofday(&time2,NULL);
 			//printf("Delta Time  = %ld ms;\r\n", (time2.tv_sec - time1.tv_sec)*1000 + (time2.tv_usec - time1.tv_usec)/1000 );
-			
-			memset(&linkagePos,0, sizeof(LinkagePos_t));			
+							
 		#if 0
 			cout << "\n\n===============Query Ball Camera Position Sucess ! ============(1)" << endl;
 			cout << "Current : panPos = "<< panPos << endl;
@@ -2762,6 +2769,7 @@ void CProcess::QueryCurBallCamPosition()
 			cout << "Current : zoomPos = "<< zoomPos << endl;
 			cout << "====================================================\n\n" << endl;
 		#endif
+		memset(&linkagePos,0, sizeof(LinkagePos_t));	
 	}
 }
 
@@ -2980,11 +2988,12 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 	ZoomPos = m_iZoom;
 
 //-------------------------------------------------------------------------------
+#if 0
 printf("\r\n===============Destination====================(2)\r\n");
 
 printf("DesPanPos = %d\r\nDesTilPos = %d\r\nZoomPos  = %d \r\n",DesPanPos,DesTilPos,ZoomPos);
 printf("\r\n==========================================\r\n");
-
+#endif
 
 		trkmsg.cmd_ID = acqPosAndZoom;
 #if 1

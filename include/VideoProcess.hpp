@@ -100,7 +100,7 @@ private:
 	Mat m_GrayMat;
 	Mat m_Gun_GrayMat;
 	Mat m_rgbMat;
-	//int m_width,m_height;
+	int m_ScreenWidth,m_ScreenHeight;
 public:
 	CVideoProcess();
 	CVideoProcess(int w, int h);

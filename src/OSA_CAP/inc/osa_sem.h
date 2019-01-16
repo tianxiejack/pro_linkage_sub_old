@@ -18,6 +18,8 @@ typedef struct {
 // sem
 int OSA_semCreate(OSA_SemHndl *hndl, Uint32 maxCount, Uint32 initVal);
 int OSA_semWait(OSA_SemHndl *hndl, Uint32 timeout);
+int GB_CondTimedWait(OSA_SemHndl *hndl, Uint32 timeout);
+
 int OSA_semSignal(OSA_SemHndl *hndl);
 int OSA_semDelete(OSA_SemHndl *hndl);
 

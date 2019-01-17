@@ -601,25 +601,25 @@ void CProcess::Tcallback(void *p)
 		if(maxsize_dianmie)
 		{
 			if((sThis->extMenuCtrl.osd_maxsize < sThis->minsize) || (sThis->extMenuCtrl.osd_maxsize > MAX_MTDMAXSIZE))
-				swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d像素(超出范围%d~%d像素)", sThis->extMenuCtrl.osd_maxsize, sThis->minsize,MAX_MTDMAXSIZE);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d(超出范围)", sThis->extMenuCtrl.osd_maxsize);
 			else
-				swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d像素", sThis->extMenuCtrl.osd_maxsize);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d", sThis->extMenuCtrl.osd_maxsize);
 		}
 		else
-			swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积      像素");
+			swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积      ");
 		maxsize_dianmie = !maxsize_dianmie;
 	}
 	else if(a == sThis->minsize_light_id)
 	{
 		if(minsize_dianmie)
 		{
-			if((sThis->extMenuCtrl.osd_minsize < MIN_MTDMINSIZE) || (sThis->extMenuCtrl.osd_minsize > MAX_MTDMAXSIZE))
-				swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d像素(超出范围%d~%d像素)", sThis->extMenuCtrl.osd_minsize,MIN_MTDMINSIZE,MAX_MTDMAXSIZE);
+			if((sThis->extMenuCtrl.osd_minsize < MIN_MTDMINSIZE) || (sThis->extMenuCtrl.osd_minsize > sThis->maxsize))
+				swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d(超出范围)", sThis->extMenuCtrl.osd_minsize);
 			else
-				swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d像素", sThis->extMenuCtrl.osd_minsize);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d", sThis->extMenuCtrl.osd_minsize);
 		}
 		else
-			swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积  像素");
+			swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积  ");
 		minsize_dianmie = !minsize_dianmie;
 	}
 	else if(a == sThis->sensi_light_id)
@@ -4832,16 +4832,16 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	if(msgId == MSGID_EXT_SETMTDMAXSIZE)
 	{
 		if((pMenuStatus->osd_maxsize < minsize) || (pMenuStatus->osd_maxsize > MAX_MTDMAXSIZE))
-			swprintf(m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d像素(超出范围%d~%d)", pMenuStatus->osd_maxsize,minsize,MAX_MTDMAXSIZE);
+			swprintf(m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d(超出范围)", pMenuStatus->osd_maxsize);
 		else
-			swprintf(m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d像素", pMenuStatus->osd_maxsize);
+			swprintf(m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d", pMenuStatus->osd_maxsize);
 	}
 	if(msgId == MSGID_EXT_SETMTDMINSIZE)
 	{
-		if((pMenuStatus->osd_minsize < MIN_MTDMINSIZE) || (pMenuStatus->osd_minsize > MAX_MTDMAXSIZE))
-			swprintf(m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d像素(超出范围%d~%d)", pMenuStatus->osd_minsize,MIN_MTDMINSIZE,MAX_MTDMAXSIZE);
+		if((pMenuStatus->osd_minsize < MIN_MTDMINSIZE) || (pMenuStatus->osd_minsize > maxsize))
+			swprintf(m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d(超出范围)", pMenuStatus->osd_minsize);
 		else
-			swprintf(m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d像素", pMenuStatus->osd_minsize);
+			swprintf(m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d", pMenuStatus->osd_minsize);
 	}
 	if(msgId == MSGID_EXT_SETMTDSENSI)
 	{

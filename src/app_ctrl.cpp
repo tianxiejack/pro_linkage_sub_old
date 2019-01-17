@@ -894,7 +894,7 @@ void app_ctrl_enter()
 			{
 				plat->dtimer.stopTimer(plat->minsize_light_id);
 				MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
-				if((pMenuStatus->osd_minsize >= MIN_MTDMINSIZE) && (pMenuStatus->osd_minsize <= MAX_MTDMAXSIZE))
+				if((pMenuStatus->osd_minsize >= MIN_MTDMINSIZE) && (pMenuStatus->osd_minsize <= plat->maxsize))
 					plat->minsize = pMenuStatus->osd_minsize;
 				memset(pMenuStatus->minsize_arr, 0, sizeof(pMenuStatus->minsize_arr));
 			}

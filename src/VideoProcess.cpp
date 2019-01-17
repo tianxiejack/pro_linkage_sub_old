@@ -1125,7 +1125,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
 	unsigned int curId;
 	static int tempX=0,tempY=0;
-	 static bool isClickValid = false;
+	 static bool isRectangleStartPointValid = false;
 	  static bool isRectValid = false;
 	
 	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW)
@@ -1176,7 +1176,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				{
 					if(y >(m_staticScreenHeight/2) ) 
 					{
-						isClickValid = true;
+						isRectangleStartPointValid = true;
 						pThis->m_click = 1;
 						pThis->addstartpoint(x, y, curId);
 
@@ -1204,7 +1204,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					tmpY = (m_staticScreenHeight/2);	
 				}
 				ptEnd = Point(x,y);
-				if(abs(ptEnd.x - ptStart.x) > 10){
+				if(abs(ptEnd.x - ptStart.x) > 10) /* If rectangle's width  < 10 pixels , do nothing !*/
+				{
 					isRectValid = true;
 					pThis->m_click = 0;
 					pThis->addendpoint(tmpX, tmpY, curId);
@@ -1232,20 +1233,22 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					pThis->RightPoint.x = tmpX;
 					pThis->RightPoint.y = tmpY;	
 					
-	/* Mouse Click gun or ball Image , ball camera move */
+				/* Mouse Click gun or ball Image , ball camera move */
 
 					if(g_workMode == HANDLE_LINK_MODE ) {
-						if( ( isClickValid == true ) &&( isRectValid == true )) {
-							isClickValid = false;
+						if( ( isRectangleStartPointValid == true ) &&( isRectValid == true )) {
+							isRectangleStartPointValid = false;
 							isRectValid  = false;
 							pThis->reMapCoords(tmpX,tmpY,true);	
 						}
 					}
+					#if 0  /* this function is removed by custom */
 					else if(g_workMode == ONLY_BALL_MODE) {
 						if(x>(m_staticScreenWidth/4) && x <(m_staticScreenWidth*3/4) && y<(m_staticScreenHeight/2)) {							
-							//pThis->moveToDest();					
+							pThis->moveToDest();					
 						}
 					}
+					#endif
 				}
 			}
 			else{

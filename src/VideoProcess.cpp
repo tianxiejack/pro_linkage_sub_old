@@ -1177,18 +1177,20 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			else	
 			{
 				if(pThis->click_legal(x,y) ){
-					if(y >/*540*/m_staticScreenHeight/2) {
+					if(y >(m_staticScreenHeight/2) ) {
 						isClickValid = true;
 						pThis->m_click = 1;
 						pThis->addstartpoint(x, y, curId);
 
 						pThis->LeftPoint.x = x;
 						pThis->LeftPoint.y = y;
-						ptStart = Point(x,y);
+						ptStart = Point(x,y);	
+						
 					}
 					tempX = x;
 					tempY = y;
 					m_bLDown = true;
+					
 				}
 				else{
 					printf("click illegal!!!\n");
@@ -1201,8 +1203,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			{
 				int tmpY = y;
 				int tmpX = x;
-				if(tmpY <m_staticScreenHeight/2 /* 540*/) {
-					tmpY = m_staticScreenHeight/2;//540;	
+				if(tmpY <(m_staticScreenHeight/2 )/* 540*/) {
+					tmpY = (m_staticScreenHeight/2);//540;	
 				}
 				ptEnd = Point(x,y);
 				if(abs(ptEnd.x - ptStart.x) > 10){
@@ -1212,15 +1214,16 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					pThis->m_draw = 1;
 				}
 
-				if(tempX == x && tempY == y) {
+				if(tempX == x && tempY == y && m_bLDown== true) {
 					m_bLDown = false;
 					m_bIsClickMode = true;
-					if(y>m_staticScreenHeight/2 /*540*/) {
+					if(y>(m_staticScreenHeight/2)) {
 						pThis->setClickPoint(x,y);
 					}	
 					
-					if(y > 0 && y< m_staticScreenHeight/2 /*540*/) {										
-						pThis->GUN_MOVE_Event(x,y); 	//pThis->Event_click2Move(x , y);
+					if((y > 0) && (y< m_staticScreenHeight/2)) {
+						if((x>(m_staticScreenWidth/4)) && (x <(m_staticScreenWidth*3/4)))
+						pThis->GUN_MOVE_Event(x,y); 	
 					}
 					else{
 						pThis->ClickGunMove2Ball(x,y,false);
@@ -1242,7 +1245,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 						}
 					}
 					else if(g_workMode == ONLY_BALL_MODE) {
-						if(x>m_staticScreenWidth/4/*480*/ && x <m_staticScreenWidth*3/4/*1440*/ && y<m_staticScreenHeight/2/*540*/) {							
+						if(x>(m_staticScreenWidth/4) && x <(m_staticScreenWidth*3/4) && y<(m_staticScreenHeight/2)) {							
 							//pThis->moveToDest();					
 						}
 					}

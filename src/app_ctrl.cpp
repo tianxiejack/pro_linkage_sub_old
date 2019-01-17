@@ -894,7 +894,7 @@ void app_ctrl_enter()
 			{
 				plat->dtimer.stopTimer(plat->minsize_light_id);
 				MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
-				if((pMenuStatus->osd_minsize >= MIN_MTDMINSIZE) && (pMenuStatus->osd_minsize <= MAX_MTDMAXSIZE))
+				if((pMenuStatus->osd_minsize >= MIN_MTDMINSIZE) && (pMenuStatus->osd_minsize <= plat->maxsize))
 					plat->minsize = pMenuStatus->osd_minsize;
 				memset(pMenuStatus->minsize_arr, 0, sizeof(pMenuStatus->minsize_arr));
 			}
@@ -1029,10 +1029,9 @@ void app_ctrl_upMenu()
 		}
 		else if((submenu_mtd == menustate) && (pMenuStatus->minsize_deng == 1))
 		{
-			if(MAX_MTDMAXSIZE == pMenuStatus->osd_minsize)
-				pMenuStatus->osd_minsize = MIN_MTDMINSIZE;
-			else
-				pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + 1) % (MAX_MTDMAXSIZE+1);
+			pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + 1) % (MAX_MTDMAXSIZE+1);
+			if(pMenuStatus->osd_minsize > plat->maxsize)
+				pMenuStatus->osd_minsize =MIN_MTDMINSIZE;
 			MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
 		}
 		else if((submenu_mtd == menustate) && (pMenuStatus->sensi_deng == 1))
@@ -1103,7 +1102,7 @@ void app_ctrl_downMenu()
 		else if((submenu_mtd == menustate) && (pMenuStatus->minsize_deng == 1))
 		{
 			if(MIN_MTDMINSIZE == pMenuStatus->osd_minsize)
-				pMenuStatus->osd_minsize = MAX_MTDMAXSIZE;
+				pMenuStatus->osd_minsize = plat->maxsize;
 			else
 				pMenuStatus->osd_minsize = (pMenuStatus->osd_minsize + MAX_MTDMAXSIZE - 1) % MAX_MTDMAXSIZE;
 			MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);

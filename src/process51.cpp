@@ -3638,6 +3638,7 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 {	
 	int point_X , point_Y , offset_x , offset_y,tmp_zoomPos; 
 	int delta_X ;
+	bool isDeltaValid = false;
 	Point opt;
 	
 	switch(m_display.g_CurDisplayMode) 
@@ -3663,9 +3664,16 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 	m_iDelta_X = delta_X;
 	
 	if(needChangeZoom == true ) {
-		tmp_zoomPos = checkZoomPosTable( delta_X );		//checkZoomPosTable(delta_X); 
-		m_iZoom = tmp_zoomPos;
-		//tmp_zoomPos = checkZoomPosTable(delta_X);
+		if(delta_X < 10) {
+			;  // Do Nothing
+		}
+		else
+		{
+			isDeltaValid = true;
+			tmp_zoomPos = checkZoomPosTable( delta_X );		//checkZoomPosTable(delta_X); 
+			m_iZoom = tmp_zoomPos;
+			//tmp_zoomPos = checkZoomPosTable(delta_X);			
+		}
 	}
 	if(needChangeZoom == true)
 	{
@@ -3746,8 +3754,10 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 	if(needChangeZoom == true) {
 		trkmsg.cmd_ID = acqPosAndZoom;
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-		memcpy(&trkmsg.param[8],&(tmp_zoomPos)  , 4); 	
+		memcpy(&trkmsg.param[4],&DesTilPos, 4); 
+		if(isDeltaValid == true){
+			memcpy(&trkmsg.param[8],&(tmp_zoomPos)  , 4); 
+		}
 	}
 	else	{
 		trkmsg.cmd_ID = speedloop;

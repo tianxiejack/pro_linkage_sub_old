@@ -1125,7 +1125,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
 	unsigned int curId;
 	static int tempX=0,tempY=0;
-	
+	 static bool isClickValid = false;
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP){
 		m_bLDown = false;
 	}
@@ -1176,6 +1176,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			{
 				if(pThis->click_legal(x,y) ){
 					if(y >/*540*/m_staticScreenHeight/2) {
+						isClickValid = true;
 						pThis->m_click = 1;
 						pThis->addstartpoint(x, y, curId);
 
@@ -1209,7 +1210,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					m_bIsClickMode = true;
 					if(y>m_staticScreenHeight/2 /*540*/) {
 						pThis->setClickPoint(x,y);
-					}					
+					}	
+					
 					if(y > 0 && y< m_staticScreenHeight/2 /*540*/) {										
 						pThis->GUN_MOVE_Event(x,y); 	//pThis->Event_click2Move(x , y);
 					}
@@ -1225,8 +1227,11 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					
 	/* Mouse Click gun or ball Image , ball camera move */
 
-					if(g_workMode == HANDLE_LINK_MODE ) {											
-						pThis->reMapCoords(tmpX,tmpY,true);					
+					if(g_workMode == HANDLE_LINK_MODE ) {
+						if(/*y>m_staticScreenHeight/2*/isClickValid == true) {
+							isClickValid = false;
+							pThis->reMapCoords(tmpX,tmpY,true);	
+						}
 					}
 					else if(g_workMode == ONLY_BALL_MODE) {
 						if(x>m_staticScreenWidth/4/*480*/ && x <m_staticScreenWidth*3/4/*1440*/ && y<m_staticScreenHeight/2/*540*/) {							

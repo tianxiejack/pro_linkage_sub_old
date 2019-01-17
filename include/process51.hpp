@@ -130,7 +130,7 @@ public:
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
 	void reMapCoords(int x, int y,bool needChangeZoom);
-	void ClickGunMove2Ball(int x, int y,bool mode);
+	void ClickGunMove2Ball(int x, int y,bool needChangeZoom);
 	
 	void CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords);
 	void CvtImgPoint2Camera(cv::Point2d &imgCoords, cv::Point2d &camCoords);
@@ -149,6 +149,8 @@ public:
 	void refreshClickPoint(int x, int y);
 
 	void Set_K_ByDeltaX( int delta_x);
+	void Set_K_ByZoom(int Current_Zoom);
+
        void Set_K_ByNewDeltaX(int delta_x);
 	void setClickPoint(int x, int y){
 		m_curClickPoint = Point(x, y);

@@ -2747,7 +2747,88 @@ void CProcess::Set_K_ByNewDeltaX(int delta_x)
 	m_cofy = tmpcofy;
 }
 
+void CProcess::Set_K_ByZoom(int Current_Zoom)
+{
+	int  tmpcofx   ;		
+	int  tmpcofy    ;
+	int zoom = Current_Zoom;
+	if(2849<=zoom && zoom <6268) {
+		tmpcofx = 6320;
+		tmpcofy = 6200;
+	}
+	else if(6268 <=zoom && zoom <9117 ) {
+		tmpcofx = 3300;
+		tmpcofy = 3400;
+	}
+	else if(9117 <=zoom && zoom <11967 ) {
+		tmpcofx = 2400;
+		tmpcofy = 2400;
+	}
+	else if(11967 <=zoom && zoom <15101 ) {
+		tmpcofx = 1850;
+		tmpcofy = 1880;
+	}
+	else if(15101 <=zoom && zoom <18520 ) {
+		tmpcofx = 1500;
+		tmpcofy = 1540;
+	}
+	else if(18520 <=zoom && zoom <21058 ) {
+		tmpcofx = 1350;
+		tmpcofy = 1360;
+	}
+	else if(21058 <=zoom && zoom <24504 ) {
+		tmpcofx = 1160;
+		tmpcofy = 1230;
+	}
+	else if(24504 <=zoom && zoom <28208 ) {
+		tmpcofx = 1000;
+		tmpcofy = 1020;
+	}
+	else if(28208 <=zoom && zoom <33330 ) {
+		tmpcofx = 900;
+		tmpcofy = 920;
+	}
+	else if(33330 <=zoom && zoom <36750 ) {
+		tmpcofx = 820;
+		tmpcofy = 830;
+	}
+	else if(36750 <=zoom && zoom <39320 ) {
+		tmpcofx = 760;
+		tmpcofy = 750;
+	}
+	else if(39320 <=zoom && zoom <43870 ) {
+		tmpcofx = 700;
+		tmpcofy = 710;
+	}
+	else if(43870 <=zoom && zoom <46440 ) {
+		tmpcofx = 670;
+		tmpcofy = 680;
+	}
+	else if(46440 <=zoom && zoom <49230 ) {
+		tmpcofx = 650;
+		tmpcofy = 660;
+	}
+	else if(49230 <=zoom && zoom <52265 ) {
+		tmpcofx = 630;
+		tmpcofy = 635;
+	}
+	else if(52265 <=zoom && zoom <55560 ) {
+		tmpcofx = 620;
+		tmpcofy = 620;
+	}
+	else if(55560 <=zoom && zoom <65535 ) {
+		tmpcofx = 600;
+		tmpcofy = 610;
+	}
+	else{
 
+	}
+
+	m_cofx = tmpcofx;
+	m_cofy = tmpcofy;
+
+
+}
 void CProcess::Set_K_ByDeltaX( int delta_x)
 {
 	int  tmpcofx   ;		
@@ -3109,8 +3190,10 @@ void CProcess::MoveBall()
 	int curPanPos = panPos;	
 	int curTilPos = tiltPos;		
 
-	Set_K_ByDeltaX(m_iDelta_X);	
+	//Set_K_ByDeltaX(m_iDelta_X);	
 	//Set_K_ByNewDeltaX( m_iDelta_X );
+	
+	Set_K_ByZoom(zoomPos);
 	
 	cur_Kx = m_cofx;
 	cur_Ky = m_cofy;
@@ -3120,8 +3203,8 @@ void CProcess::MoveBall()
 	int  tmpcofx = cur_Kx;		
 	int  tmpcofy = cur_Ky;		
 
-	inputX -= 480;
-	inputY -= 270;	
+	inputX -= m_winWidth/4;   //480;
+	inputY -= m_winHeight/4;   //270;	
 
 	float coefficientx = (float)tmpcofx*0.001f;
 	float coefficienty = (float)tmpcofy*0.001f;
@@ -3132,8 +3215,6 @@ void CProcess::MoveBall()
 	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
 	
 	ZoomPos =m_iZoom; 	// zoomPos;
-	
-	//m_iZoom = zoomPos;
 
 #if 1
 	printf("\r\n===============Destination====================(2)\r\n");
@@ -3144,7 +3225,8 @@ void CProcess::MoveBall()
 
 	memcpy(&trkmsg.param[0],&DesPanPos, 4);
 	memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-	memcpy(&trkmsg.param[8],&ZoomPos  , 4); 
+	//memcpy(&trkmsg.param[8],&ZoomPos  , 4); 
+	memcpy(&trkmsg.param[8],&zoomPos, 4);
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 
 }
@@ -3164,7 +3246,7 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 			offset_y = 0;
 			break;
 		case MAIN_VIEW:
-			offset_x = 480;
+			offset_x = m_winWidth/4;//480;
 			offset_y = 0;
 			break;		
 		default:
@@ -3178,10 +3260,8 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 //-----------------------------------Query Current Position -------------------
 	refreshClickPoint(point_X, point_Y);
 	setPTZflag(true);
-	QueryCurBallCamPosition();	
-	
+	QueryCurBallCamPosition();		
 //-------------------------------------------------------------------------
-
 #if 0
 	int DesPanPos = 0;
 	 int DesTilPos =0;	
@@ -3530,8 +3610,8 @@ void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 	float coefficientx = (float)tmpcofx*0.001f;
 	float coefficienty = (float)tmpcofy*0.001f;
 
-	inputX -= 480;	//474;  
-	inputY -= 270;	//276; 	
+	inputX -= m_winWidth/4;//480;	//474;  
+	inputY -= m_winHeight/4;//270;	//276; 	
 
 	inputX = (int)((float)inputX * coefficientx );
 	inputY = (int)((float)inputY * coefficienty);
@@ -3539,7 +3619,8 @@ void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 	int Origin_TilPos = g_camParams.tiltPos;
 
 	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
-	tmp_zoomPos = m_iZoom;
+
+	tmp_zoomPos = zoomPos;//m_iZoom;
 	
 	if(needChangeZoom)
 	{
@@ -3550,9 +3631,11 @@ void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 	}
 	else
 	{
-		trkmsg.cmd_ID = speedloop;
+		//trkmsg.cmd_ID = speedloop;
+		trkmsg.cmd_ID = acqPosAndZoom;
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
+		memcpy(&trkmsg.param[4],&DesTilPos, 4); 
+		memcpy(&trkmsg.param[8],&tmp_zoomPos  , 4); 	
 	}
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
 }
@@ -3614,12 +3697,11 @@ void CProcess::CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords)
 }
 
 
-void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
+void CProcess::ClickGunMove2Ball(int x, int y,bool needChangeZoom)
 {
-	//int zoomPos; 
 	int delta_X ;
 	int offset_x = 0;
-	int offset_y = 540;
+	int offset_y = m_winHeight/2;	//540;
 	int point_X = ( x-offset_x ) ;
 	int point_Y = ( y-offset_y ) *2;		
 	Point imgCoords = Point( point_X ,  point_Y );
@@ -3632,7 +3714,7 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 
 	//printf("[%s]:))))))))))))))))))   BallImage_point = <%d, %d> \r\n", __FUNCTION__,camCoords.x, camCoords.y);
 
-	TransformPixByOriginPoints(camCoords.x, camCoords.y, true);
+	TransformPixByOriginPoints(camCoords.x, camCoords.y, needChangeZoom);
 }
 void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 {	
@@ -3644,12 +3726,12 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 	switch(m_display.g_CurDisplayMode) 
 	{
 		case PREVIEW_MODE:	
-			offset_x = 960;
+			offset_x = m_winWidth/2;  //960;
 			offset_y = 0;
 			break;
 		case MAIN_VIEW:
 			offset_x =0;
-			offset_y = 540;
+			offset_y = m_winHeight/2;   //540;
 			break;			
 		default:
 			break;
@@ -3670,8 +3752,9 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 		else
 		{
 			isDeltaValid = true;
-			tmp_zoomPos = checkZoomPosTable( delta_X );		//checkZoomPosTable(delta_X); 
+			tmp_zoomPos = checkZoomPosTable( delta_X );		
 			m_iZoom = tmp_zoomPos;
+			zoomPos = tmp_zoomPos;
 			//tmp_zoomPos = checkZoomPosTable(delta_X);			
 		}
 	}
@@ -3711,8 +3794,8 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 	int  tmpcofx = 6300;
 	int  tmpcofy = 6200;
 
-	inputX -= 480;
-	inputY -= 270;
+	inputX -= m_winWidth/4;//480;
+	inputY -= m_winHeight/4;//270;
 
 	float coefficientx = (float)tmpcofx*0.001f;
 	float coefficienty = (float)tmpcofy*0.001f;

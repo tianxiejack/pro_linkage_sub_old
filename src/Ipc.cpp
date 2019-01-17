@@ -589,10 +589,15 @@ void* recv_msg(SENDST *RS422)
 					pthread_cond_signal(&event_cond);
 					pthread_mutex_unlock(&event_mutex);				
 				}
-				//printf("[%s]:Query IPC Rcv :>> panPos ,tilPos , zoom = (%d ,%d ,%d) \n",__FUNCTION__,posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
 				app_ctrl_setLinkagePos(posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
 			}
 			break;
+		case refreshptz:
+			memcpy(&posOfLinkage,RS422->param,sizeof(posOfLinkage));
+			proc->RefreshBallPTZ(posOfLinkage.panPos,posOfLinkage.tilPos,posOfLinkage.zoom);
+		//printf("\r\n P = %d \r\n T = %d \r\n Z = %d \r\n",posOfLinkage.panPos,posOfLinkage.tilPos, posOfLinkage.zoom);
+
+			break;			
 		case switchtarget:
 			pMsg->MtdSelect[pMsg->SensorStat] = ipc_eMTD_Next;
 			app_ctrl_setMtdSelect(pMsg);

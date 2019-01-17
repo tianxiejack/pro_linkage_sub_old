@@ -40,12 +40,12 @@ int EventLoop::Init()
 	int ret =0;
 	ret = pthread_mutex_init(&event_mutex, NULL);
 	if(ret !=0){
-		printf("[%s]:====== >> Event Mutex Init Failed !!!\r\n");
+		printf("[%s]:====== >> Event Mutex Init Failed !!!\r\n",__FUNCTION__);
 		return -1;
 	}
 	ret = pthread_cond_init(&event_cond, NULL);
 	if(ret !=0){
-		printf("[%s]:====== >> Event Condition Init Failed !!!\r\n");
+		printf("[%s]:====== >> Event Condition Init Failed !!!\r\n",__FUNCTION__);
 		return -1;
 	}
 

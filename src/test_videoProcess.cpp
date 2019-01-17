@@ -75,7 +75,10 @@ int main(int argc, char **argv)
 	if(eventLoop == NULL){
 		printf("\r\nCreate Event Loop Failed !!!");
 	}
-	eventLoop->Init();
+	int returnValue = eventLoop->Init();
+	if(returnValue == -1) {
+		printf("\r\n[%s]:====== >> Pthread Mutex and Condition Init Failed !!!",__FUNCTION__);
+	}
 	eventLoop->RunService();
 	
 	glutMainLoop();

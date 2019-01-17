@@ -101,6 +101,7 @@ private:
 	Mat m_Gun_GrayMat;
 	Mat m_rgbMat;
 	int m_ScreenWidth,m_ScreenHeight;
+	static int m_staticScreenWidth,m_staticScreenHeight;
 public:
 	CVideoProcess();
 	CVideoProcess(int w, int h);
@@ -122,6 +123,11 @@ public:
 	int stop();
 
 public:
+	static void setStaticScreenResolution(int w, int h){
+		m_staticScreenWidth = w;
+		m_staticScreenHeight = h;
+		return ;
+	};
 	virtual void setDisplayResolution(CDisplayer &displayObject, int w, int h ){};
 	virtual void OnCreate(){};
 	virtual void OnDestroy(){};

@@ -170,7 +170,7 @@ public:
 	void manualHandleKeyPoints(int &x,int &y);
 	
 	int checkZoomPosTable(int delta);
-	int checkZoomPozNewTable(int delta);
+	int checkZoomPosNewTable(int delta);
 
 private:
 	int m_winWidth, m_winHeight;

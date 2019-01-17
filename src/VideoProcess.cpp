@@ -370,6 +370,8 @@ DetectCorners* CVideoProcess::m_detectCorners = new DetectCorners();
 bool CVideoProcess::m_bLDown = false;
 bool CVideoProcess::m_bIsClickMode = false;
 
+int CVideoProcess::m_staticScreenWidth = outputWHF[0];
+int CVideoProcess::m_staticScreenHeight = outputWHF[1];
 CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 	m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_display(CDisplayer(w,h))
 {
@@ -705,7 +707,7 @@ int CVideoProcess::in_gun_area(int x, int y)
 				return 0;
 			break;
 		case MAIN_VIEW:
-			if((x > 0 && x < m_ScreenWidth) && (y > 0 && y < m_ScreenHeight/2))
+			if((x >= 0 && x <= m_ScreenWidth) && (y >= 0 && y <= m_ScreenHeight/*/2*/ ))
 				return 1;
 			else
 				return 0;
@@ -1170,9 +1172,10 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			{
 				pThis->OnMouseLeftDwn(x, y);
 			}
-			else	{
+			else	
+			{
 				if(pThis->click_legal(x,y) ){
-					if(y >540) {
+					if(y >/*540*/m_staticScreenHeight/2) {
 						pThis->m_click = 1;
 						pThis->addstartpoint(x, y, curId);
 
@@ -1192,19 +1195,22 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		{
 			if(pThis->move_legal(x,y))
 			{
-				if(y > 540) {
-					pThis->m_click = 0;
-					pThis->addendpoint(x, y, curId);
-					pThis->m_draw = 1;	
+				int tmpY = y;
+				int tmpX = x;
+				if(tmpY <m_staticScreenHeight/2 /* 540*/) {
+					tmpY = m_staticScreenHeight/2;//540;	
 				}
+				pThis->m_click = 0;
+				pThis->addendpoint(tmpX, tmpY, curId);
+				pThis->m_draw = 1;
 
 				if(tempX == x && tempY == y) {
 					m_bLDown = false;
 					m_bIsClickMode = true;
-					if(y>540) {
+					if(y>m_staticScreenHeight/2 /*540*/) {
 						pThis->setClickPoint(x,y);
 					}					
-					if(y > 0 && y< 540) {										
+					if(y > 0 && y< m_staticScreenHeight/2 /*540*/) {										
 						pThis->GUN_MOVE_Event(x,y); 	//pThis->Event_click2Move(x , y);
 					}
 					else{
@@ -1213,21 +1219,17 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				}
 				else
 				{
-					m_bIsClickMode = false;
-					if(y > 540) {
-						pThis->RightPoint.x = x;
-						pThis->RightPoint.y = y;
-					}
+					m_bIsClickMode = false;					
+					pThis->RightPoint.x = tmpX;
+					pThis->RightPoint.y = tmpY;	
 					
 	/* Mouse Click gun or ball Image , ball camera move */
 
-					if(g_workMode == HANDLE_LINK_MODE ) {
-						if(y > 540) {							
-							pThis->reMapCoords(x,y,true);								
-						}
+					if(g_workMode == HANDLE_LINK_MODE ) {											
+						pThis->reMapCoords(tmpX,tmpY,true);					
 					}
 					else if(g_workMode == ONLY_BALL_MODE) {
-						if(x>480 && x <1440 && y<540) {							
+						if(x>m_staticScreenWidth/4/*480*/ && x <m_staticScreenWidth*3/4/*1440*/ && y<m_staticScreenHeight/2/*540*/) {							
 							//pThis->moveToDest();					
 						}
 					}
@@ -1235,8 +1237,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			}
 			else{
 				printf("move illegal!!!\n");	
-			}
-		
+			}		
 	}
 		
 		if(button == 3)

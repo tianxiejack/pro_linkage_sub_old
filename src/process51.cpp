@@ -2449,7 +2449,7 @@ void CProcess::manualHandleKeyPoints(int &x,int &y)
 }
 
 
-int CProcess::checkZoomPozNewTable(int delta)
+int CProcess::checkZoomPosNewTable(int delta)
 {
 	int Delta_X = delta;
 	int setZoom = 2849 ;
@@ -2944,12 +2944,12 @@ void CProcess::QueryCurBallCamPosition()
 		#endif
 		memset(&linkagePos,0, sizeof(LinkagePos_t));	
 	}
-#endif
-	
+#endif	
 }
 
 void CProcess::moveToDest( )
 {
+#if 0
 	static int static_cofx = 6320;
 	static int static_cofy = 6200;
 	int point_X , point_Y , offset_x , offset_y,zoomPos; 
@@ -3003,8 +3003,8 @@ void CProcess::moveToDest( )
 	static_cofx = m_cofx;
 	static_cofy = m_cofy;
 
-	inputX -= 474;//480;
-	inputY -= 276;//270;	
+	inputX -= 474;	//480;
+	inputY -= 276;	//270;	
 
 	float coefficientx = (float)tmpcofx*0.001f;
 	float coefficienty = (float)tmpcofy*0.001f;
@@ -3064,7 +3064,7 @@ void CProcess::moveToDest( )
 		memcpy(&trkmsg.param[8],&zoomPos  , 4); 
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 		return ;
-
+#endif
 }
 
 void CProcess::Test_Match_result(int x, int y)
@@ -3109,9 +3109,8 @@ void CProcess::MoveBall()
 	int curPanPos = panPos;	
 	int curTilPos = tiltPos;		
 
-	//Set_K_ByDeltaX(m_iDelta_X);
-	
-	Set_K_ByNewDeltaX( m_iDelta_X );
+	Set_K_ByDeltaX(m_iDelta_X);	
+	//Set_K_ByNewDeltaX( m_iDelta_X );
 	
 	cur_Kx = m_cofx;
 	cur_Ky = m_cofy;
@@ -3132,7 +3131,8 @@ void CProcess::MoveBall()
 	
 	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
 	
-	ZoomPos = m_iZoom;//zoomPos ;//
+	ZoomPos =m_iZoom; 	// zoomPos;
+	
 	//m_iZoom = zoomPos;
 
 #if 1
@@ -3521,7 +3521,7 @@ void CProcess::SetDestPosScope(int &inputX, int &inputY, int &Origin_PanPos, int
 
 void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 {
-	int DesPanPos, DesTilPos , zoomPos;	
+	int DesPanPos, DesTilPos , tmp_zoomPos;	
 	int  inputX = X ;
 	int  inputY = Y ;
 	
@@ -3530,8 +3530,8 @@ void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 	float coefficientx = (float)tmpcofx*0.001f;
 	float coefficienty = (float)tmpcofy*0.001f;
 
-	inputX -= 480;		//474;  
-	inputY -= 270;		//276; 	
+	inputX -= 480;	//474;  
+	inputY -= 270;	//276; 	
 
 	inputX = (int)((float)inputX * coefficientx );
 	inputY = (int)((float)inputY * coefficienty);
@@ -3539,14 +3539,14 @@ void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 	int Origin_TilPos = g_camParams.tiltPos;
 
 	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
-	zoomPos = m_iZoom;//2849;
+	tmp_zoomPos = m_iZoom;
 	
 	if(needChangeZoom)
 	{
 		trkmsg.cmd_ID = acqPosAndZoom;
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-		memcpy(&trkmsg.param[8],&zoomPos  , 4); 	
+		memcpy(&trkmsg.param[8],&tmp_zoomPos  , 4); 	
 	}
 	else
 	{
@@ -3616,7 +3616,7 @@ void CProcess::CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords)
 
 void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 {
-	int zoomPos; 
+	//int zoomPos; 
 	int delta_X ;
 	int offset_x = 0;
 	int offset_y = 540;
@@ -3636,7 +3636,7 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool mode)
 }
 void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 {	
-	int point_X , point_Y , offset_x , offset_y,zoomPos; 
+	int point_X , point_Y , offset_x , offset_y,tmp_zoomPos; 
 	int delta_X ;
 	Point opt;
 	
@@ -3663,8 +3663,9 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 	m_iDelta_X = delta_X;
 	
 	if(needChangeZoom == true ) {
-		zoomPos = checkZoomPozNewTable( delta_X );//checkZoomPosTable(delta_X);
-		m_iZoom = zoomPos;
+		tmp_zoomPos = checkZoomPosTable( delta_X );		//checkZoomPosTable(delta_X); 
+		m_iZoom = tmp_zoomPos;
+		//tmp_zoomPos = checkZoomPosTable(delta_X);
 	}
 	if(needChangeZoom == true)
 	{
@@ -3746,7 +3747,7 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 		trkmsg.cmd_ID = acqPosAndZoom;
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-		memcpy(&trkmsg.param[8],&zoomPos  , 4); 	
+		memcpy(&trkmsg.param[8],&(tmp_zoomPos)  , 4); 	
 	}
 	else	{
 		trkmsg.cmd_ID = speedloop;
@@ -5089,6 +5090,7 @@ int CProcess::setresol(int resoltype)
 			break;	
 	}
 	this->setDisplayResolution(m_display, outputWHF[0],outputWHF[1]);
+	this->setStaticScreenResolution(outputWHF[0], outputWHF[1]);
 	glutFullScreen();
 }
 

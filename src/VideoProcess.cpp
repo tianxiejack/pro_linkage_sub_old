@@ -1120,12 +1120,14 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 	}
 	return -1;
 }
-
+static Point ptStart,ptEnd;
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
 	unsigned int curId;
 	static int tempX=0,tempY=0;
 	 static bool isClickValid = false;
+	  static bool isRectValid = false;
+	 
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP){
 		m_bLDown = false;
 	}
@@ -1182,6 +1184,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 
 						pThis->LeftPoint.x = x;
 						pThis->LeftPoint.y = y;
+						ptStart = Point(x,y);
 					}
 					tempX = x;
 					tempY = y;
@@ -1201,9 +1204,13 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				if(tmpY <m_staticScreenHeight/2 /* 540*/) {
 					tmpY = m_staticScreenHeight/2;//540;	
 				}
-				pThis->m_click = 0;
-				pThis->addendpoint(tmpX, tmpY, curId);
-				pThis->m_draw = 1;
+				ptEnd = Point(x,y);
+				if(abs(ptEnd.x - ptStart.x) > 10){
+					isRectValid = true;
+					pThis->m_click = 0;
+					pThis->addendpoint(tmpX, tmpY, curId);
+					pThis->m_draw = 1;
+				}
 
 				if(tempX == x && tempY == y) {
 					m_bLDown = false;
@@ -1228,8 +1235,9 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 	/* Mouse Click gun or ball Image , ball camera move */
 
 					if(g_workMode == HANDLE_LINK_MODE ) {
-						if(/*y>m_staticScreenHeight/2*/isClickValid == true) {
+						if(/*y>m_staticScreenHeight/2*/isClickValid == true &&(isRectValid == true)) {
 							isClickValid = false;
+							isRectValid  = false;
 							pThis->reMapCoords(tmpX,tmpY,true);	
 						}
 					}
@@ -1264,6 +1272,7 @@ void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 {
 
 	unsigned int curId;
+	ptEnd = Point(xMouse,xMouse);
 	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW)
 		curId = 1;
 	else
@@ -1283,7 +1292,7 @@ void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 		floaty = yMouse;	
 		pThis->map1080p2normal_point(&floatx, &floaty);
 		pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);	
-		if(pThis->m_click == 1 && yMouse > 540)
+		if(pThis->m_click == 1 && yMouse > 540 &&(abs(ptEnd.x - ptStart.x) > 10 ))
 		{
 			pThis->m_tempX = floatx;
 			pThis->m_tempY = floaty;

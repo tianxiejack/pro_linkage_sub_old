@@ -1127,10 +1127,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 	static int tempX=0,tempY=0;
 	 static bool isClickValid = false;
 	  static bool isRectValid = false;
-	 
-	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP){
-		m_bLDown = false;
-	}
 	
 	if(pThis->m_display.g_CurDisplayMode == MAIN_VIEW)
 		curId = 1;	
@@ -1176,21 +1172,22 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			}
 			else	
 			{
-				if(pThis->click_legal(x,y) ){
-					if(y >(m_staticScreenHeight/2) ) {
+				if(pThis->click_legal(x,y) )
+				{
+					if(y >(m_staticScreenHeight/2) ) 
+					{
 						isClickValid = true;
 						pThis->m_click = 1;
 						pThis->addstartpoint(x, y, curId);
 
 						pThis->LeftPoint.x = x;
 						pThis->LeftPoint.y = y;
-						ptStart = Point(x,y);	
-						
+						ptStart = Point(x,y);							
 					}
+					
 					tempX = x;
 					tempY = y;
-					m_bLDown = true;
-					
+					m_bLDown = true;					
 				}
 				else{
 					printf("click illegal!!!\n");
@@ -1203,8 +1200,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			{
 				int tmpY = y;
 				int tmpX = x;
-				if(tmpY <(m_staticScreenHeight/2 )/* 540*/) {
-					tmpY = (m_staticScreenHeight/2);//540;	
+				if(tmpY <(m_staticScreenHeight/2 )) {
+					tmpY = (m_staticScreenHeight/2);	
 				}
 				ptEnd = Point(x,y);
 				if(abs(ptEnd.x - ptStart.x) > 10){
@@ -1214,7 +1211,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					pThis->m_draw = 1;
 				}
 
-				if(tempX == x && tempY == y && m_bLDown== true) {
+				if( (tempX == x) && (tempY == y) && (m_bLDown== true) ) {
 					m_bLDown = false;
 					m_bIsClickMode = true;
 					if(y>(m_staticScreenHeight/2)) {
@@ -1238,7 +1235,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 	/* Mouse Click gun or ball Image , ball camera move */
 
 					if(g_workMode == HANDLE_LINK_MODE ) {
-						if(/*y>m_staticScreenHeight/2*/isClickValid == true &&(isRectValid == true)) {
+						if( ( isClickValid == true ) &&( isRectValid == true )) {
 							isClickValid = false;
 							isRectValid  = false;
 							pThis->reMapCoords(tmpX,tmpY,true);	

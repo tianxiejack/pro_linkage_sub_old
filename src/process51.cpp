@@ -1952,6 +1952,16 @@ osdindex++;	//cross aim
 			if(chooseDetect > mvListsum.size())
 				chooseDetect = mvListsum.size()-1 ;
 
+
+			SENDST test;
+			test.cmd_ID = mtdnum;
+			if(0 == pThis->mvListsum.size())
+				test.param[0] = 0;
+			else
+				test.param[0] = 1;
+			ipc_sendmsg(&test, IPC_FRIMG_MSG);
+
+
 			char tmpNum = 0;
 			cv::Rect tmp;
 			mouserect recttmp;

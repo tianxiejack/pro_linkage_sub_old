@@ -2907,24 +2907,6 @@ void CProcess::Set_K_ByDeltaX( int delta_x)
 		 tmpcofy =610 ;
 	}
 	
-	#if 0 
-	else  if(44 < Delta_X){
-		  tmpcofx =600 ;
-		 tmpcofy =610 ;
-	}
-	else  if(38 < Delta_X ){
-		 tmpcofx =600 ;
-		 tmpcofy =610 ;
-	}
-	else  if(32 < Delta_X){
-		  tmpcofx =600 ;
-		 tmpcofy =610 ;
-	}
-	else  if(26 < Delta_X ){
-		 tmpcofx =600 ;
-		 tmpcofy =610 ;
-	}
-	#endif
 	m_cofx = tmpcofx;
 	m_cofy = tmpcofy;
 
@@ -2941,25 +2923,7 @@ void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 	panPos = in_panPos ;
 	tiltPos = in_tilPos ;
 	zoomPos = in_zoom ;
-
-	//printf("send sem time stamp = %d\n",OSA_getCurTimeInMsec());
-
-	#if 1
-		OSA_semSignal(&g_linkage_getPos);
-	#else	
-	 struct timeval tv;
-	 while(send_signal_flag)
-	 {	
-	 	OSA_semSignal(&g_linkage_getPos);
-	 	tv.tv_sec = 0;
-    		tv.tv_usec = (30%1000)*1000;
-   		select(0, NULL, NULL, NULL, &tv);			
-		if(send_signal_flag == false)
-		{
-			break;
-		}		
-	 }
-	 #endif
+	OSA_semSignal(&g_linkage_getPos);	
 }
 
 void CProcess::refreshClickPoint(int x, int y)
@@ -2974,202 +2938,26 @@ void CProcess::QueryCurBallCamPosition()
 	int ret =0;
 	SENDST trkmsg={0};
 	trkmsg.cmd_ID = querypos;
-	//struct timeval time1, time2;	
-	//gettimeofday(&time1,NULL);
-	//printf("Before SendMsg:   sem count = %d \n",g_linkage_getPos.count);	
-	
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-
-
-#if 0
-	printf("wait time stamp = %d\n",OSA_getCurTimeInMsec());
-	printf("After SendMsg: sem count = %d \n",g_linkage_getPos.count);
-	
-	//flag = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
-	flag=GB_CondTimedWait(&g_linkage_getPos, 200);
-	if( -1 == flag )
-	{		
-		printf("%s:Line :%d    First time: could not get the ball current Pos ======= Try Again !!!\n",__func__,__LINE__ );		
-		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-		//ret = OSA_semWait(&g_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/ 200 );
-		ret = GB_CondTimedWait(&g_linkage_getPos, 200);
-		if(ret == -1)
-		{
-			printf("[%s] :Line :%d    Second time: could not get the ball current Pos ======= Stop Wait Message !!!\n",__func__,__LINE__ );
-		}
-		else	
-		{		
-			//send_signal_flag = false;
-			printf("Recieve PTZ Sencond Time !!!");
-			#if 1
-			cout << "\n\n===============Query Ball Camera Position Twice Sucess ! ============(Second)" << endl;
-			cout << "Current : panPos = "<< panPos << endl;
-			cout << "Current : tiltPos = "<< tiltPos << endl;
-			cout << "Current : zoomPos = "<< zoomPos << endl;
-			cout << "====================================================\n\n" << endl;
-			#endif
-			memset(&linkagePos,0, sizeof(LinkagePos_t));			
-		}		
-	}
-	else	{	
-			//send_signal_flag = false;
-			gettimeofday(&time2,NULL);
-			printf("Delta Time  = %ld ms;\r\n", (time2.tv_sec - time1.tv_sec)*1000 + (time2.tv_usec - time1.tv_usec)/1000 );
-							
-		#if 1
-			cout << "\n\n===============Query Ball Camera Position Sucess ! ============(1)" << endl;
-			cout << "Current : panPos = "<< panPos << endl;
-			cout << "Current : tiltPos = "<< tiltPos << endl;
-			cout << "Current : zoomPos = "<< zoomPos << endl;
-			cout << "====================================================\n\n" << endl;
-		#endif
-		memset(&linkagePos,0, sizeof(LinkagePos_t));	
-	}
-#endif	
 }
 
 void CProcess::moveToDest( )
 {
-#if 0
-	static int static_cofx = 6320;
-	static int static_cofy = 6200;
-	int point_X , point_Y , offset_x , offset_y,zoomPos; 
-	int delta_X ;	
-	switch(m_display.g_CurDisplayMode) 
-	{
-		case PREVIEW_MODE:
-			offset_x = 0;	
-			offset_y = 0;
-			break;
-		case MAIN_VIEW:
-			offset_x = 480;
-			offset_y = 0;
-			break;		
-		default:
-			break;
-	}	
 
-	LeftPoint.x    -= offset_x;
-	RightPoint.x  -= offset_x;
-	
-	delta_X = abs(LeftPoint.x - RightPoint.x) ;
-	
-	if(LeftPoint.x < RightPoint.x) {
-		point_X = abs(LeftPoint.x - RightPoint.x) /2 + LeftPoint.x;
-		point_Y = abs(LeftPoint.y - RightPoint.y) /2 + LeftPoint.y;	
-	}else{
-		point_X = abs(LeftPoint.x - RightPoint.x) /2 + RightPoint.x;
-		point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
-	}	
-	int flag = 0;		
-//-----------------------------------Query Current Position --------------------------------------	
-	QueryCurBallCamPosition();	
-//-------------------------------------------------------------------------
-	static int DesPanPos = 0;
-	static int DesTilPos =0;	
-
-	int curPanPos = DesPanPos;
-	int curTilPos = DesTilPos;
-
-	curPanPos = panPos;	//sThis->m_ptz->m_iPanPos;
-	curTilPos = tiltPos;		//sThis->m_ptz->m_iTiltPos;
-	
-	int  inputX = point_X;	
-	int  inputY = point_Y;	
-	int  tmpcofx = static_cofx;
-	int  tmpcofy = static_cofy;
-//------------------------------------------------------	
-	Set_K_ByDeltaX(delta_X);
-//-----------------------------------------------------	
-	static_cofx = m_cofx;
-	static_cofy = m_cofy;
-
-	inputX -= 474;	//480;
-	inputY -= 276;	//270;	
-
-	float coefficientx = (float)tmpcofx*0.001f;
-	float coefficienty = (float)tmpcofy*0.001f;
-	float tmpficientx = 1.0;
-	inputX = (int)((float)inputX * coefficientx * tmpficientx);
-	inputY = (int)((float)inputY * coefficienty);		
-	
-	if(inputX + curPanPos < 0)
-	{
-		DesPanPos = 36000 + (inputX + curPanPos);
-	}
-	else if(inputX + curPanPos > 35999)
-	{
-		DesPanPos = inputX - (36000 - curPanPos);
-	}
-	else
-		DesPanPos = curPanPos + inputX;
-
-	if(curTilPos > 32768)
-	{
-		if(inputY < 0)
-		{			
-			DesTilPos = curTilPos - inputY ;
-		}
-		else
-		{
-			if(curTilPos - inputY < 32769)
-				DesTilPos = inputY - (curTilPos - 32768);
-			else
-				DesTilPos = curTilPos - inputY;
-		}
-	}
-	else
-	{
-		if(inputY < 0)
-		{
-			if(curTilPos + inputY < 0)
-			{
-				DesTilPos = -inputY - curTilPos + 32768; 
-			}
-			else 
-			{
-				DesTilPos = curTilPos + inputY;
-			}
-		}
-		else
-		{
-			DesTilPos = curTilPos + inputY;
-		}
-	}
-//-------------------------------------------------------------------------------
-		zoomPos = checkZoomPosTable(delta_X);
-//-------------------------------------------------------------------------------
-		trkmsg.cmd_ID = acqPosAndZoom;
-		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-		memcpy(&trkmsg.param[8],&zoomPos  , 4); 
-		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-		return ;
-#endif
 }
-
 void CProcess::Test_Match_result(int x, int y)
 {
-	int offsetX = 960;
+	int offsetX = m_winWidth/2;
 	int offsetY = 0;
 	int gunImage_pointX = x- offsetX;
 	int gunImage_pointY = y- offsetY;
 	cv::Point2d gunImagePoint = cv::Point2d(gunImage_pointX*2, gunImage_pointY*2);
-	cv::Point2d ballImagePoint;
-	
-	cv::Point2d temp;
-	
-	//printf("[%s]:))))))))))))))))))   gunImage_point = <%d, %d> \r\n", __FUNCTION__,gunImagePoint.x, gunImagePoint.y);
-
-	//CvtImgCoords2CamCoords(gunImagePoint, ballImagePoint);	
+	cv::Point2d ballImagePoint;	
+	cv::Point2d temp;	
 	CvtImgPoint2Camera(gunImagePoint, ballImagePoint);
-	
-
-	//printf("[%s]:))))))))))))))))))   BallImage_point = <%d, %d> \r\n", __FUNCTION__,ballImagePoint.x, ballImagePoint.y);
 	int destX = ballImagePoint.x;
 	int destY = ballImagePoint.y;
-	setBallImagePoint(destX, destY);
-	
+	setBallImagePoint(destX, destY);	
 	return ;
 }
 
@@ -3216,7 +3004,7 @@ void CProcess::MoveBall()
 	
 	ZoomPos =m_iZoom; 	// zoomPos;
 
-#if 1
+#if 0
 	printf("\r\n===============Destination====================(2)\r\n");
 	printf("DesPanPos = %d\r\nDesTilPos = %d\r\nZoomPos  = %d \r\n",DesPanPos,DesTilPos,ZoomPos);
 	printf("\r\n==========================================\r\n");
@@ -3225,7 +3013,6 @@ void CProcess::MoveBall()
 
 	memcpy(&trkmsg.param[0],&DesPanPos, 4);
 	memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-	//memcpy(&trkmsg.param[8],&ZoomPos  , 4); 
 	memcpy(&trkmsg.param[8],&zoomPos, 4);
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 
@@ -3237,8 +3024,7 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 	int point_X , point_Y , offset_x , offset_y,ZoomPos; 
 	int delta_X ;	
 	int cur_Kx = 6320;
-	int cur_Ky = 6200;
-	
+	int cur_Ky = 6200;	
 	switch(m_display.g_CurDisplayMode) 
 	{
 		case PREVIEW_MODE:
@@ -3246,83 +3032,22 @@ void CProcess::GUN_MOVE_Event(int x, int y)
 			offset_y = 0;
 			break;
 		case MAIN_VIEW:
-			offset_x = m_winWidth/4;//480;
+			offset_x = m_winWidth/4;
 			offset_y = 0;
 			break;		
 		default:
 			break;
-	}	
-	
+	}		
 	point_X  = x - offset_x;
-	point_Y  = y - offset_y;	
-	
+	point_Y  = y - offset_y;		
 	int flag = 0;		
-//-----------------------------------Query Current Position -------------------
+//----------Query Current Position -------------------
 	refreshClickPoint(point_X, point_Y);
 	setPTZflag(true);
 	QueryCurBallCamPosition();		
-//-------------------------------------------------------------------------
-#if 0
-	int DesPanPos = 0;
-	 int DesTilPos =0;	
-
-	int Origin_PanPos = panPos;
-	int Origin_TilPos = tiltPos;
-
-	int curPanPos = panPos;	//sThis->m_ptz->m_iPanPos;
-	int curTilPos = tiltPos;		//sThis->m_ptz->m_iTiltPos;
-
-	Set_K_ByDeltaX(m_iDelta_X);
-	
-	cur_Kx = m_cofx;
-	cur_Ky = m_cofy;
-	
-	int  inputX = point_X;	
-	int  inputY = point_Y;	
-	int  tmpcofx = cur_Kx;		//static_cofx;
-	int  tmpcofy = cur_Ky;		//static_cofy;
-
-	//static_cofx = m_cofx;
-	//static_cofy = m_cofy;
-
-	inputX -= 480;//474;
-	inputY -= 270;//276;	
-
-	float coefficientx = (float)tmpcofx*0.001f;
-	float coefficienty = (float)tmpcofy*0.001f;
-	float tmpficientx = 1.0;
-	inputX = (int)((float)inputX * coefficientx * tmpficientx);
-	inputY = (int)((float)inputY * coefficienty);		
-	
-	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
-//-------------------------------------------------------------------------------
-//	zoomPos = checkZoomPosTable(delta_X);
-	
-	ZoomPos = zoomPos ;//m_iZoom;
-	m_iZoom = zoomPos;
-
-//-------------------------------------------------------------------------------
-#if 1
-	printf("\r\n===============Destination====================(2)\r\n");
-	printf("DesPanPos = %d\r\nDesTilPos = %d\r\nZoomPos  = %d \r\n",DesPanPos,DesTilPos,ZoomPos);
-	printf("\r\n==========================================\r\n");
-#endif	
-	trkmsg.cmd_ID = acqPosAndZoom;
-#if 1
-	memcpy(&trkmsg.param[0],&DesPanPos, 4);
-	memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-	memcpy(&trkmsg.param[8],&ZoomPos  , 4); 
-#else
-	memcpy(&trkmsg.param[0],&panPos, 4);
-	memcpy(&trkmsg.param[4],&tiltPos, 4); 	
-	memcpy(&trkmsg.param[8],&zoomPos  , 4); 
-#endif
-	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
-#endif
 }
 
 void CProcess::Event_click2Move(int x, int y)
-#if 1
 {
 	int point_X , point_Y , offset_x , offset_y,	zoomPos; 
 	int delta_X ;
@@ -3330,7 +3055,7 @@ void CProcess::Event_click2Move(int x, int y)
 	zoomPos = 2849;   // Min  Zoom 
 	int ZoomMax = 65535;
 	int ZoomMin = 2849;
-	offset_x = 480;
+	offset_x = m_winWidth/4;
 	offset_y = 0;
 	point_X = ( x-offset_x ) ;
 	point_Y = ( y-offset_y ) ;
@@ -3344,8 +3069,8 @@ void CProcess::Event_click2Move(int x, int y)
 	int  tmpcofx = 6300;
 	int  tmpcofy = 6200;
 
-	inputX -=480;		// 474;   
-	inputY -= 270;		//276; 	
+	inputX -= m_winWidth/4;	
+	inputY -= m_winHeight/4;		
 
 	float coefficientx = (float)tmpcofx*0.001f;
 	float coefficienty = (float)tmpcofy*0.001f;
@@ -3367,48 +3092,7 @@ void CProcess::Event_click2Move(int x, int y)
 	int Origin_PanPos = panPos;	
 	int Origin_TilPos = tiltPos;	
 
-	if(inputX + Origin_PanPos < 0){
-		DesPanPos = 36000 + (inputX + Origin_PanPos);
-	}
-	else if(inputX + Origin_PanPos > 35999)	{
-		DesPanPos = (inputX+Origin_PanPos) -36000;
-	}
-	else
-		DesPanPos = Origin_PanPos + inputX;
-
-	if(Origin_TilPos > 32768){
-		if(inputY < 0)	{			
-			DesTilPos = Origin_TilPos - inputY ;
-		}
-		else	{
-			if(Origin_TilPos - inputY < 32769)
-				DesTilPos = inputY - (Origin_TilPos - 32768);
-			else
-				DesTilPos = Origin_TilPos - inputY;
-		}
-	}
-	else	{
-		if(inputY < 0)	{
-			if(Origin_TilPos + inputY < 0)			{
-				DesTilPos = -inputY - Origin_TilPos + 32768; 
-			}
-			else{
-				DesTilPos = Origin_TilPos + inputY;
-			}
-		}
-		else		{
-			DesTilPos = Origin_TilPos + inputY;
-		}
-	}
-
-	if(DesTilPos > 20000)	{
-		if(DesTilPos > 32768 + 1900)
-			DesTilPos = 32768 + 1900;
-	}
-	else	{
-		if(DesTilPos > 8900)
-			DesTilPos = 8900;
-	}
+	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
 	
 	trkmsg.cmd_ID = acqPosAndZoom;
 	memcpy(&trkmsg.param[0],&DesPanPos, 4);
@@ -3417,127 +3101,6 @@ void CProcess::Event_click2Move(int x, int y)
 	
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);		
 }
-
-
-#else
-{
-printf("\r\n[%s]===Enter >> \r\n",__FUNCTION__);
-
-	int point_X , point_Y , offset_x , offset_y,	zoomPos; 
-	int delta_X ;
-	Point opt;
-
-	offset_x = 0;
-	offset_y = 0;
-	point_X = ( x-offset_x ) ;
-	point_Y = ( y-offset_y ) ;
-
-	opt = Point( point_X ,  point_Y );	
-	
-	int DesPanPos, DesTilPos ;	
-
-	int  inputX = opt.x;
-	int  inputY = opt.y;
-	int  tmpcofx = 6300;
-	int  tmpcofy = 6200;
-
-	inputX -= 474;//480;    /* 474 is from 948/2 , and 948 is from the camera intrinsic matrix: "Ox", same as  "Uo"*/
-	inputY -= 276;//270; 	/* 276 is from 552/2 , and 552 is from the camera intrinsic matrix: "Oy", same as  "Vo"*/
-
-	float coefficientx ;//= (float)tmpcofx*0.001f;
-	float coefficienty ;//= (float)tmpcofy*0.001f;
-	float fx = 1796.2317019134 + 10;
-	float fy = 1795.8556284573 +55;
-	float degperpixX = 36000/(2*CV_PI*fx);
-	float degperpixY = 36000/(2*CV_PI*fy);
-	coefficientx = degperpixX*2;
-	coefficienty = degperpixY*2;
-
-	float tmpficientx = 1.0;
-
-	inputX = (int)((float)inputX * coefficientx * tmpficientx);
-	inputY = (int)((float)inputY * coefficienty);
-//====================================================================
-	QueryCurBallCamPosition();	
-
-	int Origin_PanPos = panPos;
-	int Origin_TilPos = tiltPos;	
-	
-	printf("\r\n[%s]=========Origin Move , Current Position is : < %d, %d >\r\n", __FUNCTION__, panPos, tiltPos);
-
-//===================================================================
-
-	if(inputX + Origin_PanPos < 0){
-		DesPanPos = 36000 + (inputX + Origin_PanPos);
-	}
-	else if(inputX + Origin_PanPos > 35999)	{
-		DesPanPos = (inputX+Origin_PanPos) -36000;
-	}
-	else
-		DesPanPos = Origin_PanPos + inputX;
-
-	if(Origin_TilPos > 32768){
-		if(inputY < 0)	{			
-			DesTilPos = Origin_TilPos - inputY ;
-		}
-		else	{
-			if(Origin_TilPos - inputY < 32769)
-				DesTilPos = inputY - (Origin_TilPos - 32768);
-			else
-				DesTilPos = Origin_TilPos - inputY;
-		}
-	}
-	else	{
-		if(inputY < 0)	{
-			if(Origin_TilPos + inputY < 0)			{
-				DesTilPos = -inputY - Origin_TilPos + 32768; 
-			}
-			else{
-				DesTilPos = Origin_TilPos + inputY;
-			}
-		}
-		else		{
-			DesTilPos = Origin_TilPos + inputY;
-		}
-	}
-
-	if(DesTilPos > 20000)	{
-		if(DesTilPos > 32768 + 1900)
-			DesTilPos = 32768 + 1900;
-	}
-	else	{
-		if(DesTilPos > 8900)
-			DesTilPos = 8900;
-	}
-
-	printf("\r\n[%s]=========Before Move , Destination Position is : < %d, %d >\r\n", __FUNCTION__, DesPanPos, DesTilPos);
-
-	zoomPos = 2849;  //  Use the const value to make the ball camera don't change Zoom
-
-	if(1)	{  
-		trkmsg.cmd_ID = acqPosAndZoom;
-		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-		memcpy(&trkmsg.param[8],&zoomPos  , 4); 	
-	}
-	else	{
-		trkmsg.cmd_ID = speedloop;
-		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-	}
-	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
-#if 0
-	OSA_waitMsecs(2000);
-	QueryCurBallCamPosition();
-	int CurrentPano = panPos;
-	int CurrentTilt = tiltPos;
-	printf("\r\n[%s]=========After Move , Current Position is : < %d, %d >\r\n", __FUNCTION__, CurrentPano, CurrentTilt);
-#endif
-
-}
-
-#endif
-//==========================================================================
 
 void CProcess::SetDestPosScope(int &inputX, int &inputY, int &Origin_PanPos, int &Origin_TilPos,int &DesPanPos, int &DesTilPos)
 {	
@@ -3595,11 +3158,7 @@ void CProcess::SetDestPosScope(int &inputX, int &inputY, int &Origin_PanPos, int
 			DesTilPos = 8900;
 	}
 }
-
-
-
-
-void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
+void CProcess::TransformPixByOriginPoints(int &X, int &Y)
 {
 	int DesPanPos, DesTilPos , tmp_zoomPos;	
 	int  inputX = X ;
@@ -3610,8 +3169,8 @@ void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 	float coefficientx = (float)tmpcofx*0.001f;
 	float coefficienty = (float)tmpcofy*0.001f;
 
-	inputX -= m_winWidth/4;//480;	//474;  
-	inputY -= m_winHeight/4;//270;	//276; 	
+	inputX -= m_winWidth/4;	
+	inputY -= m_winHeight/4;		
 
 	inputX = (int)((float)inputX * coefficientx );
 	inputY = (int)((float)inputY * coefficienty);
@@ -3621,22 +3180,13 @@ void CProcess::TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom)
 	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
 
 	tmp_zoomPos = zoomPos;//m_iZoom;
+
+	//trkmsg.cmd_ID = speedloop;
+	trkmsg.cmd_ID = acqPosAndZoom;
+	memcpy(&trkmsg.param[0],&DesPanPos, 4);
+	memcpy(&trkmsg.param[4],&DesTilPos, 4); 
+	memcpy(&trkmsg.param[8],&tmp_zoomPos  , 4); 	
 	
-	if(needChangeZoom)
-	{
-		trkmsg.cmd_ID = acqPosAndZoom;
-		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
-		memcpy(&trkmsg.param[8],&tmp_zoomPos  , 4); 	
-	}
-	else
-	{
-		//trkmsg.cmd_ID = speedloop;
-		trkmsg.cmd_ID = acqPosAndZoom;
-		memcpy(&trkmsg.param[0],&DesPanPos, 4);
-		memcpy(&trkmsg.param[4],&DesTilPos, 4); 
-		memcpy(&trkmsg.param[8],&tmp_zoomPos  , 4); 	
-	}
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
 }
 
@@ -3662,7 +3212,7 @@ void CProcess::CvtImgPoint2Camera(cv::Point2d &imgCoords, cv::Point2d &camCoords
 	cv::Point2d upt( pt.x, pt.y );			
 	itp = ballImagePoints.begin();
 	pt = *itp;
-	pt.x /= 2.0;	//+ 960;
+	pt.x /= 2.0;	
  	pt.y /= 2.0;	 
 	camCoords = cv::Point2d( pt.x, pt.y );
 	return ;
@@ -3690,7 +3240,7 @@ void CProcess::CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords)
 	Point upt( pt.x, pt.y );			
 	itp = ballImagePoints.begin();
 	pt = *itp;
-	pt.x /= 2.0;	//+ 960;
+	pt.x /= 2.0;	
  	pt.y /= 2.0;	 
 	camCoords = Point( pt.x, pt.y );
 	return ;
@@ -3701,20 +3251,13 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool needChangeZoom)
 {
 	int delta_X ;
 	int offset_x = 0;
-	int offset_y = m_winHeight/2;	//540;
+	int offset_y = m_winHeight/2;	
 	int point_X = ( x-offset_x ) ;
 	int point_Y = ( y-offset_y ) *2;		
 	Point imgCoords = Point( point_X ,  point_Y );
 	Point camCoords;
-	
-	//printf("[%s]:))))))))))))))))))   gunImage_point = <%d, %d> \r\n", __FUNCTION__,imgCoords.x, imgCoords.y);
-
 	CvtImgCoords2CamCoords(imgCoords, camCoords);
-
-
-	//printf("[%s]:))))))))))))))))))   BallImage_point = <%d, %d> \r\n", __FUNCTION__,camCoords.x, camCoords.y);
-
-	TransformPixByOriginPoints(camCoords.x, camCoords.y, needChangeZoom);
+	TransformPixByOriginPoints(camCoords.x, camCoords.y );
 }
 void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 {	
@@ -3726,12 +3269,12 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 	switch(m_display.g_CurDisplayMode) 
 	{
 		case PREVIEW_MODE:	
-			offset_x = m_winWidth/2;  //960;
+			offset_x = m_winWidth/2;  
 			offset_y = 0;
 			break;
 		case MAIN_VIEW:
 			offset_x =0;
-			offset_y = m_winHeight/2;   //540;
+			offset_y = m_winHeight/2;   
 			break;			
 		default:
 			break;
@@ -3794,8 +3337,8 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 	int  tmpcofx = 6300;
 	int  tmpcofy = 6200;
 
-	inputX -= m_winWidth/4;//480;
-	inputY -= m_winHeight/4;//270;
+	inputX -= m_winWidth/4;
+	inputY -= m_winHeight/4;
 
 	float coefficientx = (float)tmpcofx*0.001f;
 	float coefficienty = (float)tmpcofy*0.001f;
@@ -3859,8 +3402,6 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 {
 	switch( key ) {
 		case 1:
-			//m_bMarkCircle = true;
-			//cout << "---------------->>> Press F1 : m_bMarkCircle == true " << endl;
 			{
 				GB_WorkMode nextMode = GB_WorkMode(((int)g_workMode+1)% MODE_COUNT);
 				g_workMode = nextMode;
@@ -3880,24 +3421,14 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			}
 			break;
 		case 2:
-			//m_bMarkCircle = false;
-			//cout << "---------------->>> Press F2 : m_bMarkCircle == false " << endl;
 			app_ctrl_setMenu();  // Open Menu information
 			break;
 		case 3:
 			start_calibrate = true;
 			break;
 		case 4:	
-		{
-			//SelectMode nextmode = SelectMode((int)(mouse_workmode+1) %Mode_Count );
-			//mouse_workmode = nextmode;
-		}	
-			//showDetectCorners = true;			
-			//printf("++++++++++++++++++++ showDetectCorners = %d \r\n", showDetectCorners);
 			break;
 		case 5:			
-			//showDetectCorners = false;			
-			//printf("++++++++++++++++++++ showDetectCorners = %d \r\n", showDetectCorners);
 			break;
 		case 6:
 			imageListForCalibra.clear();

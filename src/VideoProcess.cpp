@@ -1206,10 +1206,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				ptEnd = Point(x,y);
 				if(abs(ptEnd.x - ptStart.x) > 10) /* If rectangle's width  < 10 pixels , do nothing !*/
 				{
-					isRectValid = true;
-					//pThis->m_click = 0;
-					pThis->addendpoint(tmpX, tmpY, curId);
-					
+					isRectValid = true;					
+					pThis->addendpoint(tmpX, tmpY, curId);					
 				}
 				pThis->m_click = 0;
 				pThis->m_draw = 1;

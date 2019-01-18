@@ -134,7 +134,7 @@ public:
 	
 	void CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords);
 	void CvtImgPoint2Camera(cv::Point2d &imgCoords, cv::Point2d &camCoords);
-	void TransformPixByOriginPoints(int &X, int &Y, bool needChangeZoom);
+	void TransformPixByOriginPoints(int &X, int &Y );
 	
 	void SetDestPosScope(int &inputX, int &inputY, int &Origin_PanPos, int &Origin_TilPos,int &DesPanPos, int &DesTilPos);
 	void Event_click2Move(int x, int y);

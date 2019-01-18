@@ -1172,7 +1172,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			}
 			else	
 			{
-				if(pThis->click_legal(x,y) )
+				if(pThis->click_legal(x,y) &&(g_workMode == HANDLE_LINK_MODE))
 				{
 					if(y >(m_staticScreenHeight/2) ) 
 					{
@@ -1209,23 +1209,28 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					isRectValid = true;
 					pThis->m_click = 0;
 					pThis->addendpoint(tmpX, tmpY, curId);
-					pThis->m_draw = 1;
+					
 				}
+				pThis->m_draw = 1;
 
 				if( (tempX == x) && (tempY == y) && (m_bLDown== true) ) {
-					m_bLDown = false;
-					m_bIsClickMode = true;
-					if(y>(m_staticScreenHeight/2)) {
-						pThis->setClickPoint(x,y);
-					}	
-					
-					if((y > 0) && (y< m_staticScreenHeight/2)) {
-						if((x>(m_staticScreenWidth/4)) && (x <(m_staticScreenWidth*3/4)))
-						pThis->GUN_MOVE_Event(x,y); 	
-					}
-					else{
-						pThis->ClickGunMove2Ball(x,y,false);
-					}
+					if(g_workMode == HANDLE_LINK_MODE )
+					{
+						m_bLDown = false;
+						m_bIsClickMode = true;
+						if(y>(m_staticScreenHeight/2)) {
+							pThis->setClickPoint(x,y);
+						}	
+						
+						if((y > 0) && (y< m_staticScreenHeight/2)) {
+							if((x>(m_staticScreenWidth/4)) && (x <(m_staticScreenWidth*3/4))) {
+								pThis->GUN_MOVE_Event(x,y); 	
+							}
+						}
+						else{
+							pThis->ClickGunMove2Ball(x,y,false);
+						}
+				       }
 				}
 				else
 				{
@@ -1294,8 +1299,8 @@ void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 		floatx = xMouse;
 		floaty = yMouse;	
 		pThis->map1080p2normal_point(&floatx, &floaty);
-		pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);	
-		if(pThis->m_click == 1 && yMouse > 540 &&(abs(ptEnd.x - ptStart.x) > 10 ))
+		pThis->mapnormal2curchannel_point(	&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1] );	
+		if(pThis->m_click == 1 && yMouse > 540 &&(	abs(ptEnd.x - ptStart.x) > 10)	)
 		{
 			pThis->m_tempX = floatx;
 			pThis->m_tempY = floaty;

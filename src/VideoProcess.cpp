@@ -1165,14 +1165,14 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		}
 	}
 	else {
-		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN &&(g_workMode == HANDLE_LINK_MODE)) {
 			if (pThis->open_handleCalibra) // Press 'y' or 'Y' , set this flag to 1
 			{
 				pThis->OnMouseLeftDwn(x, y);
 			}
 			else	
 			{
-				if(pThis->click_legal(x,y) &&(g_workMode == HANDLE_LINK_MODE))
+				if(pThis->click_legal(x,y) )
 				{
 					if(y >(m_staticScreenHeight/2) ) 
 					{
@@ -1194,7 +1194,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				}
 			}
 		}
-		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP &&(g_workMode == HANDLE_LINK_MODE))
 		{
 			if(pThis->move_legal(x,y))
 			{
@@ -1207,10 +1207,11 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				if(abs(ptEnd.x - ptStart.x) > 10) /* If rectangle's width  < 10 pixels , do nothing !*/
 				{
 					isRectValid = true;
-					pThis->m_click = 0;
+					//pThis->m_click = 0;
 					pThis->addendpoint(tmpX, tmpY, curId);
 					
 				}
+				pThis->m_click = 0;
 				pThis->m_draw = 1;
 
 				if( (tempX == x) && (tempY == y) && (m_bLDown== true) ) {
@@ -1230,7 +1231,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 						else{
 							pThis->ClickGunMove2Ball(x,y,false);
 						}
-				       }
+				      }
 				}
 				else
 				{
@@ -1295,6 +1296,7 @@ void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 	}
 	else
 	{
+		
 		float floatx,floaty;
 		floatx = xMouse;
 		floaty = yMouse;	

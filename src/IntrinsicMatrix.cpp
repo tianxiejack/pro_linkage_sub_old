@@ -5,7 +5,7 @@
 using namespace cv;
 
 std::vector< cv::Mat > ImageList;
-IntrinsicMatrix::IntrinsicMatrix():m_bcalibrateSwitch(false),m_dErr(0),m_dTotal_Err(0),m_iOneImgCornerCount(0)
+IntrinsicMatrix::IntrinsicMatrix():m_bcalibrateSwitch(false),m_dErr(0.0),m_dTotal_Err(0.0),m_iOneImgCornerCount(0)
 {
 	imageSize = cv::Size(1920,1080);
 	
@@ -188,10 +188,10 @@ double IntrinsicMatrix::calibrate(cv::Size &imageSize)
 
 int IntrinsicMatrix::calculateAverageErr(const cv::Mat &cameraMatrix, const cv::Mat &distCofficent,const std::vector< cv::Mat > &R, const std::vector< cv::Mat > &T)
 {
-
+	std::vector< cv::Point2f > new_projected_points;
 	for(int i=0; i<ImageList.size(); i++) {
-		std::vector< cv::Point2f > new_projected_points;
-		std::vector< cv::Point3f > one_objectPointsArray;
+		new_projected_points.clear();
+		std::vector< cv::Point3f > one_objectPointsArray = objectPoints[i];;
 		cv::projectPoints(one_objectPointsArray, R[i], T[i], cameraMatrix,distCofficent,new_projected_points);
 		std::vector< cv::Point2f > old_projectedImg_points = imagePoints[i];
 		cv::Mat new_projected_points_mat =cv::Mat(1,new_projected_points.size(),CV_32FC2);

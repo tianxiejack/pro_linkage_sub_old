@@ -40,7 +40,7 @@ extern OSA_SemHndl g_detectCorners;
 extern volatile bool cloneOneFrame;
 extern bool captureOnePicture;
 extern int captureCount ;
-
+extern std::vector< cv::Mat > ImageList;
 
 int CVideoProcess::MAIN_threadCreate(void)
 {
@@ -349,24 +349,32 @@ void CVideoProcess::linkage_init()
 	else
 		cout << "Create m_rgbMat Success !!" << endl;
 	
-	if(m_camCalibra == NULL)
+	if(m_camCalibra == NULL){
 		cout << "Create CamCalibrate Object Failed !!" << endl;
-	
-	if( !m_camCalibra->Load_CameraParams("gun_camera_data.yml", "ball_camera_data.yml") )
+	}else{
+		if( !m_camCalibra->Load_CameraParams("gun_camera_data.yml", "ball_camera_data.yml") )
 		cout << " Load Camera Origin IntrinsicParameters Failed !!!" << endl;
 
-	m_camCalibra->Init_CameraParams();
-	m_camCalibra->RunService();
+		m_camCalibra->Init_CameraParams();
+		m_camCalibra->RunService();
+	}	
 
 	if(m_detectCorners == NULL) {
 		cout << "Create DetectCorners Object Failed !!" << endl;
+	}else{
+		m_detectCorners->Init();
+		m_detectCorners->RunService();
 	}
-	m_detectCorners->Init();
-	m_detectCorners->RunService();
+
+	if(m_intrMatObj != NULL){
+		m_intrMatObj->RunService();
+	}
 }
 
 CcCamCalibra* CVideoProcess::m_camCalibra = new CcCamCalibra();
 DetectCorners* CVideoProcess::m_detectCorners = new DetectCorners();
+IntrinsicMatrix* CVideoProcess::m_intrMatObj = new IntrinsicMatrix();
+
 bool CVideoProcess::m_bLDown = false;
 bool CVideoProcess::m_bIsClickMode = false;
 
@@ -1982,11 +1990,15 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 			
 			#if 1
 				int nsize = imageListForCalibra.size();
-				if(nsize<50){
+				if(nsize<50)
+				{
 					m_detectCorners->m_cutIMG[nsize] = cv::Mat(frame.rows,frame.cols,CV_8UC3);
 					cvtColor(frame,m_detectCorners->m_cutIMG[nsize],CV_YUV2BGR_YUYV);
 					imageListForCalibra.push_back(m_detectCorners->m_cutIMG[nsize]);
-					m_camCalibra->ImageLists.push_back(m_detectCorners->m_cutIMG[nsize]);
+
+					ImageList.push_back( m_detectCorners->m_cutIMG[nsize] );
+					
+					m_camCalibra->ImageLists.push_back(m_detectCorners->m_cutIMG[nsize]);					
 					m_detectCorners->SetCutDisplay(nsize, true);
 				}
 			#else

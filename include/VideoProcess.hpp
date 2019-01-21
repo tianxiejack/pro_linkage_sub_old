@@ -13,6 +13,8 @@
 #include "configable.h"
 
 #include "CcCamCalibra.h"
+#include "IntrinsicMatrix.h"
+
 #define MAX_SUCCESS_IMAGES 160
 #define GRID_CNT_X 19
 #define GRID_CNT_Y 10
@@ -88,6 +90,7 @@ class CVideoProcess
 public:
 	static CcCamCalibra *m_camCalibra;	
 	static DetectCorners *m_detectCorners;	
+	static IntrinsicMatrix *m_intrMatObj;
 	Mat gun_srcMat_remap;
 	Point LeftPoint;
 	Point RightPoint;

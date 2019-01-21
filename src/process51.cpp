@@ -3377,7 +3377,7 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 
 	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
 
-	if(needChangeZoom == true) {
+	if(  needChangeZoom == true ) {
 		trkmsg.cmd_ID = acqPosAndZoom;
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 
@@ -3385,12 +3385,15 @@ void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
 			memcpy(&trkmsg.param[8],&(tmp_zoomPos)  , 4); 
 		}
 	}
-	else	{
+	else
+	{
 		trkmsg.cmd_ID = speedloop;
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 	
 	}
-	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
+	
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	
 }
 void CProcess::OnMouseLeftDwn(int x, int y)
 {
@@ -3436,6 +3439,10 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			break;
 		case 7:
 			capIndex = (capIndex+1) %2;
+			break;
+		case 10:
+			m_intrMatObj->setCalibrateSwitch(true);
+			
 			break;
 		case SPECIAL_KEY_DOWN:
 			app_ctrl_downMenu();

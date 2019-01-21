@@ -47,17 +47,21 @@ int timer_init(void)
 
 int main(int argc, char **argv)
 {
+	int returnValue;
 	struct timeval tv;	
 	MSGDRIV_create();
 #ifdef __IPC__
 	Ipc_pthread_start();
 #endif
 
-	timer_init();	
+	if(0 != timer_init()){
+		printf("[%s]:XXX: Create timer faliled !!!\r\n",__FUNCTION__);
+	}
+	
 	//proc = new CProcess(vdisWH[0][0], vdisWH[0][1]);
 	proc = new CProcess(outputWHF[0], outputWHF[1]);
 	if(proc == NULL){
-		printf("\r\nCreate Main App Failed !!!");
+		printf("\r\n[%s]:XXX: Create Main App Failed !!!",__FUNCTION__);
 		return -1;
 	}
 	
@@ -71,21 +75,26 @@ int main(int argc, char **argv)
 	proc->creat();
 	proc->init();
 	proc->run();
+	
 	eventLoop = new EventLoop(proc);
 	if(eventLoop == NULL){
-		printf("\r\nCreate Event Loop Failed !!!");
+		printf("\r\n[%s]:XXX: Create Event Loop Failed !!!",__FUNCTION__);
 	}
-	int returnValue = eventLoop->Init();
-	if(returnValue == -1) {
-		printf("\r\n[%s]:====== >> Pthread Mutex and Condition Init Failed !!!",__FUNCTION__);
-	}
-	eventLoop->RunService();
+	else{
+		returnValue = eventLoop->Init();
+		if(returnValue != -1) {
+			eventLoop->RunService();
+		}
+	}	
 	
 	glutMainLoop();
 	
-	proc->destroy();
-	eventLoop->StopService();
-	
+	if(proc != NULL) {
+		proc->destroy();
+	}	
+	if( eventLoop != NULL ){
+		eventLoop->StopService();
+	}	
 #ifdef __IPC__
 	Ipc_pthread_stop();
 #endif

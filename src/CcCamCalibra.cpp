@@ -342,7 +342,6 @@ int CcCamCalibra::Run()
 					
 				}
 			}
-			//printf("[%s] :  bool_Calibrate = %d\r\n", __FUNCTION__,bool_Calibrate);
 			
 			if(!homography.empty()) {
 				Mat warp;

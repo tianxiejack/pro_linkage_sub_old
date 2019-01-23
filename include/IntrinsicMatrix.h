@@ -47,6 +47,7 @@ private:
 	double m_dErr, m_dTotal_Err;
 	bool m_bcalibrateSwitch ;
 	int m_iOneImgCornerCount;
+	int m_ValidImages;
 public:
 	void setCalibrateSwitch(bool flag) {
 		m_bcalibrateSwitch = flag;
@@ -54,12 +55,13 @@ public:
 	bool getCalibrateSwitch(){
 		return m_bcalibrateSwitch;
 	};
+	
 public:
 	void addPoints(const std::vector<cv::Point2f>&imageCorners, const std::vector<cv::Point3f>& objectCorners);
 	int addChessboardPoints( const std::vector< std::string > &filelist, cv::Size &boardSize);
 	int addChessboardPoints( const std::vector< cv::Mat > &imageList, cv::Size &boardSize);
 	double calibrate(cv::Size &imageSize);
-	int calculateAverageErr(const cv::Mat &cameraMatrix, const cv::Mat &distCofficent,const std::vector< cv::Mat > &R, const std::vector< cv::Mat > &T);
+	double calculateAverageErr(int ValidImages,const cv::Mat &cameraMatrix, const cv::Mat &distCofficent,const std::vector< cv::Mat > &R, const std::vector< cv::Mat > &T);
 
 };
 

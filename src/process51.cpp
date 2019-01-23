@@ -42,6 +42,7 @@ extern SelectMode mouse_workmode;
 extern bool setComBaud_select ;
 extern bool changeComBaud ;
 extern CProcess *proc;
+extern std::vector< cv::Mat > ImageList;
 
 bool send_signal_flag = true;
 
@@ -1733,23 +1734,23 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 				extInCtrl->TrkStatpri=extInCtrl->TrkStat;
 			}
 
-			#if __IPC__
-					if(extInCtrl->TrkStat != 3)
-					{
-						extInCtrl->trkerrx = extInCtrl->trkerrx - extInCtrl->opticAxisPosX[extInCtrl->SensorStat];
-						extInCtrl->trkerry = extInCtrl->trkerry - extInCtrl->opticAxisPosY[extInCtrl->SensorStat];
-					}
-					else
-					{
-						extInCtrl->trkerrx = 0;
-						extInCtrl->trkerry = 0;
-					}
-					ipc_settrack(extInCtrl->TrkStat, extInCtrl->trkerrx, extInCtrl->trkerry);
-					trkmsg.cmd_ID = read_shm_trkpos;
-					//printf("ack the trackerr to mainThr\n");
-					ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+		#if __IPC__
+			if(extInCtrl->TrkStat != 3)
+			{
+				extInCtrl->trkerrx = extInCtrl->trkerrx - extInCtrl->opticAxisPosX[extInCtrl->SensorStat];
+				extInCtrl->trkerry = extInCtrl->trkerry - extInCtrl->opticAxisPosY[extInCtrl->SensorStat];
+			}
+			else
+			{
+				extInCtrl->trkerrx = 0;
+				extInCtrl->trkerry = 0;
+			}
+			ipc_settrack(extInCtrl->TrkStat, extInCtrl->trkerrx, extInCtrl->trkerry);
+			trkmsg.cmd_ID = read_shm_trkpos;
+			//printf("ack the trackerr to mainThr\n");
+			ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 
-				if(m_display.disptimeEnable == 1){
+			if(m_display.disptimeEnable == 1){
 				//test zhou qi  time
 				int64 disptime = 0;
 				disptime = getTickCount();
@@ -1761,16 +1762,16 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 				if(m_display.disptimeEnable == 1)
 				{
 					putText(m_display.m_imgOsd[1],trkFPSDisplay,
-							Point( m_display.m_imgOsd[1].cols-350, 25),
-							FONT_HERSHEY_TRIPLEX,0.8,
-							cvScalar(0,0,0,0), 1
-							);
+						Point( m_display.m_imgOsd[1].cols-350, 25),
+						FONT_HERSHEY_TRIPLEX,0.8,
+						cvScalar(0,0,0,0), 1
+						);
 					sprintf(trkFPSDisplay, "trkerr time = %0.3fFPS", 1000.0/time);
 					putText(m_display.m_imgOsd[1],trkFPSDisplay,
-							Point(m_display.m_imgOsd[1].cols-350, 25),
-							FONT_HERSHEY_TRIPLEX,0.8,
-							cvScalar(255,255,0,255), 1
-							);
+						Point(m_display.m_imgOsd[1].cols-350, 25),
+						FONT_HERSHEY_TRIPLEX,0.8,
+						cvScalar(255,255,0,255), 1
+						);
 				}
 
 			}
@@ -2029,24 +2030,24 @@ osdindex++;	//cross aim
 	}
 //=========================Draw A Rectangle On Selected Picture ===============================
 {
+
+/* Draw a rectangle  on selected picture  of saved calibration  pictures */
 	if(0){
 		int leftStartX = (m_display.getSelectPicIndex() % 10)*192;
 		int leftStartY = 540 - (m_display.getSelectPicIndex() /10)*108;
 		m_rectSelectPic = Rect(leftStartX,leftStartY,192,108);
 		rectangle (m_display.m_imgOsd[1],  m_rectSelectPic,cvScalar(0,0,255,255), 1, 8);
 	}
+/* Show how many pictures have been detected Corners when change diffrent ChessBoard Poses */	
 	if( (m_display.displayMode == CALIBRATE_CAPTURE) && (showDetectCorners == true)){		
-		
 		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
-
-		sprintf(Bak_CString,"%d",captureCount);			
-						
+		sprintf(Bak_CString,"%d",captureCount);						
 		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,255,255,255), 1);
-			
 	}else {
 		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
 	}	
 }
+
 //=============================================================================================
 
 #if 0
@@ -3257,6 +3258,9 @@ void CProcess::ClickGunMove2Ball(int x, int y,bool needChangeZoom)
 	Point imgCoords = Point( point_X ,  point_Y );
 	Point camCoords;
 	CvtImgCoords2CamCoords(imgCoords, camCoords);
+	printf("\r\n[%s]:=============Image Points: < %d , %d >\r\n",__FUNCTION__,point_X,point_Y);
+	printf("\r\n[%s]:=============Remap Points: < %d , %d >\r\n",__FUNCTION__,camCoords.x,camCoords.y);
+
 	TransformPixByOriginPoints(camCoords.x, camCoords.y );
 }
 void CProcess::reMapCoords(int x, int y,bool needChangeZoom)
@@ -3444,6 +3448,10 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			m_intrMatObj->setCalibrateSwitch(true);
 			
 			break;
+		case 11:
+			ImageList.clear();
+			break;
+			
 		case SPECIAL_KEY_DOWN:
 			app_ctrl_downMenu();
 			break;
@@ -3634,9 +3642,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 		}
 
 		if(key =='n' || key == 'N') {
-
 			m_display.savePic_once = true;
-
 		}
 
 		if((key >= '0') && (key <= '9'))

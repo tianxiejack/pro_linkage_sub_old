@@ -1997,7 +1997,7 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 					imageListForCalibra.push_back(m_detectCorners->m_cutIMG[nsize]);
 
 					ImageList.push_back( m_detectCorners->m_cutIMG[nsize] );
-					
+					imwrite(m_display.savePicName,m_detectCorners->m_cutIMG[nsize]);
 					m_camCalibra->ImageLists.push_back(m_detectCorners->m_cutIMG[nsize]);					
 					m_detectCorners->SetCutDisplay(nsize, true);
 				}

@@ -367,7 +367,7 @@ int CcCamCalibra::Run()
 		g_sysParam->getSysParam().cameracalibrate.Enable_saveParameter = false;
 		if( !getCurrentPosFlag )
 		{
-			cout << "could not get the cuurent Flag \n" << endl;
+			cout << "could not get the current Flag \n" << endl;
 			return -1;
 		}
 		else

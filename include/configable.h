@@ -243,7 +243,7 @@ typedef enum _MenuDisplay{
 	MENU_TEST_RESULT_VIEW,
 	MENU_DISPLAY_COUNT		
 }MenuDisplay;
-typedef enum _GB_WorkMode{
+typedef enum _GB_WorkMode{ // This App Has three work mode : Handle, Auto, and Only Contrl Ball camera
 	HANDLE_LINK_MODE =0,
 	AUTO_LINK_MODE,
 	ONLY_BALL_MODE,

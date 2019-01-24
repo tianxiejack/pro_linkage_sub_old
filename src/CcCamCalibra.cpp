@@ -237,34 +237,19 @@ void CcCamCalibra::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 
 int CcCamCalibra::Run()
 {
-#if 0
-	//static bool calibrate_once = true;
-	if(/*calibrate_once && */start_calibrate ){
-		 start_calibrate = false;
-		//calibrate_once = true;
-		 FindCorners();
-		 //FindPatternCorners();
-		 getObjectCoordinates();
-		 calibrate();		
-	}
-#endif
 	int return_flag = 0;
 	Mat frame = ball_frame;
 	cvtGunYuyv2Bgr();
 	cvtBallYuyv2Bgr();
-#if 1	
+	
 	if(!gun_frame.empty()){
 		remap(gun_frame, undisImage, map1, map2, INTER_LINEAR);
 	}
-#else
-	if(!gun_BMP.empty()){
-		remap(gun_BMP, undisImage, map1, map2, INTER_LINEAR);
-	}
-#endif
+	
 	Mat gunDraw, ballDraw;
 	if( (!ball_frame.empty()) && (!gun_frame.empty()) )
 	{
-		if( (Set_Handler_Calibra /*|| g_sysParam->isEnable_Undistortion() */) && (bool_Calibrate /*|| g_sysParam->isEnable_calculateMatrix()*/) ) {		
+		if( (Set_Handler_Calibra ) && (bool_Calibrate ) ) {		
 			printf("%s : start manual calibrate \n",__func__);
 			
 			if(key_points1.size() > 4 && key_points2.size() > 4){
@@ -298,7 +283,7 @@ int CcCamCalibra::Run()
 		
 		else 
 		{	
-			if( bool_Calibrate/* || g_sysParam->isEnable_calculateMatrix()*/) {
+			if( bool_Calibrate ) {
 				
 				vector<KeyPoint> keypoints_1, keypoints_2;
 				vector<DMatch> matches;
@@ -314,18 +299,15 @@ int CcCamCalibra::Run()
 						pts.push_back(pt);
 					}					
 					bool_Calibrate = false;
-					//g_sysParam->getSysParam().cameracalibrate.Enable_calculateMatrix = false;
 					cout << "match points " << matches.size() << endl;
-//-----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------
 					SENDST trkmsg={0};
 					trkmsg.cmd_ID = querypos;
 					ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 					printf("\r\n [%s]===== Send Message to Ball Camera : MsgID =  querypos \r\n",__FUNCTION__);
-
 					//flag = OSA_semWait(&m_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/500);
 					return_flag = GB_CondTimedWait(&m_linkage_getPos, 300);
-					if( -1 == return_flag ) 
-					{
+					if( -1 == return_flag ) {
 						getCurrentPosFlag = false;
 						printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );
 					}
@@ -338,7 +320,7 @@ int CcCamCalibra::Run()
 						cout << " zoomPos = "<< zoomPos << endl;
 						cout << "*****************************************************************" << endl;
 					}
-//----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------
 					
 				}
 			}
@@ -361,14 +343,14 @@ int CcCamCalibra::Run()
 			}	
 		}
 	}
-	if( writeParam_flag || g_sysParam->isEnable_saveParameter()) 
+	if( writeParam_flag ) 
 	{
 		writeParam_flag = false;
-		g_sysParam->getSysParam().cameracalibrate.Enable_saveParameter = false;
+		//g_sysParam->getSysParam().cameracalibrate.Enable_saveParameter = false;
 		if( !getCurrentPosFlag )
 		{
 			cout << "could not get the current Flag \n" << endl;
-			return -1;
+			//return -1;
 		}
 		else
 			getCurrentPosFlag = false;

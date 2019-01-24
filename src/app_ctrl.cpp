@@ -12,7 +12,7 @@ extern UI_CONNECT_ACTION g_connectAction;
 extern bool showDetectCorners;
 extern MenuDisplay g_displayMode;
 bool show_circle_pointer = false;;
-extern GB_WorkMode g_workMode;
+extern GB_WorkMode g_AppWorkMode;
 extern MenuDisplay g_displayMode;
 extern CProcess* plat;
 extern SelectMode mouse_workmode;

@@ -15,6 +15,10 @@ public:
 	IntrinsicMatrix();
 	virtual ~IntrinsicMatrix();
 public:
+	enum{
+		IMG_ROWS = 1080,
+		IMG_COLS = 1920
+	};
 	struct RunPrm{
 		IntrinsicMatrix *pThis;
 	};

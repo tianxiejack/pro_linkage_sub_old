@@ -93,7 +93,7 @@ class CProcess : public CVideoProcess
 	Point textPos2_backup[64];
 	Point circle_point;
 private:
-	bool m_bRefreshPTZ;
+	bool m_bRefreshPTZValue;
 	int m_capX, m_capY;
 	Rect m_rectSelectPic;
 	bool m_bMarkCircle;
@@ -120,26 +120,24 @@ private:
 	
 public:
 	void setPTZflag(bool flag){
-		m_bRefreshPTZ = flag;
+		m_bRefreshPTZValue = flag;
 		return ;
 	};
 	bool getPTZflag(){
-		return m_bRefreshPTZ;
+		return m_bRefreshPTZValue;
 	};
 	void loadIPCParam();
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
-	void reMapCoords(int x, int y,bool needChangeZoom);
-	void ClickGunMove2Ball(int x, int y,bool needChangeZoom);
+	void MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom);
+	void MvBallCamByClickGunImg(int x, int y,bool needChangeZoom);
 	
 	void CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords);
 	void CvtImgPoint2Camera(cv::Point2d &imgCoords, cv::Point2d &camCoords);
 	void TransformPixByOriginPoints(int &X, int &Y );
 	
 	void SetDestPosScope(int &inputX, int &inputY, int &Origin_PanPos, int &Origin_TilPos,int &DesPanPos, int &DesTilPos);
-	void Event_click2Move(int x, int y);
-	void moveToDest( );
-	void GUN_MOVE_Event(int x, int y);
+	void MvBallCamByClickBallIMg(int x, int y);
 	void MoveBall();
 
 	void Test_Match_result(int x, int y);
@@ -152,10 +150,10 @@ public:
 	void Set_K_ByZoom(int Current_Zoom);
 
        void Set_K_ByNewDeltaX(int delta_x);
-	void setClickPoint(int x, int y){
+	void CaptureMouseClickPoint(int x, int y){
 		m_curClickPoint = Point(x, y);
 	};
-	Point getCurClickPoint(){
+	Point getCurrentMouseClickPoint(){
 		return m_curClickPoint;
 	};
 

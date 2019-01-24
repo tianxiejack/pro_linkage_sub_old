@@ -14,7 +14,7 @@ extern int capIndex;
 extern UI_CONNECT_ACTION g_connectAction;
 bool showDetectCorners = false;
 SelectMode mouse_workmode = DrawRectangle_Mode;
-extern GB_WorkMode g_workMode;
+extern GB_WorkMode g_AppWorkMode;
 extern GB_MENU run_Mode;
 extern CMD_EXT *msgextInCtrl;
 int CVideoProcess::m_mouseEvent = 0;
@@ -1173,7 +1173,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		}
 	}
 	else {
-		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN &&(g_workMode == HANDLE_LINK_MODE)) {
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN &&(g_AppWorkMode == HANDLE_LINK_MODE)) {
 			if (pThis->open_handleCalibra) // Press 'y' or 'Y' , set this flag to 1
 			{
 				pThis->OnMouseLeftDwn(x, y);
@@ -1202,7 +1202,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				}
 			}
 		}
-		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP &&(g_workMode == HANDLE_LINK_MODE))
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP &&(g_AppWorkMode == HANDLE_LINK_MODE))
 		{
 			if(pThis->move_legal(x,y))
 			{
@@ -1221,21 +1221,23 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				pThis->m_draw = 1;
 
 				if( (tempX == x) && (tempY == y) && (m_bLDown== true) ) {
-					if(g_workMode == HANDLE_LINK_MODE )
+					if(g_AppWorkMode == HANDLE_LINK_MODE )
 					{
 						m_bLDown = false;
 						m_bIsClickMode = true;
 						if(y>(m_staticScreenHeight/2)) {
-							pThis->setClickPoint(x,y);
+							pThis->CaptureMouseClickPoint(x,y);
 						}	
 						
 						if((y > 0) && (y< m_staticScreenHeight/2)) {
 							if((x>(m_staticScreenWidth/4)) && (x <(m_staticScreenWidth*3/4))) {
-								pThis->GUN_MOVE_Event(x,y); 	
+				/* If user click on Ball Camera Image, then Ball Camera's focus move to the point where user click*/
+								pThis->MvBallCamByClickBallIMg(x,y); 	
 							}
 						}
 						else{
-							pThis->ClickGunMove2Ball(x,y,false);
+				/* If user click on Gun Camera Image, then Ball Camera will move its focus to the projectPoints where user click on Gun Image */
+							pThis->MvBallCamByClickGunImg(x,y,false);
 						}
 				      }
 				}
@@ -1244,23 +1246,14 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					m_bIsClickMode = false;					
 					pThis->RightPoint.x = tmpX;
 					pThis->RightPoint.y = tmpY;	
-					
-				/* Mouse Click gun or ball Image , ball camera move */
-
-					if(g_workMode == HANDLE_LINK_MODE ) {
+					if(g_AppWorkMode == HANDLE_LINK_MODE ) {
 						if( ( isRectangleStartPointValid == true ) &&( isRectValid == true )) {
 							isRectangleStartPointValid = false;
 							isRectValid  = false;
-							pThis->reMapCoords(tmpX,tmpY,true);	
+				/* */			
+							pThis->MvBallCamBySelectRectangle(tmpX,tmpY,true);	
 						}
 					}
-					#if 0  /* this function is removed by custom */
-					else if(g_workMode == ONLY_BALL_MODE) {
-						if(x>(m_staticScreenWidth/4) && x <(m_staticScreenWidth*3/4) && y<(m_staticScreenHeight/2)) {							
-							pThis->moveToDest();					
-						}
-					}
-					#endif
 				}
 			}
 			else{

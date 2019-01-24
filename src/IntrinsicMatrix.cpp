@@ -1,29 +1,26 @@
-
 #include "IntrinsicMatrix.h"
 #include <unistd.h>
 
 using namespace cv;
-
 std::vector< cv::Mat > ImageList;
 IntrinsicMatrix::IntrinsicMatrix():m_bcalibrateSwitch(false),m_dErr(0.0),m_dTotal_Err(0.0),m_iOneImgCornerCount(0)
 {
-	imageSize = cv::Size(1920,1080);
-	
+	imageSize = cv::Size(1920,1080);	
 	boardSize = cv::Size(13,8);
 	m_iOneImgCornerCount = boardSize.width * boardSize.height;
-
-	grid = cv::Size(40,40);
-	
+	grid = cv::Size(40,40);	
 	ImageList.clear();
 	objectPoints.clear();
 	imagePoints.clear();
 	rvecs.clear();
 	tvecs.clear();
 }
+
 IntrinsicMatrix::~IntrinsicMatrix()
 {
 	StopService();
 }
+
 int IntrinsicMatrix::RunService()
 {
 	m_prm.pThis = this;
@@ -41,19 +38,16 @@ void* IntrinsicMatrix::RunProxy(void* pArg)
 {
 	 struct timeval tv;
 	 struct RunPrm *pPrm = (struct RunPrm*)pArg;
-	 while(pPrm->pThis->m_bRun)
-	 {	 
+	 while(pPrm->pThis->m_bRun) {	 
 	 	tv.tv_sec = 0;
     		tv.tv_usec = (30%1000)*1000;
-   		select(0, NULL, NULL, NULL, &tv);
-		
+   		select(0, NULL, NULL, NULL, &tv);		
 		pPrm->pThis->Run();
 	 }
 	 return NULL;
 }
 int IntrinsicMatrix::Run()
 {
-
 	if( 0 /*true == getCalibrateSwitch()*/) {		
 		m_ValidImages = addChessboardPoints( ImageList, boardSize );
 		if(m_ValidImages>0)  {
@@ -73,7 +67,7 @@ void IntrinsicMatrix::addPoints(const std::vector<cv::Point2f>&imageCorners, con
 }
 int IntrinsicMatrix::addChessboardPoints( const std::vector< std::string > &filelist, cv::Size &boardSize)
 {
-  #if 0
+  #if 1
 	std::vector< cv::Point2f> imageCorners;
 	std::vector< cv::Point3f> objectCorners;
 	/* push points of 3D into vector  */
@@ -121,7 +115,7 @@ int IntrinsicMatrix::addChessboardPoints( const std::vector< cv::Mat > &imageLis
 	/*  points of 2D image  */
 	cv::Mat image ;
 	int sucesses = 0;
-	image.create(1080,1920,CV_8UC3);
+	image.create(IMG_ROWS,IMG_COLS,CV_8UC3);
 	for(int i=0; i< imageList.size(); i++) {
 		image = imageList[i];		
 		bool  patternfound = cv::findChessboardCorners( image, boardSize, imageCorners, 

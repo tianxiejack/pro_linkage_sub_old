@@ -43,7 +43,7 @@ extern Mat g_WarpImage;
 extern Mat g_MatchImage;
 
 MenuDisplay g_displayMode = MENU_MAIN_VIEW;
-GB_WorkMode g_workMode = HANDLE_LINK_MODE;
+GB_WorkMode g_AppWorkMode = HANDLE_LINK_MODE;
 
 extern BallCOMConfig CurrentBallConfig;
 
@@ -139,7 +139,7 @@ void ClickDown6(UIObject *obj){}
 
 void TextDown7(UIObject *obj)
 {
-	g_workMode = HANDLE_LINK_MODE;
+	g_AppWorkMode = HANDLE_LINK_MODE;
 	memset(textSelect2, 0, sizeof(textSelect2));
 	textSelect2[0] = 1;
 }
@@ -147,14 +147,14 @@ void ClickDown7(UIObject *obj){}
 
 void TextDown8(UIObject *obj)
 {
-	g_workMode = ONLY_BALL_MODE;
+	g_AppWorkMode = ONLY_BALL_MODE;
 	memset(textSelect2, 0, sizeof(textSelect2));
 	textSelect2[1] = 1;
 }
 void ClickDown8(UIObject *obj){}
 void TextDown9(UIObject *obj)
 {
-	g_workMode = AUTO_LINK_MODE;
+	g_AppWorkMode = AUTO_LINK_MODE;
 	memset(textSelect2, 0, sizeof(textSelect2));
 	textSelect2[2] = 1;
 }
@@ -3592,7 +3592,7 @@ void CDisplayer::gl_display(void)
 	if(displayMode == MAIN_VIEW){
 		int fontx = 80;
 		int fonty = 80;
-		switch(g_workMode){
+		switch(g_AppWorkMode){
 			case HANDLE_LINK_MODE:
 				chinese_osd(fontx,fonty,L"手动联动",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 				break;

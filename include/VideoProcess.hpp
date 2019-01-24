@@ -145,24 +145,17 @@ public:
 	virtual void OnKeyDwn(unsigned char key){};
 	virtual void OnSpecialKeyDwn(int key,int  x,int  y){};
 
-	virtual void setClickPoint(int x, int y){};
-	virtual Point getCurClickPoint(){};
-	
-	virtual void Event_click2Move(int x, int y){};
-	virtual void reMapCoords(int x, int y,bool needChangeZoom){ };
-	virtual void ClickGunMove2Ball(int x, int y,bool needChangeZoom){ };
-
-	virtual void moveToDest( ){ };
-	virtual void GUN_MOVE_Event(int x, int y){};
+	virtual void CaptureMouseClickPoint(int x, int y){};
+	virtual Point getCurrentMouseClickPoint(){};
+	virtual void MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom){ };
+	virtual void MvBallCamByClickGunImg(int x, int y,bool needChangeZoom){ };
+	virtual void MvBallCamByClickBallIMg(int x, int y){};
 	virtual void Test_Match_result(int x, int y){};
-
 	//virtual void QueryCurBallCamPosition() { };
-	//virtual void setBallPos(int in_panPos, int in_tilPos, int in_zoom) { };
-
+	//virtual void setBallPos(int in_panPos, int in_tilPos, int in_zoom) {};
 	void linkage_init();
 	bool Set_SelectByRect;
 	bool open_handleCalibra;
-
 	int m_SensorStat;
 	int m_acqRectW;
 	int m_acqRectH;

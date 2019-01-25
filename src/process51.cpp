@@ -2822,7 +2822,7 @@ void CProcess::Set_K_ByZoom(int Current_Zoom)
 		tmpcofx = 620;
 		tmpcofy = 620;
 	}
-	else if(55560 <=zoom && zoom <65535 ) {
+	else if(55560 <=zoom && zoom <= 65535 ) {
 		tmpcofx = 600;
 		tmpcofy = 610;
 	}
@@ -3387,20 +3387,20 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		case 5:			
 			break;
 		case 6:
-			imageListForCalibra.clear();
-			captureCount = 0;
+			{
+				imageListForCalibra.clear();
+				captureCount = 0;
+			}
 			break;
 		case 7:
 			capIndex = (capIndex+1) %2;
 			break;
 		case 10:
-			m_intrMatObj->setCalibrateSwitch(true);
-			
+			m_intrMatObj->setCalibrateSwitch(true);			
 			break;
 		case 11:
 			ImageList.clear();
-			break;
-			
+			break;			
 		case SPECIAL_KEY_DOWN:
 			app_ctrl_downMenu();
 			break;
@@ -3411,8 +3411,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			saveOnePicture = true;
 			break;
 	#if 0
-		case SPECIAL_KEY_RIGHT:
-			
+		case SPECIAL_KEY_RIGHT:			
 			m_display.selected_PicIndex = (m_display.selected_PicIndex +1)%50;
 			break;
 		case SPECIAL_KEY_LEFT:

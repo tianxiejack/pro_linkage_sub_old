@@ -2822,10 +2822,19 @@ void CProcess::Set_K_ByZoom(int Current_Zoom)
 		tmpcofx = 620;
 		tmpcofy = 620;
 	}
-	else if(55560 <=zoom && zoom <= 65535 ) {
+	else if(55560 <=zoom && zoom < 58535 ) {
 		tmpcofx = 600;
 		tmpcofy = 610;
 	}
+	else if(58560 <=zoom && zoom < 61535) {
+		tmpcofx = 580;
+		tmpcofy = 590;
+	}
+	else if(61560 <=zoom && zoom <= 65535) {
+		tmpcofx = 560;
+		tmpcofy = 560;
+	}
+	
 	else{
 
 	}

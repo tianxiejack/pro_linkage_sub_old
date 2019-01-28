@@ -2049,14 +2049,14 @@ osdindex++;	//cross aim
 }
 
 //=============================================================================================
-
+#if 0
 	recIn.x=960;//960;//948;//;		//948;
 	recIn.y=270;//270;//276; //		//276;
 	recIn.width = 960;
 	recIn.height = 540;
 	DrawCross(recIn,frcolor,1,true);
 	Osdflag[osdindex]=1;
-
+#endif
 #if 0
 	for(int i =0; i< 19; i++) 
 	{
@@ -2455,7 +2455,45 @@ void CProcess::manualHandleKeyPoints(int &x,int &y)
 	
 }
 
+Point CProcess::replaceClickPoints(int pointX, int pointY)
+{
+	int inputX = pointX;
+	int inputY = pointY;
+	Point replacePoint = Point(0,0);
 
+	if(  350<= inputX && inputX <= 400) {
+		inputX = inputX - inputX*0.07 ;
+	}
+	else if( 400< inputX && inputX <= 450) {
+		inputX = inputX - inputX*0.04 ;
+	}
+	else if( 450< inputX && inputX <= 500) {
+		inputX = inputX - inputX*0.02 ;
+	}
+	else{
+
+	}
+
+	if( 800 < inputY && inputY <= 850) {
+		inputY =  inputY - inputY * 0.037;
+	}
+	else if( 850 < inputY && inputY <= 900) {
+		inputY =  inputY - inputY * 0.066;
+	}
+	else if( 950 < inputY && inputY <= 1000) {
+		inputY =  inputY - inputY * 0.085;
+	}
+	else if( 1050 < inputY && inputY <= 1100) {
+		inputY =  inputY - inputY * 0.091;
+	}
+	else{
+
+	}
+
+	replacePoint = Point(inputX, inputY);
+	return replacePoint;
+	
+}
 int CProcess::checkZoomPosNewTable(int delta)
 {
 	int Delta_X = delta;
@@ -2746,8 +2784,7 @@ void CProcess::Set_K_ByNewDeltaX(int delta_x)
 	else  if(0 <= Delta_X && Delta_X < 56){
 		 tmpcofx =700 ;
 		 tmpcofy =710 ;
-	}
-	
+	}	
 	m_cofx = tmpcofx;
 	m_cofy = tmpcofy;
 	return ;
@@ -2826,22 +2863,18 @@ void CProcess::Set_K_ByZoom(int Current_Zoom)
 		tmpcofx = 600;
 		tmpcofy = 610;
 	}
-	else if(58560 <=zoom && zoom < 61535) {
+	else if(58535 <=zoom && zoom < 61535) {
 		tmpcofx = 580;
 		tmpcofy = 590;
 	}
-	else if(61560 <=zoom && zoom <= 65535) {
+	else if(61535 <=zoom && zoom <= 65535) {
 		tmpcofx = 560;
 		tmpcofy = 560;
-	}
-	
+	}	
 	else{
-
 	}
-
 	m_cofx = tmpcofx;
-	m_cofy = tmpcofy;
-	
+	m_cofy = tmpcofy;	
 	return ;
 }
 void CProcess::Set_K_ByDeltaX( int delta_x)
@@ -3212,13 +3245,14 @@ void CProcess::MvBallCamByClickGunImg(int x, int y,bool needChangeZoom)
 	int offset_x = 0;
 	int offset_y = m_winHeight/2;	
 	int point_X = ( x-offset_x ) ;
-	int point_Y = ( y-offset_y ) *2;		
-	Point imgCoords = Point( point_X ,  point_Y );
+	int point_Y = ( y-offset_y ) *2;	
+	Point imgCoords = Point( point_X ,  point_Y );  // removed by 20190125
+	//Point imgCoords = replaceClickPoints(point_X, point_Y);
+	
 	Point camCoords;
 	CvtImgCoords2CamCoords(imgCoords, camCoords);
-	printf("\r\n[%s]:=============Image Points: < %d , %d >\r\n",__FUNCTION__,point_X,point_Y);
-	printf("\r\n[%s]:=============Remap Points: < %d , %d >\r\n",__FUNCTION__,camCoords.x*2,camCoords.y*2);
-
+	printf("\r\n[%s]:========Image Points: < %d , %d >",__FUNCTION__,(imgCoords.x),(imgCoords.y));
+	printf("\r\n[%s]:========Remap Points:< %d , %d >\r\n",__FUNCTION__,(camCoords.x*2),(camCoords.y*2));
 	TransformPixByOriginPoints(camCoords.x, camCoords.y );
 }
 void CProcess::MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom)

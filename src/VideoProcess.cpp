@@ -1167,7 +1167,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 	}	
 	else if ( (pThis->m_display.g_CurDisplayMode == TEST_RESULT_VIEW) ) {
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-			printf("Click  IN  TEST_RESULT_VIEW  DisplayMode\r\n");
+			//printf("Click  IN  TEST_RESULT_VIEW  DisplayMode\r\n");
 			pThis->Test_Match_result(x,y);
 			return ;
 		}
@@ -1198,7 +1198,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					m_bLDown = true;					
 				}
 				else{
-					printf("click illegal!!!\n");
+					//printf("click illegal!!!\n");
 				}
 			}
 		}
@@ -1257,7 +1257,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				}
 			}
 			else{
-				printf("move illegal!!!\n");	
+				//printf("move illegal!!!\n");	
 			}		
 	}
 		
@@ -1339,14 +1339,14 @@ void CVideoProcess::addstartpoint(int x, int y, int curId)
 	pThis->m_rectn[curId] = 0;
 	pThis->mRect[curId][pThis->m_rectn[curId]].x1 = x;
 	pThis->mRect[curId][pThis->m_rectn[curId]].y1 = y;
-	cout<<" start:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x1<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y1<<")"<<endl;
+	//cout<<" start:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x1<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y1<<")"<<endl;
 }
 
 void CVideoProcess::addendpoint(int x, int y, int curId)
 {
 	pThis->mRect[curId][pThis->m_rectn[curId]].x2 = x;
 	pThis->mRect[curId][pThis->m_rectn[curId]].y2 = y;
-	cout<<" end:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x2<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y2<<")\n"<<endl;
+	//cout<<" end:("<<pThis->mRect[curId][pThis->m_rectn[curId]].x2<<","<<pThis->mRect[curId][pThis->m_rectn[curId]].y2<<")\n"<<endl;
 
 	mouserect rectsrc, recvdest;
 	rectsrc.x = pThis->mRect[curId][pThis->m_rectn[curId]].x1;
@@ -1372,7 +1372,7 @@ void CVideoProcess::processrigionMenu(int value)
 
 void CVideoProcess::processrigionselMenu(int value)
 {
-	printf("%s start, value=%d\n", __FUNCTION__, value);
+	//printf("%s start, value=%d\n", __FUNCTION__, value);
 }
 
 void CVideoProcess::processrigionpolygonMenu(int value)
@@ -1394,12 +1394,12 @@ int CVideoProcess::InJoys(int x, int y)
 	tmp.y = abs(tmp.y - jcenter.y);
 	if(sqrt(tmp.x * tmp.x + tmp.y * tmp.y) <= jradius)
 	{
-		printf("%s,%d,int joy\n", __FILE__,__LINE__);
+		//printf("%s,%d,int joy\n", __FILE__,__LINE__);
 		return 1;
 	}
 	else
 	{
-		printf("%s,%d, not in joy\n", __FILE__,__LINE__);
+		//printf("%s,%d, not in joy\n", __FILE__,__LINE__);
 		return 0;
 	}
 }

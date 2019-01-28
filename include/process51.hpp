@@ -171,6 +171,7 @@ public:
 	
 	int checkZoomPosTable(int delta);
 	int checkZoomPosNewTable(int delta);
+	Point replaceClickPoints(int pointX, int pointY);
 
 private:
 	int m_winWidth, m_winHeight;

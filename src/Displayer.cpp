@@ -1494,22 +1494,22 @@ void CDisplayer::processprotocolMenu(int value)
 
 void CDisplayer::processSenMenu(int value)
 {
-	printf("%s start, value=%d\n", __FUNCTION__, value);
+	//printf("%s start, value=%d\n", __FUNCTION__, value);
 }
 
 void CDisplayer::processtargetspeedMenu(int value)
 {
-	printf("%s start, value=%d\n", __FUNCTION__, value);
+	//printf("%s start, value=%d\n", __FUNCTION__, value);
 }
 
 void CDisplayer::processtargetdircMenu(int value)
 {
-	printf("%s start, value=%d\n", __FUNCTION__, value);
+	//printf("%s start, value=%d\n", __FUNCTION__, value);
 }
 
 void CDisplayer::processdetectcondMenu(int value)
 {
-	printf("%s start, value=%d\n", __FUNCTION__, value);
+	//printf("%s start, value=%d\n", __FUNCTION__, value);
 }
 
 void CDisplayer::processpolarMenu(int value)

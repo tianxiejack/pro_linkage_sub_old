@@ -126,6 +126,9 @@ public:
 	int stop();
 
 public:
+	void draw_mouse_move(GLint xMouse, GLint yMouse);
+	static void mouse_event(int button, int state, int x, int y);
+	static void mousemotion_event(GLint xMouse, GLint yMouse);
 	static void setStaticScreenResolution(int w, int h){
 		m_staticScreenWidth = w;
 		m_staticScreenHeight = h;
@@ -190,6 +193,8 @@ public:
 	int m_click_v20L, m_click_v20R;
 	RectfNode mRectv20L;
 	RectfNode mRectv20R;
+
+	cv::Point jos_mouse;
 	
 protected:
 	MultiChVideo MultiCh;
@@ -258,9 +263,7 @@ protected:
 	int mapnormal2curchannel_point(float *x, float *y, int w, int h);
 	int map1080p2normal_rect(mouserectf *rect);
 	int mapnormal2curchannel_rect(mouserectf *rect, int w, int h);
-	static void mousemotion_event(GLint xMouse, GLint yMouse);
 	static void mousemove_event(GLint xMouse, GLint yMouse);
-	static void mouse_event(int button, int state, int x, int y);
 	void mouse_eventv20(int button, int state, int x, int y);
 	static void menu_event(int value);
 	static void processrigionMenu(int value);

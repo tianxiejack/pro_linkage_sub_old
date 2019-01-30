@@ -253,3 +253,8 @@ void drawcvrect(Mat frame,int x,int y,int width,int height,int frcolor)
 	rectangle( frame,Point( x,y ),Point( x+width, y+height),colour, thickness, 8);
 }
 
+void DrawArrow(Mat frame, cv::Point jos_mouse_bak, int color)
+{
+	drawcvrect(frame, jos_mouse_bak.x, jos_mouse_bak.y, 10, 10, color);
+}
+

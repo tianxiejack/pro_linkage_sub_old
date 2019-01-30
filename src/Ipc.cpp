@@ -153,6 +153,9 @@ void* recv_msg(SENDST *RS422)
 	CMD_ALGOSDRECT Ralgosdrect;
 	CMD_IPCRESOLUTION Rresolution;
 	LinkagePos posOfLinkage;
+	ctrlParams Rjosctrl;
+
+	static int mouse_state = 0;
 
 	//OSD_param* pOsd = NULL;
 	//pOsd = &m_osd;
@@ -601,6 +604,83 @@ void* recv_msg(SENDST *RS422)
 		case switchtarget:
 			pMsg->MtdSelect[pMsg->SensorStat] = ipc_eMTD_Next;
 			app_ctrl_setMtdSelect(pMsg);
+			break;
+		case josctrl:
+			memcpy(&Rjosctrl,RS422->param,sizeof(Rjosctrl));
+			#if 0
+			printf("type=%d\ncurx,y(%d,%d)\njos_button:%d\njos_Dir:%d\nmouse_button:%d\nmouse_state:%d\nenter:%d\nmenu:%d\nworkMode:%d\nctrlMode:%d\n\n",
+				Rjosctrl.type,Rjosctrl.cursor_x,Rjosctrl.cursor_y,Rjosctrl.jos_button,Rjosctrl.jos_Dir,Rjosctrl.mouse_button,
+				Rjosctrl.mouse_state,Rjosctrl.enter,Rjosctrl.menu,Rjosctrl.workMode,Rjosctrl.ctrlMode);
+			#endif
+			switch(Rjosctrl.type)
+			{
+				case cursor_move:
+				{
+					int x = Rjosctrl.cursor_x;
+					int y = Rjosctrl.cursor_y;
+					proc->draw_mouse_move(x, y);
+					if(GLUT_DOWN == mouse_state)
+						proc->mousemotion_event(x, y);
+				}
+					break;
+				case jos_button:
+				{
+					int buttonnum = Rjosctrl.jos_button;
+					if((buttonnum >= 0) && (buttonnum <= 9))
+						proc->OnKeyDwn(buttonnum + '0');
+				}
+					break;
+				case jos_Dir:
+					if(cursor_up == Rjosctrl.jos_Dir)
+						proc->OnSpecialKeyDwn(SPECIAL_KEY_UP, 0, 0);
+					else if(cursor_down == Rjosctrl.jos_Dir)
+						proc->OnSpecialKeyDwn(SPECIAL_KEY_DOWN,0, 0);
+					break;
+				case mouse_button:
+				{
+					int param_flag = 0;
+					int button = Rjosctrl.mouse_button;
+					int state = Rjosctrl.mouse_state;
+					int x = Rjosctrl.cursor_x;
+					int y = Rjosctrl.cursor_y;
+					if(3 == button)
+						button = GLUT_LEFT_BUTTON;
+					else if(4 == button)
+						button = GLUT_RIGHT_BUTTON;
+					else 
+						param_flag = 1;
+					
+					if(1 == state)
+						mouse_state = GLUT_DOWN;
+					else if(0 == state)
+						mouse_state = GLUT_UP;
+					else 
+						param_flag = 1;
+
+					if(0 == param_flag)
+						proc->mouse_event(button, state, x, y);
+				}
+					break;
+				case enter:
+					proc->OnKeyDwn(13);
+					break;
+				case jos_menu:
+				{
+					int menu_stat = Rjosctrl.menu;
+					proc->OnJosCtrl(2, menu_stat);
+				}
+					break;
+				case workMode:
+				{
+					int workmode = Rjosctrl.workMode;
+					proc->OnJosCtrl(1, workmode);
+				}
+					break;
+				case ctrlMode:
+					break;						
+				default:
+					break;
+			}
 			break;
 		default:
 			break;

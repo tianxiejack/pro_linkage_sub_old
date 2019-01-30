@@ -446,7 +446,8 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 	jcenter_s = get_joycenter();
 	joys_click = 0;
 
-
+	jos_mouse.x = 960;
+	jos_mouse.y = 540;
 }
 CVideoProcess::CVideoProcess()
 	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40)		
@@ -1310,6 +1311,11 @@ void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 	}
 }
 
+void CVideoProcess::draw_mouse_move(GLint xMouse, GLint yMouse)
+{
+	jos_mouse.x = xMouse;
+	jos_mouse.y = yMouse;
+}
 
 void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
 {

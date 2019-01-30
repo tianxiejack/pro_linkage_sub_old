@@ -42,5 +42,6 @@ void app_ctrl_enter();
 void app_ctrl_upMenu();
 void app_ctrl_downMenu();
 void app_ctrl_savemtdrigion();
+void app_ctrl_setMenu_jos(int menu_state);
 
 #endif /* APP_CTRL_H_ */

@@ -557,6 +557,18 @@ void app_ctrl_setWordSize(CMD_EXT * pInCmd)
 	}
 }
 
+void app_send_menustat(int menu_state)
+{
+	ctrlParams sendjosctrl;
+	sendjosctrl.type = jos_menu;
+	sendjosctrl.menu = menu_state;
+	
+	SENDST cmd_josctrl={0};
+	cmd_josctrl.cmd_ID = josctrl;
+	memcpy(cmd_josctrl.param, &sendjosctrl, sizeof(sendjosctrl));
+	ipc_sendmsg(&cmd_josctrl, IPC_FRIMG_MSG);
+}
+
 void app_ctrl_setMenuStat(int index)
 {
 	if(msgextInCtrl==NULL)
@@ -573,6 +585,41 @@ void app_ctrl_setMenuStat(int index)
 	memset(pMenuStatus->disPasswd, 0, sizeof(pMenuStatus->disPasswd));
 	memset(plat->m_display.disMenu[mainmenu0][1], 0, sizeof(plat->m_display.disMenu[mainmenu0][1]));
 	MSGDRIV_send(MSGID_EXT_MENUSWITCH, 0);
+
+	if(index == -1)
+		app_send_menustat(0);
+	else
+		app_send_menustat(1);
+}
+
+void app_ctrl_setMenu_jos(int menu_state)
+{
+if(msgextInCtrl==NULL)
+		return;
+	if(msgextMenuCtrl==NULL)
+		return;
+	CMD_EXT *pIStuts = msgextInCtrl;
+	menu_param_t *pMenuStatus = msgextMenuCtrl;
+	if(1 == menu_state)
+	{
+		if(-1 == pMenuStatus->MenuStat)
+			app_ctrl_setMenuStat(mainmenu0);
+		else
+			app_send_menustat(0);
+	}
+	else if(0 == menu_state)
+	{
+		if(mainmenu0 == pMenuStatus->MenuStat)
+			app_ctrl_setMenuStat(-1);
+		else if(mainmenu1 == pMenuStatus->MenuStat)
+			app_ctrl_setMenuStat(-1);
+		else if(mainmenu2 == pMenuStatus->MenuStat)
+			app_ctrl_setMenuStat(-1);
+		else if(submenu_mtd == pMenuStatus->MenuStat)
+			app_ctrl_setMenuStat(-1);
+		else
+			app_send_menustat(1);
+	}
 }
 
 void app_ctrl_setMenu()

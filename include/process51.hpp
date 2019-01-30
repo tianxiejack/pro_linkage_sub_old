@@ -193,10 +193,12 @@ public:
 	void OnMouseLeftDwn(int x, int y);
 	void OnKeyDwn(unsigned char key);
 	void OnSpecialKeyDwn(int key,int x, int y);
+	void OnJosCtrl(int key, int value);
 	void DrawMtdYellowGrid(int flag);
 	void DrawMtdRedGrid(int flag);
 	void DrawJoys();
 	void DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness);
+	void DrawMouse();
 	
 	CMD_EXT* extInCtrl;
 	menu_param_t extMenuCtrl;

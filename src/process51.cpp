@@ -2242,6 +2242,7 @@ else{
 
 //virtual joystick
 	DrawJoys();
+	DrawMouse();
 
 	static unsigned int count = 0;
 	if((count & 1) == 1)
@@ -2281,6 +2282,20 @@ void CProcess::DrawJoys()
 		DrawCircle(frame, jcenter, jradius, lineparm.frcolor, thickness);
 		DrawcvDashcross(frame, &lineparm, dashlen, dashlen);
 	}
+}
+
+void CProcess::DrawMouse()
+{
+	Mat frame = m_display.m_imgOsd[1];
+	int color;
+	static cv::Point jos_mouse_bak;
+
+	color = 0;
+	DrawArrow(frame, jos_mouse_bak, color);
+	
+	jos_mouse_bak = jos_mouse;
+	color = 1;
+	DrawArrow(frame, jos_mouse_bak, color);
 }
 
 void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness)
@@ -3397,6 +3412,40 @@ void CProcess::OnMouseLeftDwn(int x, int y)
 		manualHandleKeyPoints(x,y);		
 	}	
 };
+
+void CProcess::OnJosCtrl(int key, int value)
+{
+	switch(key)
+	{
+		case 1:
+		{
+			GB_WorkMode nextMode = (GB_WorkMode)(value - 1);
+			g_AppWorkMode = nextMode;
+			int value = 0;
+			if(g_AppWorkMode == AUTO_LINK_MODE)
+			{
+				value = 1;
+				g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = true;
+			}
+			else
+			{
+				value = 0;
+				g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
+			}
+			SENDST	tmp;
+			tmp.cmd_ID = mtdmode;
+			tmp.param[0] = value ;
+			ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+		}
+			break;
+		case 2:
+			app_ctrl_setMenu_jos(value);
+			break;
+		default:
+			break;
+	}
+}
+
 void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 {
 	switch( key ) {

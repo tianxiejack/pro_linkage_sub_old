@@ -2294,7 +2294,7 @@ void CProcess::DrawMouse()
 	DrawArrow(frame, jos_mouse_bak, color);
 	
 	jos_mouse_bak = jos_mouse;
-	color = 1;
+	color = 6;
 	DrawArrow(frame, jos_mouse_bak, color);
 }
 
@@ -3413,13 +3413,13 @@ void CProcess::OnMouseLeftDwn(int x, int y)
 	}	
 };
 
-void CProcess::OnJosCtrl(int key, int value)
+void CProcess::OnJosCtrl(int key, int param)
 {
 	switch(key)
 	{
 		case 1:
 		{
-			GB_WorkMode nextMode = (GB_WorkMode)(value - 1);
+			GB_WorkMode nextMode = (GB_WorkMode)(param - 1);
 			g_AppWorkMode = nextMode;
 			int value = 0;
 			if(g_AppWorkMode == AUTO_LINK_MODE)
@@ -3439,7 +3439,7 @@ void CProcess::OnJosCtrl(int key, int value)
 		}
 			break;
 		case 2:
-			app_ctrl_setMenu_jos(value);
+			app_ctrl_setMenu_jos(param);
 			break;
 		default:
 			break;

@@ -658,7 +658,7 @@ void* recv_msg(SENDST *RS422)
 						param_flag = 1;
 
 					if(0 == param_flag)
-						proc->mouse_event(button, state, x, y);
+						proc->mouse_event(button, mouse_state, x, y);
 				}
 					break;
 				case enter:

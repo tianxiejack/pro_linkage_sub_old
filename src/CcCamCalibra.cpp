@@ -249,7 +249,8 @@ int CcCamCalibra::Run()
 	Mat gunDraw, ballDraw;
 	if( (!ball_frame.empty()) && (!gun_frame.empty()) )
 	{
-		if( (Set_Handler_Calibra ) && (bool_Calibrate ) ) {		
+		if( (Set_Handler_Calibra ) && (bool_Calibrate ) ) {
+			writeParam_flag = false;
 			printf("%s : start manual calibrate \n",__func__);
 			
 			if(key_points1.size() > 4 && key_points2.size() > 4){
@@ -262,10 +263,35 @@ int CcCamCalibra::Run()
 					keypt2.push_back(cv::Point2f(key_points2[i].x*2, key_points2[i].y*2));
 				}
 				handle_pose_2d2d( keypt2, keypt1,newCameraMatrix, R, t, homography);
-				
+/**************************************************************************************/
+					SENDST trkmsg2={0};
+					trkmsg2.cmd_ID = querypos;
+					ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
+					printf("\r\n [%s]===== Send Message to Ball Camera : MsgID =  querypos \r\n",__FUNCTION__);
+					//flag = OSA_semWait(&m_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/500);
+					return_flag = GB_CondTimedWait(&m_linkage_getPos, 300);
+					if( -1 == return_flag ) {
+						getCurrentPosFlag = false;
+						writeParam_flag = false;
+						printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );
+					}
+					else{
+						printf("\r\n [%s]:=====Recive Meaasge From Ball Camera !!!",__FUNCTION__);
+						getCurrentPosFlag = true;
+						writeParam_flag = true;
+						cout << "\n\n******************Get It << Query Ball Camera Position Sucess ! *****************" << endl;
+						cout << " panPos = "<< panPos << endl;
+						cout << " tiltPos = "<< tiltPos << endl;
+						cout << " zoomPos = "<< zoomPos << endl;
+						cout << "*****************************************************************" << endl;
+					}
+
+
+/**************************************************************************************/
 				cout << "Key_points1.size() = " << key_points1.size() << endl;
 				cout << "Key_points2.size() = " << key_points2.size() << endl;
 				bool_Calibrate = false;
+				//writeParam_flag = true;
 			}
 			
 			if(!homography.empty()) {
@@ -284,7 +310,7 @@ int CcCamCalibra::Run()
 		else 
 		{	
 			if( bool_Calibrate ) {
-				
+				writeParam_flag = false;
 				vector<KeyPoint> keypoints_1, keypoints_2;
 				vector<DMatch> matches;
 				find_feature_matches ( undisImage, frame,  keypoints_1, keypoints_2, matches , 60.0, true);
@@ -300,7 +326,7 @@ int CcCamCalibra::Run()
 					}					
 					bool_Calibrate = false;
 					cout << "match points " << matches.size() << endl;
-//-----------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------
 					SENDST trkmsg={0};
 					trkmsg.cmd_ID = querypos;
 					ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
@@ -308,19 +334,22 @@ int CcCamCalibra::Run()
 					//flag = OSA_semWait(&m_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/500);
 					return_flag = GB_CondTimedWait(&m_linkage_getPos, 300);
 					if( -1 == return_flag ) {
-						getCurrentPosFlag = false;
+						getCurrentPosFlag  = false;
+						//writeParam_flag = false;
 						printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );
 					}
-					else{
+					else
+					{
 						printf("\r\n [%s]:=====Recive Meaasge From Ball Camera !!!",__FUNCTION__);
-						getCurrentPosFlag = true;
+						getCurrentPosFlag  = true;
+						writeParam_flag = true;
 						cout << "\n\n******************Get It << Query Ball Camera Position Sucess ! *****************" << endl;
 						cout << " panPos = "<< panPos << endl;
 						cout << " tiltPos = "<< tiltPos << endl;
 						cout << " zoomPos = "<< zoomPos << endl;
 						cout << "*****************************************************************" << endl;
 					}
-//-----------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 					
 				}
 			}

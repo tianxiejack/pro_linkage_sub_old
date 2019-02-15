@@ -2741,6 +2741,8 @@ int CDisplayer::menu_init( )
 	disMenuBuf[submenu_setball][2].posy = 4 * 60;
 	disMenuBuf[submenu_setcom][4].posy = 6 * 60;
 	disMenuBuf[submenu_setnet][4].posy = 6 * 60;
+	m_currentMenuPos[submenu_setball][2].posY = 4 * 60; 
+	m_currentMenuPos[submenu_setcom][4].posY = 6 * 60;
 
 	disMenuBuf[submenu_setmtdrigion][0].posx = 960 - strlen((char *)menubuf[submenu_setmtdrigion][0])*3;
 	disMenuBuf[submenu_setmtdrigion][1].posx = 960 - strlen((char *)menubuf[submenu_setmtdrigion][1])*3;

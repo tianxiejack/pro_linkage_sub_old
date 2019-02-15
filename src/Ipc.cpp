@@ -45,6 +45,9 @@ extern SingletonSysParam* g_sysParam;
 extern LinkagePos_t linkagePos ; 
 class CProcess ;
 extern CProcess *proc;
+extern GB_WorkMode g_AppWorkMode;
+extern MenuDisplay g_displayMode;
+
 void initmessage()
 {
     int status;
@@ -616,6 +619,13 @@ void* recv_msg(SENDST *RS422)
 			{
 				case cursor_move:
 				{
+					if((HANDLE_LINK_MODE == g_AppWorkMode) && 
+						((-1==proc->extMenuCtrl.MenuStat)||(submenu_handleMatchPoints==proc->extMenuCtrl.MenuStat)||(submenu_handleMatchPoints==proc->extMenuCtrl.MenuStat)||(submenu_setmtdrigion==proc->extMenuCtrl.MenuStat)||(MENU_SBS==g_displayMode)))
+					{
+						proc->set_mouse_show(1);
+						proc->dtimer.startTimer(proc->mouse_show_id,3000);
+					}
+					
 					int x = Rjosctrl.cursor_x;
 					int y = Rjosctrl.cursor_y;
 					proc->draw_mouse_move(x, y);

@@ -516,6 +516,7 @@ void CProcess::TimerCreate()
 	maxsize_light_id = dtimer.createTimer();
 	minsize_light_id = dtimer.createTimer();
 	sensi_light_id = dtimer.createTimer();
+	mouse_show_id = dtimer.createTimer();
 	dtimer.registerTimer(resol_light_id, Tcallback, &resol_light_id);
 	dtimer.registerTimer(resol_apply_id, Tcallback, &resol_apply_id);
     dtimer.registerTimer(mtdnum_light_id, Tcallback, &mtdnum_light_id);
@@ -525,6 +526,7 @@ void CProcess::TimerCreate()
     dtimer.registerTimer(sensi_light_id, Tcallback, &sensi_light_id);
 	baud_light_id = dtimer.createTimer();
 	dtimer.registerTimer(baud_light_id, Tcallback, &baud_light_id);
+	dtimer.registerTimer(mouse_show_id, Tcallback, &mouse_show_id);
 }
 
 
@@ -643,6 +645,11 @@ void CProcess::Tcallback(void *p)
 			memset(sThis->m_display.disMenu[submenu_setcom][0], 0, sizeof(sThis->m_display.disMenu[submenu_setcom][0]));
 		baud_dianmie = !baud_dianmie;
 
+	}
+	else if(a == sThis->mouse_show_id)
+	{
+		if(sThis->mouse_show)
+			sThis->set_mouse_show(0);
 	}
 		
 }
@@ -2297,7 +2304,8 @@ void CProcess::DrawMouse()
 	jos_mouse_bak = jos_mouse;
 	linecolor = 1;
 	color = 2;
-	DrawArrow(frame, jos_mouse_bak, linecolor, color);
+	if(mouse_show)
+		DrawArrow(frame, jos_mouse_bak, linecolor, color);
 }
 
 void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness)
@@ -3434,6 +3442,20 @@ void CProcess::OnJosCtrl(int key, int param)
 				value = 0;
 				g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
 			}
+
+			if(g_AppWorkMode == AUTO_LINK_MODE)
+			{
+				set_mouse_show(0);
+			}
+			else if(g_AppWorkMode == ONLY_BALL_MODE)
+			{
+				set_mouse_show(0);
+			}
+			else if(g_AppWorkMode == AUTO_LINK_MODE)
+			{
+				
+			}
+			
 			SENDST	tmp;
 			tmp.cmd_ID = mtdmode;
 			tmp.param[0] = value ;

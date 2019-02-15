@@ -2263,5 +2263,8 @@ void CVideoProcess::getImgRioDelta(unsigned char* pdata,int width ,int height,UT
 }
 
 /************************************************************************************************************/
-
+void CVideoProcess::set_mouse_show(int param)
+{
+	mouse_show = param;
+}
 

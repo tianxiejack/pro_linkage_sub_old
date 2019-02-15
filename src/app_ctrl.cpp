@@ -573,6 +573,9 @@ void app_ctrl_setMenuStat(int index)
 	memset(pMenuStatus->disPasswd, 0, sizeof(pMenuStatus->disPasswd));
 	memset(plat->m_display.disMenu[mainmenu0][1], 0, sizeof(plat->m_display.disMenu[mainmenu0][1]));
 	MSGDRIV_send(MSGID_EXT_MENUSWITCH, 0);
+
+	if(-1 != index)
+		plat->set_mouse_show(0);
 }
 
 void app_ctrl_setMenu_jos(int menu_state)

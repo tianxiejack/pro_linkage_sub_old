@@ -195,6 +195,8 @@ public:
 	RectfNode mRectv20R;
 
 	cv::Point jos_mouse;
+	int mouse_show = 0;
+	void set_mouse_show(int param);
 	
 protected:
 	MultiChVideo MultiCh;

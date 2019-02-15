@@ -334,6 +334,8 @@ public:
     int resol_light_id, resol_apply_id, mtdnum_light_id, trktime_light_id, maxsize_light_id, minsize_light_id, sensi_light_id, baud_light_id;
 	int save_flag;
 	int cnt_down;
+
+	int mouse_show_id;
 };
 
 

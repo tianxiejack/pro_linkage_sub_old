@@ -243,7 +243,6 @@ void Drawcvcrossaim(Mat frame,Line_Param_fb *lineparm)
 	
 }
 
-
 void drawcvrect(Mat frame,int x,int y,int width,int height,int frcolor)
 {
 	int thickness = 1;
@@ -253,8 +252,45 @@ void drawcvrect(Mat frame,int x,int y,int width,int height,int frcolor)
 	rectangle( frame,Point( x,y ),Point( x+width, y+height),colour, thickness, 8);
 }
 
-void DrawArrow(Mat frame, cv::Point jos_mouse_bak, int color)
+void DrawArrow(Mat frame, cv::Point jos_mouse_bak, int linecolor, int color)
 {
-	drawcvrect(frame, jos_mouse_bak.x, jos_mouse_bak.y, 10, 10, color);
+	int arrow_angle = 60;
+	int angle1 = 25;
+	int angle2 = 65;
+	int body_length = 20;
+	int tail_width = 3;
+	int head_length = 17;
+	cv::Point point_arr[1][7];
+	cv::Point point_start, point_end;
+	const double PI = 3.1415926;
+
+	point_start.x = jos_mouse_bak.x;
+	point_start.y = jos_mouse_bak.y;
+	point_end.x = point_start.x + body_length * cos(PI * arrow_angle / 180);
+	point_end.y = point_start.y + body_length * sin(PI * arrow_angle / 180);
+	
+	point_arr[0][0].x = point_start.x;
+	point_arr[0][0].y = point_start.y;
+
+	point_arr[0][3].x = point_end.x + tail_width / 2 * sin(PI * arrow_angle / 180);
+	point_arr[0][3].y = point_end.y - tail_width / 2 * cos(PI * arrow_angle / 180);
+	point_arr[0][4].x = point_end.x - tail_width / 2 * sin(PI * arrow_angle / 180);
+	point_arr[0][4].y = point_end.y + tail_width / 2 * cos(PI * arrow_angle / 180);
+
+	point_arr[0][1].x = point_arr[0][0].x + head_length  * cos(PI * (arrow_angle - angle1) / 180);
+	point_arr[0][1].y = point_arr[0][0].y + head_length  * sin(PI * (arrow_angle - angle1) / 180);
+	point_arr[0][6].x = point_arr[0][0].x + head_length  * sin(PI * (90 - arrow_angle - angle1) / 180);
+	point_arr[0][6].y = point_arr[0][0].y + head_length  * cos(PI * (90 - arrow_angle - angle1) / 180);
+
+	int length = (head_length * sin(PI * angle1 / 180) - tail_width / 2) / sin(PI * angle2 / 180);
+	point_arr[0][2].x = point_arr[0][1].x - length  * cos(PI * (angle2 - arrow_angle) / 180);
+	point_arr[0][2].y = point_arr[0][1].y + length  * sin(PI * (angle2 - arrow_angle) / 180);
+	point_arr[0][5].x = point_arr[0][6].x + length  * sin(PI * (angle2 + arrow_angle - 90) / 180);
+	point_arr[0][5].y = point_arr[0][6].y - length  * cos(PI * (angle2 + arrow_angle - 90) / 180);
+
+	const Point * ppt[1] = {point_arr[0]};
+	int npt[] = {7};
+	cv::fillPoly(frame, ppt, npt, 1, GetcvColour(color), 0);
+	cv::polylines(frame, ppt, npt, 1, 1, GetcvColour(linecolor), 1, 8, 0);
 }
 

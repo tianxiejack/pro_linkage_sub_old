@@ -52,6 +52,6 @@ void Drawcvcross(Mat frame,Line_Param_fb *lineparm);
  void DrawcvLine(Mat frame,Osd_cvPoint *start,Osd_cvPoint *end,int frcolor,int linew);
  void Drawcvcrossaim(Mat frame,Line_Param_fb *lineparm);
  void drawcvrect(Mat frame,int x,int y,int width,int height,int frcolor);
- void DrawArrow(Mat frame, cv::Point jos_mouse_bak, int color);
+ void DrawArrow(Mat frame, cv::Point jos_mouse_bak, int linecolor, int color);
 
 #endif /* OSD_CV_H_ */

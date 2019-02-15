@@ -2287,15 +2287,17 @@ void CProcess::DrawJoys()
 void CProcess::DrawMouse()
 {
 	Mat frame = m_display.m_imgOsd[1];
-	int color;
+	int linecolor, color;
 	static cv::Point jos_mouse_bak;
 
+	linecolor = 0;
 	color = 0;
-	DrawArrow(frame, jos_mouse_bak, color);
+	DrawArrow(frame, jos_mouse_bak, linecolor, color);
 	
 	jos_mouse_bak = jos_mouse;
-	color = 6;
-	DrawArrow(frame, jos_mouse_bak, color);
+	linecolor = 1;
+	color = 2;
+	DrawArrow(frame, jos_mouse_bak, linecolor, color);
 }
 
 void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness)

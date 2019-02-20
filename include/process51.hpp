@@ -62,7 +62,9 @@ class CProcess : public CVideoProcess
 	Osd_cvPoint secBak[2];
 	DS_Rect rendpos[4];
 	int Osdflag[20];
+	int osd_flag[20];
 	int osdindex;
+	int osd_index;
 	int Mmtsendtime;
 	int prisensorstatus;
 	int Fovpri[2];
@@ -318,7 +320,14 @@ private:
 	void set_trktype(CMD_EXT *p, unsigned int stat);
 
 	#if __MOVE_DETECT__
-	void mvIndexHandle(std::vector<TRK_RECT_INFO> &mvList,std::vector<TRK_RECT_INFO> &detect,int detectNum);
+	char getMvListValidNum();
+	void switchMvTargetForwad();
+	void addMvListValidNum(char num);
+	char getMvListFirstUnusedNum();
+	void removeMvListValidNum(char num);
+	char getMvListNextValidNum(char index);
+	void getTargetNearToCenter(std::vector<TRK_RECT_INFO> *pVec);
+	void mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_RECT_INFO> &detect,int detectNum);
 	#endif
 	
 public:
@@ -336,6 +345,7 @@ public:
 	int cnt_down;
 
 	int mouse_show_id;
+	bool validMtdRecord[10];
 };
 
 

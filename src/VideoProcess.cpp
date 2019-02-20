@@ -411,6 +411,7 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 #if __MOVE_DETECT__
 	m_pMovDetector	=NULL;
 	detect_vect_arr.resize(MAX_MTDRIGION_NUM);
+	mvList_arr.resize(MAX_MTDRIGION_NUM);
 #endif
 
 #if __MMT__
@@ -480,6 +481,7 @@ CVideoProcess::CVideoProcess()
 #if __MOVE_DETECT__
 	m_pMovDetector	=NULL;
 	detect_vect_arr.resize(MAX_MTDRIGION_NUM);
+	mvList_arr.resize(MAX_MTDRIGION_NUM);
 #endif
 
 #if __MMT__

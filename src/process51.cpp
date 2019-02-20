@@ -60,10 +60,20 @@ void getMmtTg(unsigned char index,int *x,int *y)
 #if __MOVE_DETECT__
 void getMtdxy(int *x,int *y,int *w,int *h)
 {
-	*x = plat->mvListsum[plat->chooseDetect].targetRect.x + plat->mvListsum[plat->chooseDetect].targetRect.width/2;
-	*y = plat->mvListsum[plat->chooseDetect].targetRect.y + plat->mvListsum[plat->chooseDetect].targetRect.height/2;
-	*w = plat->mvListsum[plat->chooseDetect].targetRect.width;
-	*h = plat->mvListsum[plat->chooseDetect].targetRect.height;
+	*x = *y = *w = *h = -1;
+	if(plat->validMtdRecord[plat->chooseDetect])
+	{
+		for(int i = 0 ;i<plat->mvListsum.size();i++)
+		{
+			if(plat->chooseDetect == plat->mvListsum[i].number)
+			{
+				*x = plat->mvListsum[i].trkobj.targetRect.x + plat->mvListsum[i].trkobj.targetRect.width/2;
+				*y = plat->mvListsum[i].trkobj.targetRect.y + plat->mvListsum[i].trkobj.targetRect.height/2;
+				*w = plat->mvListsum[i].trkobj.targetRect.width;
+				*h  = plat->mvListsum[i].trkobj.targetRect.height;
+			}
+		}	
+	}
 }
 #endif
 
@@ -192,6 +202,7 @@ void CProcess::loadIPCParam()
 
 		memset(secBak,0,sizeof(secBak));
 		memset(Osdflag,0,sizeof(Osdflag));
+		memset(osd_flag, 0, sizeof(osd_flag));
 		
 		Mmtsendtime=0;
 
@@ -238,6 +249,7 @@ void CProcess::loadIPCParam()
 		chooseDetect = 0;
 #endif
 		forwardflag = backflag = false;
+		memset(validMtdRecord,0,sizeof(validMtdRecord));
 		
 		key_point1_cnt =0;
 		key_point2_cnt =0;
@@ -1474,19 +1486,122 @@ void CProcess::DrawdashRect(int startx,int starty,int endx,int endy,int colour)
 }
 
 #if __MOVE_DETECT__
-void CProcess::mvIndexHandle(std::vector<TRK_RECT_INFO> &mvList,std::vector<TRK_RECT_INFO> &detect,int detectNum)
+
+char CProcess::getMvListValidNum()
+{
+	char tmp = 0;	
+	for(int i =0 ;i < 10 ; i++)
+	{
+		if(validMtdRecord[i])
+			tmp++;
+	}
+	return tmp;
+}
+
+void CProcess::switchMvTargetForwad()
+{
+	unsigned int distance = 4000*4000;
+	unsigned int tmp=0 ;
+	unsigned int x,y;
+	int index = -1;
+	for(int i = 0; i < mvListsum.size(); i++)
+	{
+		if(chooseDetect == mvListsum[i].number)
+			continue;
+		
+		x = abs(mvListsum[i].trkobj.targetRect.x - cur_targetRect_bak.x);	
+		y = abs(mvListsum[i].trkobj.targetRect.y - cur_targetRect_bak.y);
+		tmp = (x*x + y*y);
+		if(tmp < distance)
+		{
+			distance = tmp;
+			index = i;
+		}
+	}
+	if(index != -1)
+	{
+		chooseDetect = mvListsum[index].number;
+		cur_targetRect = mvListsum[index].trkobj.targetRect;
+		losenumber = -1;
+		lose_timer_flag = 0;
+	}
+
+}
+
+void CProcess::addMvListValidNum(char num)
+{
+	if(num < 10)
+		validMtdRecord[num] = true;
+	return ;
+}
+
+char CProcess::getMvListFirstUnusedNum()
+{	
+	for(int i =0 ;i < 10 ; i++)
+	{
+		if(!validMtdRecord[i])
+			return i;
+	}
+	return 10;
+}
+
+void CProcess::removeMvListValidNum(char num)
+{
+	if(num < 10)
+		validMtdRecord[num] = false;
+	return ;
+}
+
+char CProcess::getMvListNextValidNum(char index)
+{
+	for(int i = index+1 ;i < 10 ; i++)
+	{
+		if(validMtdRecord[i])
+			return i;
+	}
+
+	for(int i = 0 ; i<index ; i++)
+	{
+		if(validMtdRecord[i])
+			return i;
+	}
+	return 10;
+}
+
+bool comp(const TRK_RECT_INFO &a,const TRK_RECT_INFO &b)
+{
+	unsigned int tmpa ,tmpb;
+	unsigned int mx,my;
+	mx = abs(a.targetRect.x - plat->cur_targetRect_bak.x);
+	my = abs(a.targetRect.y - plat->cur_targetRect_bak.y);
+	tmpa = mx*mx + my*my;
+	mx = abs(b.targetRect.x - plat->cur_targetRect_bak.x);
+	my = abs(b.targetRect.y - plat->cur_targetRect_bak.y);
+	tmpb = mx*mx + my*my;
+	return tmpa<tmpb;
+}
+
+void CProcess::getTargetNearToCenter(std::vector<TRK_RECT_INFO> *pVec)
+{
+	int sizeNum = pVec->size();
+	if(sizeNum)
+		sort(pVec->begin(),pVec->end(),comp);
+}
+
+void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_RECT_INFO> &detect,int detectNum)
 {	
 	int tmpIndex , i ;
 	bool flag;
+	TRK_INFO_APP pTmpMv;
 	
-	if(!mvList.empty())
+	if(!mvList->empty())
 	{	
 		i = 0;
-		std::vector<TRK_RECT_INFO>::iterator pMvList = mvList.begin();
+		std::vector<TRK_INFO_APP>::iterator pMvList = mvList->begin();
 		
-		for( ; pMvList !=  mvList.end(); )
+		for( ; pMvList !=  mvList->end(); )
 		{
-			tmpIndex = (*pMvList).index;
+			tmpIndex = (*pMvList).trkobj.index;
 
 			flag = 0;
 			std::vector<TRK_RECT_INFO>::iterator pDetect = detect.begin();
@@ -1494,9 +1609,11 @@ void CProcess::mvIndexHandle(std::vector<TRK_RECT_INFO> &mvList,std::vector<TRK_
 			{
 				if( tmpIndex == (*pDetect).index )
 				{
-					mvList.erase(pMvList);
-					mvList.insert(pMvList,*pDetect);					
-					
+					memcpy((void*)&((*pMvList).trkobj.targetRect),(void*)&((*pDetect).targetRect),sizeof(TRK_RECT_INFO));				
+					if((chooseDetect == (*pMvList).number) && (losenumber != (*pMvList).number))
+					{
+						cur_targetRect = (*pMvList).trkobj.targetRect;
+					}
 					detect.erase(pDetect);
 					flag = 1;
 					break;
@@ -1507,16 +1624,14 @@ void CProcess::mvIndexHandle(std::vector<TRK_RECT_INFO> &mvList,std::vector<TRK_
 
 			if(!flag)
 			{
-			/*
-				SENDST	tmp;
-				tmp.cmd_ID = reset_swtarget_timer;
-
-				if(pMvList == mvList.begin() + chooseDetect )
+				if((chooseDetect == (*pMvList).number) && (0 == lose_timer_flag))
 				{
-					ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+					losenumber = (*pMvList).number;
+					cur_targetRect = (*pMvList).trkobj.targetRect;
+					lose_timer_flag = 1;
 				}
-			*/
-				mvList.erase(pMvList);
+				removeMvListValidNum((*pMvList).number);
+				mvList->erase(pMvList);
 			}
 			else
 				++pMvList;
@@ -1526,16 +1641,30 @@ void CProcess::mvIndexHandle(std::vector<TRK_RECT_INFO> &mvList,std::vector<TRK_
 		i = 0;
 		while(detect.size() > 0)
 		{	
-			if(mvList.size() >= detectNum)
+			if(mvList->size() >= detectNum)
 				break ;
-			mvList.push_back(detect[i++]);		
+			pTmpMv.number = getMvListFirstUnusedNum();
+			if(pTmpMv.number < 10)
+			{
+				addMvListValidNum(pTmpMv.number);
+				memcpy((void*)&(pTmpMv.trkobj),(void *)&(detect[i++].targetRect),sizeof(TRK_RECT_INFO));
+				mvList->push_back(pTmpMv);	
+			}
 		}	
 	}
 	else
 	{
 		int tmpnum = detect.size() < detectNum ? detect.size() : detectNum ;
 		for(i =0 ; i < tmpnum ; i++)
-			mvList.push_back(detect.at(i));
+		{
+			pTmpMv.number = getMvListFirstUnusedNum();
+			if(pTmpMv.number < 10)
+			{
+				addMvListValidNum(pTmpMv.number);
+				memcpy((void*)&(pTmpMv.trkobj),(void *)&(detect[i++].targetRect),sizeof(TRK_RECT_INFO));
+				mvList->push_back(pTmpMv);
+			}
+		}
 	}
 	
 }
@@ -1580,6 +1709,7 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 	countnofresh++;
 
 	osdindex=0;	
+	osd_index = 0;
 
 	Point center;
 	Point start,end;
@@ -1865,18 +1995,20 @@ osdindex++;	//cross aim
 	}
 
 	osdindex++;
+	osd_index++;
 	{
 		unsigned int mtd_warningbox_Id;
 		Osd_cvPoint startwarnpoly,endwarnpoly;
 		int polwarn_flag = 0;
 		if(m_display.g_CurDisplayMode == MAIN_VIEW)
 		{			
-				mtd_warningbox_Id = 1;
+			mtd_warningbox_Id = 1;
 		}
 		else
 		{
-				mtd_warningbox_Id = extInCtrl->SensorStat;
+			mtd_warningbox_Id = extInCtrl->SensorStat;
 		}
+			
 		if(Osdflag[osdindex])
 		{
 			int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
@@ -1893,18 +2025,31 @@ osdindex++;	//cross aim
 
 			cv::Rect tmp;
 			mouserect recttmp;
-			for(std::vector<TRK_RECT_INFO>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
-			{		
-					recttmp.x = (*plist).targetRect.x;
-					recttmp.y = (*plist).targetRect.y;
-					recttmp.w = (*plist).targetRect.width;
-					recttmp.h = (*plist).targetRect.height;
+			for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
+			{					
+					recttmp.x = (*plist).trkobj.targetRect.x;
+					recttmp.y = (*plist).trkobj.targetRect.y;
+					recttmp.w = (*plist).trkobj.targetRect.width;
+					recttmp.h = (*plist).trkobj.targetRect.height;
 					recttmp = mapfullscreen2gunv20(recttmp);
 					tmp.x = recttmp.x;
 					tmp.y = recttmp.y;
 					tmp.width = recttmp.w;
 					tmp.height = recttmp.h;
 					DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);
+			}
+			if(osd_flag[osd_index]){
+				recttmp.x = cur_targetRect_bak.x;
+				recttmp.y = cur_targetRect_bak.y;
+				recttmp.w = cur_targetRect_bak.width;
+				recttmp.h = cur_targetRect_bak.height;
+				recttmp = mapfullscreen2gunv20(recttmp);
+				tmp.x = recttmp.x;
+				tmp.y = recttmp.y;
+				tmp.width = recttmp.w;
+				tmp.height = recttmp.h;
+				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);	
+				osd_flag[osd_index] = 0;
 			}
 			Osdflag[osdindex]=0;
 		}
@@ -1925,66 +2070,74 @@ osdindex++;	//cross aim
 				}
 
 			detect_vect_arr_bak = detect_vect_arr;
-			mvList_arr = detect_vect_arr_bak;
 			mvListsum.clear();
 			int num = 0;
-			for(int i = 0; i <mvList_arr.size(); i++)
+			for(int i = 0; i < detect_vect_arr_bak.size(); i++)
 			{
-				mvIndexHandle(mvList_arr[i],detect_vect_arr_bak[i],detectNum);
+				getTargetNearToCenter(&detect_vect_arr_bak[i]);
+				mvIndexHandle(&mvList_arr[i],detect_vect_arr_bak[i],detectNum);
+				/*
 				for(int j = 0; j < mvList_arr[i].size(); j++)
 				{
 					if(num < detectNum)
 						mvListsum.push_back(mvList_arr[i][j]);
 					num++;
-				}
+				}*/
+				if(i == 0)
+					mvListsum = mvList_arr[i];
 			}
-			
-			
-			
+
 			if(forwardflag)
 			{
-				if(++chooseDetect > mvListsum.size())
-					chooseDetect = 0;
-				
+				switchMvTargetForwad();
 				forwardflag = 0;
 			}
 			else if(backflag)
 			{
-				if( --chooseDetect < 0)
-				{
-					chooseDetect = mvListsum.size()-1;	
-				}
-					
+				switchMvTargetForwad();
 				backflag = 0;
 			}
-			if(chooseDetect > mvListsum.size())
-				chooseDetect = mvListsum.size()-1 ;
-
+		
 			char tmpNum = 0;
 			cv::Rect tmp;
 			mouserect recttmp;
 			tmpNum = 0;
-			for(std::vector<TRK_RECT_INFO>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
+			for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
 			{	
-				if( chooseDetect == tmpNum++)
-					color = 6;
-				else
-					color = 3;
+				color = 3;
 
-				recttmp.x = (*plist).targetRect.x;
-				recttmp.y = (*plist).targetRect.y;
-				recttmp.w = (*plist).targetRect.width;
-				recttmp.h = (*plist).targetRect.height;
+				recttmp.x = (*plist).trkobj.targetRect.x;
+				recttmp.y = (*plist).trkobj.targetRect.y;
+				recttmp.w = (*plist).trkobj.targetRect.width;
+				recttmp.h = (*plist).trkobj.targetRect.height;
 				recttmp = mapfullscreen2gunv20(recttmp);
 				tmp.x = recttmp.x;
 				tmp.y = recttmp.y;
 				tmp.width = recttmp.w;
 				tmp.height = recttmp.h;
 
-				if(color == 6)
-					MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
+				//if(color == 6)
+					//MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
 
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+			}
+			if((0 == lose_timer_flag) && (mvListsum.size() > 0))
+			{
+				
+				color = 6;
+				cur_targetRect_bak = cur_targetRect;
+				recttmp.x = cur_targetRect_bak.x;
+				recttmp.y = cur_targetRect_bak.y;
+				recttmp.w = cur_targetRect_bak.width;
+				recttmp.h = cur_targetRect_bak.height;
+				recttmp = mapfullscreen2gunv20(recttmp);
+				tmp.x = recttmp.x;
+				tmp.y = recttmp.y;
+				tmp.width = recttmp.w;
+				tmp.height = recttmp.h;
+				MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
+				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+				osd_flag[osd_index] = 1;
 			}
 			Osdflag[osdindex]=1;
 		}
@@ -4395,7 +4548,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 				{
 					dynamic_config(VP_CFG_MvDetect, 0,NULL);
 					m_pMovDetector->mvClose(i);
-					chooseDetect = i;
+					//chooseDetect = i;
 				}	
 			}
 		}

@@ -474,6 +474,7 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 	InitGridMap16X12();
 #endif
 	readParams("SaveGridMap.yml");
+	read_param_trig();
 }
 CVideoProcess::CVideoProcess()
 	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_curNodeIndex(0)		
@@ -1273,6 +1274,11 @@ bool CVideoProcess::readParams(const char* filename)
 		return true;
 	}
 	return false;
+}
+
+int CVideoProcess::read_param_trig()
+{
+	m_trig.readParams(app_trig);
 }
 
 bool CVideoProcess::writeParams(const char* filename)

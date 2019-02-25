@@ -6,6 +6,8 @@
 CPP_SRCS += \
 ../src/CcCamCalibra.cpp \
 ../src/Displayer.cpp \
+../src/EventLoop.cpp \
+../src/IntrinsicMatrix.cpp \
 ../src/Ipc.cpp \
 ../src/MultiChVideo.cpp \
 ../src/VideoProcess.cpp \
@@ -14,9 +16,8 @@ CPP_SRCS += \
 ../src/cuda_mem.cpp \
 ../src/process51.cpp \
 ../src/test_videoProcess.cpp \
-../src/v4l2camera.cpp \
-../src/IntrinsicMatrix.cpp \
-../src/EventLoop.cpp 
+../src/trigonometric.cpp \
+../src/v4l2camera.cpp 
 
 CU_SRCS += \
 ../src/cuda.cu 
@@ -27,6 +28,8 @@ CU_DEPS += \
 OBJS += \
 ./src/CcCamCalibra.o \
 ./src/Displayer.o \
+./src/EventLoop.o \
+./src/IntrinsicMatrix.o \
 ./src/Ipc.o \
 ./src/MultiChVideo.o \
 ./src/VideoProcess.o \
@@ -36,13 +39,14 @@ OBJS += \
 ./src/cuda_mem.o \
 ./src/process51.o \
 ./src/test_videoProcess.o \
-./src/v4l2camera.o \
-./src/IntrinsicMatrix.o \
-./src/EventLoop.o 
+./src/trigonometric.o \
+./src/v4l2camera.o 
 
 CPP_DEPS += \
 ./src/CcCamCalibra.d \
 ./src/Displayer.d \
+./src/EventLoop.d \
+./src/IntrinsicMatrix.d \
 ./src/Ipc.d \
 ./src/MultiChVideo.d \
 ./src/VideoProcess.d \
@@ -51,9 +55,8 @@ CPP_DEPS += \
 ./src/cuda_mem.d \
 ./src/process51.d \
 ./src/test_videoProcess.d \
-./src/v4l2camera.d \
-./src/IntrinsicMatrix.d \
-./src/EventLoop.d 
+./src/trigonometric.d \
+./src/v4l2camera.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

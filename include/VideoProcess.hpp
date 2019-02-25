@@ -149,6 +149,7 @@ public:
 
 	bool readParams(const char* filename);
 	bool writeParams(const char* filename);
+	int read_param_trig();
 
 private:
 	Mat m_GrayMat;

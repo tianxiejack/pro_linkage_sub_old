@@ -315,6 +315,7 @@ bool Trigonometric::readParams(std::vector<position_t>& getParam)
 			
 			fpassemble.push_back(tmpPos);
 		}
+		getParam = fpassemble;
 		m_readfs.release();
 		return true;
 	}

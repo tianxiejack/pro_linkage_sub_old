@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+using namespace cr_trigonometricInterpolation;
+
 int capIndex =0;
 int gun_resolu[2] = {1920, 1080};
 extern bool show_circle_pointer;
@@ -152,6 +154,7 @@ void CProcess::loadIPCParam()
 		extMenuCtrl.osd_sensi = 30;
 		extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
 		extMenuCtrl.MenuStat = -1;
+		extMenuCtrl.Trig_Inter_Mode = 0;
 		memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
 		memset(extMenuCtrl.disPasswd, 0, sizeof(extMenuCtrl.disPasswd));
 
@@ -2403,6 +2406,7 @@ else{
 //virtual joystick
 	DrawJoys();
 	DrawMouse();
+	DrawTrigInter();
 
 	static unsigned int count = 0;
 	if((count & 1) == 1)
@@ -2459,6 +2463,66 @@ void CProcess::DrawMouse()
 	color = 2;
 	if(mouse_show)
 		DrawArrow(frame, jos_mouse_bak, linecolor, color);
+}
+
+void CProcess::DrawTrigInter()
+{
+	Mat frame = m_display.m_imgOsd[1];
+	cv::Point trig_tmp;
+	static int osd_flag = 0;
+	static int osd_flag2 = 0;
+	static vector<position_t> app_trig_bak;
+	static cv::Point cur_trig_inter_P_bak;
+	int color = 0;
+	int thickness = 2;
+
+	if(osd_flag)
+	{
+		for(int i = 0; i < app_trig_bak.size(); i++)
+		{
+			color = 0;
+			trig_tmp.x = app_trig_bak[i].ver.x;
+			trig_tmp.y = app_trig_bak[i].ver.y;
+			plat->DrawCircle(frame, trig_tmp, 5, color, thickness);
+		}
+		osd_flag = 0;
+	}
+	if(osd_flag2)
+	{
+		color = 0;
+		trig_tmp.x = cur_trig_inter_P_bak.x;
+		trig_tmp.y = cur_trig_inter_P_bak.y;
+		plat->DrawCircle(frame, trig_tmp, 5, color, thickness);
+
+		osd_flag2 = 0;
+	}
+
+	
+	if(MENU_TRIG_INTER_MODE == g_displayMode)
+	{
+		app_trig_bak = app_trig;
+		
+		for(int i = 0; i < app_trig_bak.size(); i++)
+		{
+			color = 5;
+			trig_tmp.x = app_trig_bak[i].ver.x;
+			trig_tmp.y = app_trig_bak[i].ver.y;
+			plat->DrawCircle(frame, trig_tmp, 5, color, thickness);
+		}
+		osd_flag = 1;
+
+		if(get_trig_PTZflag())
+		{
+			color = 3;
+			cur_trig_inter_P_bak = cur_trig_inter_P;
+			trig_tmp.x = cur_trig_inter_P_bak.x;
+			trig_tmp.y = cur_trig_inter_P_bak.y;
+			plat->DrawCircle(frame, trig_tmp, 5, color, thickness);
+
+			osd_flag2 = 1;
+		}
+	}
+
 }
 
 void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness)
@@ -3713,6 +3777,9 @@ void CProcess::OnKeyDwn(unsigned char key)
 	CMD_EXT *pIStuts = extInCtrl;
 	CMD_EXT tmpCmd = {0};
 
+	menu_param_t *pMenuStatus = &extMenuCtrl;
+	menu_param_t tmpMenuCmd = {0};
+
 	if(key == 'a' || key == 'A')
 	{
 		tmpCmd.SensorStat = (pIStuts->SensorStat + 1)%MAX_CHAN;
@@ -3757,7 +3824,15 @@ void CProcess::OnKeyDwn(unsigned char key)
 	{
 		backflag = true;
 	}
-		
+	if (key == 'g' || key == 'G')
+	{
+		tmpMenuCmd.Trig_Inter_Mode = (pMenuStatus->Trig_Inter_Mode + 1) % 2;
+		app_ctrl_settrig_inter(&tmpMenuCmd);
+	}
+	if (key == 'h' || key == 'h')
+	{
+		app_ctrl_getPT();
+	}
 
 	if (key == 'k' || key == 'K')
 	{

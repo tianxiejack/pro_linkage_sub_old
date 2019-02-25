@@ -1175,6 +1175,18 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			return ;
 		}
 	}
+	else if(TRIG_INTER_MODE == pThis->m_display.g_CurDisplayMode)
+	{
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+		{
+			if(0 == pThis->get_trig_PTZflag())
+			{
+				pThis->cur_trig_inter_P.x = x;
+				pThis->cur_trig_inter_P.y = y;
+				pThis->set_trig_PTZflag(1);
+			}
+		}
+	}
 	else {
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN &&(g_AppWorkMode == HANDLE_LINK_MODE)) {
 			if (pThis->open_handleCalibra) // Press 'y' or 'Y' , set this flag to 1

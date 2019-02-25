@@ -1172,3 +1172,30 @@ void app_ctrl_savemtdrigion()
 	if(pIStuts->MtdState[pIStuts->SensorStat] == 0)
 		MSGDRIV_send(MSGID_EXT_SMR, 0);
 }
+
+void app_ctrl_settrig_inter(menu_param_t *pInCmd)
+{
+	if(msgextMenuCtrl==NULL)
+		return;
+
+	menu_param_t *pMenuStatus = msgextMenuCtrl;
+	
+	if(pMenuStatus->Trig_Inter_Mode != pInCmd->Trig_Inter_Mode)
+	{
+		pMenuStatus->Trig_Inter_Mode = pInCmd->Trig_Inter_Mode;
+		if(pMenuStatus->Trig_Inter_Mode)
+		{
+			g_displayMode = MENU_TRIG_INTER_MODE;
+		}
+		else
+		{
+			g_displayMode = MENU_MAIN_VIEW;
+			plat->m_trig.insertVertexAndPosition(plat->app_trig);
+		}
+	}
+}
+
+void app_ctrl_getPT()
+{
+	plat->QueryCurBallCamPosition();
+}

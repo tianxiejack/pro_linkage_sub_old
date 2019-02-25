@@ -14,6 +14,9 @@
 
 #include "CcCamCalibra.h"
 #include "IntrinsicMatrix.h"
+#include "trigonometric.hpp"
+
+using namespace cr_trigonometricInterpolation;
 
 #define MAX_SUCCESS_IMAGES 160
 #define GRID_CNT_X 19
@@ -202,6 +205,17 @@ public:
 	cv::Point jos_mouse;
 	int mouse_show = 0;
 	void set_mouse_show(int param);
+	cv::Point cur_trig_inter_P;
+	int trig_inter_flag = 0;
+	void set_trig_PTZflag(bool flag){
+		trig_inter_flag = flag;
+		return ;
+	};
+	bool get_trig_PTZflag(){
+		return trig_inter_flag;
+	};
+	Trigonometric m_trig = Trigonometric(outputWHF[0],outputWHF[1]);
+	vector<position_t> app_trig;
 	
 protected:
 	MultiChVideo MultiCh;

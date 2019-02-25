@@ -28,6 +28,7 @@ typedef struct{
 
 typedef struct{
 	volatile unsigned int MenuStat;
+	volatile int Trig_Inter_Mode;;
 	AppMenu menuarray[menumaxid];
 	char Passwd[128];
 	char disPasswd[128];
@@ -128,6 +129,7 @@ public:
 	bool getPTZflag(){
 		return m_bRefreshPTZValue;
 	};
+	
 	void loadIPCParam();
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
@@ -201,6 +203,7 @@ public:
 	void DrawJoys();
 	void DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness);
 	void DrawMouse();
+	void DrawTrigInter();
 	
 	CMD_EXT* extInCtrl;
 	menu_param_t extMenuCtrl;

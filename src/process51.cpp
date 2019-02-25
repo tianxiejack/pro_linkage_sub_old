@@ -2137,7 +2137,14 @@ osdindex++;	//cross aim
 				tmp.y = recttmp.y;
 				tmp.width = recttmp.w;
 				tmp.height = recttmp.h;
-				MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
+
+				if(1 == g_GridMapMode){
+					pThis->pThis->getLinearDeviation(tmp.x+tmp.width/2,tmp.y + tmp.height/2,GRID_WIDTH_120,GRID_HEIGHT_90,false);//getLinearDeviation(x,y);
+				}
+				else{
+					MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
+				}
+				
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 				osd_flag[osd_index] = 1;
 			}

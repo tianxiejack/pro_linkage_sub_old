@@ -1313,7 +1313,7 @@ bool CVideoProcess::writeParams(const char* filename)
 }
 
 
-GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int grid_height)
+GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int grid_height,bool needChangeZoom)
 {
 
 	int offset_y = IMG_HEIGHT/2;
@@ -1442,13 +1442,23 @@ GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int
 
 	SENDST trkmsg;
 	memset((void*)&trkmsg,0,sizeof(SENDST));
-	trkmsg.cmd_ID = acqPosAndZoom;
+	if(needChangeZoom){
+		trkmsg.cmd_ID = acqPosAndZoom;
 
-	memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
-	memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
-	int currentZoom = pThis->getCurrentZoomValue();
-	memcpy(&trkmsg.param[8],&currentZoom, sizeof(int));
-	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
+		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
+		int currentZoom = pThis->getCurrentZoomValue();
+		memcpy(&trkmsg.param[8],&currentZoom, sizeof(int));
+		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	}
+	else{
+		trkmsg.cmd_ID = speedloop;
+		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
+		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
+		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+
+	}
+	
 	//printf("\r\n[%s]: Send PTZ Message to Ball Camera !!",__func__);
 	
 	return Vp;
@@ -1653,7 +1663,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			//int tmp_col = ((valid_x-GRID_WIDTH/2)/GRID_WIDTH) % GRID_COLS;
 			//int tmp_row = ((valid_y-GRID_HEIGHT/2)/GRID_HEIGHT);
 			
-			GridMapNode temp_node = pThis->getLinearDeviation(valid_x,valid_y,GRID_WIDTH_120,GRID_HEIGHT_90);
+			GridMapNode temp_node = pThis->getLinearDeviation(valid_x,valid_y,GRID_WIDTH_120,GRID_HEIGHT_90,true);
 
 			//printf("\r\n[%s]:Click Point:<%d, %d>, cur_row=%d, cur_col=%d, node_PTZ=<%d,%d,%d>\r\n",
 			//	__func__, valid_x, valid_y,tmp_row,tmp_col,temp_node.pano,temp_node.tilt,temp_node.zoom);
@@ -1727,7 +1737,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				/* If user click on Gun Camera Image, then Ball Camera will move its focus to the projectPoints where user click on Gun Image */
 							
 							if(1 == g_GridMapMode){
-								pThis->pThis->getLinearDeviation(x,y,GRID_WIDTH_120,GRID_HEIGHT_90);//getLinearDeviation(x,y);
+								pThis->pThis->getLinearDeviation(x,y,GRID_WIDTH_120,GRID_HEIGHT_90,true);//getLinearDeviation(x,y);
 							}else
 							{
 								pThis->MvBallCamByClickGunImg(x,y,false);
@@ -1747,7 +1757,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				/* */			
 						if(1 == g_GridMapMode)
 						{
-							pThis->getLinearDeviation(tmpX,tmpY,GRID_WIDTH_120,GRID_HEIGHT_90);
+							pThis->getLinearDeviation(tmpX,tmpY,GRID_WIDTH_120,GRID_HEIGHT_90,true);
 						}else{
 							pThis->MvBallCamBySelectRectangle(tmpX,tmpY,true);	
 						}

@@ -19,6 +19,7 @@ using namespace cr_trigonometricInterpolation;
 int capIndex =0;
 int gun_resolu[2] = {1920, 1080};
 extern bool show_circle_pointer;
+extern uint8 exposure_star;
 extern MenuDisplay g_displayMode;
 extern bool showDetectCorners;
 bool saveOnePicture = false;
@@ -45,7 +46,7 @@ extern bool setComBaud_select ;
 extern bool changeComBaud ;
 extern CProcess *proc;
 extern std::vector< cv::Mat > ImageList;
-
+unsigned char  g_GridMapMode = 0;
 bool send_signal_flag = true;
 
 void inputtmp(unsigned char cmdid)
@@ -80,7 +81,7 @@ void getMtdxy(int *x,int *y,int *w,int *h)
 #endif
 
 CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6320),
-m_cofy(6200),m_bak_count(0),m_capX(960),m_capY(540)
+m_cofy(6200),m_bak_count(0),m_capX(960),m_capY(540),m_bGridMapCalibrate(false)
 {
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
@@ -92,7 +93,8 @@ m_cofy(6200),m_bak_count(0),m_capX(960),m_capY(540)
 }
 
 CProcess::CProcess(int window_width, int window_height):m_bRefreshPTZValue(false),m_capX(960),m_capY(540),m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6320),
-m_cofy(6200),m_bak_count(0),m_winWidth(window_width),m_winHeight(window_height),CVideoProcess(window_width,window_height)
+m_cofy(6200),m_bak_count(0),m_winWidth(window_width),m_winHeight(window_height),CVideoProcess(window_width,window_height),
+m_bGridMapCalibrate(false),m_lastRow(-1),m_lastCol(-1),m_successCalibraNum(0)
 {
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
@@ -2220,23 +2222,118 @@ osdindex++;	//cross aim
 	DrawCross(recIn,frcolor,1,true);
 	Osdflag[osdindex]=1;
 #endif
-#if 0
-	for(int i =0; i< 19; i++) 
-	{
-		for(int j=0; j<10; j++){
-			recIn.x=2+i*100;		//948;
-	 		recIn.y=2+j*100;		//276;
-			recIn.width = 1920;
-			recIn.height = 1080;
+
+
+
+if(g_displayMode == MENU_GRID_MAP_VIEW)
+{
+	#if 0	 
+		
+		DrawGridMap(1);
+		DrawGridMapNodeCircles(true);
+		DrawGridMapNodeCircles(true, m_curNodeIndex);
+	#else
+		DrawGridMap_16X12(1);
+		DrawGridMapNodeCircles_16X12(true);
+		DrawGridMapNodeCircles_16X12(true, m_curNodeIndex);
+	#endif
+		{
+			recIn.x=back_center.x;
+			recIn.y=back_center.y;
+			recIn.width = GRID_WIDTH_120;
+			recIn.height = GRID_HEIGHT_90;
+			DrawCross(recIn,frcolor,1,false);
+			Osdflag[osdindex]=1;
+
+			back_center =  m_display.getGridViewBallImgCenter();
+			recIn.x=back_center.x;
+			recIn.y=back_center.y;
+			recIn.width = GRID_WIDTH_120;
+			recIn.height = GRID_HEIGHT_90;
 			DrawCross(recIn,frcolor,1,true);
 			Osdflag[osdindex]=1;
 		}
-	}
-	
-#endif
 
-	//if(mouse_workmode == Click_Mode)
-	if(m_bIsClickMode == true)
+		{			
+			sprintf(tmp_str[0], "ToTal: %d", 204/*17X12*/);	
+			putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(45,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(255,255,0,255), 1);	
+
+			sprintf(tmp_str[2], "Current:");	
+			putText(m_display.m_imgOsd[1],tmp_str[2],cv::Point(260,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(255,255,0,255), 1);	
+
+			putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(345,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+			sprintf(tmp_str[1], "%d", (m_curNodeIndex+1));	
+			putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(345,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
+
+			int row = (m_curNodeIndex/(GRID_COLS_15 +2));
+			int col = (m_curNodeIndex%(GRID_COLS_15 +2));
+			putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(600,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+			sprintf(tmp_str[3], "<%d - %d>",row,col );	
+			putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(600,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,255,255), 1);	
+
+			putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+			sprintf(tmp_str[4], "Finished:%d",m_successCalibraNum);	
+			putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
+
+			Osdflag[osdindex]=1;
+
+		}
+	}
+	else
+	{
+		
+	
+	#if 0		
+		DrawGridMap(0);
+		DrawGridMapNodeCircles(false);
+		DrawGridMapNodeCircles(false, m_curNodeIndex);
+	#else
+		DrawGridMap_16X12(0);
+		DrawGridMapNodeCircles_16X12(false);
+		DrawGridMapNodeCircles_16X12(false, m_curNodeIndex);
+	#endif
+		
+		putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(45,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
+		putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(345,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+		putText(m_display.m_imgOsd[1],tmp_str[2],cv::Point(260,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);	
+		putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(600,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
+		putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
+
+		recIn.x=back_center.x;
+		recIn.y=back_center.y;
+		recIn.width = GRID_WIDTH_120;
+		recIn.height = GRID_HEIGHT_90;
+		DrawCross(recIn,frcolor,1,false);
+		Osdflag[osdindex]=1;
+
+
+	}
+
+
+
+
+
+
+
+
+
+
+	
+
+
+/***********************************************************************************/
+if(g_GridMapMode == 1)
+{
+	sprintf(str_mode, "GridMode");	
+	putText(m_display.m_imgOsd[1],str_mode,cv::Point(10,535),FONT_HERSHEY_TRIPLEX,0.4, cvScalar(255,255,0,255), 1);	
+
+
+}else
+{
+	putText(m_display.m_imgOsd[1],str_mode,cv::Point(10,535),FONT_HERSHEY_TRIPLEX,0.4, cvScalar(0,0,0,255), 1);	
+}
+
+	if(m_bIsClickMode == true&&(g_displayMode == MENU_MAIN_VIEW))
 	{
 		#if 1
 			recIn.x=m_bakClickPoint.x;
@@ -2576,6 +2673,252 @@ void CProcess::DrawMtdYellowGrid(int flag)
 		{
 			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
 		}
+	}
+}
+void CProcess::DrawGridMap(int flag)
+{
+	unsigned int drawmtdgridId; 
+	if(m_display.g_CurDisplayMode == MAIN_VIEW)
+	{			
+		drawmtdgridId = 1;
+	}
+	else
+	{
+		drawmtdgridId = extInCtrl->SensorStat;
+	}
+	
+	Osd_cvPoint start, end;
+	int interval_w =GRID_WIDTH;		
+	int interval_h = GRID_HEIGHT;	
+		
+	for(int i = 0; i <= GRID_COLS; i++)
+	{
+		start.x = interval_w * i + GRID_WIDTH/2;
+		start.y = GRID_HEIGHT/2;	
+		end.x = interval_w * i + GRID_WIDTH/2;
+		end.y = gun_resolu[1] - GRID_HEIGHT/2;
+		if(flag)
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
+		}
+		else
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
+		}
+	}
+	for(int j = 0; j <= GRID_ROWS; j++)
+	{
+		start.x = GRID_WIDTH/2;	
+		start.y = interval_h * j + GRID_HEIGHT/2;
+		end.x = gun_resolu[0] - GRID_WIDTH/2;
+		end.y = interval_h * j + GRID_HEIGHT/2;
+		if(flag)
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
+		}
+		else
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
+		}
+	}
+}
+
+void CProcess::DrawGridMap_16X12(int flag)
+{
+	unsigned int drawmtdgridId; 
+	int row_offset = (IMG_WIDTH - (GRID_COLS_15*GRID_WIDTH_120) ) / 2;
+	int col_offset =  (IMG_HEIGHT - (GRID_ROWS_11*GRID_HEIGHT_90)) / 2;
+	
+	int temp_col = row_offset;
+
+	if(m_display.g_CurDisplayMode == MAIN_VIEW)
+	{			
+		drawmtdgridId = 1;
+	}
+	else
+	{
+		drawmtdgridId = extInCtrl->SensorStat;
+	}
+	
+	Osd_cvPoint start, end;
+	int interval_w =GRID_WIDTH_120;		
+	int interval_h = GRID_HEIGHT_90;	
+		
+	for(int i = 0; i <= GRID_COLS_15+2; i++)
+	{
+
+	#if 0
+		start.x = interval_w * i + GRID_WIDTH_120/2;
+		start.y = GRID_HEIGHT_90/2;	
+		end.x = interval_w * i + GRID_WIDTH_120/2;
+		end.y = gun_resolu[1] - GRID_HEIGHT_90/2;
+	#else
+		start.x = m_gridNodes[0][i].coord_x;
+		start.y = GRID_HEIGHT_90/2;	
+		end.x =  m_gridNodes[0][i].coord_x;
+		end.y = gun_resolu[1] - GRID_HEIGHT_90/2;
+
+
+	#endif
+		if(flag)
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
+		}
+		else
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
+		}
+	}
+	for(int j = 0; j <= GRID_ROWS_11; j++)
+	{
+		start.x = GRID_WIDTH_120/2;	
+		start.y = interval_h * j + GRID_HEIGHT_90/2;
+		end.x = gun_resolu[0] - GRID_WIDTH_120/2;
+		end.y = interval_h * j + GRID_HEIGHT_90/2;
+		if(flag)
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
+		}
+		else
+		{
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
+		}
+	}
+}
+
+void CProcess::DrawGridMapNodeCircles(bool drawFlag)
+{
+	int radius = 8;
+	int thickness = 1;
+	int mark_thickness = 3;
+	cv::Point tmp_mark = cv::Point(60,45);
+	if(drawFlag)
+	{
+		for(int i=0;i<=GRID_ROWS;i++)
+		{
+			for(int j=0;j<=GRID_COLS;j++)
+			{				
+				cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(0,0,0,0),thickness,8,0);
+				//m_backNodePos = m_nodePos[i][j];
+				m_nodePos[i][j].x = m_gridNodes[i][j].coord_x;
+				m_nodePos[i][j].y = m_gridNodes[i][j].coord_y;
+				cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(255,0,0,255),thickness,8,0);
+
+				if(m_calibratedNodes[i][j].isShow == true)
+				{
+					tmp_mark.x = m_calibratedNodes[i][j].x;
+					tmp_mark.y = m_calibratedNodes[i][j].y;
+					cv::circle(m_display.m_imgOsd[1],tmp_mark,radius ,cvScalar(0,0,0,0),mark_thickness,8,0);
+					
+					//m_calibratedNodes[i][j].x = m_gridNodes[i][j].coord_x;
+					//m_nodePos[i][j].y = m_gridNodes[i][j].coord_y;
+					cv::circle(m_display.m_imgOsd[1],tmp_mark,radius ,cvScalar(0,232,160,255),mark_thickness,8,0);
+					addMarkNum();
+				}
+			}
+		}
+	}
+	else
+	{
+		for(int i=0;i<=GRID_ROWS;i++)
+		{
+			for(int j=0;j<=GRID_COLS;j++)
+			{				
+				tmp_mark.x = m_calibratedNodes[i][j].x;
+				tmp_mark.y = m_calibratedNodes[i][j].y;
+				cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(0,0,0,0),thickness,8,0);	
+				cv::circle(m_display.m_imgOsd[1],tmp_mark,radius ,cvScalar(0,0,0,0),mark_thickness,8,0);
+			}
+		}
+
+	}
+}
+
+void CProcess::DrawGridMapNodeCircles_16X12(bool drawFlag)
+{
+	int radius = 8;
+	int thickness = 1;
+	int mark_thickness = 3;
+	cv::Point tmp_mark=cv::Point(60,45);
+	if(drawFlag)
+	{
+		for(int i=0;i<=GRID_ROWS_11;i++)
+		{
+			for(int j=0;j<=GRID_COLS_15+1;j++)
+			{				
+				cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(0,0,0,0),thickness,8,0);
+				
+				m_nodePos[i][j].x = m_gridNodes[i][j].coord_x;
+				m_nodePos[i][j].y = m_gridNodes[i][j].coord_y;
+				cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(255,0,0,255),thickness,8,0);
+
+				if(m_calibratedNodes[i][j].isShow == true)
+				{	
+					tmp_mark.x = m_calibratedNodes[i][j].x;
+					tmp_mark.y = m_calibratedNodes[i][j].y;
+
+					cv::circle(m_display.m_imgOsd[1],tmp_mark,radius ,cvScalar(0,0,0,0),mark_thickness,8,0);
+					cv::circle(m_display.m_imgOsd[1],tmp_mark,radius ,cvScalar(0,232,160,255),mark_thickness,8,0);
+
+				}
+			}
+		}
+	}
+	else
+	{
+		for(int i=0;i<=GRID_ROWS_11;i++)
+		{
+			for(int j=0;j<=GRID_COLS_15+1;j++)
+			{				
+				tmp_mark.x = m_calibratedNodes[i][j].x;
+				tmp_mark.y = m_calibratedNodes[i][j].y;
+				cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(0,0,0,0),thickness,8,0);	
+				cv::circle(m_display.m_imgOsd[1],tmp_mark,radius ,cvScalar(0,0,0,0),mark_thickness,8,0);
+			}
+		}
+
+	}
+}
+
+void CProcess::DrawGridMapNodeCircles(bool drawFlag, int drawNodesCount)
+{
+	int radius = 8;
+	int thickness = -1;
+	int tmp_row = drawNodesCount / (GRID_COLS+1);
+	int tmp_col = drawNodesCount % (GRID_COLS+1);
+	
+	if(drawFlag)
+	{						
+		cv::circle(m_display.m_imgOsd[1],m_backNodePos,radius ,cvScalar(0,0,0,0),thickness,8,0);
+		m_backNodePos = m_nodePos[tmp_row][tmp_col];
+		if(exposure_star == 1){
+			cv::circle(m_display.m_imgOsd[1],m_backNodePos,radius ,cvScalar(255,0,0,255),thickness,8,0);	
+		}
+	}
+	else
+	{		
+		cv::circle(m_display.m_imgOsd[1],m_backNodePos,radius ,cvScalar(0,0,0,0),thickness,8,0);			
+	}
+}
+
+void CProcess::DrawGridMapNodeCircles_16X12(bool drawFlag, int drawNodesCount)
+{
+	int radius = 8;
+	int thickness = -1;
+	int tmp_row = drawNodesCount / (sizeof(m_gridNodes)-1);
+	int tmp_col = drawNodesCount % (sizeof(m_gridNodes)-1);
+	
+	if(drawFlag)
+	{						
+		cv::circle(m_display.m_imgOsd[1],m_backNodePos,radius ,cvScalar(0,0,0,0),thickness,8,0);
+		m_backNodePos = m_nodePos[tmp_row][tmp_col];
+		if(exposure_star == 1){
+			cv::circle(m_display.m_imgOsd[1],m_backNodePos,radius ,cvScalar(255,0,0,255),thickness,8,0);	
+		}
+	}
+	else
+	{		
+		cv::circle(m_display.m_imgOsd[1],m_backNodePos,radius ,cvScalar(0,0,0,0),thickness,8,0);			
 	}
 }
 
@@ -3231,6 +3574,7 @@ void CProcess::QueryCurBallCamPosition()
 	SENDST trkmsg={0};
 	trkmsg.cmd_ID = querypos;
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	printf("\r\n[%s]:Send Query PTZ Command ... ... \r\n",__func__);
 	return;
 }
 
@@ -3527,7 +3871,7 @@ void CProcess::MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom)
 	m_iDelta_X = delta_X;
 	
 	if(needChangeZoom == true ) {
-		if(delta_X < 10) {
+		if(delta_X < MIN_VALID_RECT_WIDTH_IN_PIXEL) {
 			;  // Do Nothing
 		}
 		else
@@ -3716,8 +4060,28 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			start_calibrate = true;
 			break;
 		case 4:	
+			g_displayMode = MENU_GRID_MAP_VIEW;
 			break;
-		case 5:			
+		case 5:	
+			{
+				setGridMapCalibrate(true);
+				QueryCurBallCamPosition();
+				int row = m_curNodeIndex/(GRID_COLS_15+2);
+				int col = m_curNodeIndex%(GRID_COLS_15+2);
+				m_calibratedNodes[row][col].isShow = true;
+				m_gridNodes[row][col].has_mark = 1;
+				m_calibratedNodes[0][0].x = 60;
+				m_calibratedNodes[0][0].y = 45;
+
+				printf("\r\n[%s]: Mark Node Position:<%d,%d><%d, %d>\r\n",__func__,row,col,m_calibratedNodes[row][col].x,m_calibratedNodes[row][col].y);
+				if(row!=m_lastRow || col!=m_lastCol)
+				{
+					m_successCalibraNum +=1;
+					m_lastRow = row;
+					m_lastCol = col;
+					printf("\r\n[%s]: has_calibrated_num = %d\r\n",__func__,m_successCalibraNum);
+				}
+			}
 			break;
 		case 6:
 			{
@@ -3728,21 +4092,110 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		case 7:
 			capIndex = (capIndex+1) %2;
 			break;
+		case 8:
+			//pThis->readParams("SaveGridMap.yml");
+			break;
+		case 9:
+			g_GridMapMode ^= 1 ;
+			break;
 		case 10:
 			m_intrMatObj->setCalibrateSwitch(true);			
 			break;
-		case 11:
-			ImageList.clear();
-			break;			
+		case 11:			
+			if(g_displayMode == MENU_GRID_MAP_VIEW)
+			{
+				for(int i=0;i<=GRID_ROWS_11;i++)
+				{
+					for(int j=0;j<=GRID_COLS_15+1;j++)
+					{
+						m_calibratedNodes[i][j].isShow = false;
+					}
+				}
+			}
+			else
+			{
+				ImageList.clear();
+			}
+			break;	
+		case 12:
+			pThis->writeParams("SaveGridMap.yml");
+			
+			//printf("\r\n[%s]:Save GridMap Parameters Success !!\r\n",__func__);
+			break;
 		case SPECIAL_KEY_DOWN:
 			app_ctrl_downMenu();
+			if(g_displayMode == MENU_GRID_MAP_VIEW){
+				m_curNodeIndex = (m_curNodeIndex+GRID_COLS_15+2)%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
+				if(m_curNodeIndex > 112)// total 192/432 nodes
+				{
+					m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
+				}
+				else{
+					m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
+				}
+			}
 			break;
 		case SPECIAL_KEY_UP:
 			app_ctrl_upMenu();
+			if(g_displayMode == MENU_GRID_MAP_VIEW){
+				int total = (GRID_COLS_15+2)*(GRID_ROWS_11+1);
+				int cols = GRID_COLS_15+2;
+				m_curNodeIndex = (m_curNodeIndex -cols + total)%total;
+				if(m_curNodeIndex > 112)// total 192/432 nodes
+				{
+					m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
+				}
+				else{
+					m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
+				}
+			}
 			break;
 		case SPECIAL_KEY_PAGEUP:
 			saveOnePicture = true;
 			break;
+		case SPECIAL_KEY_RIGHT:
+			{
+				#if 0
+				m_curNodeIndex = (m_curNodeIndex+1)%((GRID_COLS+1)*(GRID_ROWS+1));
+				#else
+				m_curNodeIndex = (m_curNodeIndex+1)%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
+				#endif
+				
+				//printf("\r\n[%s]: m_curNodeIndex = %d\r\n",__func__,m_curNodeIndex);
+				if(m_curNodeIndex > 112)// total 192/432 nodes
+				{
+					m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
+				}
+				else{
+					m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
+				}
+				
+			}
+			break;
+		case SPECIAL_KEY_LEFT:
+			{	
+				#if 0
+				m_curNodeIndex = (m_curNodeIndex+  (GRID_COLS+1)*(GRID_ROWS+1) -1 )%((GRID_COLS+1)*(GRID_ROWS+1));
+				#else
+				m_curNodeIndex = (m_curNodeIndex+  (GRID_COLS_15+2)*(GRID_ROWS_11+1) -1 )%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
+
+				#endif
+
+
+				//printf("\r\n[%s]: m_curNodeIndex = %d\r\n",__func__,m_curNodeIndex);
+				if(m_curNodeIndex < 112)// total 192/432 nodes
+				{
+					m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
+				}
+				else
+					{
+					m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
+
+				}
+			}
+			
+			break;
+
 	#if 0
 		case SPECIAL_KEY_RIGHT:			
 			m_display.selected_PicIndex = (m_display.selected_PicIndex +1)%50;
@@ -3938,7 +4391,60 @@ void CProcess::OnKeyDwn(unsigned char key)
 		}
 
 		if((key >= '0') && (key <= '9'))
+		{
 			app_ctrl_setnumber(key);
+			switch(key){
+				case '0':
+
+					break;
+				case '1':
+
+					break;
+				case '2':
+					if(g_displayMode = MENU_GRID_MAP_VIEW)
+					{
+						printf("\r\n[%s]:Press Number Key: <%d>\r\n",__FUNCTION__,key);
+					}
+					break;
+				case '3':
+					if(g_displayMode = MENU_GRID_MAP_VIEW)
+					{
+						printf("\r\n[%s]:Press Number Key: <%d>\r\n",__FUNCTION__,key);
+					}
+
+					break;
+				case '4':
+					if(g_displayMode = MENU_GRID_MAP_VIEW)
+					{
+						printf("\r\n[%s]:Press Number Key: <%d>\r\n",__FUNCTION__,key);
+					}
+
+					break;
+				case '5':
+					if(g_displayMode = MENU_GRID_MAP_VIEW)
+					{
+						printf("\r\n[%s]:Press Number Key: <%d>\r\n",__FUNCTION__,key);
+					}
+
+					break;
+				case '6':
+
+					break;
+				case '7':
+
+					break;
+				case '8':
+
+					break;
+				case '9':
+
+					break;
+				default:
+					break;
+			}
+
+		}
+			
 		
 		if(key == 13)
 		{

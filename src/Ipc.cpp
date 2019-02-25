@@ -610,6 +610,37 @@ void* recv_msg(SENDST *RS422)
 					pthread_cond_signal(&event_cond);
 					pthread_mutex_unlock(&event_mutex);				
 				}
+				if(proc->getGridMapCalibrate()){
+					proc->setGridMapCalibrate(false);
+				#if 0
+					int tmp_row =( proc->m_curNodeIndex ) / (GRID_COLS+1);
+					int tmp_col = ( proc->m_curNodeIndex ) % (GRID_COLS+1);
+				#else
+					int tmp_row =( proc->m_curNodeIndex ) / (GRID_COLS_15+2);
+					int tmp_col = ( proc->m_curNodeIndex ) % (GRID_COLS_15+2);
+				#endif
+					int temp_int = posOfLinkage.tilPos;
+					
+					proc->m_gridNodes[tmp_row][tmp_col].pano =posOfLinkage.panPos;
+					if(temp_int>32768){
+						temp_int = 32768 - temp_int;
+						proc->m_gridNodes[tmp_row][tmp_col].tilt =temp_int;
+					}
+					else{
+						proc->m_gridNodes[tmp_row][tmp_col].tilt =temp_int;
+					}				
+					
+					proc->m_gridNodes[tmp_row][tmp_col].zoom = posOfLinkage.zoom;
+					//printf("\r\n[%s]:Receive PTZ: m_gridNodes[%d][%d].PTZ = <%d, %d, %d>\r\n",__func__,tmp_row,tmp_col,
+					//	proc->m_gridNodes[tmp_row][tmp_col].pano,
+					//	proc->m_gridNodes[tmp_row][tmp_col].tilt,
+					//	proc->m_gridNodes[tmp_row][tmp_col].zoom);
+				}
+				if(proc->getQueryZoomFlag())
+				{
+					proc->setQueryZoomFlag(true);
+					proc->RefreshBallPTZ(posOfLinkage.panPos,posOfLinkage.tilPos,posOfLinkage.zoom);
+				}
 				app_ctrl_setLinkagePos(posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
 				
 			}
@@ -645,6 +676,7 @@ void* recv_msg(SENDST *RS422)
 					int x = Rjosctrl.cursor_x;
 					int y = Rjosctrl.cursor_y;
 					proc->draw_mouse_move(x, y);
+					
 					if(GLUT_DOWN == mouse_state)
 						proc->mousemotion_event(x, y);
 				}

@@ -185,6 +185,7 @@ typedef struct _ds_init_param{
 		MATCH_POINT_VIEW,
 		TEST_RESULT_VIEW,
 		TRIG_INTER_MODE,
+		GRID_MAP_VIEW,
 		TOTAL_MODE_COUNT
 	}DISPLAYMODE;
 
@@ -281,6 +282,26 @@ private:
 	void sendIPC_VideoName_pos();
 	void sendIPC_Time_pos();
 	int m_WinWidth, m_WinHeight;
+	int m_viewPortX,m_viewPortY;
+	int m_viewWidth,m_viewHeight;
+public:
+	void setGridViewPortPosition(int x, int y)
+	{
+		m_viewPortX = x;
+		m_viewPortY = y;
+	};
+	void setGridViewPortWindowSize(int width, int height)
+	{
+		m_viewWidth = width;
+		m_viewHeight = height;
+	};
+	cv::Point getGridViewBallImgCenter()
+	{
+		cv::Point temp;
+		temp.x = m_viewPortX+m_viewWidth/2;
+		temp.y = 1080- (m_viewPortY+m_viewHeight/2);
+		return temp;
+	};
 public:
 	CDisplayer();
 	CDisplayer(int window_width, int window_height);

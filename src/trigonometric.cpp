@@ -7,9 +7,10 @@
 
 
 #include "trigonometric.hpp"
-
+#include <string.h>
 
 using namespace cr_trigonometricInterpolation;
+#define CONFIG_TRIGONOMETRIC_FILE		"ConfigTrignometricFile.yml"
 
 Trigonometric::Trigonometric(int width , int height)
 {
@@ -278,3 +279,85 @@ void Trigonometric::draw_subdiv_point( Mat& img, Point2i fp, Scalar color )
 {
     circle( img, fp, 3, color, CV_FILLED, 8, 0 );
 }
+
+bool Trigonometric::readParams(std::vector<position_t>& getParam)
+{
+	char paramName[40];
+	memset(paramName,0,sizeof(paramName));
+	string cfgFile;
+	cfgFile = CONFIG_TRIGONOMETRIC_FILE;
+	m_readfs.open(cfgFile,FileStorage::READ);
+	int size ;
+	position_t tmpPos;
+
+	fpassemble.clear();
+	if(m_readfs.isOpened())
+	{
+		sprintf(paramName,"vectorSize");	
+		m_readfs[paramName] >> size ;
+		for(int i=0; i<size; i++)
+		{
+			sprintf(paramName,"points_pos_x_%d",i);
+			m_readfs[paramName] >>tmpPos.pos.x;
+			memset(paramName,0,sizeof(paramName));
+			
+			sprintf(paramName,"points_pos_y_%d",i);
+			m_readfs[paramName] >>tmpPos.pos.y;
+			memset(paramName,0,sizeof(paramName));
+			
+			sprintf(paramName,"points_ver_x_%d",i);
+			m_readfs[paramName] >>tmpPos.ver.x;
+			memset(paramName,0,sizeof(paramName));
+			
+			sprintf(paramName,"points_ver_y_%d",i);
+			m_readfs[paramName] >>tmpPos.ver.y;
+			memset(paramName,0,sizeof(paramName));
+			
+			fpassemble.push_back(tmpPos);
+		}
+		m_readfs.release();
+		return true;
+	}
+	return false;
+}
+
+
+bool Trigonometric::writeParams(void)
+{
+	char paramName[40];
+	memset(paramName,0,sizeof(paramName));
+	string cfgFile;
+	cfgFile = CONFIG_TRIGONOMETRIC_FILE;
+	
+	m_writefs.open(cfgFile,FileStorage::WRITE);
+	
+	if(m_writefs.isOpened())
+	{		
+		sprintf(paramName,"vectorSize");
+		m_writefs<<paramName<<(int)fpassemble.size();
+		
+		for(int i=0; i<fpassemble.size(); i++)
+		{
+			sprintf(paramName,"points_pos_x_%d",i);
+			m_writefs<<paramName<<(int)fpassemble[i].pos.x;
+			memset(paramName,0,sizeof(paramName));
+			
+			sprintf(paramName,"points_pos_y_%d",i);
+			m_writefs<<paramName<<(int)fpassemble[i].pos.y;
+			memset(paramName,0,sizeof(paramName));
+			
+			sprintf(paramName,"points_ver_x_%d",i);
+			m_writefs<<paramName<<(int)fpassemble[i].ver.x;
+			memset(paramName,0,sizeof(paramName));
+			
+			sprintf(paramName,"points_ver_y_%d",i);
+			m_writefs<<paramName<<(int)fpassemble[i].ver.y;
+			memset(paramName,0,sizeof(paramName));
+		}
+		m_writefs.release();
+		return true;
+	}
+
+	return false;
+}
+

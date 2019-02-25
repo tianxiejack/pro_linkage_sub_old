@@ -14,13 +14,31 @@
 
 #include "CcCamCalibra.h"
 #include "IntrinsicMatrix.h"
+
 #include "trigonometric.hpp"
+#include "GridMap.h"
+#include <opencv2/core.hpp>
 
 using namespace cr_trigonometricInterpolation;
 
 #define MAX_SUCCESS_IMAGES 160
 #define GRID_CNT_X 19
 #define GRID_CNT_Y 10
+
+const int IMG_WIDTH = 1920;
+const int IMG_HEIGHT = 1080;
+const int GRID_ROWS = 11;//17;
+const int GRID_COLS = 15;//23;
+const int GRID_ROWS_11 = 11;
+const int GRID_COLS_15 = 15;
+const int GRID_WIDTH = 120;//80;
+const int GRID_HEIGHT = 90;//60;
+const int GRID_WIDTH_120 = 120;
+const int GRID_HEIGHT_90 = 90;
+
+const int MAX_ANGLE = 36000;
+const int PER_ANGLE = 100;
+const int ZERO_ANGLE = 0;
 
 typedef struct
 {
@@ -102,11 +120,36 @@ public:
 	Mat gun_srcMat_remap;
 	Point LeftPoint;
 	Point RightPoint;
-		
-	//int successImageNum ;                       /* ???????????? */
-	//int width;  // detect Image wodth
-   // int height;  // detect Height wodth
-   // vector<Point2f> corners;   
+	#if 0
+	GridMapNode m_gridNodes[GRID_ROWS+1][GRID_COLS+1];
+	GridMapNode m_readGridNodes[GRID_ROWS+1][GRID_COLS+1];
+	MarkMapNode m_calibratedNodes[GRID_ROWS+1][GRID_COLS+1];
+	cv::Point m_nodePos[GRID_ROWS+1][GRID_COLS+1];
+	#else
+	GridMapNode m_gridNodes[GRID_ROWS_11+1][GRID_COLS_15+3];
+	
+	GridMapNode m_readGridNodes[GRID_ROWS_11+1][GRID_COLS_15+1];
+	MarkMapNode m_calibratedNodes[GRID_ROWS_11+1][GRID_COLS_15+3];
+	cv::Point m_nodePos[GRID_ROWS_11+1][GRID_COLS_15+2];
+	int m_intervalCOl[GRID_COLS_15+10];
+
+	#endif
+	cv::Point m_backNodePos;
+	int m_curNodeIndex;
+	//cv::Point temp_backPoint[GRID_ROWS+1][GRID_COLS+1] ;
+	FileStorage m_readfs;
+	FileStorage m_writefs;
+
+public:
+	void InitGridMapNodes();
+	void InitGridMap16X12();
+
+	GridMapNode getLinearDeviation(int px, int py);
+	GridMapNode getLinearDeviation(int px, int py, int grid_width,int grid_height);
+
+	bool readParams(const char* filename);
+	bool writeParams(const char* filename);
+
 private:
 	Mat m_GrayMat;
 	Mat m_Gun_GrayMat;
@@ -162,6 +205,10 @@ public:
 	virtual void MvBallCamByClickGunImg(int x, int y,bool needChangeZoom){ };
 	virtual void MvBallCamByClickBallIMg(int x, int y){};
 	virtual void Test_Match_result(int x, int y){};
+	virtual void setQueryZoomFlag(bool flag){};
+	virtual const bool getQueryZoomFlag(){};
+	virtual int getCurrentZoomValue(){};
+	virtual void addMarkNum(){};
 	//virtual void QueryCurBallCamPosition() { };
 	//virtual void setBallPos(int in_panPos, int in_tilPos, int in_zoom) {};
 	void linkage_init();

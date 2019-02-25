@@ -42,17 +42,23 @@ public:
 	int findposInFpassembel(Point2f &fp , Point2i &pos);
 
 
-
 	void insertVertexAndPosition(vector<position_t> insert);
 	int Point2getPos(const Point2i inPoint,Point2i &result );
+	bool readParams(std::vector<position_t>& getParam);
+	bool writeParams(void);
+	
 
 	void draw_subdiv( Mat& img ,bool bdraw);
 	int draw_point_triangle( Mat& img , Point2i fp , vector<position_t> &back,Point2i &pos, bool bdraw );
+
 
 private:
 	Subdiv2D subdiv;
 	Rect rect;
 	vector<position_t> fpassemble;
+
+	FileStorage m_readfs;
+	FileStorage m_writefs;
 
 };
 

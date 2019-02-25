@@ -333,7 +333,8 @@ void CDisplayer::linkage_init()
 CDisplayer::CDisplayer()
 :captureBMP_channel(0),selected_PicIndex(0),m_renderCount(0),m_bRun(false),m_bFullScreen(false),m_bOsd(false),
  m_glProgram(0), m_bUpdateVertex(false),m_tmRender(0ul),m_waitSync(false),
- m_telapse(5.0), m_nSwapTimeOut(0),m_detectCorners(NULL)
+ m_telapse(5.0), m_nSwapTimeOut(0),m_detectCorners(NULL),m_viewPortX(1200),m_viewPortY(45),
+ m_viewWidth(600),m_viewHeight(360)
 {
 	m_currentSecondMenuIndex=0;
 	m_currentFirstMenuIndex=0;
@@ -535,7 +536,8 @@ CDisplayer::CDisplayer()
 CDisplayer::CDisplayer(int window_width, int window_height):m_WinWidth(window_width),m_WinHeight(window_height),
 	captureBMP_channel(0),selected_PicIndex(0),m_renderCount(0),m_bRun(false),m_bFullScreen(false),m_bOsd(false),
  m_glProgram(0), m_bUpdateVertex(false),m_tmRender(0ul),m_waitSync(false),
- m_telapse(5.0), m_nSwapTimeOut(0),m_detectCorners(NULL)
+ m_telapse(5.0), m_nSwapTimeOut(0),m_detectCorners(NULL),m_viewPortX(1200),m_viewPortY(45),
+ m_viewWidth(600),m_viewHeight(360)
 {
 	m_currentSecondMenuIndex=0;
 	m_currentFirstMenuIndex=0;
@@ -3420,8 +3422,10 @@ void CDisplayer::linkageSwitchMode(void)
 			break;
 		case MENU_TRIG_INTER_MODE:
 			displayMode = TRIG_INTER_MODE;
+			break;		
+		case MENU_GRID_MAP_VIEW:
+			displayMode = GRID_MAP_VIEW;
 			break;
-				
 		default:
 			break;
 	}
@@ -3483,15 +3487,28 @@ void CDisplayer::linkageSwitchMode(void)
 		case TEST_RESULT_VIEW:			
 			RenderVideoOnOrthoView(VIDEO_1, 0,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
 			RenderVideoOnOrthoView(VIDEO_0, outputWHF[0]/2,outputWHF[1]/2,outputWHF[0]/2,outputWHF[1]/2);
-			if( g_CurDisplayMode != TEST_RESULT_VIEW){
+			if( g_CurDisplayMode != TEST_RESULT_VIEW)
+			{
 				g_CurDisplayMode = TEST_RESULT_VIEW;	
 			}
 			break;
+
 		case TRIG_INTER_MODE:
 			RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]);	
 			RenderVideoOnOrthoView(VIDEO_1, outputWHF[0]/4*3, 0, outputWHF[0]/4, outputWHF[1]/4);
 			if( g_CurDisplayMode != TRIG_INTER_MODE)
 				g_CurDisplayMode = TRIG_INTER_MODE;
+			break;
+
+		case GRID_MAP_VIEW:
+			{
+				RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]);
+				RenderVideoOnOrthoView(VIDEO_1, m_viewPortX,m_viewPortY,m_viewWidth,m_viewHeight);
+				if( g_CurDisplayMode != GRID_MAP_VIEW)
+				{
+					g_CurDisplayMode = GRID_MAP_VIEW;	
+				}
+			}
 			break;
 		default:
 			break;	

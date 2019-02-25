@@ -668,6 +668,7 @@ void* recv_msg(SENDST *RS422)
 				case jos_button:
 				{
 					int buttonnum = Rjosctrl.jos_button;
+					//printf("\r\n[%s]: buttonnum = %d\r\n",__FUNCTION__,buttonnum);
 					if((buttonnum >= 0) && (buttonnum <= 9))
 						proc->OnKeyDwn(buttonnum + '0');
 				}

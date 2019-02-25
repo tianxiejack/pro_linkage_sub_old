@@ -28,6 +28,7 @@
 #include "freetype/ftglyph.h"
 #include <wchar.h>
 #include <glut.h>
+#include "trigonometric.hpp"
 
 #include FT_GLYPH_H
 #include FT_TRUETYPE_TABLES_H
@@ -37,8 +38,7 @@
 using namespace CELL;
 using namespace std;
 using namespace cv;
-
-
+using namespace cr_trigonometricInterpolation;
 
 
 struct UIObject {
@@ -184,6 +184,7 @@ typedef struct _ds_init_param{
 		CALIBRATE_RESULT, // display camera calibrate result and average error  
 		MATCH_POINT_VIEW,
 		TEST_RESULT_VIEW,
+		TRIG_INTER_MODE,
 		GRID_MAP_VIEW,
 		TOTAL_MODE_COUNT
 	}DISPLAYMODE;

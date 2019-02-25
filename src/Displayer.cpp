@@ -3420,13 +3420,15 @@ void CDisplayer::linkageSwitchMode(void)
 		case MENU_TEST_RESULT_VIEW:
 			displayMode = TEST_RESULT_VIEW;
 			break;
+		case MENU_TRIG_INTER_MODE:
+			displayMode = TRIG_INTER_MODE;
+			break;		
 		case MENU_GRID_MAP_VIEW:
 			displayMode = GRID_MAP_VIEW;
 			break;
 		default:
 			break;
 	}
-	
 	switch(displayMode) 
 	{
 		case PREVIEW_MODE:
@@ -3490,6 +3492,14 @@ void CDisplayer::linkageSwitchMode(void)
 				g_CurDisplayMode = TEST_RESULT_VIEW;	
 			}
 			break;
+
+		case TRIG_INTER_MODE:
+			RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]);	
+			RenderVideoOnOrthoView(VIDEO_1, outputWHF[0]/4*3, 0, outputWHF[0]/4, outputWHF[1]/4);
+			if( g_CurDisplayMode != TRIG_INTER_MODE)
+				g_CurDisplayMode = TRIG_INTER_MODE;
+			break;
+
 		case GRID_MAP_VIEW:
 			{
 				RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]);
@@ -4249,4 +4259,3 @@ bool CDisplayer::LoadComConfigs( const string& filename)
     fs.release();
     return ret;
 }
-

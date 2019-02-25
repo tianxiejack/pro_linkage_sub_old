@@ -1630,6 +1630,19 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			return ;
 		}
 	}
+
+	else if(TRIG_INTER_MODE == pThis->m_display.g_CurDisplayMode)
+	{
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+		{
+			if(0 == pThis->get_trig_PTZflag())
+			{
+				pThis->cur_trig_inter_P.x = x;
+				pThis->cur_trig_inter_P.y = y;
+				pThis->set_trig_PTZflag(1);
+			}
+        }
+    }
 	else if(pThis->m_display.g_CurDisplayMode == GRID_MAP_VIEW)
 	{
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
@@ -1667,7 +1680,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 
 			//printf("\r\n[%s]:Click Point:<%d, %d>, cur_row=%d, cur_col=%d, node_PTZ=<%d,%d,%d>\r\n",
 			//	__func__, valid_x, valid_y,tmp_row,tmp_col,temp_node.pano,temp_node.tilt,temp_node.zoom);
-			
 		}
 	}
 	else {

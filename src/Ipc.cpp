@@ -10,6 +10,9 @@
 #include "Ipcctl.h"
 #include "locale.h"
 #include "wchar.h"
+#include "trigonometric.hpp"
+
+using namespace cr_trigonometricInterpolation;
 
 #define DATAIN_TSK_PRI              (2)
 #define DATAIN_TSK_STACK_SIZE       (0)
@@ -586,12 +589,24 @@ void* recv_msg(SENDST *RS422)
 		case querypos:
 			{
 				memcpy(&posOfLinkage,RS422->param,sizeof(posOfLinkage));
+				
+				if(proc->get_trig_PTZflag())
+				{
+					proc->set_trig_PTZflag(0);
+					position_t tmp;
+					tmp.ver.x = proc->cur_trig_inter_P.x;
+					tmp.ver.y = proc->cur_trig_inter_P.y;
+					tmp.pos.x = posOfLinkage.panPos;
+					tmp.pos.y = posOfLinkage.tilPos;
+					proc->app_trig.push_back(tmp);
+				}
+				
 				if(proc->getPTZflag()){
 					proc->setPTZflag(false);
 					pthread_mutex_lock(&event_mutex);
-				
-					proc->RefreshBallPTZ(posOfLinkage.panPos,posOfLinkage.tilPos,posOfLinkage.zoom);
 					
+					proc->RefreshBallPTZ(posOfLinkage.panPos,posOfLinkage.tilPos,posOfLinkage.zoom);
+						
 					pthread_cond_signal(&event_cond);
 					pthread_mutex_unlock(&event_mutex);				
 				}
@@ -627,6 +642,7 @@ void* recv_msg(SENDST *RS422)
 					proc->RefreshBallPTZ(posOfLinkage.panPos,posOfLinkage.tilPos,posOfLinkage.zoom);
 				}
 				app_ctrl_setLinkagePos(posOfLinkage.panPos, posOfLinkage.tilPos, posOfLinkage.zoom);
+				
 			}
 			break;
 		case refreshptz:

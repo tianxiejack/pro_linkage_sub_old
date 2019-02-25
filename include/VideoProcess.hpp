@@ -145,7 +145,7 @@ public:
 	void InitGridMap16X12();
 
 	GridMapNode getLinearDeviation(int px, int py);
-	GridMapNode getLinearDeviation(int px, int py, int grid_width,int grid_height);
+	GridMapNode getLinearDeviation(int px, int py, int grid_width,int grid_height,bool needChangeZoom);
 
 	bool readParams(const char* filename);
 	bool writeParams(const char* filename);

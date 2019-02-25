@@ -23,14 +23,22 @@ bool startEnable = false;
 
 volatile bool cloneOneFrame = false;
 
-uint32 count1=0;
+uint32 count1=0, count2 =0;
+uint8 exposure_star=0;
 static void timer_op(int signum)
 {   
    if( count1 == 60){
    		cloneOneFrame = true;		
 		count1 = 0;	
-   }   
-   count1 ++;	   
+   }  
+   if(count2 == 60)
+   {
+	count2 = 0;
+	exposure_star ^=1;
+   }
+   
+   count1 ++;	
+   count2 ++;
 }
 
 int timer_init(void)

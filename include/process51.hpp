@@ -119,8 +119,45 @@ private:
 	cv::Point2d m_bakballDestPoint;
 	int m_iDelta_X;
 	int m_iZoom;
-	
+/*******************************************************/	
+	bool m_bGridMapCalibrate;
+	bool m_queryZoom;
+	char tmp_str[5][40];
+	char str_mode[30];
+	int m_rCH;
+	cv::Point back_center;
+	int m_lastRow, m_lastCol;
+	int m_successCalibraNum;
+	int m_intervalRow[GRID_ROWS_11];
+/*****************************************************/	
 public:
+	void setGridMapCalibrate(bool flag){
+		m_bGridMapCalibrate = flag;
+	}
+	const bool getGridMapCalibrate(){
+		return m_bGridMapCalibrate;
+	};
+	void setQueryZoomFlag(bool flag)
+	{
+		m_queryZoom = flag;
+	};
+	const bool getQueryZoomFlag()
+	{
+		return m_queryZoom ;
+	};
+	int getCurrentZoomValue()
+	{
+		return zoomPos;
+	};
+	void addMarkNum()
+	{
+		m_successCalibraNum++;
+		return;
+	};
+public:
+	enum{
+		MIN_VALID_RECT_WIDTH_IN_PIXEL = 10
+	};
 	void setPTZflag(bool flag){
 		m_bRefreshPTZValue = flag;
 		return ;
@@ -198,6 +235,16 @@ public:
 	void OnJosCtrl(int key, int value);
 	void DrawMtdYellowGrid(int flag);
 	void DrawMtdRedGrid(int flag);
+	void DrawGridMap(int flag);
+	void DrawGridMap_16X12(int flag);
+
+	void DrawGridMapNodeCircles(bool drawFlag);
+	void DrawGridMapNodeCircles(bool drawFlag, int drawNodesCount);
+	void DrawGridMapNodeCircles_16X12(bool drawFlag, int drawNodesCount);
+
+	void DrawGridMapNodeCircles_16X12(bool drawFlag);
+
+
 	void DrawJoys();
 	void DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness);
 	void DrawMouse();

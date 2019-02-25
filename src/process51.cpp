@@ -46,7 +46,7 @@ extern bool setComBaud_select ;
 extern bool changeComBaud ;
 extern CProcess *proc;
 extern std::vector< cv::Mat > ImageList;
-unsigned char  g_GridMapMode = 0;
+unsigned char  g_GridMapMode = 1;
 bool send_signal_flag = true;
 
 void inputtmp(unsigned char cmdid)
@@ -2322,6 +2322,7 @@ if(g_displayMode == MENU_GRID_MAP_VIEW)
 
 
 /***********************************************************************************/
+#if 0
 if(g_GridMapMode == 1)
 {
 	sprintf(str_mode, "GridMode");	
@@ -2332,6 +2333,7 @@ if(g_GridMapMode == 1)
 {
 	putText(m_display.m_imgOsd[1],str_mode,cv::Point(10,535),FONT_HERSHEY_TRIPLEX,0.4, cvScalar(0,0,0,255), 1);	
 }
+#endif
 
 	if(m_bIsClickMode == true&&(g_displayMode == MENU_MAIN_VIEW))
 	{
@@ -4398,46 +4400,148 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 					break;
 				case '1':
+					if(g_displayMode == MENU_GRID_MAP_VIEW)
+					{
+						setGridMapCalibrate(true);
+						QueryCurBallCamPosition();
+						int row = m_curNodeIndex/(GRID_COLS_15+2);
+						int col = m_curNodeIndex%(GRID_COLS_15+2);
+						m_calibratedNodes[row][col].isShow = true;
+						m_gridNodes[row][col].has_mark = 1;
+						m_calibratedNodes[0][0].x = 60;
+						m_calibratedNodes[0][0].y = 45;
+
+						//printf("\r\n[%s]: Mark Node Position:<%d,%d><%d, %d>\r\n",__func__,row,col,m_calibratedNodes[row][col].x,m_calibratedNodes[row][col].y);
+						if(row!=m_lastRow || col!=m_lastCol)
+						{
+							m_successCalibraNum +=1;
+							m_lastRow = row;
+							m_lastCol = col;
+							//printf("\r\n[%s]: has_calibrated_num = %d\r\n",__func__,m_successCalibraNum);
+						}
+					}
 
 					break;
 				case '2':
-					if(g_displayMode = MENU_GRID_MAP_VIEW)
+					if(g_displayMode == MENU_GRID_MAP_VIEW)
 					{
-						printf("\r\n[%s]:Press Number Key: <%d>\r\n",__FUNCTION__,key);
+						int total = (GRID_COLS_15+2)*(GRID_ROWS_11+1);
+						int cols = GRID_COLS_15+2;
+						m_curNodeIndex = (m_curNodeIndex -cols + total)%total;
+						if(m_curNodeIndex > 112)// total 192/432 nodes
+						{
+							m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
+						}
+						else{
+							m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
+						}
+						//printf("\r\n[%s]:Press Number Key = 2\r\n",__FUNCTION__);
 					}
 					break;
 				case '3':
-					if(g_displayMode = MENU_GRID_MAP_VIEW)
+					if(g_displayMode == MENU_MAIN_VIEW)
 					{
-						printf("\r\n[%s]:Press Number Key: <%d>\r\n",__FUNCTION__,key);
+						printf("\r\n[%s]:MENU_MAIN_VIEW\r\n",__FUNCTION__);
+						g_displayMode = MENU_GRID_MAP_VIEW;
+					}
+					else if(g_displayMode == MENU_GRID_MAP_VIEW)
+					{
+						g_displayMode = MENU_MAIN_VIEW;
+						printf("\r\n[%s]:MENU_GRID_MAP_VIEW\r\n",__FUNCTION__);
+						//printf("\r\n[%s]:Press Number Key = 3\r\n",__FUNCTION__);
+					}
+					else{
+
 					}
 
 					break;
 				case '4':
-					if(g_displayMode = MENU_GRID_MAP_VIEW)
+					if(g_displayMode == MENU_GRID_MAP_VIEW)
 					{
-						printf("\r\n[%s]:Press Number Key: <%d>\r\n",__FUNCTION__,key);
+						
+						#if 0
+						m_curNodeIndex = (m_curNodeIndex+  (GRID_COLS+1)*(GRID_ROWS+1) -1 )%((GRID_COLS+1)*(GRID_ROWS+1));
+						#else
+						m_curNodeIndex = (m_curNodeIndex+  (GRID_COLS_15+2)*(GRID_ROWS_11+1) -1 )%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
+
+						#endif
+
+
+						//printf("\r\n[%s]: m_curNodeIndex = %d\r\n",__func__,m_curNodeIndex);
+						if(m_curNodeIndex < 112)// total 192/432 nodes
+						{
+							m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
+						}
+						else
+						{
+							m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
+
+						}
+						//printf("\r\n[%s]:Press Number Key = 4\r\n",__FUNCTION__);
 					}
 
 					break;
 				case '5':
-					if(g_displayMode = MENU_GRID_MAP_VIEW)
+					if(g_displayMode == MENU_GRID_MAP_VIEW)
 					{
-						printf("\r\n[%s]:Press Number Key: <%d>\r\n",__FUNCTION__,key);
+						pThis->writeParams("SaveGridMap.yml");
+						//printf("\r\n[%s]:Press Number Key = 5: Save Grid Map Calibrated Results!!!\r\n",__FUNCTION__);
 					}
 
 					break;
 				case '6':
+					if(g_displayMode == MENU_GRID_MAP_VIEW)
+					{
+						
+						#if 0
+						m_curNodeIndex = (m_curNodeIndex+1)%((GRID_COLS+1)*(GRID_ROWS+1));
+						#else
+						m_curNodeIndex = (m_curNodeIndex+1)%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
+						#endif
+						
+						//printf("\r\n[%s]: m_curNodeIndex = %d\r\n",__func__,m_curNodeIndex);
+						if(m_curNodeIndex > 112)// total 192/432 nodes
+						{
+							m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
+						}
+						else{
+							m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
+						}
+				
+			
+						//printf("\r\n[%s]:Press Number Key = 6\r\n",__FUNCTION__);
+					}
 
 					break;
 				case '7':
+					if(g_displayMode == MENU_GRID_MAP_VIEW)
+					{
+						//printf("\r\n[%s]:Press Number Key = 7\r\n",__FUNCTION__);
+					}
 
 					break;
 				case '8':
+					if(g_displayMode == MENU_GRID_MAP_VIEW)
+					{
+						
+						m_curNodeIndex = (m_curNodeIndex+GRID_COLS_15+2)%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
+						if(m_curNodeIndex > 112)// total 192/432 nodes
+						{
+							m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
+						}
+						else{
+							m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
+						}
+					
+						//printf("\r\n[%s]:Press Number Key = 8\r\n",__FUNCTION__);
+					}
 
 					break;
 				case '9':
-
+					if(g_displayMode == MENU_GRID_MAP_VIEW)
+					{
+						//printf("\r\n[%s]:Press Number Key = 9\r\n",__FUNCTION__);
+					}
 					break;
 				default:
 					break;

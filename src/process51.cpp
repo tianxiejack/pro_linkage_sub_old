@@ -2142,7 +2142,18 @@ osdindex++;	//cross aim
 				tmp.height = recttmp.h;
 
 				if(1 == g_GridMapMode){
-					pThis->pThis->getLinearDeviation(tmp.x+tmp.width/2,tmp.y + tmp.height/2,GRID_WIDTH_120,GRID_HEIGHT_90,false);//getLinearDeviation(x,y);
+					pThis->getLinearDeviation(tmp.x+tmp.width/2,tmp.y + tmp.height/2,GRID_WIDTH_120,GRID_HEIGHT_90,false);//getLinearDeviation(x,y);
+				}
+				else if(2 == g_GridMapMode){
+					Point2i inPoint, outPoint;
+					inPoint.x = tmp.x;
+					inPoint.y = tmp.y;
+					m_trig.Point2getPos(inPoint, outPoint);
+					
+					trkmsg.cmd_ID = speedloop;
+					memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
+					memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
+					ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 				}
 				else{
 					MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
@@ -4105,7 +4116,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			//pThis->readParams("SaveGridMap.yml");
 			break;
 		case 9:
-			g_GridMapMode ^= 1 ;
+			g_GridMapMode  =  (g_GridMapMode + 1) % 3;
 			break;
 		case 10:
 			m_intrMatObj->setCalibrateSwitch(true);			

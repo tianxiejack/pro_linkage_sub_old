@@ -1756,7 +1756,24 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 							
 							if(1 == g_GridMapMode){
 								pThis->pThis->getLinearDeviation(x,y,GRID_WIDTH_120,GRID_HEIGHT_90,true);//getLinearDeviation(x,y);
-							}else
+							}
+							else if(2 == g_GridMapMode){
+								SENDST trkmsg={0};
+								cv::Point tmp;
+								Point2i inPoint, outPoint;
+								tmp.x = x;
+								tmp.y = y;
+								pThis->mapout2inresol(&tmp);
+								inPoint.x = tmp.x;
+								inPoint.y = tmp.y;
+								pThis->m_trig.Point2getPos(inPoint, outPoint);
+								
+								trkmsg.cmd_ID = acqPosAndZoom;
+								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
+								memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
+								ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+							}
+							else
 							{
 								pThis->MvBallCamByClickGunImg(x,y,false);
 							}
@@ -1776,7 +1793,24 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 						if(1 == g_GridMapMode)
 						{
 							pThis->getLinearDeviation(tmpX,tmpY,GRID_WIDTH_120,GRID_HEIGHT_90,true);
-						}else{
+						}
+						else if(2 == g_GridMapMode){
+								SENDST trkmsg={0};
+								cv::Point tmp;
+								Point2i inPoint, outPoint;
+								tmp.x = x;
+								tmp.y = y;
+								pThis->mapout2inresol(&tmp);
+								inPoint.x = tmp.x;
+								inPoint.y = tmp.y;
+								pThis->m_trig.Point2getPos(inPoint, outPoint);
+								
+								trkmsg.cmd_ID = acqPosAndZoom;
+								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
+								memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
+								ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+						}
+						else{
 							pThis->MvBallCamBySelectRectangle(tmpX,tmpY,true);	
 						}
 				

@@ -2142,7 +2142,8 @@ osdindex++;	//cross aim
 				tmp.height = recttmp.h;
 
 				if(1 == g_GridMapMode){
-					pThis->getLinearDeviation(tmp.x+tmp.width/2,tmp.y + tmp.height/2,GRID_WIDTH_120,GRID_HEIGHT_90,false);//getLinearDeviation(x,y);
+					//pThis->getLinearDeviation(tmp.x+tmp.width/2,tmp.y + tmp.height/2,GRID_WIDTH_120,GRID_HEIGHT_90,false);//getLinearDeviation(x,y);
+					pThis->MvBallCamUseLinearDeviationSelectRect(tmp.x+tmp.width/2, tmp.y + tmp.height/2, false);
 				}
 				else if(2 == g_GridMapMode){
 					Point2i inPoint, outPoint;
@@ -3950,9 +3951,9 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 	RightPoint.x -=offset_x;
 	LeftPoint.y -= offset_y;
 	RightPoint.y -=offset_y;
+
 	
 	delta_X = abs(LeftPoint.x - RightPoint.x) ;
-	//m_iDelta_X = delta_X;
 
 	if(needChangeZoom == true ) {
 		if(delta_X < MIN_VALID_RECT_WIDTH_IN_PIXEL) {
@@ -3964,7 +3965,6 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 			tmp_zoomPos = checkZoomPosTable( delta_X );		
 			m_iZoom = tmp_zoomPos;
 			zoomPos = tmp_zoomPos;
-			//tmp_zoomPos = checkZoomPosTable(delta_X);			
 		}
 	}
 
@@ -3995,7 +3995,7 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 			break;
 	}
 
-	this->getLinearDeviation(opt.x, opt.y, GRID_WIDTH_120,GRID_HEIGHT_90,needChangeZoom);
+	getLinearDeviationForSelectRect(opt.x, opt.y, GRID_WIDTH_120,GRID_HEIGHT_90,needChangeZoom);
 
 
 }

@@ -185,12 +185,13 @@ void* recv_msg(SENDST *RS422)
 		app_ctrl_getSysData(pMsg);
 
 	osdbuffer_t* ppppp  = NULL;	
-	printf("cmdID : %d (%02x %02x %02x %02x %02x)\n",cmdID,imgID1,imgID2,imgID3,imgID4,imgID5);
+	//printf("cmdID : %d (%02x %02x %02x %02x %02x)\n",cmdID,imgID1,imgID2,imgID3,imgID4,imgID5);
 	switch(cmdID)
 	{	
 
 	case mtdFrame:
 		memcpy(&Mtd_Frame, RS422->param, sizeof(Mtd_Frame));
+	#if 0
 		printf("RmtdFrame->detectNum = %d\n", Mtd_Frame.detectNum);
 		printf("RmtdFrame->detectSpeed = %d\n", Mtd_Frame.detectSpeed);
 		printf("RmtdFrame->sensitivityThreshold = %d\n", Mtd_Frame.sensitivityThreshold);
@@ -203,7 +204,7 @@ void* recv_msg(SENDST *RS422)
 		printf("RmtdFrame->detectArea_wide = %d\n", Mtd_Frame.detectArea_wide);
 		printf("RmtdFrame->priority = %d\n", Mtd_Frame.priority);
 		printf("RmtdFrame->alarm_delay = %d\n", Mtd_Frame.alarm_delay);
-
+	#endif
 		break;
 
 		case BoresightPos:
@@ -229,8 +230,8 @@ void* recv_msg(SENDST *RS422)
 		case ballbaud:
 			memcpy((void *)&(CurrentBallConfig.ballAdrress), &(RS422->param[0]), sizeof(CurrentBallConfig.ballAdrress));
 			memcpy((void *)&(CurrentBallConfig.ballRate), &(RS422->param[4]), sizeof(CurrentBallConfig.ballRate));
-			printf("\r\nOOOOOOOOOOOOOOOO  Address = %d, \t BaudRate = %d \r\n", CurrentBallConfig.ballAdrress,
-				CurrentBallConfig.ballRate);			
+			//printf("\r\nOOOOOOOOOOOOOOOO  Address = %d, \t BaudRate = %d \r\n", CurrentBallConfig.ballAdrress,
+			//	CurrentBallConfig.ballRate);			
 			break;
 
 			

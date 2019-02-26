@@ -146,6 +146,7 @@ public:
 
 	GridMapNode getLinearDeviation(int px, int py);
 	GridMapNode getLinearDeviation(int px, int py, int grid_width,int grid_height,bool needChangeZoom);
+	GridMapNode getLinearDeviationForSelectRect(int px, int py, int grid_width,int grid_height,bool needChangeZoom);
 
 	bool readParams(const char* filename);
 	bool writeParams(const char* filename);
@@ -203,7 +204,7 @@ public:
 	virtual void CaptureMouseClickPoint(int x, int y){};
 	virtual Point getCurrentMouseClickPoint(){};
 	virtual void MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom){ };
-	void MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChangeZoom){};
+	virtual void MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChangeZoom){};
 
 	virtual void MvBallCamByClickGunImg(int x, int y,bool needChangeZoom){ };
 	virtual void MvBallCamByClickBallIMg(int x, int y){};

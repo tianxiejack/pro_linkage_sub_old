@@ -1321,6 +1321,161 @@ bool CVideoProcess::writeParams(const char* filename)
 }
 
 
+GridMapNode CVideoProcess::getLinearDeviationForSelectRect(int px, int py, int grid_width,int grid_height,bool needChangeZoom)
+{
+
+	int offset_y = IMG_HEIGHT/2;
+	int x = px;
+	int y = py;
+#if 0
+	switch(m_display.g_CurDisplayMode)
+	{
+		case MAIN_VIEW:			
+			y = (py-offset_y)*2;
+			break;
+		default:
+			break;
+	}
+#endif
+
+	int valid_x = 0;
+	int valid_y = 0;
+	if(x<grid_width/2 )
+	{
+		valid_x = grid_width/2;
+	}
+	else if(x>IMG_WIDTH-grid_width/2)
+	{
+		valid_x = IMG_WIDTH-grid_width/2;
+	}
+	else{
+		valid_x = x;
+	}
+
+	
+	if(y<grid_height/2)
+	{
+		valid_y =grid_height/2; 
+	}
+	else if(y>IMG_HEIGHT-grid_height/2)
+	{
+		valid_y=IMG_HEIGHT-grid_height/2;
+	}
+	else 
+	{
+		valid_y = y;
+	}
+	int current_col ;
+	int current_row ;
+	if(valid_x>120 && (valid_x<1800))
+	{		
+		current_col = ((valid_x)/grid_width) % (GRID_COLS_15+1) ;
+		
+	}
+	else
+	{
+		if(valid_x <= 120){
+			current_col = ((valid_x-grid_width/2)/(grid_width/2)) % (GRID_COLS_15+1);
+			
+		}
+		else
+		{
+			//current_col = 15;
+			current_col = ((valid_x)/grid_width) % (GRID_COLS_15+1) ;
+		}
+	}
+	current_row = (valid_y-grid_height/2)/grid_height ;
+	int current_row_plus = current_row+1;
+	int current_col_plus = current_col+1;
+	GridMapNode Vp,Vp1,Vp2;
+	GridMapNode V0 = m_gridNodes[current_row][current_col];
+	GridMapNode V1 = m_gridNodes[current_row][current_col_plus];
+	GridMapNode V2 = m_gridNodes[current_row_plus][current_col];
+	GridMapNode V3 = m_gridNodes[current_row_plus][current_col_plus];
+	
+	//printf("\r\n[%s]:V0 =<%d,%d>\r\nV1 =<%d,%d> \r\nV2 =<%d,%d> \r\nV3 =<%d,%d> \r\n ",__func__,
+	//V0.pano,V0.tilt,V1.pano,V1.tilt,V2.pano,V2.tilt,V3.pano,V3.tilt);
+
+	//printf("\r\n[%s]: Click:Screen<%d,%d>row-col <%d,%d>\r\n", __func__,px,py,current_row, current_col);
+	float X1 = (float)V0.coord_x;
+	float Y1 = (float)V0.coord_y;
+	float X2 = (float)V1.coord_x;
+	float Y2 = (float)V2.coord_y;
+	float X = (float)valid_x;
+	float Y = (float)valid_y;
+#if 0
+	if(V0.pano < V1.pano){
+		float angle_left = (MAX_ANGLE-V0.pano)/PER_ANGLE;
+		float angle_right = (V1.pano -ZERO_ANGLE)/PER_ANGLE;
+		float X0 = X1 +(angle_left * GRID_WIDTH)/(angle_left +angle_right);
+
+		if(X < X0)
+		{
+			Vp1.pano =(int)( ((X0-X)*(float)V0.pano) /(X0-X1)+((X-X1)*(float)MAX_ANGLE)/(X0-X1));
+			Vp2.pano =(int)( ((X0-X)*(float)V2.pano) / (X0-X1) + ((X-X1)*(float)MAX_ANGLE)/(X0-X1));
+		}
+		else{
+			Vp1.pano =(int)( ((X2-X)*(float)(0))/(X2-X0) + ((X-X0)*(float)V1.pano)/(X2-X0));
+			Vp2.pano = (int)( ((X2-X)*(float)(0))/(X2-X0) + ((X-X0)*(float)V3.pano)/(X2-X0));
+
+		}
+	}else{
+		Vp1.pano= (int)((X2-X)*((float)V0.pano)/(X2-X1) + (X-X1)*((float)V1.pano)/(X2-X1));
+		Vp2.pano= (int)((X2-X)*((float)V2.pano)/(X2-X1) + (X-X1)*((float)V3.pano)/(X2-X1));
+	}
+#endif
+	//printf("\r\n[%s]:<X1,Y1>=<%f,%f>, <X2,Y2>=<%f,%f>\r\n",__func__,X1,Y1,X2,Y2);
+
+	Vp1.pano= (int)((X2-X)*((float)V0.pano)/(X2-X1) + (X-X1)*((float)V1.pano)/(X2-X1));
+	Vp2.pano= (int)((X2-X)*((float)V2.pano)/(X2-X1) + (X-X1)*((float)V3.pano)/(X2-X1));
+
+	Vp1.tilt = (int)((X2-X)*((float)V0.tilt)/(X2-X1) + (X-X1)*((float)V1.tilt)/(X2-X1));
+		
+	//printf("\r\nVp1=<%d,%d>\r\n",Vp1.pano,Vp1.tilt);
+		
+	Vp2.tilt = (int)((X2-X)*((float)V2.tilt)/(X2-X1) + (X-X1)*((float)V3.tilt)/(X2-X1));
+
+	//printf("\r\nVp2=<%d,%d>\r\n",Vp2.pano,Vp2.tilt);
+
+	Vp.pano = (int)((Y2-Y)*((float)Vp1.pano)/(Y2-Y1) + (Y-Y1)*((float)Vp2.pano)/(Y2-Y1));
+	Vp.tilt = (int)((Y2-Y)*((float)Vp1.tilt)/(Y2-Y1) + (Y-Y1)*((float)Vp2.tilt)/(Y2-Y1));
+	Vp.zoom = 65535;		
+
+	if(Vp.tilt < 0)
+	{
+		Vp.tilt = 32768- Vp.tilt;
+	}
+	//printf("\r\n[%s]:node_PTZ=<%d,%d,%d>\r\n",	__func__, Vp.pano,Vp.tilt,Vp.zoom);
+
+	pThis->setQueryZoomFlag(true);
+
+	SENDST trkmsg;
+	memset((void*)&trkmsg,0,sizeof(SENDST));
+	if(needChangeZoom){
+		trkmsg.cmd_ID = acqPosAndZoom;
+
+		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
+		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
+		int currentZoom = pThis->getCurrentZoomValue();
+		memcpy(&trkmsg.param[8],&currentZoom, sizeof(int));
+		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	}
+	else{
+		trkmsg.cmd_ID = speedloop;
+		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
+		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
+		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+
+	}
+	
+	//printf("\r\n[%s]: Send PTZ Message to Ball Camera !!",__func__);
+	
+	return Vp;
+}
+
+
+
+
 GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int grid_height,bool needChangeZoom)
 {
 
@@ -1792,7 +1947,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				/* If user click on Gun Camera Image, then Ball Camera will move its focus to the projectPoints where user click on Gun Image */
 							
 							if(1 == g_GridMapMode){
-								pThis->pThis->getLinearDeviation(x,y,GRID_WIDTH_120,GRID_HEIGHT_90,true);//getLinearDeviation(x,y);
+								pThis->getLinearDeviation(x,y,GRID_WIDTH_120,GRID_HEIGHT_90,true);//getLinearDeviation(x,y);
 							}
 							else if(2 == g_GridMapMode){
 								SENDST trkmsg={0};

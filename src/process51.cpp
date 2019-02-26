@@ -2585,6 +2585,7 @@ void CProcess::DrawMouse()
 void CProcess::DrawTrigInter()
 {
 	Mat frame = m_display.m_imgOsd[1];
+	cv::Rect recIn;
 	cv::Point trig_tmp;
 	static int osd_flag = 0;
 	static int osd_flag2 = 0;
@@ -2600,8 +2601,18 @@ void CProcess::DrawTrigInter()
 			color = 0;
 			trig_tmp.x = app_trig_bak[i].ver.x;
 			trig_tmp.y = app_trig_bak[i].ver.y;
-			plat->DrawCircle(frame, trig_tmp, 5, color, thickness);
+			plat->DrawCircle(frame, trig_tmp, 10, color, thickness);
 		}
+
+		{
+			color = 0;
+			recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
+		 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+			recIn.width = 15;
+			recIn.height = 15;
+			DrawCross(recIn,color,1,false);
+		}
+		
 		osd_flag = 0;
 	}
 	if(osd_flag2)
@@ -2609,7 +2620,7 @@ void CProcess::DrawTrigInter()
 		color = 0;
 		trig_tmp.x = cur_trig_inter_P_bak.x;
 		trig_tmp.y = cur_trig_inter_P_bak.y;
-		plat->DrawCircle(frame, trig_tmp, 5, color, thickness);
+		plat->DrawCircle(frame, trig_tmp, 10, color, thickness);
 
 		osd_flag2 = 0;
 	}
@@ -2624,9 +2635,8 @@ void CProcess::DrawTrigInter()
 			color = 5;
 			trig_tmp.x = app_trig_bak[i].ver.x;
 			trig_tmp.y = app_trig_bak[i].ver.y;
-			plat->DrawCircle(frame, trig_tmp, 5, color, thickness);
+			plat->DrawCircle(frame, trig_tmp, 10, color, thickness);
 		}
-		osd_flag = 1;
 
 		if(get_trig_PTZflag())
 		{
@@ -2634,10 +2644,21 @@ void CProcess::DrawTrigInter()
 			cur_trig_inter_P_bak = cur_trig_inter_P;
 			trig_tmp.x = cur_trig_inter_P_bak.x;
 			trig_tmp.y = cur_trig_inter_P_bak.y;
-			plat->DrawCircle(frame, trig_tmp, 5, color, thickness);
+			plat->DrawCircle(frame, trig_tmp, 10, color, thickness);
 
 			osd_flag2 = 1;
 		}
+		
+		{
+			color = 6;
+			recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
+		 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+			recIn.width = 15;
+			recIn.height = 15;
+			DrawCross(recIn,color,1,true);
+		}
+
+		osd_flag = 1;
 	}
 
 }

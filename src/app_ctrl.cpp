@@ -1199,3 +1199,8 @@ void app_ctrl_getPT()
 {
 	plat->QueryCurBallCamPosition();
 }
+
+void app_ctrl_save_trig_inter()
+{
+	plat->m_trig.writeParams();
+}

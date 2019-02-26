@@ -4302,9 +4302,14 @@ void CProcess::OnKeyDwn(unsigned char key)
 		tmpMenuCmd.Trig_Inter_Mode = (pMenuStatus->Trig_Inter_Mode + 1) % 2;
 		app_ctrl_settrig_inter(&tmpMenuCmd);
 	}
-	if (key == 'h' || key == 'h')
+	if (key == 'h' || key == 'H')
 	{
 		app_ctrl_getPT();
+	}
+
+	if (key == 'j' || key == 'J')
+	{
+		app_ctrl_save_trig_inter();
 	}
 
 	if (key == 'k' || key == 'K')

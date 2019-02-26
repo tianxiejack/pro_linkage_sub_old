@@ -43,6 +43,8 @@ extern bool captureOnePicture;
 extern int captureCount ;
 extern std::vector< cv::Mat > ImageList;
 
+using namespace cr_trigonometricInterpolation;
+
 int CVideoProcess::MAIN_threadCreate(void)
 {
 	int iRet = OSA_SOK;
@@ -1592,6 +1594,43 @@ printf("\r\n[%s]: Send PTZ Message to Ball Camera !!",__func__);
 	return Vp;
 }
 
+void CVideoProcess::update_cur_trig_inter_P(int x, int y)
+{
+	int dx, dy, dist;
+	int valid_p_flag = 0;
+	std::vector<position_t>::iterator pPos_t = app_trig.begin();
+	
+	for( ; pPos_t != app_trig.end(); pPos_t++)
+	{
+		dx = x - pPos_t->ver.x;
+		dy = y - pPos_t->ver.y;
+		dist = sqrt(abs(dx * dx) + abs(dy * dy));
+		if(dist >= 0 && dist <= TRIG_RADIUS)
+		{
+			cur_trig_inter_P.x = pPos_t->ver.x;
+			cur_trig_inter_P.y = pPos_t->ver.y;
+			set_trig_PTZflag(1);
+			return;
+		}
+		else if(dist > TRIG_RADIUS && dist <= 2 * TRIG_RADIUS)
+		{
+			valid_p_flag = 1;
+		}
+	}
+
+	if(valid_p_flag)
+	{
+		set_trig_PTZflag(0);
+	}
+	else
+	{
+		cur_trig_inter_P.x = x;
+		cur_trig_inter_P.y = y;
+		set_trig_PTZflag(1);
+	}
+}
+
+
 static Point ptStart,ptEnd;
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
@@ -1643,9 +1682,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		{
 			if(0 == pThis->get_trig_PTZflag())
 			{
-				pThis->cur_trig_inter_P.x = x;
-				pThis->cur_trig_inter_P.y = y;
-				pThis->set_trig_PTZflag(1);
+				pThis->update_cur_trig_inter_P(x, y);
 			}
         }
     }

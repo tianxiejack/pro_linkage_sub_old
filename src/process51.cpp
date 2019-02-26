@@ -2584,7 +2584,8 @@ void CProcess::DrawMouse()
 
 void CProcess::DrawTrigInter()
 {
-	Mat frame = m_display.m_imgOsd[1];
+	int Chid = 1;
+	Mat frame = m_display.m_imgOsd[Chid];
 	cv::Rect recIn;
 	cv::Point trig_tmp;
 	static int osd_flag = 0;
@@ -2601,7 +2602,7 @@ void CProcess::DrawTrigInter()
 			color = 0;
 			trig_tmp.x = app_trig_bak[i].ver.x;
 			trig_tmp.y = app_trig_bak[i].ver.y;
-			plat->DrawCircle(frame, trig_tmp, 10, color, thickness);
+			plat->DrawCircle(frame, trig_tmp, TRIG_RADIUS, color, thickness);
 		}
 
 		{
@@ -2610,7 +2611,7 @@ void CProcess::DrawTrigInter()
 		 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
 			recIn.width = 15;
 			recIn.height = 15;
-			DrawCross(recIn,color,1,false);
+			DrawCross(recIn,color,Chid,false);
 		}
 		
 		osd_flag = 0;
@@ -2620,7 +2621,7 @@ void CProcess::DrawTrigInter()
 		color = 0;
 		trig_tmp.x = cur_trig_inter_P_bak.x;
 		trig_tmp.y = cur_trig_inter_P_bak.y;
-		plat->DrawCircle(frame, trig_tmp, 10, color, thickness);
+		plat->DrawCircle(frame, trig_tmp, TRIG_RADIUS, color, thickness);
 
 		osd_flag2 = 0;
 	}
@@ -2635,18 +2636,20 @@ void CProcess::DrawTrigInter()
 			color = 5;
 			trig_tmp.x = app_trig_bak[i].ver.x;
 			trig_tmp.y = app_trig_bak[i].ver.y;
-			plat->DrawCircle(frame, trig_tmp, 10, color, thickness);
+			plat->DrawCircle(frame, trig_tmp, TRIG_RADIUS, color, thickness);
 		}
 
 		if(get_trig_PTZflag())
 		{
 			color = 3;
 			cur_trig_inter_P_bak = cur_trig_inter_P;
+
 			trig_tmp.x = cur_trig_inter_P_bak.x;
 			trig_tmp.y = cur_trig_inter_P_bak.y;
-			plat->DrawCircle(frame, trig_tmp, 10, color, thickness);
+			plat->DrawCircle(frame, trig_tmp, TRIG_RADIUS, color, thickness);
 
-			osd_flag2 = 1;
+			osd_flag2 = 1;	
+
 		}
 		
 		{
@@ -2655,7 +2658,7 @@ void CProcess::DrawTrigInter()
 		 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
 			recIn.width = 15;
 			recIn.height = 15;
-			DrawCross(recIn,color,1,true);
+			DrawCross(recIn,color,Chid,true);
 		}
 
 		osd_flag = 1;
@@ -3593,6 +3596,38 @@ void CProcess::RefreshBallPTZ(int in_panPos, int in_tilPos, int in_zoom)
 	zoomPos = in_zoom ;
 	return;
 }
+
+void CProcess::update_app_trig(int in_panPos, int in_tilPos)
+{
+	int dist,dx,dy;
+	int valid_p_flag = 0;
+	position_t tmp;
+	tmp.ver.x = proc->cur_trig_inter_P.x;
+	tmp.ver.y = proc->cur_trig_inter_P.y;
+	tmp.pos.x = in_panPos;
+	tmp.pos.y = in_tilPos;
+
+	std::vector<position_t>::iterator pPos_t = proc->app_trig.begin();
+	for( ; pPos_t != proc->app_trig.end(); pPos_t++)
+	{
+		dx = tmp.ver.x - pPos_t->ver.x;
+		dy = tmp.ver.y - pPos_t->ver.y;
+		dist = sqrt(abs(dx * dx) + abs(dy * dy));
+
+		if(dist >= 0 && dist <= TRIG_RADIUS)
+		{
+			proc->app_trig.erase(pPos_t);
+			proc->app_trig.insert(pPos_t, tmp);
+			return;
+		}
+		else if(dist > TRIG_RADIUS && dist <= 2 * TRIG_RADIUS)
+			valid_p_flag = 1;
+	}
+
+	if(!valid_p_flag)
+		proc->app_trig.push_back(tmp);
+}
+
 void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 {
 	panPos = in_panPos ;
@@ -3608,6 +3643,7 @@ void CProcess::refreshClickPoint(int x, int y)
 	m_capY = y;
 	return ;
 }
+
 void CProcess::QueryCurBallCamPosition()
 {
 	int flag =0;	

@@ -213,7 +213,7 @@ public:
 	int checkZoomPosTable(int delta);
 	int checkZoomPosNewTable(int delta);
 	Point replaceClickPoints(int pointX, int pointY);
-
+	void update_app_trig(int in_panPos, int in_tilPos);
 private:
 	int m_winWidth, m_winHeight;
 

@@ -533,6 +533,15 @@ public:
 	void drawtriangle(Mat frame, char direction, char alpha);
 	int MenuFunc(int index);
 	void processdurationMenu_osd(int value);
+	int trig_pip_mode = 0;
+	void settrig_pip_mode(int mode)
+	{
+		trig_pip_mode = mode;
+	};
+	int gettrig_pip_mode()
+	{
+		return trig_pip_mode;
+	};
 };
 
 #define mallocwidth 1920

@@ -217,6 +217,7 @@ public:
 	int checkZoomPosNewTable(int delta);
 	Point replaceClickPoints(int pointX, int pointY);
 	void update_app_trig(int in_panPos, int in_tilPos);
+	void delete_app_trig(cv::Point curp);
 private:
 	int m_winWidth, m_winHeight;
 	int m_AppVersion;

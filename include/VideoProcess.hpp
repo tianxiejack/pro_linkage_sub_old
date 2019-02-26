@@ -266,6 +266,7 @@ public:
 	};
 	Trigonometric m_trig = Trigonometric(outputWHF[0],outputWHF[1]);
 	vector<position_t> app_trig;
+	void update_cur_trig_inter_P(int x, int y);
 	
 protected:
 	MultiChVideo MultiCh;

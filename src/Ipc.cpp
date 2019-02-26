@@ -593,12 +593,7 @@ void* recv_msg(SENDST *RS422)
 				if(proc->get_trig_PTZflag())
 				{
 					proc->set_trig_PTZflag(0);
-					position_t tmp;
-					tmp.ver.x = proc->cur_trig_inter_P.x;
-					tmp.ver.y = proc->cur_trig_inter_P.y;
-					tmp.pos.x = posOfLinkage.panPos;
-					tmp.pos.y = posOfLinkage.tilPos;
-					proc->app_trig.push_back(tmp);
+					proc->update_app_trig(posOfLinkage.panPos, posOfLinkage.tilPos);
 				}
 				
 				if(proc->getPTZflag()){

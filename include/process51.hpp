@@ -16,8 +16,9 @@ using namespace cv;
 #define SPECIAL_KEY_LEFT 		100
 #define SPECIAL_KEY_RIGHT 		102
 
-#define SPECIAL_KEY_PAGEUP 		104
+#define SPECIAL_KEY_PAGEUP 	104
 #define SPECIAL_KEY_PAGEDOWN 	105
+const int VERSION_SOFT = 0x82;  //  130
 
 typedef struct{
 		int button;
@@ -171,6 +172,8 @@ public:
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
 	void MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom);
+	void MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChangeZoom);
+
 	void MvBallCamByClickGunImg(int x, int y,bool needChangeZoom);
 	
 	void CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords);
@@ -216,6 +219,8 @@ public:
 
 private:
 	int m_winWidth, m_winHeight;
+	int m_AppVersion;
+	char m_appVersion[30];
 
 public:
 	CProcess();

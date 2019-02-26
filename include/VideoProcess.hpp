@@ -203,6 +203,8 @@ public:
 	virtual void CaptureMouseClickPoint(int x, int y){};
 	virtual Point getCurrentMouseClickPoint(){};
 	virtual void MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom){ };
+	void MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChangeZoom){};
+
 	virtual void MvBallCamByClickGunImg(int x, int y,bool needChangeZoom){ };
 	virtual void MvBallCamByClickBallIMg(int x, int y){};
 	virtual void Test_Match_result(int x, int y){};

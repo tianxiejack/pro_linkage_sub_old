@@ -81,7 +81,7 @@ void getMtdxy(int *x,int *y,int *w,int *h)
 #endif
 
 CProcess::CProcess():m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6320),
-m_cofy(6200),m_bak_count(0),m_capX(960),m_capY(540),m_bGridMapCalibrate(false)
+m_cofy(6200),m_bak_count(0),m_capX(960),m_capY(540),m_bGridMapCalibrate(false),m_AppVersion(VERSION_SOFT)
 {
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
@@ -94,7 +94,7 @@ m_cofy(6200),m_bak_count(0),m_capX(960),m_capY(540),m_bGridMapCalibrate(false)
 
 CProcess::CProcess(int window_width, int window_height):m_bRefreshPTZValue(false),m_capX(960),m_capY(540),m_bMarkCircle(false),panPos(1024),tiltPos(13657),zoomPos(16),m_cofx(6320),
 m_cofy(6200),m_bak_count(0),m_winWidth(window_width),m_winHeight(window_height),CVideoProcess(window_width,window_height),
-m_bGridMapCalibrate(false),m_lastRow(-1),m_lastCol(-1),m_successCalibraNum(0)
+m_bGridMapCalibrate(false),m_lastRow(-1),m_lastCol(-1),m_successCalibraNum(0),m_AppVersion(VERSION_SOFT)
 {
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
@@ -2243,6 +2243,8 @@ osdindex++;	//cross aim
 
 
 
+
+
 if(g_displayMode == MENU_GRID_MAP_VIEW)
 {
 	#if 0	 
@@ -2293,6 +2295,10 @@ if(g_displayMode == MENU_GRID_MAP_VIEW)
 			sprintf(tmp_str[4], "Finished:%d",m_successCalibraNum);	
 			putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
 
+			putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(1700,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
+			sprintf(m_appVersion, "Version:%d.%d.%d",m_AppVersion>>6,(m_AppVersion>>3)&0x07,m_AppVersion&0x07);	
+			putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(1700,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,255,255,255), 1);	
+
 			Osdflag[osdindex]=1;
 
 		}
@@ -2316,7 +2322,7 @@ if(g_displayMode == MENU_GRID_MAP_VIEW)
 		putText(m_display.m_imgOsd[1],tmp_str[2],cv::Point(260,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);	
 		putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(600,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
 		putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
-
+		putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(1700,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
 		recIn.x=back_center.x;
 		recIn.y=back_center.y;
 		recIn.width = GRID_WIDTH_120;
@@ -2328,7 +2334,7 @@ if(g_displayMode == MENU_GRID_MAP_VIEW)
 	}
 
 
-
+	
 
 
 
@@ -3957,6 +3963,81 @@ void CProcess::MvBallCamByClickGunImg(int x, int y,bool needChangeZoom)
 	printf("\r\n[%s]:========Image Points: < %d , %d >",__FUNCTION__,(imgCoords.x),(imgCoords.y));
 	printf("\r\n[%s]:========Remap Points:< %d , %d >\r\n",__FUNCTION__,(camCoords.x*2),(camCoords.y*2));
 	TransformPixByOriginPoints(camCoords.x, camCoords.y );
+}
+
+void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChangeZoom)
+{
+	int point_X , point_Y , offset_x , offset_y,tmp_zoomPos; 
+	int delta_X ;
+	bool isDeltaValid = false;
+	Point opt;
+	
+	switch(m_display.g_CurDisplayMode) 
+	{
+		case PREVIEW_MODE:	
+			offset_x = m_winWidth/2;  
+			offset_y = 0;
+			break;
+		case MAIN_VIEW:
+			offset_x =0;
+			offset_y = m_winHeight/2;   
+			break;			
+		default:
+			break;
+	}
+
+	LeftPoint.x -= offset_x;
+	RightPoint.x -=offset_x;
+	LeftPoint.y -= offset_y;
+	RightPoint.y -=offset_y;
+	
+	delta_X = abs(LeftPoint.x - RightPoint.x) ;
+	//m_iDelta_X = delta_X;
+
+	if(needChangeZoom == true ) {
+		if(delta_X < MIN_VALID_RECT_WIDTH_IN_PIXEL) {
+			;  // Do Nothing
+		}
+		else
+		{
+			isDeltaValid = true;
+			tmp_zoomPos = checkZoomPosTable( delta_X );		
+			m_iZoom = tmp_zoomPos;
+			zoomPos = tmp_zoomPos;
+			//tmp_zoomPos = checkZoomPosTable(delta_X);			
+		}
+	}
+
+
+	if(needChangeZoom == true)
+	{
+		if(LeftPoint.x < RightPoint.x) {
+			point_X = abs(LeftPoint.x - RightPoint.x) /2 + LeftPoint.x;
+			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + LeftPoint.y;	
+		}else{
+			point_X = abs(LeftPoint.x - RightPoint.x) /2 + RightPoint.x;
+			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
+		}		
+	}
+	else  {
+		point_X = (x - offset_x);
+		point_Y = (y- offset_y);		
+	}
+
+	switch(m_display.g_CurDisplayMode) {
+		case PREVIEW_MODE:
+			opt = cv::Point( point_X*2, point_Y*2 );	
+			break;
+		case MAIN_VIEW:
+			opt = cv::Point( point_X, point_Y * 2 );
+			break;		
+		default:
+			break;
+	}
+
+	this->getLinearDeviation(opt.x, opt.y, GRID_WIDTH_120,GRID_HEIGHT_90,needChangeZoom);
+
+
 }
 void CProcess::MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom)
 {	

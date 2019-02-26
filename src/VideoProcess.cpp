@@ -1829,9 +1829,11 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				/* */			
 						if(1 == g_GridMapMode)
 						{
-							pThis->getLinearDeviation(tmpX,tmpY,GRID_WIDTH_120,GRID_HEIGHT_90,true);
+							//pThis->getLinearDeviation(tmpX,tmpY,GRID_WIDTH_120,GRID_HEIGHT_90,true);
+							pThis->MvBallCamUseLinearDeviationSelectRect(tmpX, tmpY, true);
 						}
-						else if(2 == g_GridMapMode){
+						else if(2 == g_GridMapMode)
+						{
 								SENDST trkmsg={0};
 								cv::Point tmp;
 								Point2i inPoint, outPoint;
@@ -1847,7 +1849,8 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
 								ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 						}
-						else{
+						else
+						{
 							pThis->MvBallCamBySelectRectangle(tmpX,tmpY,true);	
 						}
 				

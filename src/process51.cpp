@@ -3674,6 +3674,19 @@ void CProcess::update_app_trig(int in_panPos, int in_tilPos)
 	}
 }
 
+void CProcess::delete_app_trig(cv::Point curp)
+{
+	std::vector<position_t>::iterator pPos_t = app_trig.begin();
+	for( ; pPos_t != app_trig.end(); pPos_t++)
+	{
+		if((curp.x == pPos_t->ver.x) && (curp.y == pPos_t->ver.y))
+		{
+			app_trig.erase(pPos_t);
+			return;
+		}
+	}
+}
+
 void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
 {
 	panPos = in_panPos ;
@@ -4524,7 +4537,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 			msgdriv_event(MSGID_EXT_INPUT_ENFREZZ, NULL);
 		}
 
-	if (key == 'o'|| key == 'O')
+	if(key == 'o'|| key == 'O')
 	{
 		int mode = plat->m_display.gettrig_pip_mode();
 		mode = (mode + 1) % 4;
@@ -4536,6 +4549,14 @@ void CProcess::OnKeyDwn(unsigned char key)
 			msgdriv_event(MSGID_EXT_INPUT_PICPCROP, NULL);
 		}
 
+	if(key == 'r'|| key == 'R')
+	{
+		if(get_trig_PTZflag())
+		{
+			proc->set_trig_PTZflag(0);
+			proc->delete_app_trig(cur_trig_inter_P);
+		}
+	}
 	
 	if(key == 'w'|| key == 'W')
 		{

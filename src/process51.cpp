@@ -2592,6 +2592,7 @@ void CProcess::DrawTrigInter()
 	static int osd_flag2 = 0;
 	static vector<position_t> app_trig_bak;
 	static cv::Point cur_trig_inter_P_bak;
+	static int mode = 0;
 	int color = 0;
 	int thickness = 2;
 
@@ -2607,8 +2608,26 @@ void CProcess::DrawTrigInter()
 
 		{
 			color = 0;
-			recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
-		 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+			if(0 == mode)
+			{
+				recIn.x = 0 + outputWHF[0] / 8;
+			 	recIn.y = 0 + outputWHF[1] / 8;
+			}			
+			else if(1 == mode)
+			{
+				recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
+			 	recIn.y = 0 + outputWHF[1] / 8;
+			}			
+			else if(2 == mode)
+			{
+				recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
+			 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+			}
+			else if(3 == mode)
+			{
+				recIn.x = 0 + outputWHF[0] / 8;
+			 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+			}
 			recIn.width = 15;
 			recIn.height = 15;
 			DrawCross(recIn,color,Chid,false);
@@ -2654,8 +2673,27 @@ void CProcess::DrawTrigInter()
 		
 		{
 			color = 6;
-			recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
-		 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+			mode = m_display.gettrig_pip_mode();
+			if(0 == mode)
+			{
+				recIn.x = 0 + outputWHF[0] / 8;
+			 	recIn.y = 0 + outputWHF[1] / 8;
+			}			
+			else if(1 == mode)
+			{
+				recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
+			 	recIn.y = 0 + outputWHF[1] / 8;
+			}			
+			else if(2 == mode)
+			{
+				recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
+			 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+			}
+			else if(3 == mode)
+			{
+				recIn.x = 0 + outputWHF[0] / 8;
+			 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+			}
 			recIn.width = 15;
 			recIn.height = 15;
 			DrawCross(recIn,color,Chid,true);
@@ -3625,7 +3663,9 @@ void CProcess::update_app_trig(int in_panPos, int in_tilPos)
 	}
 
 	if(!valid_p_flag)
+	{
 		proc->app_trig.push_back(tmp);
+	}
 }
 
 void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
@@ -4402,12 +4442,20 @@ void CProcess::OnKeyDwn(unsigned char key)
 			
 			msgdriv_event(MSGID_EXT_INPUT_ENFREZZ, NULL);
 		}
+
+	if (key == 'o'|| key == 'O')
+	{
+		int mode = plat->m_display.gettrig_pip_mode();
+		mode = (mode + 1) % 4;
+		plat->m_display.settrig_pip_mode(mode);
+	}
+		
 	if (key == 'p'|| key == 'P')
 		{
 			msgdriv_event(MSGID_EXT_INPUT_PICPCROP, NULL);
 		}
 
-
+	
 	if(key == 'w'|| key == 'W')
 		{
 			if(pIStuts->ImgMmtshow[pIStuts->SensorStat])

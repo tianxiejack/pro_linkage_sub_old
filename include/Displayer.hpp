@@ -401,7 +401,9 @@ public:
 	int m_menuindex;
 	AppMenu dismenuarray[menumaxid];
 	osdbuffer_t disMenuBuf[32][MAX_SUBMENU];
+	osdbuffer_t disMtdBuf[1][MAX_SUBMENU];
 	wchar_t disMenu[menumaxid][MAX_SUBMENU][33];
+	wchar_t disMtd[1][MAX_SUBMENU][33];
 	int disresol_type, disresol_type_tmp;
 	int disbaud_type; // add baud settings
 	int curBaudRate;
@@ -530,6 +532,7 @@ public:
 
 	void IrisAndFocus();
 	int OSDFunc();
+	void MtdOSDFunc();
 	void drawtriangle(Mat frame, char direction, char alpha);
 	int MenuFunc(int index);
 	void processdurationMenu_osd(int value);

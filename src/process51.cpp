@@ -161,7 +161,7 @@ void CProcess::loadIPCParam()
 		memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
 		memset(extMenuCtrl.disPasswd, 0, sizeof(extMenuCtrl.disPasswd));
 
-		int cnt[menumaxid] = {4,5,7,3,3,7,6,3,5,5,3,5};
+		int cnt[menumaxid] = {4,5,7,3,3,7,6,3,5,5,3};
 		memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
 		for(int i = 0; i < menumaxid; i++)
 		{
@@ -5513,7 +5513,6 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	if(msgId == MSGID_EXT_MVDETECT_SETRIGIONSTAT)
 	{
 		setrigion_flagv20 = pIStuts->MtdSetRigion;
-		printf("%s,%d,setrigion_flagv20=%d\n",__FILE__,__LINE__, setrigion_flagv20);
 	}
 	if(msgId == MSGID_EXT_MVDETECT_SETRIGION)
 	{
@@ -5789,7 +5788,6 @@ int CProcess::usopencvapi2()
 			}
 				
 		
-	printf("%s,%d\n",__FILE__,__LINE__);
 	float floatx,floaty;
 	int setx, sety = 0;
 	std::vector< std::vector< cv::Point > > polyWarnRoi;
@@ -5833,13 +5831,14 @@ int CProcess::usopencvapi2()
 			edge_contours[i][j].y = sety;
 		}
 	}
+
 	if(contours.size() > 3)
 	{
-        swprintf(m_display.disMenu[submenu_setmtdrigion][4], 33, L"错误，检测区域大于3个");
+        swprintf(m_display.disMtd[0][4], 33, L"错误，检测区域大于3个");
 	}
 	else
 	{
-        swprintf(m_display.disMenu[submenu_setmtdrigion][4], 33, L"检测区域:%d个", contours.size());
+        swprintf(m_display.disMtd[0][4], 33, L"检测区域:%d个", contours.size());
 	}
 
 	for(int i = 0; i < edge_contours.size(); i++)

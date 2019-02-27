@@ -1816,7 +1816,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		pThis->sendjoyevent(pThis->jcenter_s);
 	}
 	//else if(mouse_workmode == SetMteRigion_Mode)
-	else if( pThis->m_display.g_CurDisplayMode == GUN_FULL_SCREEN && pThis->m_display.m_menuindex == submenu_setmtdrigion)
+	else if( pThis->m_display.g_CurDisplayMode == GUN_FULL_SCREEN && 1 == pThis->setrigion_flagv20)
 	{
 		if(pThis->setrigion_flagv20)
 		{

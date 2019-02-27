@@ -63,6 +63,7 @@ class CProcess : public CVideoProcess
 	Osd_cvPoint rectfovBak[2];
 	Osd_cvPoint secBak[2];
 	DS_Rect rendpos[4];
+	int renderflag[10];
 	int Osdflag[20];
 	int osd_flag[20];
 	int osdindex;
@@ -107,16 +108,14 @@ private:
 	FileStorage writefs;
 	void getParams();
 	void setParams();
-	 //OSA_SemHndl m_linkage_getPos;
+	//OSA_SemHndl m_linkage_getPos;
 	int panPos ;
-	 int tiltPos ;
-	 int zoomPos ;
+	int tiltPos ;
+	int zoomPos ;
 	int m_cofx , m_cofy;
-	int backMenuposX, backMenuposY;
-	
+	int backMenuposX, backMenuposY;	
 	Point m_curClickPoint;
 	Point m_bakClickPoint;
-
 	cv::Point2d m_ballDestPoint;
 	cv::Point2d m_bakballDestPoint;
 	int m_iDelta_X;
@@ -131,98 +130,58 @@ private:
 	int m_lastRow, m_lastCol;
 	int m_successCalibraNum;
 	int m_intervalRow[GRID_ROWS_11];
+	
+	int m_winWidth, m_winHeight;
+	int m_AppVersion;
+	char m_appVersion[30];
+
 /*****************************************************/	
 public:
-	void setGridMapCalibrate(bool flag){
-		m_bGridMapCalibrate = flag;
-	}
-	const bool getGridMapCalibrate(){
-		return m_bGridMapCalibrate;
-	};
-	void setQueryZoomFlag(bool flag)
+	enum
 	{
-		m_queryZoom = flag;
-	};
-	const bool getQueryZoomFlag()
-	{
-		return m_queryZoom ;
-	};
-	int getCurrentZoomValue()
-	{
-		return zoomPos;
-	};
-	void addMarkNum()
-	{
-		m_successCalibraNum++;
-		return;
-	};
-public:
-	enum{
 		MIN_VALID_RECT_WIDTH_IN_PIXEL = 10
 	};
-	void setPTZflag(bool flag){
-		m_bRefreshPTZValue = flag;
-		return ;
-	};
-	bool getPTZflag(){
-		return m_bRefreshPTZValue;
-	};
-	
+	void setGridMapCalibrate(bool flag);
+	const bool getGridMapCalibrate();
+	void setQueryZoomFlag(bool flag);	
+	const bool getQueryZoomFlag();	
+	int getCurrentZoomValue();
+	void addMarkNum();	
+public:	
+	void setPTZflag(bool flag);
+	bool getPTZflag();	
 	void loadIPCParam();
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
 	void MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom);
 	void MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChangeZoom);
-
-	void MvBallCamByClickGunImg(int x, int y,bool needChangeZoom);
-	
+	void MvBallCamByClickGunImg(int x, int y,bool needChangeZoom);	
 	void CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords);
 	void CvtImgPoint2Camera(cv::Point2d &imgCoords, cv::Point2d &camCoords);
-	void TransformPixByOriginPoints(int &X, int &Y );
-	
+	void TransformPixByOriginPoints(int &X, int &Y );	
 	void SetDestPosScope(int &inputX, int &inputY, int &Origin_PanPos, int &Origin_TilPos,int &DesPanPos, int &DesTilPos);
 	void MvBallCamByClickBallIMg(int x, int y);
 	void MoveBall();
-
 	void Test_Match_result(int x, int y);
 	void QueryCurBallCamPosition();
 	void setBallPos(int in_panPos, int in_tilPos, int in_zoom);
 	void RefreshBallPTZ(int in_panPos, int in_tilPos, int in_zoom);
 	void refreshClickPoint(int x, int y);
-
 	void Set_K_ByDeltaX( int delta_x);
 	void Set_K_ByZoom(int Current_Zoom);
-
        void Set_K_ByNewDeltaX(int delta_x);
-	void CaptureMouseClickPoint(int x, int y){
-		m_curClickPoint = Point(x, y);
-	};
-	Point getCurrentMouseClickPoint(){
-		return m_curClickPoint;
-	};
-
-	void setBallImagePoint(int &x, int &y) {
-		m_ballDestPoint.x = x;
-		m_ballDestPoint.y = y;
-	};
-	Point getBallImagePoint(){
-		return m_ballDestPoint;
-	};
+	void CaptureMouseClickPoint(int x, int y);
+	void setBallImagePoint(int &x, int &y);
 	void Init_CameraMatrix();
-	Mat undisImageGun;
-	
-	void manualHandleKeyPoints(int &x,int &y);
-	
-	int checkZoomPosTable(int delta);
-	int checkZoomPosNewTable(int delta);
-	Point replaceClickPoints(int pointX, int pointY);
+	void manualHandleKeyPoints(int &x,int &y);	
 	void update_app_trig(int in_panPos, int in_tilPos);
 	void delete_app_trig(cv::Point curp);
-private:
-	int m_winWidth, m_winHeight;
-	int m_AppVersion;
-	char m_appVersion[30];
-
+	Point getCurrentMouseClickPoint();
+	Point getBallImagePoint();	
+	Point replaceClickPoints(int pointX, int pointY);
+	Mat undisImageGun;		
+	int checkZoomPosTable(int delta);
+	int checkZoomPosNewTable(int delta);	
 public:
 	CProcess();
 	CProcess(int window_width, int window_height);
@@ -248,7 +207,7 @@ public:
 
 	void DrawGridMapNodeCircles(bool drawFlag);
 	void DrawGridMapNodeCircles(bool drawFlag, int drawNodesCount);
-	void DrawGridMapNodeCircles_16X12(bool drawFlag, int drawNodesCount);
+	void DrawSelectedCircle(bool drawFlag, int drawNodesCount);
 
 	void DrawGridMapNodeCircles_16X12(bool drawFlag);
 

@@ -618,7 +618,8 @@ void CVideoProcess::InitGridMap16X12()
 			temp_col = m_gridNodes[i][j].coord_x;
 			
 			m_gridNodes[i][j].coord_y = col_offset + i*GRID_HEIGHT_90;
-
+			m_gridNodes[i][j].isCircle = true;
+			m_gridNodes[i][j].renderFlag= false;
 
 			m_nodePos[i][j].x = m_gridNodes[i][j].coord_x;
 			m_nodePos[i][j].y = m_gridNodes[i][j].coord_y;

@@ -23,6 +23,7 @@ typedef struct __gridmapnode
 	int tilt;
 	int coord_x,coord_y;// screen coordinates
 	bool isCircle;
+	bool renderFlag;
 	unsigned char has_mark;
 	
 }GridMapNode;
@@ -38,6 +39,7 @@ class GridMap
 {
 public:
 	GridMap();
+	GridMap(int mapWidth,int mapHeight){  };
 	virtual ~GridMap();
 	enum 
 	{
@@ -46,8 +48,6 @@ public:
 	};
 private:
 	GridMapNode m_gridNodes[GRID_ROWS][GRID_COLS];
-
-
 };
 
 #endif // __GRID_MAP_H__

@@ -98,6 +98,7 @@ m_bGridMapCalibrate(false),m_lastRow(-1),m_lastCol(-1),m_successCalibraNum(0),m_
 {
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
 	memset(extInCtrl,0,sizeof(CMD_EXT));
+	memset(renderflag,0,sizeof(renderflag));
 	msgextInCtrl = extInCtrl;	
 	sThis = this;
 	plat = this;
@@ -1695,8 +1696,7 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 	if(changesensorCnt == 3){
 		extInCtrl->changeSensorFlag =  0; 
 		changesensorCnt = 0;
-	}
-	
+	}	
 	
 	if(((++coastCnt)%10) == 0)
 	{
@@ -1718,8 +1718,7 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 
 	Point center;
 	Point start,end;
-	Osd_cvPoint start1,end1;
-	
+	Osd_cvPoint start1,end1;	
 
 #if __TRACK__
 	osdindex++;
@@ -2141,11 +2140,13 @@ osdindex++;	//cross aim
 				tmp.width = recttmp.w;
 				tmp.height = recttmp.h;
 
-				if(1 == g_GridMapMode){
+				if(1 == g_GridMapMode)
+				{
 					//pThis->getLinearDeviation(tmp.x+tmp.width/2,tmp.y + tmp.height/2,GRID_WIDTH_120,GRID_HEIGHT_90,false);//getLinearDeviation(x,y);
 					pThis->MvBallCamUseLinearDeviationSelectRect(tmp.x+tmp.width/2, tmp.y + tmp.height/2, false);
 				}
-				else if(2 == g_GridMapMode){
+				else if(2 == g_GridMapMode)
+				{
 					Point2i inPoint, outPoint;
 					inPoint.x = tmp.x;
 					inPoint.y = tmp.y;
@@ -2156,7 +2157,8 @@ osdindex++;	//cross aim
 					memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
 					ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 				}
-				else{
+				else
+				{
 					MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
 				}
 				
@@ -2246,25 +2248,25 @@ osdindex++;	//cross aim
 
 
 
-if(g_displayMode == MENU_GRID_MAP_VIEW)
-{
-	#if 0	 
+	if(g_displayMode == MENU_GRID_MAP_VIEW)
+	{
+		#if 0	 
 		
-		DrawGridMap(1);
-		DrawGridMapNodeCircles(true);
-		DrawGridMapNodeCircles(true, m_curNodeIndex);
-	#else
-		DrawGridMap_16X12(1);
-		DrawGridMapNodeCircles_16X12(true);
-		DrawGridMapNodeCircles_16X12(true, m_curNodeIndex);
-	#endif
+			DrawGridMap(1);
+			DrawGridMapNodeCircles(true);
+			DrawGridMapNodeCircles(true, m_curNodeIndex);
+		#else
+			DrawGridMap_16X12(1);
+			DrawGridMapNodeCircles_16X12(true);
+			DrawSelectedCircle(true, m_curNodeIndex);
+		#endif
 		{
 			recIn.x=back_center.x;
 			recIn.y=back_center.y;
 			recIn.width = GRID_WIDTH_120;
 			recIn.height = GRID_HEIGHT_90;
 			DrawCross(recIn,frcolor,1,false);
-			Osdflag[osdindex]=1;
+			//Osdflag[osdindex]=1;
 
 			back_center =  m_display.getGridViewBallImgCenter();
 			recIn.x=back_center.x;
@@ -2272,7 +2274,7 @@ if(g_displayMode == MENU_GRID_MAP_VIEW)
 			recIn.width = GRID_WIDTH_120;
 			recIn.height = GRID_HEIGHT_90;
 			DrawCross(recIn,frcolor,1,true);
-			Osdflag[osdindex]=1;
+			//Osdflag[osdindex]=1;
 		}
 
 		{			
@@ -2300,22 +2302,26 @@ if(g_displayMode == MENU_GRID_MAP_VIEW)
 			sprintf(m_appVersion, "Version:%d.%d.%d",m_AppVersion>>6,(m_AppVersion>>3)&0x07,m_AppVersion&0x07);	
 			putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(1700,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,255,255,255), 1);	
 
-			Osdflag[osdindex]=1;
+			//Osdflag[osdindex]=1;
 
 		}
+
+		renderflag[0]=1;
 	}
 	else
 	{
 		
-	
+	if(renderflag[0] == 1)
+	{
 	#if 0		
 		DrawGridMap(0);
 		DrawGridMapNodeCircles(false);
 		DrawGridMapNodeCircles(false, m_curNodeIndex);
 	#else
 		DrawGridMap_16X12(0);
+		DrawSelectedCircle(false, m_curNodeIndex);
 		DrawGridMapNodeCircles_16X12(false);
-		DrawGridMapNodeCircles_16X12(false, m_curNodeIndex);
+		
 	#endif
 		
 		putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(45,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
@@ -2329,12 +2335,10 @@ if(g_displayMode == MENU_GRID_MAP_VIEW)
 		recIn.width = GRID_WIDTH_120;
 		recIn.height = GRID_HEIGHT_90;
 		DrawCross(recIn,frcolor,1,false);
-		Osdflag[osdindex]=1;
-
-
+		//Osdflag[osdindex]=1;
 	}
-
-
+renderflag[0] = 0;
+}
 	
 
 
@@ -2528,7 +2532,7 @@ else{
 	}
 
 //virtual joystick
-	DrawJoys();
+//	DrawJoys();
 	DrawMouse();
 	DrawTrigInter();
 
@@ -2927,29 +2931,49 @@ void CProcess::DrawGridMapNodeCircles_16X12(bool drawFlag)
 {
 	int radius = 8;
 	int thickness = 1;
-	int mark_thickness = 3;
+	int mark_thickness = 2;
+	int mark_radius = 14;
 	cv::Point tmp_mark=cv::Point(60,45);
 	if(drawFlag)
 	{
 		for(int i=0;i<=GRID_ROWS_11;i++)
 		{
 			for(int j=0;j<=GRID_COLS_15+1;j++)
-			{				
+			{		
+			#if 0
 				cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(0,0,0,0),thickness,8,0);
 				
 				m_nodePos[i][j].x = m_gridNodes[i][j].coord_x;
 				m_nodePos[i][j].y = m_gridNodes[i][j].coord_y;
 				cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(255,0,0,255),thickness,8,0);
-
+			#endif
+			//if(m_gridNodes[i][j].isCircle == true)
+			//{
 				if(m_calibratedNodes[i][j].isShow == true)
 				{	
+					if(m_gridNodes[i][j].renderFlag== true){
+						cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(0,0,0,0),thickness,8,0);
+						m_gridNodes[i][j].renderFlag= false;
+					}
 					tmp_mark.x = m_calibratedNodes[i][j].x;
 					tmp_mark.y = m_calibratedNodes[i][j].y;
 
-					cv::circle(m_display.m_imgOsd[1],tmp_mark,radius ,cvScalar(0,0,0,0),mark_thickness,8,0);
-					cv::circle(m_display.m_imgOsd[1],tmp_mark,radius ,cvScalar(0,232,160,255),mark_thickness,8,0);
+					cv::circle(m_display.m_imgOsd[1],tmp_mark,mark_radius ,cvScalar(0,0,0,0),mark_thickness,8,0);
+					cv::circle(m_display.m_imgOsd[1],tmp_mark,mark_radius ,cvScalar(0,232,160,255),mark_thickness,8,0);
 
 				}
+				else
+				{
+					cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(0,0,0,0),thickness,8,0);
+				
+					m_nodePos[i][j].x = m_gridNodes[i][j].coord_x;
+					m_nodePos[i][j].y = m_gridNodes[i][j].coord_y;
+					cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(255,0,0,255),thickness,8,0);
+					renderflag[2] = 0;
+
+				}
+			//}
+			
 			}
 		}
 	}
@@ -2962,7 +2986,7 @@ void CProcess::DrawGridMapNodeCircles_16X12(bool drawFlag)
 				tmp_mark.x = m_calibratedNodes[i][j].x;
 				tmp_mark.y = m_calibratedNodes[i][j].y;
 				cv::circle(m_display.m_imgOsd[1],m_nodePos[i][j],radius ,cvScalar(0,0,0,0),thickness,8,0);	
-				cv::circle(m_display.m_imgOsd[1],tmp_mark,radius ,cvScalar(0,0,0,0),mark_thickness,8,0);
+				cv::circle(m_display.m_imgOsd[1],tmp_mark,mark_radius ,cvScalar(0,0,0,0),mark_thickness,8,0);
 			}
 		}
 
@@ -2990,10 +3014,10 @@ void CProcess::DrawGridMapNodeCircles(bool drawFlag, int drawNodesCount)
 	}
 }
 
-void CProcess::DrawGridMapNodeCircles_16X12(bool drawFlag, int drawNodesCount)
+void CProcess::DrawSelectedCircle(bool drawFlag, int drawNodesCount)
 {
-	int radius = 8;
-	int thickness = -1;
+	int radius =18;// 8;
+	int thickness = 3;		// circle Fan==  -1, 
 	int tmp_row = drawNodesCount / (sizeof(m_gridNodes)-1);
 	int tmp_col = drawNodesCount % (sizeof(m_gridNodes)-1);
 	
@@ -3002,8 +3026,10 @@ void CProcess::DrawGridMapNodeCircles_16X12(bool drawFlag, int drawNodesCount)
 		cv::circle(m_display.m_imgOsd[1],m_backNodePos,radius ,cvScalar(0,0,0,0),thickness,8,0);
 		m_backNodePos = m_nodePos[tmp_row][tmp_col];
 		if(exposure_star == 1){
-			cv::circle(m_display.m_imgOsd[1],m_backNodePos,radius ,cvScalar(255,0,0,255),thickness,8,0);	
+			cv::circle(m_display.m_imgOsd[1],m_backNodePos,radius ,cvScalar(0,0,255,255),thickness,8,0);	
 		}
+		m_gridNodes[tmp_row][tmp_col].isCircle = false;
+		//m_gridNodes[tmp_row][tmp_col].renderFlag= false;
 	}
 	else
 	{		
@@ -3974,8 +4000,8 @@ void CProcess::MvBallCamByClickGunImg(int x, int y,bool needChangeZoom)
 	
 	Point camCoords;
 	CvtImgCoords2CamCoords(imgCoords, camCoords);
-	printf("\r\n[%s]:========Image Points: < %d , %d >",__FUNCTION__,(imgCoords.x),(imgCoords.y));
-	printf("\r\n[%s]:========Remap Points:< %d , %d >\r\n",__FUNCTION__,(camCoords.x*2),(camCoords.y*2));
+	//printf("\r\n[%s]:========Image Points: < %d , %d >",__FUNCTION__,(imgCoords.x),(imgCoords.y));
+	//printf("\r\n[%s]:========Remap Points:< %d , %d >\r\n",__FUNCTION__,(camCoords.x*2),(camCoords.y*2));
 	TransformPixByOriginPoints(camCoords.x, camCoords.y );
 }
 
@@ -4004,7 +4030,6 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 	RightPoint.x -=offset_x;
 	LeftPoint.y -= offset_y;
 	RightPoint.y -=offset_y;
-
 	
 	delta_X = abs(LeftPoint.x - RightPoint.x) ;
 
@@ -4280,6 +4305,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 				int row = m_curNodeIndex/(GRID_COLS_15+2);
 				int col = m_curNodeIndex%(GRID_COLS_15+2);
 				m_calibratedNodes[row][col].isShow = true;
+				m_gridNodes[row][col].renderFlag== true;
 				m_gridNodes[row][col].has_mark = 1;
 				m_calibratedNodes[0][0].x = 60;
 				m_calibratedNodes[0][0].y = 45;
@@ -6905,4 +6931,59 @@ void CProcess::MSGAPI_set_mtdminsize(long lParam)
 void CProcess::MSGAPI_set_mtdsensi(long lParam)
 {
 	sThis->msgdriv_event(MSGID_EXT_SETMTDSENSI,NULL);
+}
+
+
+void CProcess::setGridMapCalibrate(bool flag)
+{
+	m_bGridMapCalibrate = flag;
+}
+const bool CProcess::getGridMapCalibrate()
+{
+	return m_bGridMapCalibrate;
+}
+void CProcess::setQueryZoomFlag(bool flag)
+{
+	m_queryZoom = flag;
+}
+const bool CProcess::getQueryZoomFlag()
+{
+	return m_queryZoom ;
+}
+int CProcess::getCurrentZoomValue()
+{
+	return zoomPos;
+}
+void CProcess::addMarkNum()
+{
+	m_successCalibraNum++;
+	return;
+}
+void CProcess::setPTZflag(bool flag)
+{
+	m_bRefreshPTZValue = flag;
+	return ;
+}
+bool CProcess::getPTZflag()
+{
+	return m_bRefreshPTZValue;
+}
+
+void CProcess::CaptureMouseClickPoint(int x, int y)
+{
+	m_curClickPoint = Point(x, y);
+}
+cv::Point CProcess::getCurrentMouseClickPoint()
+{
+	return m_curClickPoint;
+}
+
+void CProcess::setBallImagePoint(int &x, int &y) 
+{
+	m_ballDestPoint.x = x;
+	m_ballDestPoint.y = y;
+}
+cv::Point CProcess::getBallImagePoint()
+{
+	return m_ballDestPoint;
 }

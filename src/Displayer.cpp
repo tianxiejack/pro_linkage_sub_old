@@ -2709,9 +2709,10 @@ int CDisplayer::menu_init( )
             {"使用串口设置","使用网络设置","返回"},
             {"波特率     9600","球机地址   001","球机协议   PALCO-D","工作模式   485半双工","返回"},
             {"网络协议","IP地址","登录用户名","登录密码","返回"},
-             {"手动选择特征点","开始标定","返回"},
-            {"检测区域设置","用鼠标指针左键框选、点选:增加区域","用鼠标指针右键框选、点选:删除区域","按回车保存设置，按2返回"}
+            {"手动选择特征点","开始标定","返回"}
 };
+
+    unsigned char mtdbuf[1][7][128] = {{"检测区域设置","用鼠标指针左键框选、点选:增加区域","用鼠标指针右键框选、点选:删除区域","按回车保存设置，按2返回"}};
 
 	unsigned char resolbuf[maxresolid][128] = {
             "格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
@@ -2734,6 +2735,17 @@ int CDisplayer::menu_init( )
 		}
 	}
 
+	for(int j = 0; j < 5; j++)
+	{
+		disMtdBuf[0][j].alpha = 2;
+		disMtdBuf[0][j].ctrl = 0;
+		disMtdBuf[0][j].posx = 1500;
+		disMtdBuf[0][j].color = 2;
+		disMtdBuf[0][j].posy = (j + 1) * 60;
+		setlocale(LC_ALL, "zh_CN.UTF-8");
+		swprintf(disMtd[0][j], 33, L"%s", mtdbuf[0][j]);
+	}
+
 	swprintf(disMenu[submenu_setimg][1], 33, L"%s", resolbuf[oresoltype]);
 
 	disMenuBuf[mainmenu0][2].posy = 4 * 60;
@@ -2746,17 +2758,17 @@ int CDisplayer::menu_init( )
 	m_currentMenuPos[submenu_setball][2].posY = 4 * 60; 
 	m_currentMenuPos[submenu_setcom][4].posY = 6 * 60;
 
-	disMenuBuf[submenu_setmtdrigion][0].posx = 960 - strlen((char *)menubuf[submenu_setmtdrigion][0])*3;
-	disMenuBuf[submenu_setmtdrigion][1].posx = 960 - strlen((char *)menubuf[submenu_setmtdrigion][1])*3;
-	disMenuBuf[submenu_setmtdrigion][2].posx = 960 - strlen((char *)menubuf[submenu_setmtdrigion][2])*3;
-	disMenuBuf[submenu_setmtdrigion][3].posx = 960 - strlen((char *)menubuf[submenu_setmtdrigion][3])*3;
-	disMenuBuf[submenu_setmtdrigion][4].posx = 1600;
-	disMenuBuf[submenu_setmtdrigion][4].posy = 60;
-	disMenuBuf[submenu_setmtdrigion][0].color = 1;
-	disMenuBuf[submenu_setmtdrigion][1].color = 1;
-	disMenuBuf[submenu_setmtdrigion][2].color = 1;
-	disMenuBuf[submenu_setmtdrigion][3].color = 1;
-	disMenuBuf[submenu_setmtdrigion][4].color = 3;
+	disMtdBuf[0][0].posx = 960 - strlen((char *)mtdbuf[0][0])*3;
+	disMtdBuf[0][1].posx = 960 - strlen((char *)mtdbuf[0][1])*3;
+	disMtdBuf[0][2].posx = 960 - strlen((char *)mtdbuf[0][2])*3;
+	disMtdBuf[0][3].posx = 960 - strlen((char *)mtdbuf[0][3])*3;
+	disMtdBuf[0][4].posx = 1600;
+	disMtdBuf[0][4].posy = 60;
+	disMtdBuf[0][0].color = 1;
+	disMtdBuf[0][1].color = 1;
+	disMtdBuf[0][2].color = 1;
+	disMtdBuf[0][3].color = 1;
+	disMtdBuf[0][4].color = 3;
 
 	disMenuBuf[mainmenu1][1].color= 3;
 	disMenuBuf[mainmenu1][2].color= 3;
@@ -3600,6 +3612,7 @@ void CDisplayer::gl_display(void)
 		//IrisAndFocus();
 		OSDFunc();
 		MenuFunc(m_menuindex);
+		MtdOSDFunc();
 	}		
 
 /***************************************************** Menu *******************************************************************/
@@ -3866,7 +3879,10 @@ int CDisplayer::MenuFunc(int index)
 	unsigned char r, g, b, a, color, colorbak, Enable;
 	short x, y;
 	char font,fontsize;
-	
+
+	if(plat->setrigion_flagv20)
+		return -1;
+		
 	if(-1 == index)
 		return -1;
 
@@ -3934,6 +3950,77 @@ int CDisplayer::MenuFunc(int index)
 	}
 	
 	return 0;
+}
+
+
+void CDisplayer::MtdOSDFunc()
+{
+	unsigned char r, g, b, a, color, colorbak, Enable;
+	short x, y;
+	char font,fontsize;
+
+	if(0 == plat->setrigion_flagv20)
+		return;
+
+	for(int i = 0; i < 5; i++)
+	{
+		Enable = disMtdBuf[0][i].ctrl;
+		if(!Enable)
+		{
+			 x = disMtdBuf[0][i].posx;
+			 y = disMtdBuf[0][i].posy;
+		 	 a = disMtdBuf[0][i].alpha;
+			 color = disMtdBuf[0][i].color;
+			 font = 1;
+			 fontsize = 4;
+
+			switch(color)
+			{
+				case 1:
+					r = 0;
+					g = 0;
+					b = 0;
+					break;
+				case 2:
+					r = 255;
+					g = 255;
+					b = 255;
+					break;
+				case 3:
+					r = 255;
+					g = 0;
+					b = 0;
+					break;
+				case 4:
+					r = 255;
+					g = 255;
+					b = 0;
+					break;
+				case 5:
+					r = 0;
+					g = 0;
+					b = 255;
+					break;
+				case 6:
+					r = 0;
+					g = 255;
+					b = 0;
+					break;
+				case 7:
+					color = colorbak;
+					break;
+			}
+
+			if(a > 0x0a)
+				a = 0x0a;
+			if(a == 0x0a)
+				a = 0;
+			else
+				a = 255 - a*16;
+			chinese_osd(x, y, disMtd[0][i],font ,fontsize, r, g, b, a, VIDEO_DIS_WIDTH, VIDEO_DIS_HEIGHT);
+		}
+	}
+	return;
 }
 
 void CDisplayer::drawtriangle(Mat frame, char direction, char alpha)

@@ -676,14 +676,14 @@ void app_ctrl_setnumber(char key)
 
 		}
 	}
-	else if((submenu_setmtdrigion == pMenuStatus->MenuStat) && (key == '2'))
+	else if((1 == pIStuts->MtdSetRigion) && (key == '2'))
 	{
 		CMD_EXT tmpCmd = {0};
 		tmpCmd.MtdSetRigion = 0;
 		app_ctrl_setMtdRigionStat(&tmpCmd);
 		app_ctrl_setMenuStat(submenu_mtd);
 		g_displayMode = MENU_MAIN_VIEW;
-		memset(plat->m_display.disMenu[submenu_setmtdrigion][4], 0, sizeof(plat->m_display.disMenu[submenu_setmtdrigion][4]));
+		memset(plat->m_display.disMtd[0][4], 0, sizeof(plat->m_display.disMenu[0][4]));
 	}
 	else if((submenu_mtd == pMenuStatus->MenuStat) && (pMenuStatus->mtdnum_deng == 1))
 	{
@@ -763,7 +763,11 @@ void app_ctrl_enter()
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
 
-	if(mainmenu0 == pMenuStatus->MenuStat)
+	if(1 == pIStuts->MtdSetRigion)
+	{
+		app_ctrl_savemtdrigion();
+	}
+	else if(mainmenu0 == pMenuStatus->MenuStat)
 	{
 		if(strcmp(init_passwd, pMenuStatus->Passwd))
 		{
@@ -868,7 +872,6 @@ void app_ctrl_enter()
 				mouse_workmode = SetMteRigion_Mode;
 				app_ctrl_setMtdRigionStat(&tmpCmd);
 				g_displayMode = MENU_GUN;
-				app_ctrl_setMenuStat(submenu_setmtdrigion);
 			}
 		}
 		else if(1 == pMenuStatus->menuarray[submenu_mtd].pointer)
@@ -1012,11 +1015,6 @@ void app_ctrl_enter()
 		if(4 == pMenuStatus->menuarray[submenu_setnet].pointer)
 			app_ctrl_setMenuStat(submenu_setball);
 	}
-	else if(submenu_setmtdrigion == pMenuStatus->MenuStat)
-	{
-		app_ctrl_savemtdrigion();
-	}
-
 
 	printf("\r\n[%s]: pIStuts->MenuStat = %d ",__FUNCTION__, pMenuStatus->MenuStat);
 }

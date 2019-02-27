@@ -663,7 +663,7 @@ void* recv_msg(SENDST *RS422)
 				case cursor_move:
 				{
 					if((HANDLE_LINK_MODE == g_AppWorkMode) && 
-						((-1==proc->extMenuCtrl.MenuStat)||(submenu_handleMatchPoints==proc->extMenuCtrl.MenuStat)||(submenu_handleMatchPoints==proc->extMenuCtrl.MenuStat)||(submenu_setmtdrigion==proc->extMenuCtrl.MenuStat)||(MENU_TEST_RESULT_VIEW==g_displayMode)))
+						((-1==proc->extMenuCtrl.MenuStat)||(submenu_handleMatchPoints==proc->extMenuCtrl.MenuStat)||(submenu_handleMatchPoints==proc->extMenuCtrl.MenuStat)||(1==proc->extInCtrl->MtdSetRigion)||(MENU_TEST_RESULT_VIEW==g_displayMode)))
 					{
 						proc->set_mouse_show(1);
 						proc->dtimer.startTimer(proc->mouse_show_id,3000);

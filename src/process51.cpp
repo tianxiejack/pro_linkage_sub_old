@@ -1987,16 +1987,9 @@ osdindex++;	//cross aim
 	
 #if __MOVE_DETECT__
 //mtd grid
-	if(setrigion_flagv20)
-	{
-		DrawMtdYellowGrid(1);
-		DrawMtdRedGrid(1);
-	}
-	else
-	{
-		DrawMtdYellowGrid(0);
-		DrawMtdRedGrid(0);
-	}
+		DrawMtdYellowGrid();
+		DrawMtdRedGrid();
+
 
 	osdindex++;
 	osd_index++;
@@ -2550,6 +2543,7 @@ void CProcess::DrawJoys()
 	int jradius_s = 10;
 	cv::Point jcenter = get_joycenter();
 	int thickness = 2;
+	static int flag = 0;
 	
 	Line_Param_fb lineparm;
 	lineparm.x = jcenter.x;
@@ -2560,10 +2554,14 @@ void CProcess::DrawJoys()
 	static cv::Point jcenter_s_bak;
 	static int jradius_s_bak;
 
-	lineparm.frcolor = 0;
-	DrawCircle(frame, jcenter_s_bak, jradius_s_bak, lineparm.frcolor, thickness);
-	DrawCircle(frame, jcenter, jradius, lineparm.frcolor, thickness);
-	DrawcvDashcross(frame, &lineparm, dashlen, dashlen);
+	if(flag)
+	{
+		lineparm.frcolor = 0;
+		DrawCircle(frame, jcenter_s_bak, jradius_s_bak, lineparm.frcolor, thickness);
+		DrawCircle(frame, jcenter, jradius, lineparm.frcolor, thickness);
+		DrawcvDashcross(frame, &lineparm, dashlen, dashlen);
+		flag = 0;
+	}
 	
 	if((m_display.displayMode == MAIN_VIEW)&&(m_display.m_menuindex == -1))
 	{		
@@ -2573,6 +2571,7 @@ void CProcess::DrawJoys()
 		DrawCircle(frame, jcenter_s_bak, jradius_s_bak, lineparm.frcolor, thickness);
 		DrawCircle(frame, jcenter, jradius, lineparm.frcolor, thickness);
 		DrawcvDashcross(frame, &lineparm, dashlen, dashlen);
+		flag = 1;
 	}
 }
 
@@ -2581,16 +2580,24 @@ void CProcess::DrawMouse()
 	Mat frame = m_display.m_imgOsd[1];
 	int linecolor, color;
 	static cv::Point jos_mouse_bak;
-
-	linecolor = 0;
-	color = 0;
-	DrawArrow(frame, jos_mouse_bak, linecolor, color);
+	static int flag = 0; 
 	
-	jos_mouse_bak = jos_mouse;
-	linecolor = 1;
-	color = 2;
-	if(mouse_show)
+	if(flag)
+	{
+		linecolor = 0;
+		color = 0;
 		DrawArrow(frame, jos_mouse_bak, linecolor, color);
+		flag = 0;
+	}
+	
+	if(mouse_show)
+	{
+		jos_mouse_bak = jos_mouse;
+		linecolor = 1;
+		color = 2;
+		DrawArrow(frame, jos_mouse_bak, linecolor, color);
+		flag = 1;
+	}
 }
 
 void CProcess::DrawTrigInter()
@@ -2721,9 +2728,11 @@ void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, i
 	cv::circle(frame, center, radius ,colour1, thickness, 8, 0);
 }
 
-void CProcess::DrawMtdYellowGrid(int flag)
+void CProcess::DrawMtdYellowGrid()
 {
 	unsigned int drawmtdgridId; 
+	static int flag = 0;
+	
 	if(m_display.g_CurDisplayMode == MAIN_VIEW)
 	{			
 		drawmtdgridId = 1;
@@ -2736,36 +2745,49 @@ void CProcess::DrawMtdYellowGrid(int flag)
 	Osd_cvPoint start, end;
 	int interval_w = gun_resolu[0] / GRID_CNT_X;
 	int interval_h = gun_resolu[1] / GRID_CNT_Y;
-		
-	for(int i = 1; i < GRID_CNT_X; i++)
+
+
+	if(flag)
 	{
-		start.x = interval_w * i;
-		start.y = 0;
-		end.x = interval_w * i;
-		end.y = gun_resolu[1];
-		if(flag)
+		for(int i = 1; i < GRID_CNT_X; i++)
 		{
-			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
-		}
-		else
-		{
+			start.x = interval_w * i;
+			start.y = 0;
+			end.x = interval_w * i;
+			end.y = gun_resolu[1];
 			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
 		}
+		for(int j = 1; j < GRID_CNT_Y; j++)
+		{
+			start.x = 0;
+			start.y = interval_h * j;
+			end.x = gun_resolu[0];
+			end.y = interval_h * j;
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
+		}
+		flag = 0;
 	}
-	for(int j = 1; j < GRID_CNT_Y; j++)
+
+
+	if(setrigion_flagv20)
 	{
-		start.x = 0;
-		start.y = interval_h * j;
-		end.x = gun_resolu[0];
-		end.y = interval_h * j;
-		if(flag)
+		for(int i = 1; i < GRID_CNT_X; i++)
 		{
+			start.x = interval_w * i;
+			start.y = 0;
+			end.x = interval_w * i;
+			end.y = gun_resolu[1];
 			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
 		}
-		else
+		for(int j = 1; j < GRID_CNT_Y; j++)
 		{
-			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
+			start.x = 0;
+			start.y = interval_h * j;
+			end.x = gun_resolu[0];
+			end.y = interval_h * j;
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
 		}
+		flag = 1;
 	}
 }
 void CProcess::DrawGridMap(int flag)
@@ -3038,10 +3060,11 @@ void CProcess::DrawSelectedCircle(bool drawFlag, int drawNodesCount)
 }
 
 
-void CProcess::DrawMtdRedGrid(int flag)
+void CProcess::DrawMtdRedGrid()
 {
 	unsigned int drawmtdgridRectId; 
 	cv::Rect tmp;
+	static int flag = 0;
 
 	int interval_w = gun_resolu[0] / GRID_CNT_X;
 	int interval_h = gun_resolu[1] / GRID_CNT_Y;
@@ -3055,24 +3078,29 @@ void CProcess::DrawMtdRedGrid(int flag)
 		drawmtdgridRectId = extInCtrl->SensorStat;
 	}
 
-	for(int i = 0; i < GRID_CNT_X; i++)
-		for(int j = 0; j < GRID_CNT_Y; j++)
-		{
-			if(grid19x10_bak[i][j].state)
-			{
-				tmp.x = (i) * interval_w;
-				tmp.y = (j) * interval_h;
-				tmp.width = interval_w;
-				tmp.height = interval_h;
-				
-				rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,0,0),3,8);
-			}
-		}
-		
-	memcpy(grid19x10_bak, grid19x10, sizeof(grid19x10_bak));
-
 	if(flag)
 	{
+		for(int i = 0; i < GRID_CNT_X; i++)
+			for(int j = 0; j < GRID_CNT_Y; j++)
+			{
+				if(grid19x10_bak[i][j].state)
+				{
+					tmp.x = (i) * interval_w;
+					tmp.y = (j) * interval_h;
+					tmp.width = interval_w;
+					tmp.height = interval_h;
+					
+					rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,0,0),3,8);
+				}
+			}
+			
+		flag = 0;
+	}
+
+	if(setrigion_flagv20)
+	{
+		memcpy(grid19x10_bak, grid19x10, sizeof(grid19x10_bak));
+		
 		for(int i = 0; i < GRID_CNT_X; i++)
 			for(int j = 0; j < GRID_CNT_Y; j++)
 			{
@@ -3085,6 +3113,8 @@ void CProcess::DrawMtdRedGrid(int flag)
 					rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,255,255),3,8);
 				}
 			}
+
+		flag = 1;
 	}
 }
 

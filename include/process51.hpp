@@ -200,8 +200,8 @@ public:
 	void OnKeyDwn(unsigned char key);
 	void OnSpecialKeyDwn(int key,int x, int y);
 	void OnJosCtrl(int key, int value);
-	void DrawMtdYellowGrid(int flag);
-	void DrawMtdRedGrid(int flag);
+	void DrawMtdYellowGrid();
+	void DrawMtdRedGrid();
 	void DrawGridMap(int flag);
 	void DrawGridMap_16X12(int flag);
 

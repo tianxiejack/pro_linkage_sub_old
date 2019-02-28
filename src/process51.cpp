@@ -4249,6 +4249,39 @@ void CProcess::OnMouseLeftDwn(int x, int y)
 		manualHandleKeyPoints(x,y);		
 	}	
 };
+void CProcess::setWorkMode(GB_WorkMode workmode)
+{
+	g_AppWorkMode = workmode;
+	int value = 0;
+	if(g_AppWorkMode == AUTO_LINK_MODE)
+	{
+		value = 1;
+		g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = true;
+	}
+	else
+	{
+		value = 0;
+		g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
+	}
+
+	if(g_AppWorkMode == AUTO_LINK_MODE)
+	{
+		set_mouse_show(0);
+	}
+	else if(g_AppWorkMode == ONLY_BALL_MODE)
+	{
+		set_mouse_show(0);
+	}
+	else if(g_AppWorkMode == AUTO_LINK_MODE)
+	{
+		
+	}
+			
+	SENDST	tmp;
+	tmp.cmd_ID = mtdmode;
+	tmp.param[0] = value ;
+	ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+}
 
 void CProcess::OnJosCtrl(int key, int param)
 {
@@ -4257,36 +4290,7 @@ void CProcess::OnJosCtrl(int key, int param)
 		case 1:
 		{
 			GB_WorkMode nextMode = (GB_WorkMode)(param - 1);
-			g_AppWorkMode = nextMode;
-			int value = 0;
-			if(g_AppWorkMode == AUTO_LINK_MODE)
-			{
-				value = 1;
-				g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = true;
-			}
-			else
-			{
-				value = 0;
-				g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
-			}
-
-			if(g_AppWorkMode == AUTO_LINK_MODE)
-			{
-				set_mouse_show(0);
-			}
-			else if(g_AppWorkMode == ONLY_BALL_MODE)
-			{
-				set_mouse_show(0);
-			}
-			else if(g_AppWorkMode == AUTO_LINK_MODE)
-			{
-				
-			}
-			
-			SENDST	tmp;
-			tmp.cmd_ID = mtdmode;
-			tmp.param[0] = value ;
-			ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+			setWorkMode(nextMode);
 		}
 			break;
 		case 2:
@@ -4303,20 +4307,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		case 1:
 			{
 				GB_WorkMode nextMode = GB_WorkMode(((int)g_AppWorkMode+1)% MODE_COUNT);
-				g_AppWorkMode = nextMode;
-				int value = 0;
-				if(g_AppWorkMode == AUTO_LINK_MODE){
-					value = 1;
-					g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = true;
-				}
-				else{
-					value = 0;
-					g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
-				}
-				SENDST	tmp;
-				tmp.cmd_ID = mtdmode;
-				tmp.param[0] = value ;
-				ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+				setWorkMode(nextMode);
 			}
 			break;
 		case 2:

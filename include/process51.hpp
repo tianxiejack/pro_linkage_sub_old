@@ -200,6 +200,7 @@ public:
 	void OnKeyDwn(unsigned char key);
 	void OnSpecialKeyDwn(int key,int x, int y);
 	void OnJosCtrl(int key, int value);
+	void setWorkMode(GB_WorkMode workmode);
 	void DrawMtdYellowGrid();
 	void DrawMtdRedGrid();
 	void DrawGridMap(int flag);

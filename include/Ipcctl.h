@@ -80,6 +80,7 @@ typedef enum
     ipcjoyevent,
     refreshptz,
     josctrl,
+    workmode,
     enter_gridmap_view,
     invalid
 }CMD_ID;
@@ -812,6 +813,10 @@ typedef struct{
 	unsigned int commuDuratInfo:16;
 }LKOSDSTATUS;
 
+typedef struct{
+	int IrisAndFocusAndExit;
+	int OSD_workMode;
+}OSD_ctrlParams;
 
 typedef struct out_frame_angle
 {

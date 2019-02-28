@@ -2277,34 +2277,7 @@ osdindex++;	//cross aim
 			//Osdflag[osdindex]=1;
 		}
 
-		{			
-			sprintf(tmp_str[0], "ToTal: %d", 204/*17X12*/);	
-			putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(45,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(255,255,0,255), 1);	
-
-			sprintf(tmp_str[2], "Current:");	
-			putText(m_display.m_imgOsd[1],tmp_str[2],cv::Point(260,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(255,255,0,255), 1);	
-
-			putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(345,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-			sprintf(tmp_str[1], "%d", (m_curNodeIndex+1));	
-			putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(345,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
-
-			int row = (m_curNodeIndex/(GRID_COLS_15 +2));
-			int col = (m_curNodeIndex%(GRID_COLS_15 +2));
-			putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(600,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-			sprintf(tmp_str[3], "<%d - %d>",row,col );	
-			putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(600,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,255,255), 1);	
-
-			putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-			sprintf(tmp_str[4], "Finished:%d",m_successCalibraNum);	
-			putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
-
-			putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(1700,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
-			sprintf(m_appVersion, "Version:%d.%d.%d",m_AppVersion>>6,(m_AppVersion>>3)&0x07,m_AppVersion&0x07);	
-			putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(1700,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,255,255,255), 1);	
-
-			//Osdflag[osdindex]=1;
-
-		}
+		renderText(CProcess::DRAW_NOTICE_TEXTS);
 
 		renderflag[0]=1;
 	}
@@ -2323,13 +2296,7 @@ osdindex++;	//cross aim
 		DrawGridMapNodeCircles_16X12(false);
 		
 	#endif
-		
-		putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(45,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
-		putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(345,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-		putText(m_display.m_imgOsd[1],tmp_str[2],cv::Point(260,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);	
-		putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(600,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
-		putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
-		putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(1700,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
+		renderText(CProcess::ERASE_TEXTS);
 		recIn.x=back_center.x;
 		recIn.y=back_center.y;
 		recIn.width = GRID_WIDTH_120;
@@ -2339,15 +2306,6 @@ osdindex++;	//cross aim
 	}
 renderflag[0] = 0;
 }
-	
-
-
-
-
-
-
-
-	
 
 
 /***********************************************************************************/
@@ -4684,32 +4642,32 @@ void CProcess::OnKeyDwn(unsigned char key)
 						int total = (GRID_COLS_15+2)*(GRID_ROWS_11+1);
 						int cols = GRID_COLS_15+2;
 						m_curNodeIndex = (m_curNodeIndex -cols + total)%total;
-						if(m_curNodeIndex > 112)// total 192/432 nodes
+						if(m_curNodeIndex > 112)	// total 192/432 nodes
 						{
 							m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
 						}
-						else{
+						else
+						{
 							m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
 						}
 						//printf("\r\n[%s]:Press Number Key = 2\r\n",__FUNCTION__);
 					}
 					break;
-				case '3':
-					if(g_displayMode == MENU_MAIN_VIEW)
-					{
+				case '3':					
+				#if 0
+					if(g_displayMode == MENU_MAIN_VIEW) {
 						printf("\r\n[%s]:MENU_MAIN_VIEW\r\n",__FUNCTION__);
 						g_displayMode = MENU_GRID_MAP_VIEW;
 					}
-					else if(g_displayMode == MENU_GRID_MAP_VIEW)
-					{
+					else if(g_displayMode == MENU_GRID_MAP_VIEW) {
 						g_displayMode = MENU_MAIN_VIEW;
 						printf("\r\n[%s]:MENU_GRID_MAP_VIEW\r\n",__FUNCTION__);
 						//printf("\r\n[%s]:Press Number Key = 3\r\n",__FUNCTION__);
 					}
-					else{
-
+					else {
 					}
-
+				#endif
+				
 					break;
 				case '4':
 					if(g_displayMode == MENU_GRID_MAP_VIEW)
@@ -6982,7 +6940,58 @@ void CProcess::setBallImagePoint(int &x, int &y)
 	m_ballDestPoint.x = x;
 	m_ballDestPoint.y = y;
 }
+
 cv::Point CProcess::getBallImagePoint()
 {
 	return m_ballDestPoint;
 }
+
+void CProcess::renderText(enum DrawBehavior drawbehavior)
+{			
+	if(drawbehavior == CProcess::DRAW_NOTICE_TEXTS){
+	sprintf(tmp_str[0], "ToTal: %d", 204/*17X12*/);	
+	putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(45,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(255,255,0,255), 1);	
+
+	sprintf(tmp_str[2], "Current:");	
+	putText(m_display.m_imgOsd[1],tmp_str[2],cv::Point(260,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(255,255,0,255), 1);	
+
+	putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(345,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+	sprintf(tmp_str[1], "%d", (m_curNodeIndex+1));	
+	putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(345,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
+
+	int row = (m_curNodeIndex/(GRID_COLS_15 +2));
+	int col = (m_curNodeIndex%(GRID_COLS_15 +2));
+	putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(600,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+	sprintf(tmp_str[3], "<%d - %d>",row,col );	
+	putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(600,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,255,255), 1);	
+
+	putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+	sprintf(tmp_str[4], "Finished:%d",m_successCalibraNum);	
+	putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
+
+	putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(1700,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
+	sprintf(m_appVersion, "Version:%d.%d.%d",m_AppVersion>>6,(m_AppVersion>>3)&0x07,m_AppVersion&0x07);	
+	putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(1700,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,255,255,255), 1);	
+	}
+	else if (drawbehavior == CProcess::ERASE_TEXTS)
+	{
+		putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(45,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
+		putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(345,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+		putText(m_display.m_imgOsd[1],tmp_str[2],cv::Point(260,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);	
+		putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(600,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
+		putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(800,25),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
+		putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(1700,25),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
+
+
+	}else{
+
+	}
+
+}
+void CProcess::renderCircles(int radius, cv::Point position)
+{
+
+
+
+}
+	

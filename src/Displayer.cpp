@@ -2701,9 +2701,11 @@ int CDisplayer::menu_init( )
 	unsigned char menubuf[menumaxid][7][128] = {
             {"请输入密码呼出菜单", "", "按回车确认", "按F2退出"},
             {"请输入密码呼出菜单", "密码输入错误，","按回车后再次输入", "按回车确认", "按F2退出"},
-            {"内参标定","枪球画面标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},
+            /*{"内参标定","枪球画面标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},*/
+            /*{"枪球自动标定","枪球手动标定","返回"},*/
+            {"内参标定","网格标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},
             {"枪机内参标定","球机内参标定","返回"},
-            {"枪球自动标定","枪球手动标定","返回"},
+            {"   ","枪机画面网格标定","返回"},
             {"检测区域选择","目标个数     1","跟踪持续时间 1秒","最大目标面积 10000像素","最小目标面积 9像素","灵敏度       30","返回"},
             {"扫描方式均为逐行扫描","格式 1920x1080@60Hz","应用","返回"},
             {"使用串口设置","使用网络设置","返回"},
@@ -2751,7 +2753,11 @@ int CDisplayer::menu_init( )
 	disMenuBuf[mainmenu0][2].posy = 4 * 60;
 	disMenuBuf[mainmenu0][3].posy = 5 * 60;
 	disMenuBuf[submenu_carli][2].posy = 4 * 60;
-	disMenuBuf[submenu_gunball][2].posy = 4 * 60;
+	disMenuBuf[submenu_gunball][1].posx= 1300;
+	disMenuBuf[submenu_gunball][1].posy = 10;
+	disMenuBuf[submenu_gunball][2].posx = 1600;
+	disMenuBuf[submenu_gunball][2].posy = 10;
+	
 	disMenuBuf[submenu_setball][2].posy = 4 * 60;
 	disMenuBuf[submenu_setcom][4].posy = 6 * 60;
 	disMenuBuf[submenu_setnet][4].posy = 6 * 60;

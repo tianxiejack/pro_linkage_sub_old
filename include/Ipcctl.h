@@ -80,6 +80,7 @@ typedef enum
     ipcjoyevent,
     refreshptz,
     josctrl,
+    enter_gridmap_view,
     invalid
 }CMD_ID;
 

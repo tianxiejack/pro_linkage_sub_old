@@ -203,6 +203,7 @@ public:
 	void setWorkMode(GB_WorkMode workmode);
 	void DrawMtdYellowGrid();
 	void DrawMtdRedGrid();
+	void DrawMtd_Rigion_Target();
 	void DrawGridMap(int flag);
 	void DrawGridMap_16X12(int flag);
 

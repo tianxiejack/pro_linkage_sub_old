@@ -1987,180 +1987,10 @@ osdindex++;	//cross aim
 	
 #if __MOVE_DETECT__
 //mtd grid
-		DrawMtdYellowGrid();
-		DrawMtdRedGrid();
+	DrawMtdYellowGrid();
+	DrawMtdRedGrid();
+	DrawMtd_Rigion_Target();
 
-
-	osdindex++;
-	osd_index++;
-	{
-		unsigned int mtd_warningbox_Id;
-		Osd_cvPoint startwarnpoly,endwarnpoly;
-		int polwarn_flag = 0;
-		if(m_display.g_CurDisplayMode == MAIN_VIEW)
-		{			
-			mtd_warningbox_Id = 1;
-		}
-		else
-		{
-			mtd_warningbox_Id = extInCtrl->SensorStat;
-		}
-			
-		if(Osdflag[osdindex])
-		{
-			int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
-			for(int i = 0; i < cnt; i++)
-				for(int j = 0; j < edge_contours_bak[i].size(); j++)
-				{
-					polwarn_flag = (j+1)%edge_contours_bak[i].size();
-					startwarnpoly.x = edge_contours_bak[i][j].x;
-					startwarnpoly.y = edge_contours_bak[i][j].y;
-					endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
-					endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
-					DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,0,3);
-				}
-
-			cv::Rect tmp;
-			mouserect recttmp;
-			for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
-			{					
-					recttmp.x = (*plist).trkobj.targetRect.x;
-					recttmp.y = (*plist).trkobj.targetRect.y;
-					recttmp.w = (*plist).trkobj.targetRect.width;
-					recttmp.h = (*plist).trkobj.targetRect.height;
-					recttmp = mapfullscreen2gunv20(recttmp);
-					tmp.x = recttmp.x;
-					tmp.y = recttmp.y;
-					tmp.width = recttmp.w;
-					tmp.height = recttmp.h;
-					DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);
-			}
-			if(osd_flag[osd_index]){
-				recttmp.x = cur_targetRect_bak.x;
-				recttmp.y = cur_targetRect_bak.y;
-				recttmp.w = cur_targetRect_bak.width;
-				recttmp.h = cur_targetRect_bak.height;
-				recttmp = mapfullscreen2gunv20(recttmp);
-				tmp.x = recttmp.x;
-				tmp.y = recttmp.y;
-				tmp.width = recttmp.w;
-				tmp.height = recttmp.h;
-				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);	
-				osd_flag[osd_index] = 0;
-			}
-			Osdflag[osdindex]=0;
-		}
-
-		if(m_bMoveDetect)
-		{
-			edge_contours_bak = edge_contours;
-			int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
-			for(int i = 0; i < cnt; i++)
-				for(int j = 0; j < edge_contours_bak[i].size(); j++)
-				{
-					polwarn_flag = (j+1)%edge_contours_bak[i].size();
-					startwarnpoly.x = edge_contours_bak[i][j].x;
-					startwarnpoly.y = edge_contours_bak[i][j].y;
-					endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
-					endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
-					DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,5,3);
-				}
-
-			detect_vect_arr_bak = detect_vect_arr;
-			mvListsum.clear();
-			int num = 0;
-			for(int i = 0; i < detect_vect_arr_bak.size(); i++)
-			{
-				getTargetNearToCenter(&detect_vect_arr_bak[i]);
-				mvIndexHandle(&mvList_arr[i],detect_vect_arr_bak[i],detectNum);
-				/*
-				for(int j = 0; j < mvList_arr[i].size(); j++)
-				{
-					if(num < detectNum)
-						mvListsum.push_back(mvList_arr[i][j]);
-					num++;
-				}*/
-				if(i == 0)
-					mvListsum = mvList_arr[i];
-			}
-
-			if(forwardflag)
-			{
-				switchMvTargetForwad();
-				forwardflag = 0;
-			}
-			else if(backflag)
-			{
-				switchMvTargetForwad();
-				backflag = 0;
-			}
-		
-			char tmpNum = 0;
-			cv::Rect tmp;
-			mouserect recttmp;
-			tmpNum = 0;
-			for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
-			{	
-				color = 3;
-
-				recttmp.x = (*plist).trkobj.targetRect.x;
-				recttmp.y = (*plist).trkobj.targetRect.y;
-				recttmp.w = (*plist).trkobj.targetRect.width;
-				recttmp.h = (*plist).trkobj.targetRect.height;
-				recttmp = mapfullscreen2gunv20(recttmp);
-				tmp.x = recttmp.x;
-				tmp.y = recttmp.y;
-				tmp.width = recttmp.w;
-				tmp.height = recttmp.h;
-
-				//if(color == 6)
-					//MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
-
-				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
-			}
-			if((0 == lose_timer_flag) && (mvListsum.size() > 0))
-			{
-				
-				color = 6;
-				cur_targetRect_bak = cur_targetRect;
-				recttmp.x = cur_targetRect_bak.x;
-				recttmp.y = cur_targetRect_bak.y;
-				recttmp.w = cur_targetRect_bak.width;
-				recttmp.h = cur_targetRect_bak.height;
-				recttmp = mapfullscreen2gunv20(recttmp);
-				tmp.x = recttmp.x;
-				tmp.y = recttmp.y;
-				tmp.width = recttmp.w;
-				tmp.height = recttmp.h;
-
-				if(1 == g_GridMapMode)
-				{
-					//pThis->getLinearDeviation(tmp.x+tmp.width/2,tmp.y + tmp.height/2,GRID_WIDTH_120,GRID_HEIGHT_90,false);//getLinearDeviation(x,y);
-					pThis->MvBallCamUseLinearDeviationSelectRect(tmp.x+tmp.width/2, tmp.y + tmp.height/2, false);
-				}
-				else if(2 == g_GridMapMode)
-				{
-					Point2i inPoint, outPoint;
-					inPoint.x = tmp.x;
-					inPoint.y = tmp.y;
-					m_trig.Point2getPos(inPoint, outPoint);
-					
-					trkmsg.cmd_ID = speedloop;
-					memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
-					memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
-					ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-				}
-				else
-				{
-					MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
-				}
-				
-				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
-				osd_flag[osd_index] = 1;
-			}
-			Osdflag[osdindex]=1;
-		}
-	}
 #endif
 
 	osdindex++;
@@ -3114,6 +2944,178 @@ void CProcess::DrawMtdRedGrid()
 				}
 			}
 
+		flag = 1;
+	}
+}
+
+void CProcess::DrawMtd_Rigion_Target()
+{
+	unsigned int mtd_warningbox_Id;
+	Osd_cvPoint startwarnpoly,endwarnpoly;
+	int polwarn_flag = 0;
+	static int flag = 0;
+	int color = 0;;
+	
+	if(m_display.g_CurDisplayMode == MAIN_VIEW)
+	{			
+		mtd_warningbox_Id = 1;
+	}
+	else
+	{
+		mtd_warningbox_Id = extInCtrl->SensorStat;
+	}
+			
+	if(flag)
+	{
+		color = 0;
+		int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
+		for(int i = 0; i < cnt; i++)
+			for(int j = 0; j < edge_contours_bak[i].size(); j++)
+			{
+				polwarn_flag = (j+1)%edge_contours_bak[i].size();
+				startwarnpoly.x = edge_contours_bak[i][j].x;
+				startwarnpoly.y = edge_contours_bak[i][j].y;
+				endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
+				endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,3);
+			}
+
+		cv::Rect tmp;
+		mouserect recttmp;
+		for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
+		{					
+				recttmp.x = (*plist).trkobj.targetRect.x;
+				recttmp.y = (*plist).trkobj.targetRect.y;
+				recttmp.w = (*plist).trkobj.targetRect.width;
+				recttmp.h = (*plist).trkobj.targetRect.height;
+				recttmp = mapfullscreen2gunv20(recttmp);
+				tmp.x = recttmp.x;
+				tmp.y = recttmp.y;
+				tmp.width = recttmp.w;
+				tmp.height = recttmp.h;
+				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+		}
+		
+		{
+			recttmp.x = cur_targetRect_bak.x;
+			recttmp.y = cur_targetRect_bak.y;
+			recttmp.w = cur_targetRect_bak.width;
+			recttmp.h = cur_targetRect_bak.height;
+			recttmp = mapfullscreen2gunv20(recttmp);
+			tmp.x = recttmp.x;
+			tmp.y = recttmp.y;
+			tmp.width = recttmp.w;
+			tmp.height = recttmp.h;
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);	
+		}
+		
+		flag = 0;
+	}
+
+	if(m_bMoveDetect)
+	{
+		color = 5;
+		edge_contours_bak = edge_contours;
+		int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
+		for(int i = 0; i < cnt; i++)
+			for(int j = 0; j < edge_contours_bak[i].size(); j++)
+			{
+				polwarn_flag = (j+1)%edge_contours_bak[i].size();
+				startwarnpoly.x = edge_contours_bak[i][j].x;
+				startwarnpoly.y = edge_contours_bak[i][j].y;
+				endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
+				endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,3);
+			}
+
+		detect_vect_arr_bak = detect_vect_arr;
+		mvListsum.clear();
+		int num = 0;
+		for(int i = 0; i < detect_vect_arr_bak.size(); i++)
+		{
+			getTargetNearToCenter(&detect_vect_arr_bak[i]);
+			mvIndexHandle(&mvList_arr[i],detect_vect_arr_bak[i],detectNum);
+			/*
+			for(int j = 0; j < mvList_arr[i].size(); j++)
+			{
+				if(num < detectNum)
+					mvListsum.push_back(mvList_arr[i][j]);
+				num++;
+			}*/
+			if(i == 0)
+				mvListsum = mvList_arr[i];
+		}
+
+		if(forwardflag)
+		{
+			switchMvTargetForwad();
+			forwardflag = 0;
+		}
+		else if(backflag)
+		{
+			switchMvTargetForwad();
+			backflag = 0;
+		}
+		
+		char tmpNum = 0;
+		cv::Rect tmp;
+		mouserect recttmp;
+		tmpNum = 0;
+		for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
+		{	
+			color = 3;
+
+			recttmp.x = (*plist).trkobj.targetRect.x;
+			recttmp.y = (*plist).trkobj.targetRect.y;
+			recttmp.w = (*plist).trkobj.targetRect.width;
+			recttmp.h = (*plist).trkobj.targetRect.height;
+			recttmp = mapfullscreen2gunv20(recttmp);
+			tmp.x = recttmp.x;
+			tmp.y = recttmp.y;
+			tmp.width = recttmp.w;
+			tmp.height = recttmp.h;
+
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+		}
+		if((0 == lose_timer_flag) && (mvListsum.size() > 0))
+		{
+				
+			color = 6;
+			cur_targetRect_bak = cur_targetRect;
+			recttmp.x = cur_targetRect_bak.x;
+			recttmp.y = cur_targetRect_bak.y;
+			recttmp.w = cur_targetRect_bak.width;
+			recttmp.h = cur_targetRect_bak.height;
+			recttmp = mapfullscreen2gunv20(recttmp);
+			tmp.x = recttmp.x;
+			tmp.y = recttmp.y;
+			tmp.width = recttmp.w;
+			tmp.height = recttmp.h;
+
+			if(1 == g_GridMapMode)
+			{
+				pThis->MvBallCamUseLinearDeviationSelectRect(tmp.x+tmp.width/2, tmp.y + tmp.height/2, false);
+			}
+			else if(2 == g_GridMapMode)
+			{
+				Point2i inPoint, outPoint;
+				inPoint.x = tmp.x;
+				inPoint.y = tmp.y;
+				m_trig.Point2getPos(inPoint, outPoint);
+					
+				trkmsg.cmd_ID = speedloop;
+				memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
+				memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
+				ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+			}
+			else
+			{
+				MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
+			}
+				
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+		}
+		
 		flag = 1;
 	}
 }

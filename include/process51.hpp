@@ -141,13 +141,20 @@ public:
 	{
 		MIN_VALID_RECT_WIDTH_IN_PIXEL = 10
 	};
+	enum DrawBehavior
+	{
+		DRAW_NOTICE_TEXTS,
+		ERASE_TEXTS,
+		DRAW_COUNT
+	};
 	void setGridMapCalibrate(bool flag);
 	const bool getGridMapCalibrate();
 	void setQueryZoomFlag(bool flag);	
 	const bool getQueryZoomFlag();	
 	int getCurrentZoomValue();
 	void addMarkNum();	
-public:	
+	void renderText(enum DrawBehavior drawbehavior);
+	void renderCircles(int radius, cv::Point position);
 	void setPTZflag(bool flag);
 	bool getPTZflag();	
 	void loadIPCParam();

@@ -2286,52 +2286,7 @@ else{
 
 
 //mouse rect
-	unsigned int drawRectId ;
-	if(m_draw)
-	{    
-		if(m_display.g_CurDisplayMode == MAIN_VIEW){			
-				drawRectId = 1;
-		}
-		else{
-				drawRectId = extInCtrl->SensorStat;
-		}
-
-		for(int k = 0; k <= m_rectnbak[drawRectId]; k++)
-		{
-			rectangle(m_display.m_imgOsd[drawRectId],
-					Point(mRectbak[drawRectId][k].x1, mRectbak[drawRectId][k].y1),
-					Point(mRectbak[drawRectId][k].x2, mRectbak[drawRectId][k].y2),
-					cvScalar(0,0,0,0), 1, 8);
-		}
-		memcpy(mRectbak, mRect, sizeof(mRectbak));
-		memcpy(m_rectnbak, m_rectn, sizeof(m_rectnbak));
-		int j = 0;
-		#if 0
-		if(0)
-		{
-			for(j = 0; j < m_rectn[drawRectId]; j++)
-			{
-				rectangle(m_display.m_imgOsd[drawRectId],
-						Point(mRectbak[drawRectId][j].x1, mRectbak[drawRectId][j].y1),
-						Point(mRectbak[drawRectId][j].x2, mRectbak[drawRectId][j].y2),
-						cvScalar(0,0,255,255), 1, 8);
-			}
-		}
-		#endif
-		
-		if(m_click == 1)
-		{
-			mRectbak[drawRectId][j].x1 = mRect[drawRectId][j].x1;
-			mRectbak[drawRectId][j].y1 = mRect[drawRectId][j].y1;
-			mRectbak[drawRectId][j].x2 = m_tempX;
-			mRectbak[drawRectId][j].y2 = m_tempY;
-			rectangle(m_display.m_imgOsd[drawRectId],
-					Point(mRectbak[drawRectId][j].x1, mRectbak[drawRectId][j].y1),
-					Point(mRectbak[drawRectId][j].x2, mRectbak[drawRectId][j].y2),
-					cvScalar(0,0,255,255), 1, 8);
-		}
-		m_draw = 0;
-	}
+	DrawDragRect();
 	
 //time
 	if(m_time_flag)
@@ -2364,6 +2319,53 @@ else{
 		OSA_semSignal(&(sThis->m_display.tskdisSemmain));
 	count++;
 	return true;
+}
+
+
+void CProcess::DrawDragRect()
+{
+	unsigned int drawRectId;
+	static int drawRectId_bak;
+	static int flag = 0;
+	int j = 0;
+
+	if(m_display.g_CurDisplayMode == MAIN_VIEW)
+	{			
+		drawRectId = 1;
+	}
+	else
+	{
+		drawRectId = extInCtrl->SensorStat;
+	}
+
+	if(flag)
+	{	
+		rectangle(m_display.m_imgOsd[drawRectId_bak],
+				Point(mRectbak[drawRectId_bak][j].x1, mRectbak[drawRectId_bak][j].y1),
+				Point(mRectbak[drawRectId_bak][j].x2, mRectbak[drawRectId_bak][j].y2),
+				cvScalar(0,0,0,0), 1, 8);
+
+		flag = 0;
+	}
+
+	
+	if(m_draw)
+	{	
+		memcpy(mRectbak, mRect, sizeof(mRectbak));
+		memcpy(m_rectnbak, m_rectn, sizeof(m_rectnbak));
+		drawRectId_bak = drawRectId;
+		
+		mRectbak[drawRectId_bak][j].x1 = mRect[drawRectId_bak][j].x1;
+		mRectbak[drawRectId_bak][j].y1 = mRect[drawRectId_bak][j].y1;
+		mRectbak[drawRectId_bak][j].x2 = m_tempX;
+		mRectbak[drawRectId_bak][j].y2 = m_tempY;
+		rectangle(m_display.m_imgOsd[drawRectId_bak],
+				Point(mRectbak[drawRectId_bak][j].x1, mRectbak[drawRectId_bak][j].y1),
+				Point(mRectbak[drawRectId_bak][j].x2, mRectbak[drawRectId_bak][j].y2),
+				cvScalar(0,0,255,255), 1, 8);
+
+		flag = 1;
+	}
 }
 
 void CProcess::DrawJoys()

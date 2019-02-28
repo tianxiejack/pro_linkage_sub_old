@@ -1987,187 +1987,10 @@ osdindex++;	//cross aim
 	
 #if __MOVE_DETECT__
 //mtd grid
-	if(setrigion_flagv20)
-	{
-		DrawMtdYellowGrid(1);
-		DrawMtdRedGrid(1);
-	}
-	else
-	{
-		DrawMtdYellowGrid(0);
-		DrawMtdRedGrid(0);
-	}
+	DrawMtdYellowGrid();
+	DrawMtdRedGrid();
+	DrawMtd_Rigion_Target();
 
-	osdindex++;
-	osd_index++;
-	{
-		unsigned int mtd_warningbox_Id;
-		Osd_cvPoint startwarnpoly,endwarnpoly;
-		int polwarn_flag = 0;
-		if(m_display.g_CurDisplayMode == MAIN_VIEW)
-		{			
-			mtd_warningbox_Id = 1;
-		}
-		else
-		{
-			mtd_warningbox_Id = extInCtrl->SensorStat;
-		}
-			
-		if(Osdflag[osdindex])
-		{
-			int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
-			for(int i = 0; i < cnt; i++)
-				for(int j = 0; j < edge_contours_bak[i].size(); j++)
-				{
-					polwarn_flag = (j+1)%edge_contours_bak[i].size();
-					startwarnpoly.x = edge_contours_bak[i][j].x;
-					startwarnpoly.y = edge_contours_bak[i][j].y;
-					endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
-					endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
-					DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,0,3);
-				}
-
-			cv::Rect tmp;
-			mouserect recttmp;
-			for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
-			{					
-					recttmp.x = (*plist).trkobj.targetRect.x;
-					recttmp.y = (*plist).trkobj.targetRect.y;
-					recttmp.w = (*plist).trkobj.targetRect.width;
-					recttmp.h = (*plist).trkobj.targetRect.height;
-					recttmp = mapfullscreen2gunv20(recttmp);
-					tmp.x = recttmp.x;
-					tmp.y = recttmp.y;
-					tmp.width = recttmp.w;
-					tmp.height = recttmp.h;
-					DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);
-			}
-			if(osd_flag[osd_index]){
-				recttmp.x = cur_targetRect_bak.x;
-				recttmp.y = cur_targetRect_bak.y;
-				recttmp.w = cur_targetRect_bak.width;
-				recttmp.h = cur_targetRect_bak.height;
-				recttmp = mapfullscreen2gunv20(recttmp);
-				tmp.x = recttmp.x;
-				tmp.y = recttmp.y;
-				tmp.width = recttmp.w;
-				tmp.height = recttmp.h;
-				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,0);	
-				osd_flag[osd_index] = 0;
-			}
-			Osdflag[osdindex]=0;
-		}
-
-		if(m_bMoveDetect)
-		{
-			edge_contours_bak = edge_contours;
-			int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
-			for(int i = 0; i < cnt; i++)
-				for(int j = 0; j < edge_contours_bak[i].size(); j++)
-				{
-					polwarn_flag = (j+1)%edge_contours_bak[i].size();
-					startwarnpoly.x = edge_contours_bak[i][j].x;
-					startwarnpoly.y = edge_contours_bak[i][j].y;
-					endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
-					endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
-					DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,5,3);
-				}
-
-			detect_vect_arr_bak = detect_vect_arr;
-			mvListsum.clear();
-			int num = 0;
-			for(int i = 0; i < detect_vect_arr_bak.size(); i++)
-			{
-				getTargetNearToCenter(&detect_vect_arr_bak[i]);
-				mvIndexHandle(&mvList_arr[i],detect_vect_arr_bak[i],detectNum);
-				/*
-				for(int j = 0; j < mvList_arr[i].size(); j++)
-				{
-					if(num < detectNum)
-						mvListsum.push_back(mvList_arr[i][j]);
-					num++;
-				}*/
-				if(i == 0)
-					mvListsum = mvList_arr[i];
-			}
-
-			if(forwardflag)
-			{
-				switchMvTargetForwad();
-				forwardflag = 0;
-			}
-			else if(backflag)
-			{
-				switchMvTargetForwad();
-				backflag = 0;
-			}
-		
-			char tmpNum = 0;
-			cv::Rect tmp;
-			mouserect recttmp;
-			tmpNum = 0;
-			for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
-			{	
-				color = 3;
-
-				recttmp.x = (*plist).trkobj.targetRect.x;
-				recttmp.y = (*plist).trkobj.targetRect.y;
-				recttmp.w = (*plist).trkobj.targetRect.width;
-				recttmp.h = (*plist).trkobj.targetRect.height;
-				recttmp = mapfullscreen2gunv20(recttmp);
-				tmp.x = recttmp.x;
-				tmp.y = recttmp.y;
-				tmp.width = recttmp.w;
-				tmp.height = recttmp.h;
-
-				//if(color == 6)
-					//MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
-
-				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
-			}
-			if((0 == lose_timer_flag) && (mvListsum.size() > 0))
-			{
-				
-				color = 6;
-				cur_targetRect_bak = cur_targetRect;
-				recttmp.x = cur_targetRect_bak.x;
-				recttmp.y = cur_targetRect_bak.y;
-				recttmp.w = cur_targetRect_bak.width;
-				recttmp.h = cur_targetRect_bak.height;
-				recttmp = mapfullscreen2gunv20(recttmp);
-				tmp.x = recttmp.x;
-				tmp.y = recttmp.y;
-				tmp.width = recttmp.w;
-				tmp.height = recttmp.h;
-
-				if(1 == g_GridMapMode)
-				{
-					//pThis->getLinearDeviation(tmp.x+tmp.width/2,tmp.y + tmp.height/2,GRID_WIDTH_120,GRID_HEIGHT_90,false);//getLinearDeviation(x,y);
-					pThis->MvBallCamUseLinearDeviationSelectRect(tmp.x+tmp.width/2, tmp.y + tmp.height/2, false);
-				}
-				else if(2 == g_GridMapMode)
-				{
-					Point2i inPoint, outPoint;
-					inPoint.x = tmp.x;
-					inPoint.y = tmp.y;
-					m_trig.Point2getPos(inPoint, outPoint);
-					
-					trkmsg.cmd_ID = speedloop;
-					memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
-					memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
-					ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-				}
-				else
-				{
-					MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
-				}
-				
-				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
-				osd_flag[osd_index] = 1;
-			}
-			Osdflag[osdindex]=1;
-		}
-	}
 #endif
 
 	osdindex++;
@@ -2508,6 +2331,7 @@ void CProcess::DrawJoys()
 	int jradius_s = 10;
 	cv::Point jcenter = get_joycenter();
 	int thickness = 2;
+	static int flag = 0;
 	
 	Line_Param_fb lineparm;
 	lineparm.x = jcenter.x;
@@ -2518,10 +2342,14 @@ void CProcess::DrawJoys()
 	static cv::Point jcenter_s_bak;
 	static int jradius_s_bak;
 
-	lineparm.frcolor = 0;
-	DrawCircle(frame, jcenter_s_bak, jradius_s_bak, lineparm.frcolor, thickness);
-	DrawCircle(frame, jcenter, jradius, lineparm.frcolor, thickness);
-	DrawcvDashcross(frame, &lineparm, dashlen, dashlen);
+	if(flag)
+	{
+		lineparm.frcolor = 0;
+		DrawCircle(frame, jcenter_s_bak, jradius_s_bak, lineparm.frcolor, thickness);
+		DrawCircle(frame, jcenter, jradius, lineparm.frcolor, thickness);
+		DrawcvDashcross(frame, &lineparm, dashlen, dashlen);
+		flag = 0;
+	}
 	
 	if((m_display.displayMode == MAIN_VIEW)&&(m_display.m_menuindex == -1))
 	{		
@@ -2531,6 +2359,7 @@ void CProcess::DrawJoys()
 		DrawCircle(frame, jcenter_s_bak, jradius_s_bak, lineparm.frcolor, thickness);
 		DrawCircle(frame, jcenter, jradius, lineparm.frcolor, thickness);
 		DrawcvDashcross(frame, &lineparm, dashlen, dashlen);
+		flag = 1;
 	}
 }
 
@@ -2539,16 +2368,24 @@ void CProcess::DrawMouse()
 	Mat frame = m_display.m_imgOsd[1];
 	int linecolor, color;
 	static cv::Point jos_mouse_bak;
-
-	linecolor = 0;
-	color = 0;
-	DrawArrow(frame, jos_mouse_bak, linecolor, color);
+	static int flag = 0; 
 	
-	jos_mouse_bak = jos_mouse;
-	linecolor = 1;
-	color = 2;
-	if(mouse_show)
+	if(flag)
+	{
+		linecolor = 0;
+		color = 0;
 		DrawArrow(frame, jos_mouse_bak, linecolor, color);
+		flag = 0;
+	}
+	
+	if(mouse_show)
+	{
+		jos_mouse_bak = jos_mouse;
+		linecolor = 1;
+		color = 2;
+		DrawArrow(frame, jos_mouse_bak, linecolor, color);
+		flag = 1;
+	}
 }
 
 void CProcess::DrawTrigInter()
@@ -2679,9 +2516,11 @@ void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, i
 	cv::circle(frame, center, radius ,colour1, thickness, 8, 0);
 }
 
-void CProcess::DrawMtdYellowGrid(int flag)
+void CProcess::DrawMtdYellowGrid()
 {
 	unsigned int drawmtdgridId; 
+	static int flag = 0;
+	
 	if(m_display.g_CurDisplayMode == MAIN_VIEW)
 	{			
 		drawmtdgridId = 1;
@@ -2694,36 +2533,49 @@ void CProcess::DrawMtdYellowGrid(int flag)
 	Osd_cvPoint start, end;
 	int interval_w = gun_resolu[0] / GRID_CNT_X;
 	int interval_h = gun_resolu[1] / GRID_CNT_Y;
-		
-	for(int i = 1; i < GRID_CNT_X; i++)
+
+
+	if(flag)
 	{
-		start.x = interval_w * i;
-		start.y = 0;
-		end.x = interval_w * i;
-		end.y = gun_resolu[1];
-		if(flag)
+		for(int i = 1; i < GRID_CNT_X; i++)
 		{
-			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
-		}
-		else
-		{
+			start.x = interval_w * i;
+			start.y = 0;
+			end.x = interval_w * i;
+			end.y = gun_resolu[1];
 			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
 		}
+		for(int j = 1; j < GRID_CNT_Y; j++)
+		{
+			start.x = 0;
+			start.y = interval_h * j;
+			end.x = gun_resolu[0];
+			end.y = interval_h * j;
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
+		}
+		flag = 0;
 	}
-	for(int j = 1; j < GRID_CNT_Y; j++)
+
+
+	if(setrigion_flagv20)
 	{
-		start.x = 0;
-		start.y = interval_h * j;
-		end.x = gun_resolu[0];
-		end.y = interval_h * j;
-		if(flag)
+		for(int i = 1; i < GRID_CNT_X; i++)
 		{
+			start.x = interval_w * i;
+			start.y = 0;
+			end.x = interval_w * i;
+			end.y = gun_resolu[1];
 			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
 		}
-		else
+		for(int j = 1; j < GRID_CNT_Y; j++)
 		{
-			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
+			start.x = 0;
+			start.y = interval_h * j;
+			end.x = gun_resolu[0];
+			end.y = interval_h * j;
+			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
 		}
+		flag = 1;
 	}
 }
 void CProcess::DrawGridMap(int flag)
@@ -2996,10 +2848,11 @@ void CProcess::DrawSelectedCircle(bool drawFlag, int drawNodesCount)
 }
 
 
-void CProcess::DrawMtdRedGrid(int flag)
+void CProcess::DrawMtdRedGrid()
 {
 	unsigned int drawmtdgridRectId; 
 	cv::Rect tmp;
+	static int flag = 0;
 
 	int interval_w = gun_resolu[0] / GRID_CNT_X;
 	int interval_h = gun_resolu[1] / GRID_CNT_Y;
@@ -3013,24 +2866,29 @@ void CProcess::DrawMtdRedGrid(int flag)
 		drawmtdgridRectId = extInCtrl->SensorStat;
 	}
 
-	for(int i = 0; i < GRID_CNT_X; i++)
-		for(int j = 0; j < GRID_CNT_Y; j++)
-		{
-			if(grid19x10_bak[i][j].state)
-			{
-				tmp.x = (i) * interval_w;
-				tmp.y = (j) * interval_h;
-				tmp.width = interval_w;
-				tmp.height = interval_h;
-				
-				rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,0,0),3,8);
-			}
-		}
-		
-	memcpy(grid19x10_bak, grid19x10, sizeof(grid19x10_bak));
-
 	if(flag)
 	{
+		for(int i = 0; i < GRID_CNT_X; i++)
+			for(int j = 0; j < GRID_CNT_Y; j++)
+			{
+				if(grid19x10_bak[i][j].state)
+				{
+					tmp.x = (i) * interval_w;
+					tmp.y = (j) * interval_h;
+					tmp.width = interval_w;
+					tmp.height = interval_h;
+					
+					rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,0,0),3,8);
+				}
+			}
+			
+		flag = 0;
+	}
+
+	if(setrigion_flagv20)
+	{
+		memcpy(grid19x10_bak, grid19x10, sizeof(grid19x10_bak));
+		
 		for(int i = 0; i < GRID_CNT_X; i++)
 			for(int j = 0; j < GRID_CNT_Y; j++)
 			{
@@ -3043,6 +2901,180 @@ void CProcess::DrawMtdRedGrid(int flag)
 					rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,255,255),3,8);
 				}
 			}
+
+		flag = 1;
+	}
+}
+
+void CProcess::DrawMtd_Rigion_Target()
+{
+	unsigned int mtd_warningbox_Id;
+	Osd_cvPoint startwarnpoly,endwarnpoly;
+	int polwarn_flag = 0;
+	static int flag = 0;
+	int color = 0;;
+	
+	if(m_display.g_CurDisplayMode == MAIN_VIEW)
+	{			
+		mtd_warningbox_Id = 1;
+	}
+	else
+	{
+		mtd_warningbox_Id = extInCtrl->SensorStat;
+	}
+			
+	if(flag)
+	{
+		color = 0;
+		int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
+		for(int i = 0; i < cnt; i++)
+			for(int j = 0; j < edge_contours_bak[i].size(); j++)
+			{
+				polwarn_flag = (j+1)%edge_contours_bak[i].size();
+				startwarnpoly.x = edge_contours_bak[i][j].x;
+				startwarnpoly.y = edge_contours_bak[i][j].y;
+				endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
+				endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,3);
+			}
+
+		cv::Rect tmp;
+		mouserect recttmp;
+		for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
+		{					
+				recttmp.x = (*plist).trkobj.targetRect.x;
+				recttmp.y = (*plist).trkobj.targetRect.y;
+				recttmp.w = (*plist).trkobj.targetRect.width;
+				recttmp.h = (*plist).trkobj.targetRect.height;
+				recttmp = mapfullscreen2gunv20(recttmp);
+				tmp.x = recttmp.x;
+				tmp.y = recttmp.y;
+				tmp.width = recttmp.w;
+				tmp.height = recttmp.h;
+				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+		}
+		
+		{
+			recttmp.x = cur_targetRect_bak.x;
+			recttmp.y = cur_targetRect_bak.y;
+			recttmp.w = cur_targetRect_bak.width;
+			recttmp.h = cur_targetRect_bak.height;
+			recttmp = mapfullscreen2gunv20(recttmp);
+			tmp.x = recttmp.x;
+			tmp.y = recttmp.y;
+			tmp.width = recttmp.w;
+			tmp.height = recttmp.h;
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);	
+		}
+		
+		flag = 0;
+	}
+
+	if(m_bMoveDetect)
+	{
+		color = 5;
+		edge_contours_bak = edge_contours;
+		int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
+		for(int i = 0; i < cnt; i++)
+			for(int j = 0; j < edge_contours_bak[i].size(); j++)
+			{
+				polwarn_flag = (j+1)%edge_contours_bak[i].size();
+				startwarnpoly.x = edge_contours_bak[i][j].x;
+				startwarnpoly.y = edge_contours_bak[i][j].y;
+				endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
+				endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,3);
+			}
+
+		detect_vect_arr_bak = detect_vect_arr;
+		mvListsum.clear();
+		int num = 0;
+		for(int i = 0; i < detect_vect_arr_bak.size(); i++)
+		{
+			getTargetNearToCenter(&detect_vect_arr_bak[i]);
+			mvIndexHandle(&mvList_arr[i],detect_vect_arr_bak[i],detectNum);
+			/*
+			for(int j = 0; j < mvList_arr[i].size(); j++)
+			{
+				if(num < detectNum)
+					mvListsum.push_back(mvList_arr[i][j]);
+				num++;
+			}*/
+			if(i == 0)
+				mvListsum = mvList_arr[i];
+		}
+
+		if(forwardflag)
+		{
+			switchMvTargetForwad();
+			forwardflag = 0;
+		}
+		else if(backflag)
+		{
+			switchMvTargetForwad();
+			backflag = 0;
+		}
+		
+		char tmpNum = 0;
+		cv::Rect tmp;
+		mouserect recttmp;
+		tmpNum = 0;
+		for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
+		{	
+			color = 3;
+
+			recttmp.x = (*plist).trkobj.targetRect.x;
+			recttmp.y = (*plist).trkobj.targetRect.y;
+			recttmp.w = (*plist).trkobj.targetRect.width;
+			recttmp.h = (*plist).trkobj.targetRect.height;
+			recttmp = mapfullscreen2gunv20(recttmp);
+			tmp.x = recttmp.x;
+			tmp.y = recttmp.y;
+			tmp.width = recttmp.w;
+			tmp.height = recttmp.h;
+
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+		}
+		if((0 == lose_timer_flag) && (mvListsum.size() > 0))
+		{
+				
+			color = 6;
+			cur_targetRect_bak = cur_targetRect;
+			recttmp.x = cur_targetRect_bak.x;
+			recttmp.y = cur_targetRect_bak.y;
+			recttmp.w = cur_targetRect_bak.width;
+			recttmp.h = cur_targetRect_bak.height;
+			recttmp = mapfullscreen2gunv20(recttmp);
+			tmp.x = recttmp.x;
+			tmp.y = recttmp.y;
+			tmp.width = recttmp.w;
+			tmp.height = recttmp.h;
+
+			if(1 == g_GridMapMode)
+			{
+				pThis->MvBallCamUseLinearDeviationSelectRect(tmp.x+tmp.width/2, tmp.y + tmp.height/2, false);
+			}
+			else if(2 == g_GridMapMode)
+			{
+				Point2i inPoint, outPoint;
+				inPoint.x = tmp.x;
+				inPoint.y = tmp.y;
+				m_trig.Point2getPos(inPoint, outPoint);
+					
+				trkmsg.cmd_ID = speedloop;
+				memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
+				memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
+				ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+			}
+			else
+			{
+				MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
+			}
+				
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+		}
+		
+		flag = 1;
 	}
 }
 
@@ -4177,6 +4209,39 @@ void CProcess::OnMouseLeftDwn(int x, int y)
 		manualHandleKeyPoints(x,y);		
 	}	
 };
+void CProcess::setWorkMode(GB_WorkMode workmode)
+{
+	g_AppWorkMode = workmode;
+	int value = 0;
+	if(g_AppWorkMode == AUTO_LINK_MODE)
+	{
+		value = 1;
+		g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = true;
+	}
+	else
+	{
+		value = 0;
+		g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
+	}
+
+	if(g_AppWorkMode == AUTO_LINK_MODE)
+	{
+		set_mouse_show(0);
+	}
+	else if(g_AppWorkMode == ONLY_BALL_MODE)
+	{
+		set_mouse_show(0);
+	}
+	else if(g_AppWorkMode == AUTO_LINK_MODE)
+	{
+		
+	}
+			
+	SENDST	tmp;
+	tmp.cmd_ID = mtdmode;
+	tmp.param[0] = value ;
+	ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+}
 
 void CProcess::OnJosCtrl(int key, int param)
 {
@@ -4185,36 +4250,7 @@ void CProcess::OnJosCtrl(int key, int param)
 		case 1:
 		{
 			GB_WorkMode nextMode = (GB_WorkMode)(param - 1);
-			g_AppWorkMode = nextMode;
-			int value = 0;
-			if(g_AppWorkMode == AUTO_LINK_MODE)
-			{
-				value = 1;
-				g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = true;
-			}
-			else
-			{
-				value = 0;
-				g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
-			}
-
-			if(g_AppWorkMode == AUTO_LINK_MODE)
-			{
-				set_mouse_show(0);
-			}
-			else if(g_AppWorkMode == ONLY_BALL_MODE)
-			{
-				set_mouse_show(0);
-			}
-			else if(g_AppWorkMode == AUTO_LINK_MODE)
-			{
-				
-			}
-			
-			SENDST	tmp;
-			tmp.cmd_ID = mtdmode;
-			tmp.param[0] = value ;
-			ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+			setWorkMode(nextMode);
 		}
 			break;
 		case 2:
@@ -4231,20 +4267,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		case 1:
 			{
 				GB_WorkMode nextMode = GB_WorkMode(((int)g_AppWorkMode+1)% MODE_COUNT);
-				g_AppWorkMode = nextMode;
-				int value = 0;
-				if(g_AppWorkMode == AUTO_LINK_MODE){
-					value = 1;
-					g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = true;
-				}
-				else{
-					value = 0;
-					g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
-				}
-				SENDST	tmp;
-				tmp.cmd_ID = mtdmode;
-				tmp.param[0] = value ;
-				ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+				setWorkMode(nextMode);
 			}
 			break;
 		case 2:

@@ -662,8 +662,12 @@ void* recv_msg(SENDST *RS422)
 			{
 				case cursor_move:
 				{
-					if((HANDLE_LINK_MODE == g_AppWorkMode) && 
-						((-1==proc->extMenuCtrl.MenuStat)||(submenu_handleMatchPoints==proc->extMenuCtrl.MenuStat)||(submenu_handleMatchPoints==proc->extMenuCtrl.MenuStat)||(1==proc->extInCtrl->MtdSetRigion)||(MENU_TEST_RESULT_VIEW==g_displayMode)))
+					int cond1 = (-1==proc->extMenuCtrl.MenuStat)||(submenu_handleMatchPoints==proc->extMenuCtrl.MenuStat)||(1==proc->extInCtrl->MtdSetRigion)||(MENU_TEST_RESULT_VIEW==g_displayMode);
+
+					if(
+						((HANDLE_LINK_MODE == g_AppWorkMode)&&(cond1)) ||
+						((ONLY_BALL_MODE == g_AppWorkMode)&&(cond1))
+					  )
 					{
 						proc->set_mouse_show(1);
 						proc->dtimer.startTimer(proc->mouse_show_id,3000);
@@ -699,21 +703,23 @@ void* recv_msg(SENDST *RS422)
 					int x = Rjosctrl.cursor_x;
 					int y = Rjosctrl.cursor_y;
 					if(3 == button)
-						button = GLUT_LEFT_BUTTON;
+						button = GLUT_LEFT_BUTTON;//0
 					else if(4 == button)
-						button = GLUT_RIGHT_BUTTON;
+						button = GLUT_RIGHT_BUTTON;//2
 					else 
 						param_flag = 1;
 					
 					if(1 == state)
-						mouse_state = GLUT_DOWN;
+						mouse_state = GLUT_DOWN;//0
 					else if(0 == state)
-						mouse_state = GLUT_UP;
+						mouse_state = GLUT_UP;//1
 					else 
 						param_flag = 1;
 
 					if(0 == param_flag)
+					{
 						proc->mouse_event(button, mouse_state, x, y);
+					}
 				}
 					break;
 				case enter:

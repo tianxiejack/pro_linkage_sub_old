@@ -3008,9 +3008,8 @@ void CProcess::DrawMtd_Rigion_Target()
 
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 		}
-		if((0 == lose_timer_flag) && (mvListsum.size() > 0))
+		if((0 == lose_timer_flag) && (mvListsum.size() > 0) && cur_targetRect.width && cur_targetRect.height )
 		{
-				
 			color = 6;
 			cur_targetRect_bak = cur_targetRect;
 			recttmp.x = cur_targetRect_bak.x;
@@ -5457,6 +5456,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 		int MtdSelect = (pIStuts->MtdSelect[pIStuts->SensorStat]);
 		if(ipc_eMTD_Next == MtdSelect)
 		{
+			printf("11111111111111111111111111\n");
 			forwardflag = true;
 		}
 		else if(ipc_eMTD_Prev == MtdSelect)

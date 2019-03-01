@@ -453,8 +453,8 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 
 	jos_mouse.x = 960;
 	jos_mouse.y = 540;
-
-
+	m_gridWidth=(int)((float)(w/16));
+	m_gridHeight = (int)((float)(h/12));
 
 	for(int i=0;i<=GRID_COLS_15+3;i++)
 	{
@@ -463,11 +463,11 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 		}
 		else if( (1==i )|| ((GRID_COLS_15+1)== i))
 		{
-			m_intervalCOl[i] = GRID_WIDTH_120/2;
+			m_intervalCOl[i] = m_gridWidth/2;
 		}
 		else
 		{
-			m_intervalCOl[i] = GRID_WIDTH_120;
+			m_intervalCOl[i] = m_gridWidth;
 		}
 	}
 #if 0
@@ -597,8 +597,8 @@ int CVideoProcess::destroy()
 
 void CVideoProcess::InitGridMap16X12()
 {
-	int row_offset = (IMG_WIDTH - (GRID_COLS_15*GRID_WIDTH_120) ) / 2;
-	int col_offset =  (IMG_HEIGHT - (GRID_ROWS_11*GRID_HEIGHT_90)) / 2;
+	int row_offset = (IMG_WIDTH - (GRID_COLS_15*m_gridWidth) ) / 2;
+	int col_offset =  (IMG_HEIGHT - (GRID_ROWS_11*m_gridHeight)) / 2;
 	//int row_interval,col_interval;
 	int temp_col = row_offset;
 	static bool print_once = true;
@@ -617,7 +617,7 @@ void CVideoProcess::InitGridMap16X12()
 			m_gridNodes[i][j].coord_x = temp_col +m_intervalCOl[j];
 			temp_col = m_gridNodes[i][j].coord_x;
 			
-			m_gridNodes[i][j].coord_y = col_offset + i*GRID_HEIGHT_90;
+			m_gridNodes[i][j].coord_y = col_offset + i*m_gridHeight;
 			m_gridNodes[i][j].isCircle = true;
 			m_gridNodes[i][j].renderFlag= false;
 
@@ -627,13 +627,6 @@ void CVideoProcess::InitGridMap16X12()
 			m_calibratedNodes[i][j].x =m_nodePos[i][j].x;
 			m_calibratedNodes[i][j].y =m_nodePos[i][j].y; 
 			m_calibratedNodes[i][j].isShow = false;
-#if 0
-			if( print_once ){
-				print_once = false;
-	printf("\r\n================<%d, %d>\r\n",m_calibratedNodes[0][0].x,m_calibratedNodes[0][0].y);
-			}
-
-#endif
 		}
 	}
 
@@ -643,6 +636,7 @@ void CVideoProcess::InitGridMap16X12()
 }
 void CVideoProcess::InitGridMapNodes()
 {
+#if 0
 	int row_offset = (IMG_WIDTH - (GRID_COLS*GRID_WIDTH) ) / 2;
 	int col_offset =  (IMG_HEIGHT - (GRID_ROWS*GRID_HEIGHT)) / 2;
 
@@ -665,6 +659,7 @@ void CVideoProcess::InitGridMapNodes()
 		}		
 	}
 	printf("\r\nInit Grid Map Success &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\r\n");
+#endif
 }
 
 
@@ -1324,7 +1319,7 @@ bool CVideoProcess::writeParams(const char* filename)
 
 GridMapNode CVideoProcess::getLinearDeviationForSelectRect(int px, int py, int grid_width,int grid_height,bool needChangeZoom)
 {
-
+	static int dispatch_cnt =0;
 	int offset_y = IMG_HEIGHT/2;
 	int x = px;
 	int y = py;
@@ -1465,6 +1460,8 @@ GridMapNode CVideoProcess::getLinearDeviationForSelectRect(int px, int py, int g
 		trkmsg.cmd_ID = speedloop;
 		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
 		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
+		dispatch_cnt++;
+		printf("\r\n&&&&&&&&&<%d>&&&&&&&&&&&&<%d, %d>\r\n",dispatch_cnt, Vp.pano, Vp.tilt);
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 
 	}

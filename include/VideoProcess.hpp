@@ -157,6 +157,7 @@ private:
 	Mat m_Gun_GrayMat;
 	Mat m_rgbMat;
 	int m_ScreenWidth,m_ScreenHeight;
+	int m_gridWidth,m_gridHeight;
 	static int m_staticScreenWidth,m_staticScreenHeight;
 public:
 	CVideoProcess();

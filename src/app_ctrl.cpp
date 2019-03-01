@@ -850,12 +850,16 @@ void app_ctrl_enter()
 			g_displayMode = MENU_GRID_MAP_VIEW;
 			SENDST trkmsg2={0};
 			trkmsg2.cmd_ID = enter_gridmap_view;
+			trkmsg2.param[0] = 1;
 			ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
 			printf("\r\n[%s]:Send Message to Ctrl Process: Enter GridMap View!\r\n",__FUNCTION__);
 		}
 		else if(2 == pMenuStatus->menuarray[submenu_gunball].pointer)
 		{
-			
+			SENDST trkmsg2={0};
+			trkmsg2.cmd_ID = enter_gridmap_view;
+			trkmsg2.param[0] = 0;
+			ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
 			app_ctrl_setMenuStat(mainmenu2);			
 			g_displayMode = MENU_MAIN_VIEW;
 		}

@@ -2753,10 +2753,11 @@ int CDisplayer::menu_init( )
 	disMenuBuf[mainmenu0][2].posy = 4 * 60;
 	disMenuBuf[mainmenu0][3].posy = 5 * 60;
 	disMenuBuf[submenu_carli][2].posy = 4 * 60;
-	disMenuBuf[submenu_gunball][1].posx= 1300;
-	disMenuBuf[submenu_gunball][1].posy = 10;
-	disMenuBuf[submenu_gunball][2].posx = 1600;
-	disMenuBuf[submenu_gunball][2].posy = 10;
+	
+	disMenuBuf[submenu_gunball][1].posx= 1500;//(int)((float)outputWHF[0] *(float)(4/3));
+	disMenuBuf[submenu_gunball][1].posy = 10;//(int)((float)outputWHF[1] / ((float)200));
+	disMenuBuf[submenu_gunball][2].posx = 1760;//(int)((float)outputWHF[0] *(float)(109/100));
+	disMenuBuf[submenu_gunball][2].posy = 10;//(int)((float)outputWHF[1] / ((float)200));
 	
 	disMenuBuf[submenu_setball][2].posy = 4 * 60;
 	disMenuBuf[submenu_setcom][4].posy = 6 * 60;

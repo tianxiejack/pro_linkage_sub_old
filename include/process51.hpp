@@ -18,7 +18,7 @@ using namespace cv;
 
 #define SPECIAL_KEY_PAGEUP 	104
 #define SPECIAL_KEY_PAGEDOWN 	105
-const int VERSION_SOFT = 0x82;  //  130
+const int VERSION_SOFT = 0x83;  //  130
 
 typedef struct{
 		int button;
@@ -139,7 +139,10 @@ private:
 public:
 	enum
 	{
-		MIN_VALID_RECT_WIDTH_IN_PIXEL = 10
+		MIN_VALID_RECT_WIDTH_IN_PIXEL = 10,
+		JOSF1_OPEN_AUTOLINKMODE = 1,
+		JOSF2_ENTER_MENU=2,
+		CONST_VARIABLE_COUNT		
 	};
 	enum DrawBehavior
 	{
@@ -155,6 +158,8 @@ public:
 	void addMarkNum();	
 	void renderText(enum DrawBehavior drawbehavior);
 	void renderCircles(int radius, cv::Point position);
+	void DrawCenterCross(cv::Point pos, int width,int height);
+
 	void setPTZflag(bool flag);
 	bool getPTZflag();	
 	void loadIPCParam();

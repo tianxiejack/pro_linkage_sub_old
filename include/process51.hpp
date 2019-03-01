@@ -225,7 +225,7 @@ public:
 
 	void DrawGridMapNodeCircles_16X12(bool drawFlag);
 
-
+	void DrawDragRect();
 	void DrawJoys();
 	void DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness);
 	void DrawMouse();

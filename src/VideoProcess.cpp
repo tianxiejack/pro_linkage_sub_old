@@ -1924,7 +1924,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 					pThis->addendpoint(tmpX, tmpY, curId);					
 				}
 				pThis->m_click = 0;
-				pThis->m_draw = 1;
+				pThis->m_draw = 0;
 
 				if( (tempX == x) && (tempY == y) && (m_bLDown== true) ) {
 					if(g_AppWorkMode == HANDLE_LINK_MODE )
@@ -2021,7 +2021,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		{
 			pThis->m_click = 0;
 			pThis->m_rectn[curId] = 0;
-			pThis->m_draw = 1;
+			pThis->m_draw = 0;
 		}
 	}
 	
@@ -2049,7 +2049,7 @@ void CVideoProcess::mousemotion_event(GLint xMouse, GLint yMouse)
 		pThis->jcenter_s = tmp;
 		pThis->sendjoyevent(tmp);
 	}
-	else
+	else if(MAIN_VIEW == pThis->m_display.g_CurDisplayMode)
 	{
 		
 		float floatx,floaty;

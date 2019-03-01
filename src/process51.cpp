@@ -5456,7 +5456,6 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 		int MtdSelect = (pIStuts->MtdSelect[pIStuts->SensorStat]);
 		if(ipc_eMTD_Next == MtdSelect)
 		{
-			printf("11111111111111111111111111\n");
 			forwardflag = true;
 		}
 		else if(ipc_eMTD_Prev == MtdSelect)

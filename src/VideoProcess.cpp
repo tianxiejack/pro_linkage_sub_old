@@ -1315,7 +1315,129 @@ bool CVideoProcess::writeParams(const char* filename)
 	}
 	return false;
 }
+GridMapNode CVideoProcess::AutoLinkMoveBallCamera(int px, int py, int grid_width,int grid_height,bool needChangeZoom)
+{
+	static int dispatch_cnt =0;
+	int offset_y = IMG_HEIGHT/2;
+	int x = px;
+	int y = py;
 
+	int valid_x = 0;
+	int valid_y = 0;
+#if 0
+	switch(m_display.g_CurDisplayMode)
+	{
+		case MAIN_VIEW:			
+			y = (py-offset_y)*2;
+			break;
+		default:
+			break;
+	}
+#endif
+
+	if(x<grid_width/2 )
+	{
+		valid_x = grid_width/2;
+	}
+	else if(x>IMG_WIDTH-grid_width/2)
+	{
+		valid_x = IMG_WIDTH-grid_width/2;
+	}
+	else{
+		valid_x = x;
+	}
+
+	
+	if(y<grid_height/2)
+	{
+		valid_y =grid_height/2; 
+	}
+	else if(y>IMG_HEIGHT-grid_height/2)
+	{
+		valid_y=IMG_HEIGHT-grid_height/2;
+	}
+	else 
+	{
+		valid_y = y;
+	}
+	int current_col ;
+	int current_row ;
+	if(valid_x>120 && (valid_x<1800))
+	{		
+		current_col = ((valid_x)/grid_width) % (GRID_COLS_15+1) ;
+		
+	}
+	else
+	{
+		if(valid_x <= 120){
+			current_col = ((valid_x-grid_width/2)/(grid_width/2)) % (GRID_COLS_15+1);
+			
+		}
+		else
+		{
+			//current_col = 15;
+			current_col = ((valid_x)/grid_width) % (GRID_COLS_15+1) ;
+		}
+	}
+	current_row = (valid_y-grid_height/2)/grid_height ;
+	int current_row_plus = current_row+1;
+	int current_col_plus = current_col+1;
+	GridMapNode Vp,Vp1,Vp2;
+	GridMapNode V0 = m_gridNodes[current_row][current_col];
+	GridMapNode V1 = m_gridNodes[current_row][current_col_plus];
+	GridMapNode V2 = m_gridNodes[current_row_plus][current_col];
+	GridMapNode V3 = m_gridNodes[current_row_plus][current_col_plus];
+	
+	//printf("\r\n[%s]:V0 =<%d,%d>\r\nV1 =<%d,%d> \r\nV2 =<%d,%d> \r\nV3 =<%d,%d> \r\n ",__func__,
+	//V0.pano,V0.tilt,V1.pano,V1.tilt,V2.pano,V2.tilt,V3.pano,V3.tilt);
+	//printf("\r\n[%s]: Click:Screen<%d,%d>row-col <%d,%d>\r\n", __func__,px,py,current_row, current_col);
+	float X1 = (float)V0.coord_x;
+	float Y1 = (float)V0.coord_y;
+	float X2 = (float)V1.coord_x;
+	float Y2 = (float)V2.coord_y;
+	float X = (float)valid_x;
+	float Y = (float)valid_y;
+
+	Vp1.pano= (int)((X2-X)*((float)V0.pano)/(X2-X1) + (X-X1)*((float)V1.pano)/(X2-X1));
+	Vp2.pano= (int)((X2-X)*((float)V2.pano)/(X2-X1) + (X-X1)*((float)V3.pano)/(X2-X1));
+
+	Vp1.tilt = (int)((X2-X)*((float)V0.tilt)/(X2-X1) + (X-X1)*((float)V1.tilt)/(X2-X1));
+		
+		
+	Vp2.tilt = (int)((X2-X)*((float)V2.tilt)/(X2-X1) + (X-X1)*((float)V3.tilt)/(X2-X1));
+
+
+	Vp.pano = (int)((Y2-Y)*((float)Vp1.pano)/(Y2-Y1) + (Y-Y1)*((float)Vp2.pano)/(Y2-Y1));
+	Vp.tilt = (int)((Y2-Y)*((float)Vp1.tilt)/(Y2-Y1) + (Y-Y1)*((float)Vp2.tilt)/(Y2-Y1));
+	Vp.zoom = 65535;		
+
+	if(Vp.tilt < 0)
+	{
+		Vp.tilt = 32768- Vp.tilt;
+	}
+
+	pThis->setQueryZoomFlag(true);
+
+	SENDST trkmsg;
+	memset((void*)&trkmsg,0,sizeof(SENDST));
+	if(needChangeZoom)
+	{
+		trkmsg.cmd_ID = acqPosAndZoom;
+		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
+		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
+		int currentZoom = pThis->getCurrentZoomValue();
+		memcpy(&trkmsg.param[8],&currentZoom, sizeof(int));		
+	}
+	else
+	{
+		trkmsg.cmd_ID = speedloop;
+		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
+		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
+		dispatch_cnt++;		
+	}
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	return Vp;
+}
 
 GridMapNode CVideoProcess::getLinearDeviationForSelectRect(int px, int py, int grid_width,int grid_height,bool needChangeZoom)
 {

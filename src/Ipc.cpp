@@ -724,12 +724,14 @@ void* recv_msg(SENDST *RS422)
 					break;
 				case enter:
 					proc->OnKeyDwn(13);
-					//if(g_displayMode == MENU_GRID_MAP_VIEW){
-						//int menu_stat = Rjosctrl.menu;
-						//proc->OnJosCtrl(2, menu_stat);
-						//app_ctrl_setMenu_jos(menu_stat);
-						//app_ctrl_setMenuStat(mainmenu2);	
-					//}
+					#if 0
+						if(g_displayMode == MENU_GRID_MAP_VIEW){
+							int menu_stat = Rjosctrl.menu;
+							proc->OnJosCtrl(2, menu_stat);
+							app_ctrl_setMenu_jos(menu_stat);
+							app_ctrl_setMenuStat(mainmenu2);	
+						}
+					#endif
 					break;
 				case jos_menu:
 				{

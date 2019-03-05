@@ -147,6 +147,7 @@ public:
 	GridMapNode getLinearDeviation(int px, int py);
 	GridMapNode getLinearDeviation(int px, int py, int grid_width,int grid_height,bool needChangeZoom);
 	GridMapNode getLinearDeviationForSelectRect(int px, int py, int grid_width,int grid_height,bool needChangeZoom);
+	GridMapNode AutoLinkMoveBallCamera(int px, int py, int grid_width,int grid_height,bool needChangeZoom);
 
 	bool readParams(const char* filename);
 	bool writeParams(const char* filename);

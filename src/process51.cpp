@@ -3025,8 +3025,8 @@ void CProcess::DrawMtd_Rigion_Target()
 			if(1 == g_GridMapMode)
 			{
 				//printf("\r\nImage Points:<%d, %d>\r\n", tmp.x+tmp.width/2, tmp.y+tmp.height/2);
-				//pThis->MvBallCamUseLinearDeviationSelectRect(tmp.x+tmp.width/2, tmp.y + tmp.height/2, false);
-				pThis->getLinearDeviationForSelectRect(tmp.x+tmp.width/2,tmp.y + tmp.height/2, GRID_WIDTH_120,GRID_HEIGHT_90,false);
+				pThis->MvBallCamUseLinearDeviationSelectRect(tmp.x+tmp.width/2, tmp.y + tmp.height/2, false);				
+				//pThis->AutoLinkMoveBallCamera(tmp.x+tmp.width/2,tmp.y + tmp.height/2, GRID_WIDTH_120,GRID_HEIGHT_90,false);
 
 			}
 			else if(2 == g_GridMapMode)
@@ -3034,8 +3034,7 @@ void CProcess::DrawMtd_Rigion_Target()
 				Point2i inPoint, outPoint;
 				inPoint.x = tmp.x;
 				inPoint.y = tmp.y;
-				m_trig.Point2getPos(inPoint, outPoint);
-					
+				m_trig.Point2getPos(inPoint, outPoint);					
 				trkmsg.cmd_ID = speedloop;
 				memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
 				memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
@@ -4228,10 +4227,14 @@ void CProcess::OnJosCtrl(int key, int param)
 			break;
 		case JOSF2_ENTER_MENU:
 			app_ctrl_setMenu_jos(param);
+			/* To make sure press number key '0' is safe when current displayMode is 'Grid Map View';
+			     So, set the menu index "menuarray[submenu_gunball].pointer" to the first index;
+			     because when 'Grid Map View' , press 'F2' to open Menu, you need input number '0'.
+			*/
 			if(g_displayMode == MENU_GRID_MAP_VIEW){
 				if(msgextMenuCtrl!=NULL){
 					menu_param_t *pMenuStatus = msgextMenuCtrl;				
-					pMenuStatus->menuarray[submenu_gunball].pointer = 0;
+					pMenuStatus->menuarray[submenu_gunball].pointer = 0; 
 				}	
 			}
 			break;

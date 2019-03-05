@@ -1461,7 +1461,7 @@ GridMapNode CVideoProcess::getLinearDeviationForSelectRect(int px, int py, int g
 		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
 		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
 		dispatch_cnt++;
-		printf("\r\n&&&&&&&&&<%d>&&&&&&&&&&&&<%d, %d>\r\n",dispatch_cnt, Vp.pano, Vp.tilt);
+		//printf("\r\n&&&&&&&&&<%d>&&&&&&&&&&&&<%d, %d>\r\n",dispatch_cnt, Vp.pano, Vp.tilt);
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 
 	}

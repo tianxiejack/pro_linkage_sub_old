@@ -3032,8 +3032,10 @@ void CProcess::DrawMtd_Rigion_Target()
 
 			if(1 == g_GridMapMode)
 			{
-				printf("\r\nImage Points:<%d, %d>\r\n", tmp.x+tmp.width/2, tmp.y+tmp.height/2);
-				pThis->MvBallCamUseLinearDeviationSelectRect(tmp.x+tmp.width/2, tmp.y + tmp.height/2, false);
+				//printf("\r\nImage Points:<%d, %d>\r\n", tmp.x+tmp.width/2, tmp.y+tmp.height/2);
+				//pThis->MvBallCamUseLinearDeviationSelectRect(tmp.x+tmp.width/2, tmp.y + tmp.height/2, false);
+				pThis->getLinearDeviationForSelectRect(tmp.x+tmp.width/2,tmp.y + tmp.height/2, GRID_WIDTH_120,GRID_HEIGHT_90,false);
+
 			}
 			else if(2 == g_GridMapMode)
 			{
@@ -3971,8 +3973,6 @@ void CProcess::MvBallCamByClickGunImg(int x, int y,bool needChangeZoom)
 	
 	Point camCoords;
 	CvtImgCoords2CamCoords(imgCoords, camCoords);
-	//printf("\r\n[%s]:========Image Points: < %d , %d >",__FUNCTION__,(imgCoords.x),(imgCoords.y));
-	//printf("\r\n[%s]:========Remap Points:< %d , %d >\r\n",__FUNCTION__,(camCoords.x*2),(camCoords.y*2));
 	TransformPixByOriginPoints(camCoords.x, camCoords.y );
 }
 
@@ -4236,6 +4236,12 @@ void CProcess::OnJosCtrl(int key, int param)
 			break;
 		case JOSF2_ENTER_MENU:
 			app_ctrl_setMenu_jos(param);
+			if(g_displayMode == MENU_GRID_MAP_VIEW){
+				if(msgextMenuCtrl!=NULL){
+					menu_param_t *pMenuStatus = msgextMenuCtrl;				
+					pMenuStatus->menuarray[submenu_gunball].pointer = 0;
+				}	
+			}
 			break;
 		default:
 			break;
@@ -4618,7 +4624,21 @@ void CProcess::OnKeyDwn(unsigned char key)
 			app_ctrl_setnumber(key);
 			switch(key){
 				case '0':
-
+					
+					if(msgextMenuCtrl !=NULL){
+						menu_param_t *pMenuStatus = msgextMenuCtrl;
+						if(g_displayMode == MENU_GRID_MAP_VIEW &&
+							(1 == pMenuStatus->menuarray[submenu_gunball].pointer))
+						{
+							SENDST trkmsg2={0};
+							trkmsg2.cmd_ID = enter_gridmap_view;
+							trkmsg2.param[0] = 0;
+							ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
+							app_ctrl_setMenuStat(mainmenu2);			
+							g_displayMode = MENU_MAIN_VIEW;
+						}
+					}
+					
 					break;
 				case '1':
 					if(g_displayMode == MENU_GRID_MAP_VIEW)

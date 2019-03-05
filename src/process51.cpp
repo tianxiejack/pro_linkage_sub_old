@@ -252,7 +252,7 @@ void CProcess::loadIPCParam()
 		timexbak = timeybak = 0;
 		
 #if __MOVE_DETECT__
-		chooseDetect = 0;
+		chooseDetect = 10;
 #endif
 		forwardflag = backflag = false;
 		memset(validMtdRecord,0,sizeof(validMtdRecord));
@@ -1510,6 +1510,7 @@ void CProcess::switchMvTargetForwad()
 	unsigned int tmp=0 ;
 	unsigned int x,y;
 	int index = -1;
+	
 	for(int i = 0; i < mvListsum.size(); i++)
 	{
 		if(chooseDetect == mvListsum[i].number)
@@ -1529,8 +1530,13 @@ void CProcess::switchMvTargetForwad()
 		chooseDetect = mvListsum[index].number;
 		cur_targetRect = mvListsum[index].trkobj.targetRect;
 		losenumber = -1;
-		lose_timer_flag = 0;
 	}
+	else
+	{
+		chooseDetect = 10;
+		memset( &cur_targetRect,0,sizeof(cur_targetRect));
+	}
+	lose_timer_flag = 0;
 
 }
 
@@ -1635,6 +1641,7 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 					losenumber = (*pMvList).number;
 					cur_targetRect = (*pMvList).trkobj.targetRect;
 					lose_timer_flag = 1;
+					chooseDetect = 10;
 				}
 				removeMvListValidNum((*pMvList).number);
 				mvList->erase(pMvList);
@@ -1656,6 +1663,8 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 				memcpy((void*)&(pTmpMv.trkobj),(void *)&(detect[i++].targetRect),sizeof(TRK_RECT_INFO));
 				mvList->push_back(pTmpMv);	
 			}
+			if( chooseDetect == 10 )
+				chooseDetect = pTmpMv.number;
 		}	
 	}
 	else
@@ -2987,7 +2996,6 @@ void CProcess::DrawMtd_Rigion_Target()
 			switchMvTargetForwad();
 			backflag = 0;
 		}
-		
 		char tmpNum = 0;
 		cv::Rect tmp;
 		mouserect recttmp;
@@ -4503,7 +4511,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 		{
 			pIStuts->MtdState[pIStuts->SensorStat] = eImgAlg_Enable;
 #if __MOVE_DETECT__
-			chooseDetect = 0;
+			chooseDetect = 10;
 #endif
 		}
 		msgdriv_event(MSGID_EXT_MVDETECT, NULL);
@@ -5458,6 +5466,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 				{
 					m_pMovDetector->mvOpen(i);	
 					dynamic_config(VP_CFG_MvDetect, 1,NULL);
+					chooseDetect = 10;
 				}
 			}
 		}
@@ -5469,7 +5478,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 				{
 					dynamic_config(VP_CFG_MvDetect, 0,NULL);
 					m_pMovDetector->mvClose(i);
-					//chooseDetect = i;
+					
 				}	
 			}
 		}

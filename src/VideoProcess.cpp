@@ -1967,30 +1967,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 
 			int valid_x = x;
 			int valid_y = y;
-		#if 0
-			if(x<GRID_WIDTH/2 )
-			{
-				valid_x = GRID_WIDTH/2;
-			}
-			else if(x>IMG_WIDTH-GRID_WIDTH/2)
-			{
-				valid_x = IMG_WIDTH-GRID_WIDTH/2;
-			}
-			else{
-				valid_x = x;
-			}
-			if(y<GRID_HEIGHT/2)
-			{
-				valid_y =GRID_HEIGHT/2; 
-			}
-			else if(y>IMG_HEIGHT-GRID_HEIGHT/2)
-			{
-				valid_y=IMG_HEIGHT-GRID_HEIGHT/2;
-			}
-			else {
-				valid_y = y;
-			}
-		#endif
 			//int tmp_col = ((valid_x-GRID_WIDTH/2)/GRID_WIDTH) % GRID_COLS;
 			//int tmp_row = ((valid_y-GRID_HEIGHT/2)/GRID_HEIGHT);
 			

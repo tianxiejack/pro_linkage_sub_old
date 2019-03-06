@@ -3892,13 +3892,13 @@ void CProcess::TransformPixByOriginPoints(int &X, int &Y)
 
 	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
 
-	tmp_zoomPos = zoomPos;//m_iZoom;
+	tmp_zoomPos = zoomPos;	//m_iZoom;
 
 	//trkmsg.cmd_ID = speedloop;
 	trkmsg.cmd_ID = acqPosAndZoom;
 	memcpy(&trkmsg.param[0],&DesPanPos, 4);
 	memcpy(&trkmsg.param[4],&DesTilPos, 4); 
-	memcpy(&trkmsg.param[8],&tmp_zoomPos  , 4); 	
+	memcpy(&trkmsg.param[8],&tmp_zoomPos,4); 	
 	
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);	
 }
@@ -3967,7 +3967,7 @@ void CProcess::MvBallCamByClickGunImg(int x, int y,bool needChangeZoom)
 	int offset_y = m_winHeight/2;	
 	int point_X = ( x-offset_x ) ;
 	int point_Y = ( y-offset_y ) *2;	
-	Point imgCoords = Point( point_X ,  point_Y );  // removed by 20190125
+	Point imgCoords = Point( point_X ,  point_Y );  //removed by 20190125
 	//Point imgCoords = replaceClickPoints(point_X, point_Y);
 	
 	Point camCoords;
@@ -4019,12 +4019,21 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 
 	if(needChangeZoom == true)
 	{
-		if(LeftPoint.x < RightPoint.x) {
+		if((LeftPoint.x < RightPoint.x)&&(LeftPoint.y < RightPoint.y)) {
 			point_X = abs(LeftPoint.x - RightPoint.x) /2 + LeftPoint.x;
 			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + LeftPoint.y;	
-		}else{
+		}
+		else if((LeftPoint.x < RightPoint.x)&&(LeftPoint.y > RightPoint.y)) {
+			point_X = abs(LeftPoint.x - RightPoint.x) /2 + LeftPoint.x;
+			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
+		}
+		else if((LeftPoint.x > RightPoint.x)&&(LeftPoint.y > RightPoint.y)) {
 			point_X = abs(LeftPoint.x - RightPoint.x) /2 + RightPoint.x;
 			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
+		}
+		else{
+			point_X = abs(LeftPoint.x - RightPoint.x) /2 + RightPoint.x;
+			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + LeftPoint.y;	
 		}		
 	}
 	else  {
@@ -4032,6 +4041,7 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 		point_Y = (y- offset_y);		
 	}
 
+	//printf("\r\n[%s]:FirstPoint<%d,%d>,SecondPoint<%d,%d>, CenterPoint<%d,%d>\r\n",__FUNCTION__,LeftPoint.x,LeftPoint.y,RightPoint.x,RightPoint.y,point_X,point_Y);
 	switch(m_display.g_CurDisplayMode) {
 		case PREVIEW_MODE:
 			opt = cv::Point( point_X*2, point_Y*2 );	

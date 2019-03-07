@@ -114,6 +114,9 @@ class CVideoProcess
 	MAIN_ProcThrObj	mainProcThrObj;
 	Mat mainFrame[2];
 public:
+	enum {
+		GRIDMAP_FILE_LINENUM = 613
+	};
 	static CcCamCalibra *m_camCalibra;	
 	static DetectCorners *m_detectCorners;	
 	static IntrinsicMatrix *m_intrMatObj;

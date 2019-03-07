@@ -8,6 +8,8 @@
 #include "app_ctrl.h"
 #include "Ipcctl.h"
 #include <vector>
+#include <errno.h>
+#include <string.h>
 using namespace vmath;
 
 extern unsigned char  g_GridMapMode;
@@ -1231,48 +1233,66 @@ int CVideoProcess::mapnormal2curchannel_rect(mouserectf *rect, int w, int h)
 bool CVideoProcess::readParams(const char* filename)
 {
 	char paramName[40];
-	m_readfs.open(filename,FileStorage::READ);
-	if(m_readfs.isOpened())
+	int total_LineNumber = 0;
+	int ch =0;
+	FILE* fp = fopen(filename,"r+");
+	if(fp == NULL)
 	{
-		//param.imageSize.width  = (int)m_readfs["image_width"];
-		//readfs["gun_camera_matrix"] >> param.cameraMatrix_gun ;
-	#if 0
-		for(int i=0;i<=GRID_ROWS;i++)
+		fprintf(stderr,"Open File: SaveGridMap.yml Failed ===%s\n!!!",strerror(errno));
+		return false;
+	}
+	else
+	{
+		while((ch = fgetc(fp)) != EOF)
 		{
-			for(int j=0;j<=GRID_COLS;j++)
+			if(ch == '\n')
 			{
-	#else
-		for(int i=0;i<=GRID_ROWS_11;i++)
-			{
-				for(int j=0;j<=GRID_COLS_15+1;j++)
-				{
-	#endif
-				sprintf(paramName,"GridMapNode_%d_%d_pano",i,j);				
-				m_readfs[paramName] >>m_readGridNodes[i][j].pano;
-				m_gridNodes[i][j].pano = m_readGridNodes[i][j].pano;
-				memset(paramName,0,sizeof(paramName));
-				sprintf(paramName,"GridMapNode_%d_%d_tilt",i,j);	
-				m_readfs[paramName] >>m_readGridNodes[i][j].tilt;
-				m_gridNodes[i][j].tilt = m_readGridNodes[i][j].tilt;
-
-				memset(paramName,0,sizeof(paramName));
-				sprintf(paramName,"GridMapNode_%d_%d_mark",i,j);
-				m_readfs[paramName] >>m_readGridNodes[i][j].has_mark;
-				m_gridNodes[i][j].has_mark = m_readGridNodes[i][j].has_mark;
-				m_calibratedNodes[i][j].isShow = m_gridNodes[i][j].has_mark;
-				if(m_readGridNodes[i][j].has_mark==1)
-				{
-					pThis->addMarkNum();
-				}
-				//printf("\r\n[%s]Read Nodes[%d][%d]=<%d, %d>",__func__,i,j,m_readGridNodes[i][j].pano,m_readGridNodes[i][j].tilt);
+				total_LineNumber ++;
 			}
 		}
+		fclose(fp);
+		printf("\r\n[%s]: File Total Line Number = %d\r\n",__FUNCTION__,total_LineNumber);
+		if( total_LineNumber >= GRIDMAP_FILE_LINENUM)
+		{
+			m_readfs.open(filename,FileStorage::READ);
+			if(m_readfs.isOpened())
+			{
+			
+				for(int i=0;i<=GRID_ROWS_11;i++)
+				{
+					for(int j=0;j<=GRID_COLS_15+1;j++)
+					{			
+						sprintf(paramName,"GridMapNode_%d_%d_pano",i,j);				
+						m_readfs[paramName] >>m_readGridNodes[i][j].pano;
+						m_gridNodes[i][j].pano = m_readGridNodes[i][j].pano;
+						memset(paramName,0,sizeof(paramName));
+						sprintf(paramName,"GridMapNode_%d_%d_tilt",i,j);	
+						m_readfs[paramName] >>m_readGridNodes[i][j].tilt;
+						m_gridNodes[i][j].tilt = m_readGridNodes[i][j].tilt;
 
-		m_readfs.release();
-		return true;
+						memset(paramName,0,sizeof(paramName));
+						sprintf(paramName,"GridMapNode_%d_%d_mark",i,j);
+						m_readfs[paramName] >>m_readGridNodes[i][j].has_mark;
+						m_gridNodes[i][j].has_mark = m_readGridNodes[i][j].has_mark;
+						m_calibratedNodes[i][j].isShow = m_gridNodes[i][j].has_mark;
+						if(m_readGridNodes[i][j].has_mark==1)
+						{
+							pThis->addMarkNum();
+						}
+					}
+				}
+
+				m_readfs.release();
+				return true;
+
+			}
+			return false;
+			
+		}
 	}
-	return false;
-}
+
+}	
+
 
 int CVideoProcess::read_param_trig()
 {
@@ -1369,9 +1389,9 @@ GridMapNode CVideoProcess::AutoLinkMoveBallCamera(int px, int py, int grid_width
 	}
 	else
 	{
-		if(valid_x <= 120){
-			current_col = ((valid_x-grid_width/2)/(grid_width/2)) % (GRID_COLS_15+1);
-			
+		if(valid_x <= 120)
+		{
+			current_col = ((valid_x-grid_width/2)/(grid_width/2)) % (GRID_COLS_15+1);			
 		}
 		else
 		{
@@ -1388,34 +1408,46 @@ GridMapNode CVideoProcess::AutoLinkMoveBallCamera(int px, int py, int grid_width
 	GridMapNode V2 = m_gridNodes[current_row_plus][current_col];
 	GridMapNode V3 = m_gridNodes[current_row_plus][current_col_plus];
 	
-	//printf("\r\n[%s]:V0 =<%d,%d>\r\nV1 =<%d,%d> \r\nV2 =<%d,%d> \r\nV3 =<%d,%d> \r\n ",__func__,
-	//V0.pano,V0.tilt,V1.pano,V1.tilt,V2.pano,V2.tilt,V3.pano,V3.tilt);
-	//printf("\r\n[%s]: Click:Screen<%d,%d>row-col <%d,%d>\r\n", __func__,px,py,current_row, current_col);
 	float X1 = (float)V0.coord_x;
 	float Y1 = (float)V0.coord_y;
 	float X2 = (float)V1.coord_x;
 	float Y2 = (float)V2.coord_y;
 	float X = (float)valid_x;
 	float Y = (float)valid_y;
+	if(V0.pano > V1.pano)
+	{
+		float angle_left = (MAX_ANGLE-V0.pano)/PER_ANGLE;
+		float angle_right = (V1.pano -ZERO_ANGLE)/PER_ANGLE;
+		float X0 = X1 +(angle_left * GRID_WIDTH)/(angle_left +angle_right);
 
-	Vp1.pano= (int)((X2-X)*((float)V0.pano)/(X2-X1) + (X-X1)*((float)V1.pano)/(X2-X1));
-	Vp2.pano= (int)((X2-X)*((float)V2.pano)/(X2-X1) + (X-X1)*((float)V3.pano)/(X2-X1));
+		if(X < X0)
+		{
+			Vp1.pano =(int)( ((X0-X)*(float)V0.pano) /(X0-X1)+((X-X1)*(float)MAX_ANGLE)/(X0-X1));
+			Vp2.pano =(int)( ((X0-X)*(float)V2.pano) / (X0-X1) + ((X-X1)*(float)MAX_ANGLE)/(X0-X1));
+		}
+		else
+		{
+			Vp1.pano =(int)( ((X2-X)*(float)(0))/(X2-X0) + ((X-X0)*(float)V1.pano)/(X2-X0));
+			Vp2.pano = (int)( ((X2-X)*(float)(0))/(X2-X0) + ((X-X0)*(float)V3.pano)/(X2-X0));
+		}
+	}
+	else
+	{
+		Vp1.pano= (int)((X2-X)*((float)V0.pano)/(X2-X1) + (X-X1)*((float)V1.pano)/(X2-X1));
+		Vp2.pano= (int)((X2-X)*((float)V2.pano)/(X2-X1) + (X-X1)*((float)V3.pano)/(X2-X1));
+	}
+	//Vp1.pano= (int)((X2-X)*((float)V0.pano)/(X2-X1) + (X-X1)*((float)V1.pano)/(X2-X1));
+	//Vp2.pano= (int)((X2-X)*((float)V2.pano)/(X2-X1) + (X-X1)*((float)V3.pano)/(X2-X1));
 
-	Vp1.tilt = (int)((X2-X)*((float)V0.tilt)/(X2-X1) + (X-X1)*((float)V1.tilt)/(X2-X1));
-		
-		
+	Vp1.tilt = (int)((X2-X)*((float)V0.tilt)/(X2-X1) + (X-X1)*((float)V1.tilt)/(X2-X1));		
 	Vp2.tilt = (int)((X2-X)*((float)V2.tilt)/(X2-X1) + (X-X1)*((float)V3.tilt)/(X2-X1));
-
-
 	Vp.pano = (int)((Y2-Y)*((float)Vp1.pano)/(Y2-Y1) + (Y-Y1)*((float)Vp2.pano)/(Y2-Y1));
 	Vp.tilt = (int)((Y2-Y)*((float)Vp1.tilt)/(Y2-Y1) + (Y-Y1)*((float)Vp2.tilt)/(Y2-Y1));
-	Vp.zoom = 65535;		
-
+	Vp.zoom = 65535;	
 	if(Vp.tilt < 0)
 	{
 		Vp.tilt = 32768- Vp.tilt;
 	}
-
 	pThis->setQueryZoomFlag(true);
 
 	SENDST trkmsg;
@@ -1493,8 +1525,7 @@ GridMapNode CVideoProcess::getLinearDeviationForSelectRect(int px, int py, int g
 	else
 	{
 		if(valid_x <= 120){
-			current_col = ((valid_x-grid_width/2)/(grid_width/2)) % (GRID_COLS_15+1);
-			
+			current_col = ((valid_x-grid_width/2)/(grid_width/2)) % (GRID_COLS_15+1);			
 		}
 		else
 		{
@@ -1511,94 +1542,67 @@ GridMapNode CVideoProcess::getLinearDeviationForSelectRect(int px, int py, int g
 	GridMapNode V2 = m_gridNodes[current_row_plus][current_col];
 	GridMapNode V3 = m_gridNodes[current_row_plus][current_col_plus];
 	
-	//printf("\r\n[%s]:V0 =<%d,%d>\r\nV1 =<%d,%d> \r\nV2 =<%d,%d> \r\nV3 =<%d,%d> \r\n ",__func__,
-	//V0.pano,V0.tilt,V1.pano,V1.tilt,V2.pano,V2.tilt,V3.pano,V3.tilt);
-
-	//printf("\r\n[%s]: Click:Screen<%d,%d>row-col <%d,%d>\r\n", __func__,px,py,current_row, current_col);
 	float X1 = (float)V0.coord_x;
 	float Y1 = (float)V0.coord_y;
 	float X2 = (float)V1.coord_x;
 	float Y2 = (float)V2.coord_y;
 	float X = (float)valid_x;
 	float Y = (float)valid_y;
-#if 0
-	if(V0.pano < V1.pano){
+
+	if(V0.pano > V1.pano)
+	{
 		float angle_left = (MAX_ANGLE-V0.pano)/PER_ANGLE;
 		float angle_right = (V1.pano -ZERO_ANGLE)/PER_ANGLE;
 		float X0 = X1 +(angle_left * GRID_WIDTH)/(angle_left +angle_right);
-
 		if(X < X0)
 		{
 			Vp1.pano =(int)( ((X0-X)*(float)V0.pano) /(X0-X1)+((X-X1)*(float)MAX_ANGLE)/(X0-X1));
 			Vp2.pano =(int)( ((X0-X)*(float)V2.pano) / (X0-X1) + ((X-X1)*(float)MAX_ANGLE)/(X0-X1));
 		}
-		else{
+		else
+		{
 			Vp1.pano =(int)( ((X2-X)*(float)(0))/(X2-X0) + ((X-X0)*(float)V1.pano)/(X2-X0));
 			Vp2.pano = (int)( ((X2-X)*(float)(0))/(X2-X0) + ((X-X0)*(float)V3.pano)/(X2-X0));
-
 		}
-	}else{
+	}
+	else
+	{
 		Vp1.pano= (int)((X2-X)*((float)V0.pano)/(X2-X1) + (X-X1)*((float)V1.pano)/(X2-X1));
 		Vp2.pano= (int)((X2-X)*((float)V2.pano)/(X2-X1) + (X-X1)*((float)V3.pano)/(X2-X1));
 	}
-#endif
-	//printf("\r\n[%s]:<X1,Y1>=<%f,%f>, <X2,Y2>=<%f,%f>\r\n",__func__,X1,Y1,X2,Y2);
-
-	Vp1.pano= (int)((X2-X)*((float)V0.pano)/(X2-X1) + (X-X1)*((float)V1.pano)/(X2-X1));
-	Vp2.pano= (int)((X2-X)*((float)V2.pano)/(X2-X1) + (X-X1)*((float)V3.pano)/(X2-X1));
-
-	Vp1.tilt = (int)((X2-X)*((float)V0.tilt)/(X2-X1) + (X-X1)*((float)V1.tilt)/(X2-X1));
-		
-	//printf("\r\nVp1=<%d,%d>\r\n",Vp1.pano,Vp1.tilt);
-		
+	Vp1.tilt = (int)((X2-X)*((float)V0.tilt)/(X2-X1) + (X-X1)*((float)V1.tilt)/(X2-X1));		
 	Vp2.tilt = (int)((X2-X)*((float)V2.tilt)/(X2-X1) + (X-X1)*((float)V3.tilt)/(X2-X1));
-
-	//printf("\r\nVp2=<%d,%d>\r\n",Vp2.pano,Vp2.tilt);
-
 	Vp.pano = (int)((Y2-Y)*((float)Vp1.pano)/(Y2-Y1) + (Y-Y1)*((float)Vp2.pano)/(Y2-Y1));
 	Vp.tilt = (int)((Y2-Y)*((float)Vp1.tilt)/(Y2-Y1) + (Y-Y1)*((float)Vp2.tilt)/(Y2-Y1));
-	Vp.zoom = 65535;		
-
+	Vp.zoom = 65535;	
 	if(Vp.tilt < 0)
 	{
 		Vp.tilt = 32768- Vp.tilt;
 	}
-	//printf("\r\n[%s]:node_PTZ=<%d,%d,%d>\r\n",	__func__, Vp.pano,Vp.tilt,Vp.zoom);
-
 	pThis->setQueryZoomFlag(true);
-
 	SENDST trkmsg;
 	memset((void*)&trkmsg,0,sizeof(SENDST));
-	if(needChangeZoom){
+	if(needChangeZoom)
+	{
 		trkmsg.cmd_ID = acqPosAndZoom;
-
 		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
 		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
 		int currentZoom = pThis->getCurrentZoomValue();
 		memcpy(&trkmsg.param[8],&currentZoom, sizeof(int));
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 	}
-	else{
+	else
+	{
 		trkmsg.cmd_ID = speedloop;
 		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
 		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
 		dispatch_cnt++;
-		//printf("\r\n&&&&&&&&&<%d>&&&&&&&&&&&&<%d, %d>\r\n",dispatch_cnt, Vp.pano, Vp.tilt);
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-
-	}
-	
-	//printf("\r\n[%s]: Send PTZ Message to Ball Camera !!",__func__);
-	
+	}	
 	return Vp;
 }
-
-
-
-
 GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int grid_height,bool needChangeZoom)
 {
-
 	int offset_y = IMG_HEIGHT/2;
 	int x = px;
 	int y = py;
@@ -1610,8 +1614,6 @@ GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int
 		default:
 			break;
 	}
-
-
 	int valid_x = 0;
 	int valid_y = 0;
 	if(x<grid_width/2 )
@@ -1622,11 +1624,10 @@ GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int
 	{
 		valid_x = IMG_WIDTH-grid_width/2;
 	}
-	else{
+	else
+	{
 		valid_x = x;
-	}
-
-	
+	}	
 	if(y<grid_height/2)
 	{
 		valid_y =grid_height/2; 
@@ -1643,14 +1644,13 @@ GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int
 	int current_row ;
 	if(valid_x>120 && (valid_x<1800))
 	{		
-		current_col = ((valid_x)/grid_width) % (GRID_COLS_15+1) ;
-		
+		current_col = ((valid_x)/grid_width) % (GRID_COLS_15+1) ;		
 	}
 	else
 	{
-		if(valid_x <= 120){
-			current_col = ((valid_x-grid_width/2)/(grid_width/2)) % (GRID_COLS_15+1);
-			
+		if(valid_x <= 120)
+		{
+			current_col = ((valid_x-grid_width/2)/(grid_width/2)) % (GRID_COLS_15+1);			
 		}
 		else
 		{
@@ -1667,18 +1667,15 @@ GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int
 	GridMapNode V2 = m_gridNodes[current_row_plus][current_col];
 	GridMapNode V3 = m_gridNodes[current_row_plus][current_col_plus];
 	
-	//printf("\r\n[%s]:V0 =<%d,%d>\r\nV1 =<%d,%d> \r\nV2 =<%d,%d> \r\nV3 =<%d,%d> \r\n ",__func__,
-	//V0.pano,V0.tilt,V1.pano,V1.tilt,V2.pano,V2.tilt,V3.pano,V3.tilt);
-
-	//printf("\r\n[%s]: Click:Screen<%d,%d>row-col <%d,%d>\r\n", __func__,px,py,current_row, current_col);
 	float X1 = (float)V0.coord_x;
 	float Y1 = (float)V0.coord_y;
 	float X2 = (float)V1.coord_x;
 	float Y2 = (float)V2.coord_y;
 	float X = (float)valid_x;
 	float Y = (float)valid_y;
-#if 0
-	if(V0.pano < V1.pano){
+
+	if(V0.pano > V1.pano)
+	{
 		float angle_left = (MAX_ANGLE-V0.pano)/PER_ANGLE;
 		float angle_right = (V1.pano -ZERO_ANGLE)/PER_ANGLE;
 		float X0 = X1 +(angle_left * GRID_WIDTH)/(angle_left +angle_right);
@@ -1688,29 +1685,19 @@ GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int
 			Vp1.pano =(int)( ((X0-X)*(float)V0.pano) /(X0-X1)+((X-X1)*(float)MAX_ANGLE)/(X0-X1));
 			Vp2.pano =(int)( ((X0-X)*(float)V2.pano) / (X0-X1) + ((X-X1)*(float)MAX_ANGLE)/(X0-X1));
 		}
-		else{
+		else
+		{
 			Vp1.pano =(int)( ((X2-X)*(float)(0))/(X2-X0) + ((X-X0)*(float)V1.pano)/(X2-X0));
 			Vp2.pano = (int)( ((X2-X)*(float)(0))/(X2-X0) + ((X-X0)*(float)V3.pano)/(X2-X0));
-
 		}
-	}else{
+	}
+	else
+	{
 		Vp1.pano= (int)((X2-X)*((float)V0.pano)/(X2-X1) + (X-X1)*((float)V1.pano)/(X2-X1));
 		Vp2.pano= (int)((X2-X)*((float)V2.pano)/(X2-X1) + (X-X1)*((float)V3.pano)/(X2-X1));
 	}
-#endif
-	//printf("\r\n[%s]:<X1,Y1>=<%f,%f>, <X2,Y2>=<%f,%f>\r\n",__func__,X1,Y1,X2,Y2);
-
-	Vp1.pano= (int)((X2-X)*((float)V0.pano)/(X2-X1) + (X-X1)*((float)V1.pano)/(X2-X1));
-	Vp2.pano= (int)((X2-X)*((float)V2.pano)/(X2-X1) + (X-X1)*((float)V3.pano)/(X2-X1));
-
 	Vp1.tilt = (int)((X2-X)*((float)V0.tilt)/(X2-X1) + (X-X1)*((float)V1.tilt)/(X2-X1));
-		
-	//printf("\r\nVp1=<%d,%d>\r\n",Vp1.pano,Vp1.tilt);
-		
 	Vp2.tilt = (int)((X2-X)*((float)V2.tilt)/(X2-X1) + (X-X1)*((float)V3.tilt)/(X2-X1));
-
-	//printf("\r\nVp2=<%d,%d>\r\n",Vp2.pano,Vp2.tilt);
-
 	Vp.pano = (int)((Y2-Y)*((float)Vp1.pano)/(Y2-Y1) + (Y-Y1)*((float)Vp2.pano)/(Y2-Y1));
 	Vp.tilt = (int)((Y2-Y)*((float)Vp1.tilt)/(Y2-Y1) + (Y-Y1)*((float)Vp2.tilt)/(Y2-Y1));
 	Vp.zoom = 65535;		
@@ -1719,35 +1706,36 @@ GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int
 	{
 		Vp.tilt = 32768- Vp.tilt;
 	}
-	//printf("\r\n[%s]:node_PTZ=<%d,%d,%d>\r\n",	__func__, Vp.pano,Vp.tilt,Vp.zoom);
-
+#if 0
+	printf("\r\n[%s]:V0 =<%d,%d>\r\nV1 =<%d,%d> \r\nV2 =<%d,%d> \r\nV3 =<%d,%d> \r\n ",__func__,
+				V0.pano,V0.tilt,V1.pano,V1.tilt,V2.pano,V2.tilt,V3.pano,V3.tilt);
+	printf("\r\n[%s]: Click:Screen<%d,%d>row-col <%d,%d>\r\n", __func__,px,py,current_row, current_col);
+	printf("\r\n[%s]:<X1,Y1>=<%f,%f>, <X2,Y2>=<%f,%f>\r\n",__func__,X1,Y1,X2,Y2);
+	printf("\r\nVp1=<%d,%d>\r\n",Vp1.pano,Vp1.tilt);
+	printf("\r\nVp2=<%d,%d>\r\n",Vp2.pano,Vp2.tilt);
+	printf("\r\n[%s]:node_PTZ=<%d,%d,%d>\r\n",	__func__, Vp.pano,Vp.tilt,Vp.zoom);
+#endif
 	pThis->setQueryZoomFlag(true);
-
 	SENDST trkmsg;
 	memset((void*)&trkmsg,0,sizeof(SENDST));
-	if(needChangeZoom){
+	if(needChangeZoom)
+	{
 		trkmsg.cmd_ID = acqPosAndZoom;
-
 		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
 		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
 		int currentZoom = pThis->getCurrentZoomValue();
 		memcpy(&trkmsg.param[8],&currentZoom, sizeof(int));
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 	}
-	else{
+	else
+	{
 		trkmsg.cmd_ID = speedloop;
 		memcpy(&trkmsg.param[0],&(Vp.pano), sizeof(int));
 		memcpy(&trkmsg.param[4],&(Vp.tilt), sizeof(int)); 
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-
-	}
-	
-	//printf("\r\n[%s]: Send PTZ Message to Ball Camera !!",__func__);
-	
+	}	
 	return Vp;
 }
-
-
 GridMapNode CVideoProcess::getLinearDeviation(int px, int py)
 {
 	int offset_y = IMG_HEIGHT/2;
@@ -1761,7 +1749,6 @@ GridMapNode CVideoProcess::getLinearDeviation(int px, int py)
 		default:
 			break;
 	}
-
 	int valid_x = 0;
 	int valid_y = 0;
 	if(x<GRID_WIDTH/2 )
@@ -1785,10 +1772,7 @@ GridMapNode CVideoProcess::getLinearDeviation(int px, int py)
 	}
 	else {
 		valid_y = y;
-	}
-
-
-	
+	}	
 	int current_col = ((valid_x-GRID_WIDTH/2)/GRID_WIDTH) % GRID_COLS;
 	int current_row = (valid_y-GRID_HEIGHT/2)/GRID_HEIGHT;
 	int current_row_plus = current_row+1;
@@ -1967,13 +1951,9 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 
 			int valid_x = x;
 			int valid_y = y;
-			//int tmp_col = ((valid_x-GRID_WIDTH/2)/GRID_WIDTH) % GRID_COLS;
-			//int tmp_row = ((valid_y-GRID_HEIGHT/2)/GRID_HEIGHT);
 			
 			GridMapNode temp_node = pThis->getLinearDeviation(valid_x,valid_y,GRID_WIDTH_120,GRID_HEIGHT_90,true);
 
-			//printf("\r\n[%s]:Click Point:<%d, %d>, cur_row=%d, cur_col=%d, node_PTZ=<%d,%d,%d>\r\n",
-			//	__func__, valid_x, valid_y,tmp_row,tmp_col,temp_node.pano,temp_node.tilt,temp_node.zoom);
 		}
 	}
 	else {
@@ -2077,10 +2057,9 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 						if( ( isRectangleStartPointValid == true ) &&( isRectValid == true )) {
 							isRectangleStartPointValid = false;
 							isRectValid  = false;
-				/* */			
+						
 						if(1 == g_GridMapMode)
 						{
-							//pThis->getLinearDeviation(tmpX,tmpY,GRID_WIDTH_120,GRID_HEIGHT_90,true);
 							pThis->MvBallCamUseLinearDeviationSelectRect(tmpX, tmpY, true);
 						}
 						else if(2 == g_GridMapMode)
@@ -2103,8 +2082,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 						else
 						{
 							pThis->MvBallCamBySelectRectangle(tmpX,tmpY,true);	
-						}
-				
+						}			
 							
 						}
 					}

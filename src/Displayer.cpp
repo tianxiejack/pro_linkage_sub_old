@@ -1677,15 +1677,15 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 
 /*************************************************************************************/
     //glutInitWindowPosition(m_initPrm.winPosX, m_initPrm.winPosY);
-    glutInitWindowSize(outputWHF[0],outputWHF[1]);
-    glutCreateWindow("DSS");
+    	glutInitWindowSize(outputWHF[0],outputWHF[1]);
+    	glutCreateWindow("DSS");
 	glutSetCursor(GLUT_CURSOR_NONE);
 	glutDisplayFunc(&_display);
 	if(m_initPrm.idlefunc != NULL)
 		glutIdleFunc(m_initPrm.idlefunc);
 	glutReshapeFunc(_reshape);
 
-	//
+	
 	if(m_initPrm.keyboardfunc != NULL)
 		glutKeyboardFunc(m_initPrm.keyboardfunc);
 	if(m_initPrm.keySpecialfunc != NULL)

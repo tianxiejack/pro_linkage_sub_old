@@ -48,6 +48,7 @@ extern std::vector< cv::Mat > ImageList;
 EventLoop *eventLoop = NULL;
 extern CProcess *proc ;
 
+
 using namespace cr_trigonometricInterpolation;
 
 int CVideoProcess::MAIN_threadCreate(void)
@@ -1354,11 +1355,7 @@ int CVideoProcess::read_param_trig()
 
 bool CVideoProcess::writeParamsForTriangle(const char* filename)
 {
-
-
-
 }
-
 
 bool CVideoProcess::writeParams(const char* filename)
 {

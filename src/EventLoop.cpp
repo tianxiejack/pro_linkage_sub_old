@@ -71,10 +71,12 @@ void* EventLoop::RunProxy(void* pArg)
 }
 int EventLoop::Run()
 {
+	printf("\r\n[%s]:waiting for cond signal ... ...\r\n",__FUNCTION__);
 	pthread_mutex_lock(&event_mutex);
 	//gettimeofday(&now, NULL);
 	//outtime.tv_sec = now.tv_sec + MAX_EVENT_LOOP_TIMEOUT;
 	//outtime.tv_nsec = now.tv_usec * 1000;
+	
 	pthread_cond_wait(&event_cond, &event_mutex);//, &outtime);
 
 
@@ -84,7 +86,6 @@ int EventLoop::Run()
 		}
 
 	}while(0);
-
 	
 	pthread_mutex_unlock(&event_mutex);
 }

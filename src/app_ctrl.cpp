@@ -17,6 +17,8 @@ extern MenuDisplay g_displayMode;
 extern CProcess* plat;
 extern SelectMode mouse_workmode;
 extern int gun_resolu[2];
+extern GB_WorkMode g_AppWorkMode;
+GB_WorkMode setting_WorkMode = HANDLE_LINK_MODE;
 
 CMD_EXT *msgextInCtrl;
 menu_param_t *msgextMenuCtrl;
@@ -754,7 +756,7 @@ void app_ctrl_setnumber(char key)
 
 void app_ctrl_enter()
 {
-	char *init_passwd = "000000";
+	char *init_passwd ="0000";// "000000";
 	if(msgextInCtrl==NULL)
 		return;
 
@@ -787,30 +789,62 @@ void app_ctrl_enter()
 		if((pMenuStatus->menuarray[mainmenu2].pointer >= 0) && (pMenuStatus->menuarray[mainmenu2].pointer <= 4))
 			app_ctrl_setMenuStat(pMenuStatus->menuarray[mainmenu2].pointer + 3);
 	}
-	else if(submenu_carli == pMenuStatus->MenuStat)
+
+	else if(submenu_DefaultWorkMode == pMenuStatus->MenuStat)
 	{
-		if(2 == pMenuStatus->menuarray[submenu_carli].pointer) {
+	#if 0
+		if(2 == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
 			app_ctrl_setMenuStat(mainmenu2);
 			g_displayMode = MENU_MAIN_VIEW;
 			showDetectCorners = false;
 		}
-		else if(1 == pMenuStatus->menuarray[submenu_carli].pointer) {
+		else if(1 == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
 			g_displayMode = MENU_CALIBRA_CAP;
 			g_connectAction.CurCalibraCam = CAM_1;
 			//showDetectCorners = true;
 			//cout <<"@@@@@@@@@@@@@@@@@@@@@@@@@@ == 1" << endl;
 		}
-		else if(0 == pMenuStatus->menuarray[submenu_carli].pointer) {
+		else if(0 == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
 			g_displayMode = MENU_CALIBRA_CAP;
 			g_connectAction.CurCalibraCam = CAM_0;
 			//showDetectCorners = true;
 			//cout <<"@@@@@@@@@@@@@@@@@@@@@@@@@@ == 0" << endl;
 		}
 		else
+		{		
+		}	
+	#endif
+		if(INDEX_FOURTH == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
+			app_ctrl_setMenuStat(mainmenu2);
+			g_displayMode = MENU_MAIN_VIEW;
+			g_AppWorkMode = setting_WorkMode;
+			plat->saveConfigParams("SysParm.yml");
+			printf("\r\n[%s]:Current Index is : %d\r\n", __FUNCTION__, INDEX_FOURTH);
+			
+		}
+		else if(INDEX_FIRST == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
+			setting_WorkMode = HANDLE_LINK_MODE;
+			printf("\r\n[%s]:Current Index is : %d\r\n", __FUNCTION__, INDEX_FIRST);
+			
+		}
+		else if(INDEX_SECOND == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
+			setting_WorkMode = AUTO_LINK_MODE;
+			printf("\r\n[%s]:Current Index is : %d\r\n", __FUNCTION__, INDEX_SECOND);
+		}
+		else if(INDEX_THIRD == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
+			setting_WorkMode = ONLY_BALL_MODE;
+			printf("\r\n[%s]:Current Index is : %d\r\n", __FUNCTION__, INDEX_THIRD);
+		}
+		else
 		{
-		 }
-		
+
+		}
+
+
+
+	
 	}
+
 	else if(submenu_gunball == pMenuStatus->MenuStat)
 	{
 		#if 0

@@ -6,6 +6,12 @@
 #include "process51.hpp"
 extern CMD_EXT *msgextInCtrl;
 
+#define INDEX_FIRST          0
+#define INDEX_SECOND       1
+#define INDEX_THIRD          2
+#define INDEX_FOURTH       3
+#define INDEX_FIFTH          4
+
 void app_ctrl_setReset(CMD_EXT * pInCmd);
 void app_ctrl_setSensor(CMD_EXT * pInCmd);
 void app_ctrl_setTrkStat(CMD_EXT * pInCmd);

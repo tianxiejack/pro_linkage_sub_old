@@ -105,6 +105,9 @@ m_bGridMapCalibrate(false),m_lastRow(-1),m_lastCol(-1),m_successCalibraNum(0),m_
 	plat = this;
 	m_iDelta_X = 1920; // imgae width :1920
 	m_iZoom = 2849; // Max view zoom:2849
+
+	loadConfigParams("SysParm.yml");
+	
 }
 CProcess::~CProcess()
 {
@@ -162,7 +165,7 @@ void CProcess::loadIPCParam()
 		memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
 		memset(extMenuCtrl.disPasswd, 0, sizeof(extMenuCtrl.disPasswd));
 
-		int cnt[menumaxid] = {4,5,7,3,3,7,6,3,5,5,3};
+		int cnt[menumaxid] = {4,5,7,4,3,7,6,3,5,5,3}; //  "menubuf[menumaxid][7][128]" each element counts
 		memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
 		for(int i = 0; i < menumaxid; i++)
 		{
@@ -274,6 +277,7 @@ void CProcess::loadIPCParam()
 		}
 		else
 		{	
+		#if 0
 			 vcapWH[0][0] = m_sysparm.gun_camera.raw;
 			 vcapWH[0][1] = m_sysparm.gun_camera.col;
 			 vcapWH[1][0] = m_sysparm.ball_camera.raw;
@@ -283,8 +287,7 @@ void CProcess::loadIPCParam()
 			 vdisWH[0][1] = m_sysparm.gun_camera.col;
 			 vdisWH[1][0] = m_sysparm.ball_camera.raw;
 			 vdisWH[1][1] = m_sysparm.ball_camera.col;
-			// printf("[%s]:=============================== m_sysparm.gun_camera.raw = %d \r\n",
-			// 	__FUNCTION__,m_sysparm.gun_camera.raw);
+		#endif
 		}
 
 		if(m_camCalibra != NULL) {
@@ -560,7 +563,7 @@ void CProcess::Tcallback(void *p)
 	static int baud_dianmie = 0;
 	
 	unsigned char baudlbuf[MAX_BAUDID][128] = {
-		"波特率	   2400","波特率 	4800","波特率	 9600","波特率	  115200"};
+		"波特率     2400","波特率     4800","波特率     9600","波特率     115200"};
 	unsigned char resolbuf[maxresolid][128] = {
 			"格式 1920x1080@60Hz","格式 1024x768@60Hz","格式 1280x1024@60Hz"};
 	unsigned char resolapplybuf1[128] = "是否保存当前分辨率?";
@@ -687,24 +690,77 @@ void CProcess::Init_CameraMatrix()
 
 }
 
-
+bool CProcess::writeParams(const char* file)
+{
+	
+	return true;
+}
 
 bool CProcess::readParams(const char* filename)
 {
+	int workmode = 0;
 	FileStorage fs2( filename, FileStorage::READ );
-    bool ret = fs2.isOpened();
-    if(!ret){
-        cout << filename << " can't opened !\n" << endl;
-    }
-   
-    fs2["gun_camera_raw"] >> m_sysparm.gun_camera.raw;
-    fs2["gun_camera_col"] >> m_sysparm.gun_camera.col;
-    fs2["ball_camera_raw"] >> m_sysparm.ball_camera.raw;
-    fs2["ball_camera_col"] >> m_sysparm.ball_camera.col;
+	bool ret = fs2.isOpened();
+	if(!ret)
+	{
+		cout << filename << " can't opened !\n" << endl;
+		return false;
+	}
+	else
+	{
+		fs2["gun_camera_raw"] >> m_sysparm.gun_camera.raw;
+		fs2["gun_camera_col"] >> m_sysparm.gun_camera.col;
+		fs2["ball_camera_raw"] >> m_sysparm.ball_camera.raw;
+		fs2["ball_camera_col"] >> m_sysparm.ball_camera.col;
 
-    fs2.release();
-    return ret;
+		return ret;
+	}
+	fs2.release();
+    return true;
 }
+
+bool CProcess::loadConfigParams(const char* filename)
+{
+	int workmode = 0;
+	FileStorage fs2( filename, FileStorage::READ );
+	bool ret = fs2.isOpened();
+	if(!ret)
+	{
+		cout << filename << " can't opened !\n" << endl;
+		return false;
+	}
+	else
+	{
+		fs2["workmode"] >> workmode;
+		g_AppWorkMode = (GB_WorkMode)workmode;
+		printf("\r\n[%s]:========-----======----======== Load Work Mode : <%d>\r\n",__func__, workmode);
+		return ret;
+	}
+	fs2.release();
+    return true;
+}
+
+bool CProcess::saveConfigParams(const char* filename)
+{
+	int workmode = 0;
+	FileStorage fs2( filename, FileStorage::WRITE );
+	bool ret = fs2.isOpened();
+	if(!ret)
+	{
+		cout << filename << " can't opened !\n" << endl;
+		return false;
+	}
+	else
+	{
+		workmode = (int)g_AppWorkMode;
+		fs2<<"workmode"<<workmode;
+		printf("\r\n[%s]:========-----======----======== SaveWork Mode : <%d>\r\n",__func__, workmode);
+		return ret;
+	}
+	fs2.release();
+    return true;
+}
+
 	
 void CProcess::OnDestroy(){};
 void CProcess::OnInit()

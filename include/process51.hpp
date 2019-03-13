@@ -165,6 +165,9 @@ public:
 	void loadIPCParam();
 	bool readParams(const char* file);
 	bool writeParams(const char* file);
+	bool loadConfigParams(const char* filename);
+	bool saveConfigParams(const char* filename);
+
 	void MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom);
 	void MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChangeZoom);
 	void MvBallCamByClickGunImg(int x, int y,bool needChangeZoom);	

@@ -3641,9 +3641,9 @@ void CDisplayer::gl_display(void)
 	}
 	else if (displayMode == GRID_MAP_VIEW)
 	{
-		int fontx = 680;
+		int fontx = 620;
 		int fonty = 9;
-		chinese_osd(fontx,fonty,L"数字键 2、4、6、8代表:上、左、右、下移动红色光标; 1代表获取当前球机PTZ; 5 代表保存标定的PTZ值",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+		chinese_osd(fontx,fonty,L"数字键: 2、4、6、8代表:上、左、右、下移动红色光标; 1代表获取当前球机的PTZ值; 5代表保存已标定的结点PTZ值",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 	}
 
 	switch(displayMode){

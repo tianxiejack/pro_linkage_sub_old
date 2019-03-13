@@ -2048,7 +2048,6 @@ osdindex++;	//cross aim
 			DrawAcqRect(m_display.m_imgOsd[extInCtrl->SensorStat],recIn,frcolor,false);
 			Osdflag[osdindex]=0;
  		}
-
 	}
 
 	
@@ -7050,22 +7049,22 @@ void CProcess::renderText(enum DrawBehavior drawbehavior)
 	int window_width = outputWHF[0];
 	int window_height = outputWHF[1];
 	if(drawbehavior == CProcess::DRAW_NOTICE_TEXTS){
-	sprintf(tmp_str[0], "ToTal: %d", 204/*17X12*/);	
+	sprintf(tmp_str[0], "ToTal Nodes: %d", 204/*17X12*/);	
 	putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(window_width/42,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(255,255,0,255), 1);	
 
 	putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(window_width/9,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-	sprintf(tmp_str[1], "Current:%d", (m_curNodeIndex+1));	
+	sprintf(tmp_str[1], "Cur-Node:%d", (m_curNodeIndex+1));	
 	putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(window_width/9,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
 
 	int row = (m_curNodeIndex/(GRID_COLS_15 +2));
 	int col = (m_curNodeIndex%(GRID_COLS_15 +2));
-	putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/3,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-	sprintf(tmp_str[3], "<%d - %d>",row,col );	
-	putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/3,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,255,255), 1);	
+	putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/5,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+	sprintf(tmp_str[3], "row-%d, col-%d>",row,col );	
+	putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/5,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,255,255), 1);	
 
-	putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-	sprintf(tmp_str[4], "Finished:%d",m_successCalibraNum);	
-	putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
+	//putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+	//sprintf(tmp_str[4], "Finished:%d",m_successCalibraNum);	
+	//putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
 
 	putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(window_width-100,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
 	sprintf(m_appVersion, "V%d.%d.%d",m_AppVersion>>6,(m_AppVersion>>3)&0x07,m_AppVersion&0x07);	
@@ -7075,8 +7074,8 @@ void CProcess::renderText(enum DrawBehavior drawbehavior)
 	{
 		putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(window_width/42,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
 		putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(window_width/9,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-		putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/3,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
-		putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
+		putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/4,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
+		//putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
 		putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(window_width-100,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
 	}else{
 

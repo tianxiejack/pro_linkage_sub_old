@@ -3622,37 +3622,6 @@ void CDisplayer::gl_display(void)
 
 /***************************************************** Menu *******************************************************************/
 
-#if 0
-	   ArrayText::iterator itr = run_Mode._texts.begin();
-	   for(int i=0; i<run_Mode._texts.size()-1,itr != run_Mode._texts.end(); itr++, i++ )
-	   {
-	   	 (*itr)._pos.x = fontPosX;
-		 (*itr)._pos.y = fontPosY + i*60;
-		 if( textSelect[i] == 1) {
-	   		(*itr)._size = chinese_osd((*itr)._pos.x,(*itr)._pos.y,(*itr)._text,
-		   	 1,4,255,0,0,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-		 }else{
-	   		(*itr)._size = chinese_osd((*itr)._pos.x,(*itr)._pos.y,(*itr)._text,
-			   1,4,(*itr).r,(*itr).g,(*itr).b,(*itr).a,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-		 }
-	   }
-#endif
-#if 0
-	   ArrayText::iterator itr2 = run_Mode.workMode.begin();
-	   for(int i=0; i<run_Mode.workMode.size()-1,itr2 != run_Mode.workMode.end(); itr2++, i++ )
-	   {
-	   		(*itr2)._pos.x = fontPosX;
-			(*itr2)._pos.y = fontPosY + i*60;
-		   if( textSelect2[i] == 1) {
-	   			(*itr2)._size = chinese_osd((*itr2)._pos.x,(*itr2)._pos.y,(*itr2)._text,
-			   	 1,4,255,0,0,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-		   	}else{
-	   			(*itr2)._size = chinese_osd((*itr2)._pos.x,(*itr2)._pos.y,(*itr2)._text,
-			   	 1,4,(*itr2).r,(*itr2).g,(*itr2).b,(*itr2).a,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-		   	}
-	   }	
-#endif
-/******************************************************************************************************************************/
 	if(displayMode == MAIN_VIEW){
 		int fontx = 80;
 		int fonty = 80;
@@ -3669,6 +3638,12 @@ void CDisplayer::gl_display(void)
 			default:
 				break;	
 		}
+	}
+	else if (displayMode == GRID_MAP_VIEW)
+	{
+		int fontx = 680;
+		int fonty = 9;
+		chinese_osd(fontx,fonty,L"数字键 2、4、6、8代表:上、左、右、下移动红色光标; 1代表获取当前球机PTZ; 5 代表保存标定的PTZ值",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 	}
 
 	switch(displayMode){

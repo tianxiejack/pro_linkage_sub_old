@@ -18,7 +18,7 @@ using namespace cv;
 
 #define SPECIAL_KEY_PAGEUP 	104
 #define SPECIAL_KEY_PAGEDOWN 	105
-const int VERSION_SOFT = 0x83;  //  130
+const int VERSION_SOFT = 0x8A;  //  130
 
 typedef struct{
 		int button;

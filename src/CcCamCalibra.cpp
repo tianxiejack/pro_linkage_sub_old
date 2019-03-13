@@ -34,6 +34,7 @@ int captureCount = 0;
 extern vector<Mat> imageListForCalibra;
 bool _bCutIMG[100]= {false};
 bool start_calibrate = false;
+bool show_TrigonometricMat = false; 
 
 CcCamCalibra::CcCamCalibra():scale(0.5),bCal(false),ret1(false),ret2(false),
 	panPos(1024), tiltPos(13657), zoomPos(16),writeParam_flag(false),

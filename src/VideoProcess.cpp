@@ -10,6 +10,7 @@
 #include <vector>
 #include <errno.h>
 #include <string.h>
+#include "EventLoop.h"
 using namespace vmath;
 
 extern unsigned char  g_GridMapMode;
@@ -44,6 +45,8 @@ extern volatile bool cloneOneFrame;
 extern bool captureOnePicture;
 extern int captureCount ;
 extern std::vector< cv::Mat > ImageList;
+EventLoop *eventLoop = NULL;
+extern CProcess *proc ;
 
 using namespace cr_trigonometricInterpolation;
 
@@ -387,7 +390,7 @@ int CVideoProcess::m_staticScreenWidth = outputWHF[0];
 int CVideoProcess::m_staticScreenHeight = outputWHF[1];
 CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 	m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_display(CDisplayer(w,h)),
-	m_backNodePos(cv::Point(-10,-10)),m_curNodeIndex(0)
+	m_backNodePos(cv::Point(-10,-10)),m_curNodeIndex(0),m_pTrigonometric(new Trigonometric(w,h))
 {
 	imageListForCalibra.clear();
 	pThis = this;
@@ -453,8 +456,8 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 	jcenter_s = get_joycenter();
 	joys_click = 0;
 
-	jos_mouse.x = 960;
-	jos_mouse.y = 540;
+	jos_mouse.x = w/2;
+	jos_mouse.y = h/2;
 	m_gridWidth=(int)((float)(w/16));
 	m_gridHeight = (int)((float)(h/12));
 
@@ -479,6 +482,29 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 #endif
 	readParams("SaveGridMap.yml");
 	read_param_trig();
+	
+	m_pTrigonometric->insertVertexAndPosition(m_trigonoMetricVector);
+#if 0
+	m_trig.writeParams();
+	m_trig.draw_subdiv(m_display.m_imgOsd[0], true);
+	vector<position_t> temp_position;
+	Point2i getDstPos;
+	Point2i inputPoint = Point2i(1300,800);
+	m_trig.draw_point_triangle(m_display.m_imgOsd[0], inputPoint, temp_position,getDstPos,true);
+#endif
+	
+}
+
+Trigonometric* CVideoProcess::createTrigonometric(int imgaeWidth,int imageHeight)
+{
+	if(m_pTrigonometric == NULL)
+	{
+		m_pTrigonometric = new Trigonometric(imgaeWidth, imageHeight);
+		return m_pTrigonometric;	
+	}
+	else{
+		return m_pTrigonometric;	
+	}
 }
 CVideoProcess::CVideoProcess()
 	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_curNodeIndex(0)		
@@ -593,6 +619,10 @@ int CVideoProcess::destroy()
 #if __MOVE_DETECT__
 	DeInitMvDetect();
 #endif
+	if( eventLoop != NULL )
+	{
+		eventLoop->StopService();
+	}	
 
 	return 0;
 }
@@ -1279,9 +1309,32 @@ bool CVideoProcess::readParams(const char* filename)
 						{
 							pThis->addMarkNum();
 						}
-					}
-				}
+						if(i>=5){
+							m_trigonoMetric_Node.ver.x = m_gridNodes[i][j].coord_x;
+							m_trigonoMetric_Node.ver.y = m_gridNodes[i][j].coord_y;
 
+							m_trigonoMetric_Node.pos.x =m_readGridNodes[i][j].pano;
+							m_trigonoMetric_Node.pos.y =m_readGridNodes[i][j].tilt;
+							m_trigonoMetricVector.push_back(m_trigonoMetric_Node);
+							
+						}
+					}
+
+
+					std::vector<position_t>::iterator itr = m_trigonoMetricVector.begin();
+					int line=0;
+					for(; itr != m_trigonoMetricVector.end(); itr++)
+					{
+						line++;
+						if(line%10 == 0)
+						{
+							printf("\r\n");
+						}
+						printf("\r\nVertex:<%d,%d>, PTZ: <%d,%d>\r\n", (*itr).ver.x,
+							 (*itr).ver.y, (*itr).pos.x,(*itr).pos.y);
+					}
+					
+				}				
 				m_readfs.release();
 				return true;
 
@@ -1299,6 +1352,14 @@ int CVideoProcess::read_param_trig()
 	m_trig.readParams(app_trig);
 }
 
+bool CVideoProcess::writeParamsForTriangle(const char* filename)
+{
+
+
+
+}
+
+
 bool CVideoProcess::writeParams(const char* filename)
 {
 	char paramName[40];
@@ -1307,18 +1368,10 @@ bool CVideoProcess::writeParams(const char* filename)
 	m_writefs.open(filename,FileStorage::WRITE);
 	if(m_writefs.isOpened())
 	{		
-	#if 0
-		for(int i=0;i<=GRID_ROWS;i++)
-		{
-			for(int j=0;j<=GRID_COLS;j++)
-			{
-	#else
 		for(int i=0;i<=GRID_ROWS_11;i++)
 		{
 			for(int j=0;j<=GRID_COLS_15+1;j++)
 			{
-
-	#endif
 				sprintf(paramName,"GridMapNode_%d_%d_pano",i,j);				
 				m_writefs<<paramName <<m_gridNodes[i][j].pano;
 				memset(paramName,0,sizeof(paramName));
@@ -1329,8 +1382,7 @@ bool CVideoProcess::writeParams(const char* filename)
 				m_writefs<<paramName <<m_gridNodes[i][j].has_mark;
 			}
 		}
-		m_writefs.release();
-		
+		m_writefs.release();		
 		return true;
 	}
 	return false;
@@ -1601,6 +1653,13 @@ GridMapNode CVideoProcess::getLinearDeviationForSelectRect(int px, int py, int g
 	}	
 	return Vp;
 }
+
+void CVideoProcess::useTrigonometric(int px, int py)
+{
+
+
+}
+
 GridMapNode CVideoProcess::getLinearDeviation(int px, int py, int grid_width,int grid_height,bool needChangeZoom)
 {
 	int offset_y = IMG_HEIGHT/2;
@@ -2401,6 +2460,20 @@ int CVideoProcess::init()
 #if __MOVE_DETECT__
 	initMvDetect();
 #endif
+
+	eventLoop = new EventLoop(proc);
+	if(eventLoop == NULL)
+	{
+		printf("\r\n[%s]:XXX: Create Event Loop Failed !!!",__FUNCTION__);
+	}
+	else
+	{
+		int returnValue = eventLoop->Init();
+		if(returnValue != -1) 
+		{
+			eventLoop->RunService();
+		}
+	}	
 	
 	return 0;
 }

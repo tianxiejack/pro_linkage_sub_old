@@ -12,13 +12,13 @@
 #include <errno.h>  
 #include <time.h> 
 #include <signal.h>
-#include "EventLoop.h"
+
 
 using namespace std;
 using namespace cv;
 
 CProcess *proc = NULL;
-EventLoop *eventLoop = NULL;
+
 bool startEnable = false;
 
 volatile bool cloneOneFrame = false;
@@ -54,21 +54,22 @@ int timer_init(void)
 }
 
 int main(int argc, char **argv)
-{
-	int returnValue;
+{	
 	struct timeval tv;	
 	MSGDRIV_create();
 #ifdef __IPC__
 	Ipc_pthread_start();
 #endif
 
-	if(0 != timer_init()){
+	if(0 != timer_init())
+	{
 		printf("[%s]:XXX: Create timer faliled !!!\r\n",__FUNCTION__);
+		return -1;
 	}
 	
-	//proc = new CProcess(vdisWH[0][0], vdisWH[0][1]);
 	proc = new CProcess(outputWHF[0], outputWHF[1]);
-	if(proc == NULL){
+	if(proc == NULL)
+	{
 		printf("\r\n[%s]:XXX: Create Main App Failed !!!",__FUNCTION__);
 		return -1;
 	}
@@ -84,25 +85,13 @@ int main(int argc, char **argv)
 	proc->init();
 	proc->run();
 	
-	eventLoop = new EventLoop(proc);
-	if(eventLoop == NULL){
-		printf("\r\n[%s]:XXX: Create Event Loop Failed !!!",__FUNCTION__);
-	}
-	else{
-		returnValue = eventLoop->Init();
-		if(returnValue != -1) {
-			eventLoop->RunService();
-		}
-	}	
-	
 	glutMainLoop();
 	
-	if(proc != NULL) {
+	if(proc != NULL) 
+	{
 		proc->destroy();
 	}	
-	if( eventLoop != NULL ){
-		eventLoop->StopService();
-	}	
+	
 #ifdef __IPC__
 	Ipc_pthread_stop();
 #endif

@@ -129,8 +129,7 @@ public:
 	MarkMapNode m_calibratedNodes[GRID_ROWS+1][GRID_COLS+1];
 	cv::Point m_nodePos[GRID_ROWS+1][GRID_COLS+1];
 	#else
-	GridMapNode m_gridNodes[GRID_ROWS_11+1][GRID_COLS_15+3];
-	
+	GridMapNode m_gridNodes[GRID_ROWS_11+1][GRID_COLS_15+3];	
 	GridMapNode m_readGridNodes[GRID_ROWS_11+1][GRID_COLS_15+1];
 	MarkMapNode m_calibratedNodes[GRID_ROWS_11+1][GRID_COLS_15+3];
 	cv::Point m_nodePos[GRID_ROWS_11+1][GRID_COLS_15+2];
@@ -142,10 +141,13 @@ public:
 	//cv::Point temp_backPoint[GRID_ROWS+1][GRID_COLS+1] ;
 	FileStorage m_readfs;
 	FileStorage m_writefs;
+	vector<position_t> m_trigonoMetricVector;
+	position_t  m_trigonoMetric_Node;
 
 public:
 	void InitGridMapNodes();
 	void InitGridMap16X12();
+	void useTrigonometric(int px, int py);
 
 	GridMapNode getLinearDeviation(int px, int py);
 	GridMapNode getLinearDeviation(int px, int py, int grid_width,int grid_height,bool needChangeZoom);
@@ -154,6 +156,8 @@ public:
 
 	bool readParams(const char* filename);
 	bool writeParams(const char* filename);
+	bool writeParamsForTriangle(const char* filename);
+
 	int read_param_trig();
 
 private:
@@ -273,6 +277,11 @@ public:
 	Trigonometric m_trig = Trigonometric(outputWHF[0],outputWHF[1]);
 	vector<position_t> app_trig;
 	void update_cur_trig_inter_P(int x, int y);
+private:
+	Trigonometric *m_pTrigonometric;
+public:
+	Trigonometric* createTrigonometric(int imgaeWidth,int imageHeight);
+
 	
 protected:
 	MultiChVideo MultiCh;

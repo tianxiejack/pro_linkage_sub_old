@@ -18,6 +18,7 @@ using namespace cr_trigonometricInterpolation;
 
 int capIndex =0;
 int gun_resolu[2] = {1920, 1080};
+extern bool show_TrigonometricMat;
 extern bool show_circle_pointer;
 extern uint8 exposure_star;
 extern MenuDisplay g_displayMode;
@@ -4280,6 +4281,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			g_displayMode = MENU_GRID_MAP_VIEW;
 			break;
 		case 5:	
+			show_TrigonometricMat = true;
 			#if 0
 			{
 				setGridMapCalibrate(true);
@@ -4302,7 +4304,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 				}
 			}
 			#endif
-			printf("\r\n< %d >\r\n", (int)((float)(outputWHF[0])*0.75));
+			//printf("\r\n< %d >\r\n", (int)((float)(outputWHF[0])*0.75));
 			break;
 		case 6:
 			{

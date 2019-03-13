@@ -886,16 +886,16 @@ int CDisplayer::initRender(bool bInitBind)
 
 	m_renders[0].video_chId = video_gaoqing;
 	m_renders[0].displayrect.x = 0;
-	m_renders[0].displayrect.y = 540;
-	m_renders[0].displayrect.w = 960;
-	m_renders[0].displayrect.h = 540;
+	m_renders[0].displayrect.y = outputWHF[1]/2;
+	m_renders[0].displayrect.w = outputWHF[0]/2;
+	m_renders[0].displayrect.h = outputWHF[1]/2;
 	m_renders[0].videodect=1;
 	
 	m_renders[1].video_chId = video_gaoqing0;
-	m_renders[1].displayrect.x = 960;
-	m_renders[1].displayrect.y = 540;
-	m_renders[1].displayrect.w = 960;
-	m_renders[1].displayrect.h = 540;	
+	m_renders[1].displayrect.x = outputWHF[0]/2;;
+	m_renders[1].displayrect.y = outputWHF[1]/2;
+	m_renders[1].displayrect.w =  outputWHF[0]/2;
+	m_renders[1].displayrect.h = outputWHF[1]/2;	
 	m_renders[1].videodect=1;
 	
 	
@@ -1683,7 +1683,7 @@ int CDisplayer::init(DS_InitPrm *pPrm)
 	glutDisplayFunc(&_display);
 	if(m_initPrm.idlefunc != NULL)
 		glutIdleFunc(m_initPrm.idlefunc);
-	glutReshapeFunc(_reshape);
+		glutReshapeFunc(_reshape);
 
 	
 	if(m_initPrm.keyboardfunc != NULL)
@@ -2497,7 +2497,7 @@ void CDisplayer::gl_init()
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	}
 // Texture For SHow Save BMP Images
-	cv::Mat blackIMG = cv::Mat::zeros(1080,1920,CV_8UC3);
+	cv::Mat blackIMG = cv::Mat::zeros(outputWHF[1],outputWHF[0],CV_8UC3);
 	for(int i =0; i<50;i++) {
 		glGenTextures(1, &_textureId[i]);
 		glBindTexture(GL_TEXTURE_2D, _textureId[i]);
@@ -2505,7 +2505,7 @@ void CDisplayer::gl_init()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1920, 1080, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG.data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, outputWHF[0], outputWHF[1], 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG.data);
 	}	
 // Texture For Show Corner Detect Images
 		glGenTextures(1, &_texCornerId);
@@ -2514,17 +2514,17 @@ void CDisplayer::gl_init()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1920, 1080, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG.data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, outputWHF[0], outputWHF[1], 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG.data);
 	
 // Texture For Show Warp Images
-		cv::Mat blackIMG2 = cv::Mat::zeros(540,960,CV_8UC3);
+		cv::Mat blackIMG2 = cv::Mat::zeros( outputWHF[0], outputWHF[0]/2,CV_8UC3);
 		glGenTextures(1, &_texWarpId);
 		glBindTexture(GL_TEXTURE_2D, _texWarpId);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 960, 540, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG2.data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, outputWHF[0]/2, outputWHF[1]/2, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG2.data);
 
 //Texture For Show Match Points Images
 		glGenTextures(1, &_texMatchId);
@@ -2533,7 +2533,7 @@ void CDisplayer::gl_init()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1920, 540, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG2.data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, outputWHF[0], outputWHF[1]/2, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, blackIMG2.data);
 	
 	x11disbuffer=(unsigned char *)malloc(mallocwidth*mallocheight*4);
 

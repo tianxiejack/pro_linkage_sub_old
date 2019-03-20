@@ -216,6 +216,9 @@ public:
 	void OnSpecialKeyDwn(int key,int x, int y);
 	void OnJosCtrl(int key, int value);
 	void setWorkMode(GB_WorkMode workmode);
+	void SetDefaultWorkMode( GB_WorkMode workmode );
+	void SetMtdConfig( MTD_Config mtdconfig );
+
 	void DrawMtdYellowGrid();
 	void DrawMtdRedGrid();
 	void DrawMtd_Rigion_Target();

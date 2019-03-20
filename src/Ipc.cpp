@@ -1,4 +1,4 @@
-#include "Ipcctl.h"
+#include "ipc_custom_head.hpp"
 #include <string.h>
 #include "osa_thr.h"
 #include "osa_buf.h"
@@ -7,10 +7,11 @@
 #include "configable.h"
 #include "osd_text.hpp"
 #include "msgDriv.h"
-#include "Ipcctl.h"
 #include "locale.h"
 #include "wchar.h"
 #include "trigonometric.hpp"
+#include "Ipc.hpp"
+
 
 using namespace cr_trigonometricInterpolation;
 
@@ -20,7 +21,8 @@ using namespace cr_trigonometricInterpolation;
 
 extern pthread_cond_t event_cond;
 extern pthread_mutex_t event_mutex;
-
+extern MTD_Config g_mtdConfig;
+bool recvMtdConfigData = false;
 extern  bool startEnable;
 extern OSDSTATUS gConfig_Osd_param ;
 extern UTCTRKSTATUS gConfig_Alg_param;
@@ -33,7 +35,6 @@ BallCOMConfig CurrentBallConfig ;
 int g_ballAddress =0;
 int g_ballRate =0;
 extern void inputtmp(unsigned char cmdid);
-
 extern osdbuffer_t disOsdBuf[32];
 extern osdbuffer_t disOsdBufbak[32];
 extern wchar_t disOsd[32][33];
@@ -69,16 +70,16 @@ void initmessage()
 
 void MSGAPI_msgsend(int cmdID)
 {
-   int bufId = 0;
-   unsigned char *quebuf;
+	int bufId = 0;
+	unsigned char *quebuf;
 
-   OSA_bufGetEmpty(&(msgSendBuf), &bufId, OSA_TIMEOUT_NONE);
-   quebuf=(unsigned char *)msgSendBuf.bufInfo[bufId].virtAddr;
+	OSA_bufGetEmpty(&(msgSendBuf), &bufId, OSA_TIMEOUT_NONE);
+	quebuf=(unsigned char *)msgSendBuf.bufInfo[bufId].virtAddr;
 
-   //msgSendBuf.bufInfo[bufId].size = 7;
-   quebuf[0]=cmdID & 0xFF;	
+	//msgSendBuf.bufInfo[bufId].size = 7;
+	quebuf[0]=cmdID & 0xFF;	
 
-   OSA_bufPutFull(&(msgSendBuf), bufId);
+	OSA_bufPutFull(&(msgSendBuf), bufId);
 }
 
 int  send_msgpth(SENDST * RS422)
@@ -230,11 +231,7 @@ void* recv_msg(SENDST *RS422)
 		case ballbaud:
 			memcpy((void *)&(CurrentBallConfig.ballAdrress), &(RS422->param[0]), sizeof(CurrentBallConfig.ballAdrress));
 			memcpy((void *)&(CurrentBallConfig.ballRate), &(RS422->param[4]), sizeof(CurrentBallConfig.ballRate));
-			//printf("\r\nOOOOOOOOOOOOOOOO  Address = %d, \t BaudRate = %d \r\n", CurrentBallConfig.ballAdrress,
-			//	CurrentBallConfig.ballRate);			
-			break;
-
-			
+			break;			
 		case read_shm_osdtext:
 			{
 				osdtext_t *osdtexttmp = ipc_getosdtextstatus_p();
@@ -360,12 +357,14 @@ void* recv_msg(SENDST *RS422)
 			memcpy(&Rmtd,RS422->param,sizeof(Rmtd));
 			imgID1 = Rmtd.ImgMtdStat;	
 			imgID2 = Rmtd.mtdMode;
-			//printf("recv mtd : imgID1 : %d  , mode : %d \n",imgID1,imgID2);
+			printf("\r\n[%s]:&&&&&&&&&&&&&recv mtd : imgID1 : %d  , mode : %d \r\n",__func__,imgID1,imgID2);
 
-			if(imgID1 == 1){
+			if(imgID1 == 1)
+			{
 				pMsg->MtdState[pMsg->SensorStat] = ipc_eImgAlg_Enable;
 			}
-			else if(imgID1 == 0){
+			else if(imgID1 == 0)
+			{
 				pMsg->MtdState[pMsg->SensorStat] = ipc_eImgAlg_Disable;
 			}
 			app_ctrl_setMtdStat(pMsg);
@@ -653,21 +652,14 @@ void* recv_msg(SENDST *RS422)
 			break;
 		case josctrl:
 			memcpy(&Rjosctrl,RS422->param,sizeof(Rjosctrl));
-			#if 0
-			printf("type=%d\ncurx,y(%d,%d)\njos_button:%d\njos_Dir:%d\nmouse_button:%d\nmouse_state:%d\nenter:%d\nmenu:%d\nworkMode:%d\nctrlMode:%d\n\n",
-				Rjosctrl.type,Rjosctrl.cursor_x,Rjosctrl.cursor_y,Rjosctrl.jos_button,Rjosctrl.jos_Dir,Rjosctrl.mouse_button,
-				Rjosctrl.mouse_state,Rjosctrl.enter,Rjosctrl.menu,Rjosctrl.workMode,Rjosctrl.ctrlMode);
-			#endif
 			switch(Rjosctrl.type)
 			{
 				case cursor_move:
 				{
 					int cond1 = (-1==proc->extMenuCtrl.MenuStat)||(submenu_handleMatchPoints==proc->extMenuCtrl.MenuStat)||(1==proc->extInCtrl->MtdSetRigion)||(MENU_TEST_RESULT_VIEW==g_displayMode);
 
-					if(
-						((HANDLE_LINK_MODE == g_AppWorkMode)&&(cond1)) ||
-						((ONLY_BALL_MODE == g_AppWorkMode)&&(cond1))
-					  )
+					if(((HANDLE_LINK_MODE == g_AppWorkMode)&&(cond1)) ||
+						((ONLY_BALL_MODE == g_AppWorkMode)&&(cond1))  )
 					{
 						proc->set_mouse_show(1);
 						proc->dtimer.startTimer(proc->mouse_show_id,3000);
@@ -724,14 +716,6 @@ void* recv_msg(SENDST *RS422)
 					break;
 				case enter:
 					proc->OnKeyDwn(13);
-					#if 0
-						if(g_displayMode == MENU_GRID_MAP_VIEW){
-							int menu_stat = Rjosctrl.menu;
-							proc->OnJosCtrl(2, menu_stat);
-							app_ctrl_setMenu_jos(menu_stat);
-							app_ctrl_setMenuStat(mainmenu2);	
-						}
-					#endif
 					break;
 				case jos_menu:
 				{
@@ -751,6 +735,25 @@ void* recv_msg(SENDST *RS422)
 					break;
 			}
 			break;
+		case storeDefaultWorkMode:
+			{
+				int workModeType = 0;
+				memcpy(&workModeType,RS422->param,sizeof(workModeType));
+				g_AppWorkMode = (GB_WorkMode)(workModeType%MODE_COUNT);
+			}
+			break;
+		case storeMtdConfig:
+			{
+				int datalen = sizeof(int);
+				memcpy((void*)(&g_mtdConfig.targetNum),(void*)RS422->param[0*datalen],datalen);
+				memcpy((void*)(&g_mtdConfig.trackTime),(void*)RS422->param[1*datalen],datalen);
+				memcpy((void*)(&g_mtdConfig.maxArea),(void*)RS422->param[2*datalen],datalen);
+				memcpy((void*)(&g_mtdConfig.minArea),(void*)RS422->param[3*datalen],datalen);
+				memcpy((void*)(&g_mtdConfig.sensitivity),(void*)RS422->param[4*datalen],datalen);
+				recvMtdConfigData = true;				
+			}
+			break;
+			
 		default:
 			break;
 	}
@@ -873,14 +876,13 @@ static void * ipc_dataSend(Void * prm)
 
 void Ipc_pthread_start(void)
 {
-	int shm_perm[IPC_MAX];
-	shm_perm[IPC_SHA] = shm_rdwr;
-	shm_perm[IPC_OSD_SHA] = shm_rdwr;
-	shm_perm[IPC_UTCTRK_SHA] = shm_rdonly;	
-	shm_perm[IPC_LKOSD_SHA] = shm_rdonly;
-	shm_perm[IPC_OSDTEXT_SHA] = shm_rdwr;
+	
 	Ipc_init();
-	Ipc_create(shm_perm);
+	int ret = Ipc_create();
+	if(ret == -1){
+		printf("\r\n[%s]:IPC Init Failed !!!\r\n",__func__);
+		return ;
+	}
 
 	initmessage();
 	OSA_thrCreate(&thrHandleDataIn_recv,

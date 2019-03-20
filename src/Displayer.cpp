@@ -23,7 +23,7 @@
 #include "string.h"
 #include "process51.hpp"
 #include "locale.h"
-#include "Ipcctl.h"
+#include "ipc_custom_head.hpp"
 #include "arm_neon.h"
 
 #include "CcCamCalibra.h"
@@ -31,6 +31,7 @@
 using namespace CELL;
 
 extern SelectMode mouse_workmode;
+extern menu_param_t *msgextMenuCtrl;
 extern int captureCount;
 UI_CONNECT_ACTION g_connectAction;
 extern vector<Mat> imageListForCalibra;
@@ -202,14 +203,17 @@ FLOAT2 OSDdrawText(int x,int y,wchar_t* text,char font,char fontsize,int win_wid
 {
 	FLOAT2 VerPos;
 	FreeTypeFont* pTmp  = NULL;
-	if(font == 0x02){
+	if(font == 0x02)
+	{
 		if(fontsize == 0x03)
 			pTmp = _font_hd_big_ht;
 		else if(fontsize == 0x02)
 			pTmp = _font_hd_mid_ht;
 		else
 			pTmp = _font_hd_small_ht;
-	}else{
+	}
+	else
+	{
 		if(fontsize == 0x03)
 			pTmp = _font_hd_big_st;
 		else if(fontsize == 0x02)
@@ -499,8 +503,8 @@ CDisplayer::CDisplayer()
 	run_Mode.workMode.push_back(run_Mode.text9);
 	run_Mode.text9._SN = run_Mode.workMode.size() -1;
 //=======================================
-
-	if(CurrentBallConfig.ballAdrress !=0 ){
+	if(CurrentBallConfig.ballAdrress !=0 )
+	{
 		curBaudRate = CurrentBallConfig.ballRate;
 		curBaudAddress = CurrentBallConfig.ballAdrress;
 		cout << " \n\nOOOOOOOOOOOOOOOOOOOOOOO: Recv BallRate Fome IPC !!!\n\n"<< endl;
@@ -529,15 +533,14 @@ CDisplayer::CDisplayer()
 			break;
 		default:
 			break;
-	}
-	
+	}	
 }
 
 CDisplayer::CDisplayer(int window_width, int window_height):m_WinWidth(window_width),m_WinHeight(window_height),
 	captureBMP_channel(0),selected_PicIndex(0),m_renderCount(0),m_bRun(false),m_bFullScreen(false),m_bOsd(false),
  m_glProgram(0), m_bUpdateVertex(false),m_tmRender(0ul),m_waitSync(false),
- m_telapse(5.0), m_nSwapTimeOut(0),m_detectCorners(NULL),m_viewPortX(1200),m_viewPortY(45),
- m_viewWidth(600),m_viewHeight(360)
+ m_telapse(5.0), m_nSwapTimeOut(0),m_detectCorners(NULL),m_viewPortX(window_width*0.625f),m_viewPortY(window_height*0.0417f),
+ m_viewWidth(window_width/3),m_viewHeight(window_height/3)
 {
 	m_currentSecondMenuIndex=0;
 	m_currentFirstMenuIndex=0;
@@ -578,20 +581,16 @@ CDisplayer::CDisplayer(int window_width, int window_height):m_WinWidth(window_wi
 	
 	g_connectAction.CurCalibraCam = CAM_0;
 	
-/************************************Add 20181219**************************/
 	for(i=0; i<DS_DC_CNT;	i++){
 		pp[i] = 0;
 		m_code[i] = -1;
 	}
 	m_initPrm.disSched =33;// 3.5;
-/*************************************************************************/
 	_bCornerDetect = false;
-/************************************************************************/
 	run_Mode._bRButton = false;
 	run_Mode.showSubMenu = false;
 	run_Mode._pSelect = NULL;
 	run_Mode._LDown = NULL;
-/*************************************************************************/
 	setFontPosition(100, 100);	
 	run_Mode._texts.clear();
 	run_Mode.text1._pos = FLOAT2(fontPosX,fontPosY);
@@ -706,13 +705,13 @@ CDisplayer::CDisplayer(int window_width, int window_height):m_WinWidth(window_wi
 	if(CurrentBallConfig.ballAdrress !=0 ){
 		curBaudRate = CurrentBallConfig.ballRate;
 		curBaudAddress = CurrentBallConfig.ballAdrress;
-		cout << " \n\nOOOOOOOOOOOOOOOOOOOOOOO: Recv BallRate Fome IPC !!!\n\n"<< endl;
+		cout << " \n\nRecv BallRate Fome IPC !!!\n\n"<< endl;
 	}
 	else
 	{
 		bool retValue = LoadComConfigs("ctrl_config.yml");
 		if(!retValue){
-			cout << " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  Read ctrl_config.yml Failed !!!"<< endl;
+			cout << " XXXXXXXXXXXRead ctrl_config.yml Failed !!!"<< endl;
 		}
 	}
 
@@ -733,7 +732,6 @@ CDisplayer::CDisplayer(int window_width, int window_height):m_WinWidth(window_wi
 		default:
 			break;
 	}
-
 }
 CDisplayer::~CDisplayer()
 {
@@ -2715,7 +2713,6 @@ int CDisplayer::menu_init( )
             {"网络协议","IP地址","登录用户名","登录密码","返回"},
             {"手动选择特征点","开始标定","返回"}
 };
-
     unsigned char mtdbuf[1][7][128] = {{"检测区域设置","用鼠标指针左键框选、点选:增加区域","用鼠标指针右键框选、点选:删除区域","按回车保存设置，按2返回"}};
 
 	unsigned char resolbuf[maxresolid][128] = {
@@ -2739,6 +2736,16 @@ int CDisplayer::menu_init( )
 		}
 	}
 
+//=====================================================================
+
+		swprintf(disMenu[submenu_mtd][1], 33, L"目标个数     %d", msgextMenuCtrl->osd_mudnum);
+		swprintf(disMenu[submenu_mtd][2], 33, L"跟踪持续时间 %d秒",msgextMenuCtrl->osd_trktime);
+		swprintf(disMenu[submenu_mtd][3], 33, L"最大目标面积 %d像素", msgextMenuCtrl->osd_maxsize);
+		swprintf(disMenu[submenu_mtd][4], 33, L"最小目标面积 %d像素", msgextMenuCtrl->osd_minsize);
+		swprintf(disMenu[submenu_mtd][5], 33, L"灵敏度       %d", msgextMenuCtrl->osd_sensi);
+
+//=====================================================================
+
 	for(int j = 0; j < 5; j++)
 	{
 		disMtdBuf[0][j].alpha = 2;
@@ -2756,10 +2763,10 @@ int CDisplayer::menu_init( )
 	disMenuBuf[mainmenu0][3].posy = 5 * (int)((float)outputWHF[1] *0.056f);
 	//disMenuBuf[submenu_DefaultWorkMode][2].posy = 4 * (int)((float)outputWHF[1] *0.056f);
 	
-	disMenuBuf[submenu_gunball][1].posx= (int)((float)outputWHF[0] *0.75f);
-	disMenuBuf[submenu_gunball][1].posy = (int)((float)outputWHF[1] /200.0f);
-	disMenuBuf[submenu_gunball][2].posx = (int)((float)outputWHF[0] *0.917f);
-	disMenuBuf[submenu_gunball][2].posy = (int)((float)outputWHF[1] /200.0f);
+	disMenuBuf[submenu_gridMapCalibrate][1].posx= (int)((float)outputWHF[0] *0.75f);
+	disMenuBuf[submenu_gridMapCalibrate][1].posy = (int)((float)outputWHF[1] /200.0f);
+	disMenuBuf[submenu_gridMapCalibrate][2].posx = (int)((float)outputWHF[0] *0.917f);
+	disMenuBuf[submenu_gridMapCalibrate][2].posy = (int)((float)outputWHF[1] /200.0f);
 	
 	disMenuBuf[submenu_setball][2].posy = 4 * (int)((float)outputWHF[1] *0.056f);
 	disMenuBuf[submenu_setcom][4].posy = 6 * (int)((float)outputWHF[1] *0.056f);
@@ -2783,7 +2790,7 @@ int CDisplayer::menu_init( )
 	disMenuBuf[mainmenu1][2].color= 3;
 	disMenuBuf[mainmenu2][0].color= 3;
 	disMenuBuf[submenu_DefaultWorkMode][0].color= 3;
-	disMenuBuf[submenu_gunball][0].color= 3;
+	disMenuBuf[submenu_gridMapCalibrate][0].color= 3;
 	disMenuBuf[submenu_mtd][0].color= 3;
 	disMenuBuf[submenu_setball][0].color= 3;
 	disMenuBuf[submenu_setcom][0].color= 3;

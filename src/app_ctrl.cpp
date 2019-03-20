@@ -4,6 +4,7 @@
 #include "msgDriv.h"
 #include "configable.h"
 #include <iostream>
+#include "Ipc.hpp"
 
 class CVideoProcess ;
 
@@ -19,7 +20,7 @@ extern SelectMode mouse_workmode;
 extern int gun_resolu[2];
 extern GB_WorkMode g_AppWorkMode;
 GB_WorkMode setting_WorkMode = HANDLE_LINK_MODE;
-
+MTD_Config g_mtdConfig={0};
 CMD_EXT *msgextInCtrl;
 menu_param_t *msgextMenuCtrl;
 #define Coll_Save 0 		//   1:quit coll is to save  cross  or  0:using save funtion to cross axis
@@ -757,6 +758,8 @@ void app_ctrl_setnumber(char key)
 void app_ctrl_enter()
 {
 	char *init_passwd ="0000";// "000000";
+	static bool storeWorkModeFlag = false;
+	static bool storeMtdConfigFlag = false;
 	if(msgextInCtrl==NULL)
 		return;
 
@@ -816,41 +819,39 @@ void app_ctrl_enter()
 	#endif
 		if(INDEX_FOURTH == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
 			app_ctrl_setMenuStat(mainmenu2);
-			g_displayMode = MENU_MAIN_VIEW;
-			g_AppWorkMode = setting_WorkMode;
-			plat->saveConfigParams("SysParm.yml");
-			printf("\r\n[%s]:Current Index is : %d\r\n", __FUNCTION__, INDEX_FOURTH);
+			g_displayMode = MENU_MAIN_VIEW;	
 			
+			//plat->saveConfigParams("SysParm.yml");			
 		}
 		else if(INDEX_FIRST == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
-			setting_WorkMode = HANDLE_LINK_MODE;
-			printf("\r\n[%s]:Current Index is : %d\r\n", __FUNCTION__, INDEX_FIRST);
-			
+			setting_WorkMode = HANDLE_LINK_MODE;		
+			storeWorkModeFlag = true;
 		}
 		else if(INDEX_SECOND == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
 			setting_WorkMode = AUTO_LINK_MODE;
-			printf("\r\n[%s]:Current Index is : %d\r\n", __FUNCTION__, INDEX_SECOND);
+			storeWorkModeFlag = true;
 		}
 		else if(INDEX_THIRD == pMenuStatus->menuarray[submenu_DefaultWorkMode].pointer) {
 			setting_WorkMode = ONLY_BALL_MODE;
-			printf("\r\n[%s]:Current Index is : %d\r\n", __FUNCTION__, INDEX_THIRD);
+			storeWorkModeFlag = true;
+			//printf("\r\n[%s]:Current Index is : %d\r\n", __FUNCTION__, INDEX_THIRD);
 		}
 		else
 		{
-
+		}	
+		if(storeWorkModeFlag == true)
+		{
+			storeWorkModeFlag = false;
+			plat->SetDefaultWorkMode(setting_WorkMode);
 		}
-
-
-
-	
 	}
 
-	else if(submenu_gunball == pMenuStatus->MenuStat)
+	else if(submenu_gridMapCalibrate == pMenuStatus->MenuStat)
 	{
 		#if 0
 		g_displayMode = MENU_SBS;
 		CVideoProcess::m_camCalibra->start_cloneVideoSrc = true;
-		if(0 == pMenuStatus->menuarray[submenu_gunball].pointer) 
+		if(0 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer) 
 		{
 			if(CVideoProcess::m_camCalibra->start_cloneVideoSrc = true){
 				OSA_waitMsecs(1500);	
@@ -858,14 +859,14 @@ void app_ctrl_enter()
 				g_displayMode = MENU_MATCH_POINT_VIEW;
 			}
 		}
-		else if (1 == pMenuStatus->menuarray[submenu_gunball].pointer)
+		else if (1 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer)
 		{
 			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
 			g_displayMode = MENU_SBS;
 			app_ctrl_setMenuStat(submenu_handleMatchPoints);
 			//CVideoProcess::m_camCalibra->Set_Handler_Calibra = true ;
 		}
-		else if(2 == pMenuStatus->menuarray[submenu_gunball].pointer)
+		else if(2 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer)
 		{
 			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
 			CVideoProcess::m_camCalibra->Set_Handler_Calibra = false ;
@@ -873,11 +874,11 @@ void app_ctrl_enter()
 			g_displayMode = MENU_MAIN_VIEW;
 		}
 		#endif
-		if(0 == pMenuStatus->menuarray[submenu_gunball].pointer) 
+		if(0 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer) 
 		{
 			
 		}
-		else if (1 == pMenuStatus->menuarray[submenu_gunball].pointer)
+		else if (1 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer)
 		{
 		
 			g_displayMode = MENU_GRID_MAP_VIEW;
@@ -885,10 +886,10 @@ void app_ctrl_enter()
 			trkmsg2.cmd_ID = enter_gridmap_view;
 			trkmsg2.param[0] = 1;
 			ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
-			printf("\r\n[%s]:Send Message to Ctrl Process: Enter GridMap View!\r\n",__FUNCTION__);
+			//printf("\r\n[%s]:Send Message to Ctrl Process: Enter GridMap View!\r\n",__FUNCTION__);
 		
 		}
-		else if(2 == pMenuStatus->menuarray[submenu_gunball].pointer)
+		else if(2 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer)
 		{
 		/*
 			SENDST trkmsg2={0};
@@ -898,9 +899,7 @@ void app_ctrl_enter()
 			app_ctrl_setMenuStat(mainmenu2);			
 			g_displayMode = MENU_MAIN_VIEW;
 		*/
-		}
-
-		
+		}		
 	}
 	else if(submenu_handleMatchPoints == pMenuStatus->MenuStat)
 	{
@@ -919,7 +918,7 @@ void app_ctrl_enter()
 		{
 			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
 			CVideoProcess::m_camCalibra->Set_Handler_Calibra = false ;
-			app_ctrl_setMenuStat(submenu_gunball);
+			app_ctrl_setMenuStat(submenu_gridMapCalibrate);
 			g_displayMode = MENU_MAIN_VIEW;
 			
 		}
@@ -948,7 +947,11 @@ void app_ctrl_enter()
 				plat->dtimer.stopTimer(plat->mtdnum_light_id);
 				MSGDRIV_send(MSGID_EXT_SETMTDNUM, 0);
 				if((pMenuStatus->osd_mudnum >= MIN_MTDTARGET_NUM) && (pMenuStatus->osd_mudnum <= MAX_MTDTARGET_NUM))
+				{
 					plat->detectNum = pMenuStatus->osd_mudnum;
+					g_mtdConfig.targetNum =  pMenuStatus->osd_mudnum;
+					storeMtdConfigFlag = true;
+				}
 				memset(pMenuStatus->mtdnum_arr, 0, sizeof(pMenuStatus->mtdnum_arr));
 			}
 		}
@@ -962,7 +965,11 @@ void app_ctrl_enter()
 				plat->dtimer.stopTimer(plat->trktime_light_id);
 				MSGDRIV_send(MSGID_EXT_SETMTDTRKTIME, 0);
 				if((pMenuStatus->osd_trktime >= MIN_MTDTRKTIME) && (pMenuStatus->osd_trktime <= MAX_MTDTRKTIME))
+				{
 					plat->m_display.processdurationMenu_osd(pMenuStatus->osd_trktime);
+					g_mtdConfig.trackTime = pMenuStatus->osd_trktime;
+					storeMtdConfigFlag = true;
+				}
 				memset(pMenuStatus->trktime_arr, 0, sizeof(pMenuStatus->trktime_arr));
 			}
 		}
@@ -976,7 +983,11 @@ void app_ctrl_enter()
 				plat->dtimer.stopTimer(plat->maxsize_light_id);
 				MSGDRIV_send(MSGID_EXT_SETMTDMAXSIZE, 0);
 				if((pMenuStatus->osd_maxsize >= plat->minsize) && (pMenuStatus->osd_maxsize <= MAX_MTDMAXSIZE))
+				{
 					plat->maxsize = pMenuStatus->osd_maxsize;
+					g_mtdConfig.maxArea = pMenuStatus->osd_maxsize;
+					storeMtdConfigFlag = true;
+				}
 				memset(pMenuStatus->maxsize_arr, 0, sizeof(pMenuStatus->maxsize_arr));
 			}
 		}
@@ -990,7 +1001,11 @@ void app_ctrl_enter()
 				plat->dtimer.stopTimer(plat->minsize_light_id);
 				MSGDRIV_send(MSGID_EXT_SETMTDMINSIZE, 0);
 				if((pMenuStatus->osd_minsize >= MIN_MTDMINSIZE) && (pMenuStatus->osd_minsize <= plat->maxsize))
+				{
 					plat->minsize = pMenuStatus->osd_minsize;
+					g_mtdConfig.minArea =  pMenuStatus->osd_minsize;
+					storeMtdConfigFlag = true;
+				}
 				memset(pMenuStatus->minsize_arr, 0, sizeof(pMenuStatus->minsize_arr));
 			}
 		}
@@ -1004,13 +1019,30 @@ void app_ctrl_enter()
 				plat->dtimer.stopTimer(plat->sensi_light_id);
 				MSGDRIV_send(MSGID_EXT_SETMTDSENSI, 0);
 				if((pMenuStatus->osd_sensi >= MIN_MTDSENSI) && (pMenuStatus->osd_sensi <= MAX_MTDSENSI))
+				{
 					plat->sensi = pMenuStatus->osd_sensi;
+					g_mtdConfig.sensitivity = pMenuStatus->osd_sensi;
+					storeMtdConfigFlag = true;
+				}
 				memset(pMenuStatus->sensi_arr, 0, sizeof(pMenuStatus->sensi_arr));
 			}
 		}
 		
 		else if(6 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		{
 			app_ctrl_setMenuStat(mainmenu2);
+			storeMtdConfigFlag = true;
+			//plat->SetMtdConfig(g_mtdConfig);
+			printf("\r\n[%s]:MTD Config:\r\nTarget Number:%d\r\nTrack Time:%d\r\nMax Area:%d\r\nMin Area:%d\r\nSensitivity:%d\r\n",
+				__func__,g_mtdConfig.targetNum,g_mtdConfig.trackTime, g_mtdConfig.maxArea,g_mtdConfig.minArea,g_mtdConfig.sensitivity);
+
+		}
+		if(storeMtdConfigFlag == true)
+		{
+			storeMtdConfigFlag = false;
+			plat->SetMtdConfig(g_mtdConfig);
+
+		}
 	}
 	else if(submenu_setimg == pMenuStatus->MenuStat)
 	{

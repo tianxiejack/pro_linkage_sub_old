@@ -8,8 +8,6 @@
 #ifndef CCCAMCALIBRA_H_
 #define CCCAMCALIBRA_H_
 #include <opencv2/opencv.hpp>
-//#include<opencv2/highgui.hpp>
-//#include<opencv2/core/core.hpp>
 #include <opencv/cv.hpp>
 #include <vector>
 #include "WorkThread.h"
@@ -47,7 +45,6 @@ public:
 	void showUndistortImages();
 	vector<Mat> ImageLists;
 private:
-//	PictureCalibrate *BMPCalibrate;
 	vector<string> imgList;
 	ifstream inImgPath;
 	ofstream fout;
@@ -55,40 +52,22 @@ private:
 	int image_num ;
 	Mat imageInput;
 	Mat gray;
-	vector<Point3f> tempCornerPoints;//每一幅图片对应的角点数组
-	cv::Point3f singleRealPoint;	//一个角点的坐标
+	vector<Point3f> tempCornerPoints;
+	cv::Point3f singleRealPoint;	
 	string filename;
 	Size image_size;
 	Size square_size;
 	Size pattern_size;
-	vector<cv::Point2f> corner_points_buf;//建一个数组缓存检测到的角点，通常采用Point2f形式
+	vector<cv::Point2f> corner_points_buf;
 	vector<cv::Point2f>::iterator corner_points_buf_ptr;
 	vector<vector< cv::Point2f> > corner_points_of_all_imgs;
 	Mat cameraMatrix;
 	Mat distCoefficients;
-	vector<cv::Mat> tvecsMat;//每幅图像的平移向量，t
-	vector<cv::Mat> rvecsMat;//每幅图像的旋转向量（罗德里格旋转向量）
-	vector<vector< cv::Point3f> > objectPoints;//保存所有图片的角点的三维坐标
-											 //初始化每一张图片中标定板上角点的三维坐标
-public:
-	bool read_Pictures(){
-		fout.open("caliberation_result.txt");
-		inImgPath.open("calibdata.txt");    //标定所用图像文件的路径
-		vector<string>::iterator p;
-		string temp;
-		if (inImgPath.is_open()) {
-			//读取文件中保存的图片文件路径，并存放在数组中
-			while (getline(inImgPath, temp))
-			{
-				imgList.push_back(temp);
-			}
-		}
-		else{
-			cout << "没有找到文件" << endl;
-			return false;
-		}
-		return true;
-	}
+	vector<cv::Mat> tvecsMat;
+	vector<cv::Mat> rvecsMat;
+	vector<vector< cv::Point3f> > objectPoints;
+										
+public:	
 	void FindCorners();	
 	void FindPatternCorners();
 	void getObjectCoordinates();
@@ -147,9 +126,9 @@ public:
                      OutputArray _R, OutputArray _t, InputOutputArray _mask);
 	void cr_decomposeEssentialMat( InputArray _E, OutputArray _R1, OutputArray _R2, OutputArray _t );
 	void cvtBallYuyv2Bgr();
-	void cvtGunYuyv2Bgr();
-	
+	void cvtGunYuyv2Bgr();	
 	void setBallPos(int in_panPos, int in_tilPos, int in_zoom);
+	bool read_Pictures();
 
 private:
 	Mat cameraMatrix_gun ;
@@ -186,9 +165,6 @@ public:
 	bool start_cloneVideoSrc;
 	bool Set_Handler_Calibra;
 	bool getCurrentPosFlag;
-	//OSA_SemHndl m_linkage_getPos;
-	
-
 	Mat gun_fromBMP;
 	vector<Point2f> key_points1;
 	vector<Point2f> key_points2;
@@ -229,6 +205,4 @@ class DetectCorners:public WorkThread
 	bool chessBoardCornersDetect(Mat image,Mat &cornerImage,int &successImages);
 	
 };
-
-
 #endif /* CCCAMCALIBRA_H_ */

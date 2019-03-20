@@ -25,8 +25,8 @@ typedef enum{
 	mainmenu0=0,
 	mainmenu1,
 	mainmenu2,
-	submenu_DefaultWorkMode,//submenu_DefaultWorkMode, submenu_carli
-	submenu_gunball, // Be replaced by Menu: "grid map calibrate"
+	submenu_DefaultWorkMode,// submenu_carli
+	submenu_gridMapCalibrate, //"submenu_gunball" is replaced by "submenu_gridMapCalibrate"
 	submenu_mtd,
 	submenu_setimg,
 	submenu_setball,

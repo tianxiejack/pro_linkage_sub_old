@@ -6,7 +6,7 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "app_ctrl.h"
-#include "Ipcctl.h"
+#include "ipc_custom_head.hpp"
 #include <vector>
 #include <errno.h>
 #include <string.h>
@@ -15,6 +15,8 @@ using namespace vmath;
 
 extern unsigned char  g_GridMapMode;
 extern int capIndex;
+extern bool recvMtdConfigData;
+extern MTD_Config g_mtdConfig;
 extern UI_CONNECT_ACTION g_connectAction;
 bool showDetectCorners = false;
 SelectMode mouse_workmode = DrawRectangle_Mode;
@@ -429,10 +431,20 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 #endif
 
 #if __MOVE_DETECT__
-	detectNum = 1;
-	maxsize = 10000;
-	minsize = 9;
-	sensi = 30;
+	if(recvMtdConfigData == true)
+	{
+		detectNum = g_mtdConfig.targetNum;
+		maxsize = g_mtdConfig.maxArea;
+		minsize = g_mtdConfig.minArea;
+		sensi = g_mtdConfig.sensitivity;
+	}
+	else
+	{
+		detectNum = 1;
+		maxsize = 10000;
+		minsize = 9;
+		sensi = 30;
+	}
 	setrigion_flagv20 = mtdcnt = 0;	
 	memset(&mtdrigionv20, 0, sizeof(mtdrigionv20));
 	memset(grid19x10, 0, sizeof(grid19x10));
@@ -1324,16 +1336,18 @@ bool CVideoProcess::readParams(const char* filename)
 
 					std::vector<position_t>::iterator itr = m_trigonoMetricVector.begin();
 					int line=0;
+				#if 0
 					for(; itr != m_trigonoMetricVector.end(); itr++)
 					{
 						line++;
 						if(line%10 == 0)
 						{
-							printf("\r\n");
+							//printf("\r\n");
 						}
-						printf("\r\nVertex:<%d,%d>, PTZ: <%d,%d>\r\n", (*itr).ver.x,
+						//printf("\r\nVertex:<%d,%d>, PTZ: <%d,%d>\r\n", (*itr).ver.x,
 							 (*itr).ver.y, (*itr).pos.x,(*itr).pos.y);
 					}
+				#endif
 					
 				}				
 				m_readfs.release();
@@ -2471,6 +2485,16 @@ int CVideoProcess::init()
 			eventLoop->RunService();
 		}
 	}	
+
+//============================================
+if(g_AppWorkMode == AUTO_LINK_MODE){
+	CMD_EXT Msg;
+	Msg.MtdState[Msg.SensorStat] = ipc_eImgAlg_Enable;	
+	app_ctrl_setMtdStat(&Msg);
+	MSGAPI_msgsend(mtd);
+}
+
+//============================================
 	
 	return 0;
 }
@@ -3168,4 +3192,23 @@ void CVideoProcess::set_mouse_show(int param)
 {
 	mouse_show = param;
 }
+
+void CVideoProcess::setMtdState(bool flag)
+{
+	m_bMoveDetect = flag;
+	return;
+}
+const bool CVideoProcess::getMtdState()
+{
+	return m_bMoveDetect;
+}
+void CVideoProcess::set_trig_PTZflag(bool flag)
+{
+	trig_inter_flag = flag;
+	return ;
+};
+bool CVideoProcess::get_trig_PTZflag()
+{
+	return trig_inter_flag;
+};
 

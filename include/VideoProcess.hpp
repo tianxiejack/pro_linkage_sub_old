@@ -1,7 +1,7 @@
 
 #ifndef VIDEOPROCESS_HPP_
 #define VIDEOPROCESS_HPP_
-
+#include <opencv2/core.hpp>
 #include "MultiChVideo.hpp"
 #include "Displayer.hpp"
 #include "UtcTrack.h"
@@ -17,7 +17,8 @@
 
 #include "trigonometric.hpp"
 #include "GridMap.h"
-#include <opencv2/core.hpp>
+#include "Ipc.hpp"
+
 
 using namespace cr_trigonometricInterpolation;
 
@@ -159,7 +160,10 @@ public:
 	bool writeParamsForTriangle(const char* filename);
 
 	int read_param_trig();
-
+	void setMtdState(bool flag);
+	const bool getMtdState();
+	void set_trig_PTZflag(bool flag);
+	bool get_trig_PTZflag();
 private:
 	Mat m_GrayMat;
 	Mat m_Gun_GrayMat;
@@ -266,23 +270,14 @@ public:
 	int mouse_show = 0;
 	void set_mouse_show(int param);
 	cv::Point cur_trig_inter_P;
-	int trig_inter_flag = 0;
-	void set_trig_PTZflag(bool flag){
-		trig_inter_flag = flag;
-		return ;
-	};
-	bool get_trig_PTZflag(){
-		return trig_inter_flag;
-	};
+	int trig_inter_flag = 0;	
 	Trigonometric m_trig = Trigonometric(outputWHF[0],outputWHF[1]);
 	vector<position_t> app_trig;
 	void update_cur_trig_inter_P(int x, int y);
 private:
 	Trigonometric *m_pTrigonometric;
 public:
-	Trigonometric* createTrigonometric(int imgaeWidth,int imageHeight);
-
-	
+	Trigonometric* createTrigonometric(int imgaeWidth,int imageHeight);	
 protected:
 	MultiChVideo MultiCh;
 	//BigChVideo		BigChannel;	

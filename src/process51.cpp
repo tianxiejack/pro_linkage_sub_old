@@ -8,8 +8,7 @@
 #include "osd_cv.h"
 #include "app_status.h"
 #include "configable.h"
-#include "Ipcctl.h"
-//#include "Ipcctl.h"
+#include "ipc_custom_head.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -41,12 +40,14 @@ extern CamParameters g_camParams;
 Point dest_ballPoint = Point(-100,-100);
 extern SingletonSysParam* g_sysParam;
 extern GB_WorkMode g_AppWorkMode;
+extern MTD_Config g_mtdConfig;
 extern menu_param_t *msgextMenuCtrl;
 extern SelectMode mouse_workmode;
 extern bool setComBaud_select ;
 extern bool changeComBaud ;
 extern CProcess *proc;
 extern std::vector< cv::Mat > ImageList;
+extern bool recvMtdConfigData;
 unsigned char  g_GridMapMode = 1;
 bool send_signal_flag = true;
 
@@ -98,15 +99,16 @@ m_cofy(6200),m_bak_count(0),m_winWidth(window_width),m_winHeight(window_height),
 m_bGridMapCalibrate(false),m_lastRow(-1),m_lastCol(-1),m_successCalibraNum(0),m_AppVersion(VERSION_SOFT)
 {
 	extInCtrl = (CMD_EXT*)ipc_getimgstatus_p();
-	memset(extInCtrl,0,sizeof(CMD_EXT));
+	memset(extInCtrl,0,sizeof(IMGSTATUS));
 	memset(renderflag,0,sizeof(renderflag));
 	msgextInCtrl = extInCtrl;	
+	
 	sThis = this;
 	plat = this;
-	m_iDelta_X = 1920; // imgae width :1920
-	m_iZoom = 2849; // Max view zoom:2849
+	m_iDelta_X = window_width; 
+	m_iZoom = 2849; // Max view zoom
 
-	loadConfigParams("SysParm.yml");
+	//loadConfigParams("SysParm.yml");
 	
 }
 CProcess::~CProcess()
@@ -117,24 +119,8 @@ CProcess::~CProcess()
 
 void CProcess::loadIPCParam()
 {
-	//=======================================
-
-
-	//	tmpcofx = 6300;
-	//	tmpcofy = 6200;
-	//
-	//	coefficientx = (float)tmpcofx*0.001f;
-	//	coefficienty = (float)tmpcofy*0.001f;
-	//	fx = 1796.2317019134 + 10;
-	//	fy = 1795.8556284573 +55;
-	//	degperpixX = 36000/(2*CV_PI*fx);
-	//	degperpixY = 36000/(2*CV_PI*fy);
-	//	coefficientx = degperpixX*2;
-	//	coefficienty = degperpixY*2;
-	//========================================	
 		backMenuposX=0; 
 		backMenuposY =0;
-		//show_circle_pointer= false;
 		memset(rcTrackBak, 0, sizeof(rcTrackBak));
 		memset(tgBak, 0, sizeof(tgBak));
 		memset(&extOutAck, 0, sizeof(ACK_EXT));
@@ -154,11 +140,22 @@ void CProcess::loadIPCParam()
 
 		CMD_EXT *pIStuts = extInCtrl;
 
-		extMenuCtrl.osd_mudnum = 1;
-		extMenuCtrl.osd_trktime = 1;
-		extMenuCtrl.osd_maxsize = 10000;
-		extMenuCtrl.osd_minsize = 9;
-		extMenuCtrl.osd_sensi = 30;
+		if(recvMtdConfigData == true)
+		{
+			extMenuCtrl.osd_mudnum = g_mtdConfig.targetNum;
+			extMenuCtrl.osd_trktime = g_mtdConfig.trackTime;
+			extMenuCtrl.osd_maxsize = g_mtdConfig.maxArea;
+			extMenuCtrl.osd_minsize = g_mtdConfig.minArea;
+			extMenuCtrl.osd_sensi = g_mtdConfig.sensitivity;			
+		}
+		else
+		{
+			extMenuCtrl.osd_mudnum = 1;
+			extMenuCtrl.osd_trktime = 1;
+			extMenuCtrl.osd_maxsize = 10000;
+			extMenuCtrl.osd_minsize = 9;
+			extMenuCtrl.osd_sensi = 30;		
+		}
 		extMenuCtrl.resol_type_tmp = extMenuCtrl.resol_type = oresoltype;
 		extMenuCtrl.MenuStat = -1;
 		extMenuCtrl.Trig_Inter_Mode = 0;
@@ -510,7 +507,7 @@ void CProcess::OnCreate()
 		          g_camParams.panPos, g_camParams.tiltPos, g_camParams.zoomPos))){
 			cout << "  <<< Load linkage params failed !!!>>> " << endl;  
 		}
-
+#if 0
 		cout << "****************************************<< CamParam >>********************************************************" << endl;
 		cout << "imageSize:\n" << g_camParams.imageSize << endl;
 		cout << "cameraMatrix_gun:\n" << g_camParams.cameraMatrix_gun << endl;
@@ -522,7 +519,7 @@ void CProcess::OnCreate()
 		cout << "tiltPos:\n" << g_camParams.tiltPos<< endl;
 		cout << "zoomPos:\n" << g_camParams.zoomPos<< endl;
 		cout << "************************************************************************************************" << endl;
- 
+ #endif
 		if(ret == true) {
 			this->Init_CameraMatrix();
 		}
@@ -555,11 +552,11 @@ void CProcess::TimerCreate()
 void CProcess::Tcallback(void *p)
 {
 	static int resol_dianmie = 0;
-    static int mtdnum_dianmie = 0;
-    static int trktime_dianmie = 0;
-    static int maxsize_dianmie = 0;
-    static int minsize_dianmie = 0;
-    static int sensi_dianmie = 0;
+    	static int mtdnum_dianmie = 0;
+    	static int trktime_dianmie = 0;
+    	static int maxsize_dianmie = 0;
+    	static int minsize_dianmie = 0;
+    	static int sensi_dianmie = 0;
 	static int baud_dianmie = 0;
 	
 	unsigned char baudlbuf[MAX_BAUDID][128] = {
@@ -722,6 +719,7 @@ bool CProcess::readParams(const char* filename)
 bool CProcess::loadConfigParams(const char* filename)
 {
 	int workmode = 0;
+	int mtdstate =0;
 	FileStorage fs2( filename, FileStorage::READ );
 	bool ret = fs2.isOpened();
 	if(!ret)
@@ -732,8 +730,16 @@ bool CProcess::loadConfigParams(const char* filename)
 	else
 	{
 		fs2["workmode"] >> workmode;
+		fs2["mtdstate"] >> mtdstate;
 		g_AppWorkMode = (GB_WorkMode)workmode;
-		printf("\r\n[%s]:========-----======----======== Load Work Mode : <%d>\r\n",__func__, workmode);
+		
+		if(mtdstate == 1)
+		{
+			setWorkMode(AUTO_LINK_MODE);
+		}
+		
+		setMtdState(bool(mtdstate));		
+		//printf("\r\n[%s]:========-----======----======== Load Work Mode : <%d>\r\n",__func__, workmode);
 		return ret;
 	}
 	fs2.release();
@@ -743,6 +749,7 @@ bool CProcess::loadConfigParams(const char* filename)
 bool CProcess::saveConfigParams(const char* filename)
 {
 	int workmode = 0;
+	int mtdstate = 0;
 	FileStorage fs2( filename, FileStorage::WRITE );
 	bool ret = fs2.isOpened();
 	if(!ret)
@@ -753,8 +760,11 @@ bool CProcess::saveConfigParams(const char* filename)
 	else
 	{
 		workmode = (int)g_AppWorkMode;
+		mtdstate = getMtdState();
 		fs2<<"workmode"<<workmode;
-		printf("\r\n[%s]:========-----======----======== SaveWork Mode : <%d>\r\n",__func__, workmode);
+		fs2<<"mtdstate" << mtdstate;
+		//printf("\r\n[%s]:========-----======----======== Save Work Mode : <%d>\r\n",__func__, workmode);
+		//printf("\r\n[%s]:========-----======----======== Save Mtd State : <%d>\r\n",__func__, mtdstate);
 		return ret;
 	}
 	fs2.release();
@@ -3994,7 +4004,6 @@ void CProcess::CvtImgCoords2CamCoords(Point &imgCoords, Point &camCoords)
 	distorted.push_back(cv::Point2d(opt.x, opt.y));
 	undistortPoints(distorted,normalizedUndistorted,g_camParams.cameraMatrix_gun,g_camParams.distCoeffs_gun);
 	std::vector<cv::Point3d> objectPoints;
-
 	for (std::vector<cv::Point2d>::const_iterator itPnt = normalizedUndistorted.begin();
 	itPnt != normalizedUndistorted.end(); ++itPnt)
 	{
@@ -4023,9 +4032,8 @@ void CProcess::MvBallCamByClickGunImg(int x, int y,bool needChangeZoom)
 	int offset_y = m_winHeight/2;	
 	int point_X = ( x-offset_x ) ;
 	int point_Y = ( y-offset_y ) *2;	
-	Point imgCoords = Point( point_X ,  point_Y );  //removed by 20190125
-	//Point imgCoords = replaceClickPoints(point_X, point_Y);
-	
+	Point imgCoords = Point( point_X ,  point_Y );  
+	//Point imgCoords = replaceClickPoints(point_X, point_Y);	
 	Point camCoords;
 	CvtImgCoords2CamCoords(imgCoords, camCoords);
 	TransformPixByOriginPoints(camCoords.x, camCoords.y );
@@ -4036,8 +4044,7 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 	int point_X , point_Y , offset_x , offset_y,tmp_zoomPos; 
 	int delta_X ;
 	bool isDeltaValid = false;
-	Point opt;
-	
+	Point opt;	
 	switch(m_display.g_CurDisplayMode) 
 	{
 		case PREVIEW_MODE:	
@@ -4051,16 +4058,15 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 		default:
 			break;
 	}
-
 	LeftPoint.x -= offset_x;
 	RightPoint.x -=offset_x;
 	LeftPoint.y -= offset_y;
-	RightPoint.y -=offset_y;
-	
+	RightPoint.y -=offset_y;	
 	delta_X = abs(LeftPoint.x - RightPoint.x) ;
-
-	if(needChangeZoom == true ) {
-		if(delta_X < MIN_VALID_RECT_WIDTH_IN_PIXEL) {
+	if(needChangeZoom == true ) 
+	{
+		if(delta_X < MIN_VALID_RECT_WIDTH_IN_PIXEL) 
+		{
 			;  // Do Nothing
 		}
 		else
@@ -4072,22 +4078,25 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 		}
 	}
 
-
 	if(needChangeZoom == true)
 	{
-		if((LeftPoint.x < RightPoint.x)&&(LeftPoint.y < RightPoint.y)) {
+		if((LeftPoint.x < RightPoint.x)&&(LeftPoint.y < RightPoint.y)) 
+		{
 			point_X = abs(LeftPoint.x - RightPoint.x) /2 + LeftPoint.x;
 			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + LeftPoint.y;	
 		}
-		else if((LeftPoint.x < RightPoint.x)&&(LeftPoint.y > RightPoint.y)) {
+		else if((LeftPoint.x < RightPoint.x)&&(LeftPoint.y > RightPoint.y)) 
+		{
 			point_X = abs(LeftPoint.x - RightPoint.x) /2 + LeftPoint.x;
 			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
 		}
-		else if((LeftPoint.x > RightPoint.x)&&(LeftPoint.y > RightPoint.y)) {
+		else if((LeftPoint.x > RightPoint.x)&&(LeftPoint.y > RightPoint.y)) 
+		{
 			point_X = abs(LeftPoint.x - RightPoint.x) /2 + RightPoint.x;
 			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + RightPoint.y;	
 		}
-		else{
+		else
+		{
 			point_X = abs(LeftPoint.x - RightPoint.x) /2 + RightPoint.x;
 			point_Y = abs(LeftPoint.y - RightPoint.y) /2 + LeftPoint.y;	
 		}		
@@ -4096,9 +4105,8 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 		point_X = (x - offset_x);
 		point_Y = (y- offset_y);		
 	}
-
-	//printf("\r\n[%s]:FirstPoint<%d,%d>,SecondPoint<%d,%d>, CenterPoint<%d,%d>\r\n",__FUNCTION__,LeftPoint.x,LeftPoint.y,RightPoint.x,RightPoint.y,point_X,point_Y);
-	switch(m_display.g_CurDisplayMode) {
+	switch(m_display.g_CurDisplayMode) 
+	{
 		case PREVIEW_MODE:
 			opt = cv::Point( point_X*2, point_Y*2 );	
 			break;
@@ -4228,14 +4236,14 @@ void CProcess::MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom)
 
 	int Origin_PanPos = g_camParams.panPos;
 	int Origin_TilPos = g_camParams.tiltPos;
-
 	SetDestPosScope(inputX, inputY, Origin_PanPos,Origin_TilPos,DesPanPos, DesTilPos);
-
-	if(  needChangeZoom == true ) {
+	if(  needChangeZoom == true ) 
+	{
 		trkmsg.cmd_ID = acqPosAndZoom;
 		memcpy(&trkmsg.param[0],&DesPanPos, 4);
 		memcpy(&trkmsg.param[4],&DesTilPos, 4); 
-		if(isDeltaValid == true){
+		if(isDeltaValid == true)
+		{
 			memcpy(&trkmsg.param[8],&(tmp_zoomPos)  , 4); 
 		}
 	}
@@ -4254,20 +4262,58 @@ void CProcess::OnMouseLeftDwn(int x, int y)
 	if( open_handleCalibra == true) {
 		manualHandleKeyPoints(x,y);		
 	}	
-};
+}
+void CProcess::SetMtdConfig(MTD_Config mtdconfig)
+{
+	MTD_Config tempConfig = {0};
+	tempConfig = mtdconfig;
+	SENDST	message = {0};
+	message.cmd_ID = storeDefaultWorkMode;
+	int datelength = sizeof(int);
+	memcpy(&message.param[0*datelength],&tempConfig.targetNum, datelength);
+	memcpy(&message.param[1*datelength],&tempConfig.trackTime, datelength); 	
+	memcpy(&message.param[2*datelength],&tempConfig.maxArea, datelength); 	
+	memcpy(&message.param[3*datelength],&tempConfig.minArea, datelength); 	
+	memcpy(&message.param[4*datelength],&tempConfig.sensitivity, datelength); 	
+	ipc_sendmsg(&message, IPC_FRIMG_MSG);
+	//printf("\r\n[%s]:Send Set Mtd Config  to Linkage ctrl process !!!\r\n",__func__ );
+}
+void CProcess::SetDefaultWorkMode( GB_WorkMode workmode )
+{
+	int workModeType = 0;
+	switch(workmode)
+	{
+		case HANDLE_LINK_MODE:
+			workModeType = 0;
+			break;
+		case AUTO_LINK_MODE:
+			workModeType = 1;
+			break;
+		case ONLY_BALL_MODE:
+			workModeType = 2;
+			break;
+		default:
+			workModeType = 0;
+			break;			
+	}
+	SENDST	tmp = {0};
+	tmp.cmd_ID = storeDefaultWorkMode;
+	tmp.param[0] = workModeType;
+	ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
+	//printf("\r\n[%s]:Send Set Default Work Mode <%d> to Linkage ctrl process !!!\r\n",__func__, workModeType );
+}
 void CProcess::setWorkMode(GB_WorkMode workmode)
 {
 	g_AppWorkMode = workmode;
 	int value = 0;
-	if(g_AppWorkMode == AUTO_LINK_MODE)
+	if( g_AppWorkMode == AUTO_LINK_MODE )
 	{
 		value = 1;
-		g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = true;
+		//printf("\r\n[%s]:&&&&&&&&&&&&&&&&& (AUTO_LINK_MODE )\r\n",__func__);
 	}
 	else
 	{
 		value = 0;
-		g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
 	}
 
 	if(g_AppWorkMode == AUTO_LINK_MODE)
@@ -4285,8 +4331,7 @@ void CProcess::setWorkMode(GB_WorkMode workmode)
 	SENDST	tmp;
 	tmp.cmd_ID = mtdmode;
 	tmp.param[0] = value ;
-	ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
-	
+	ipc_sendmsg(&tmp, IPC_FRIMG_MSG);	
 }
 
 void CProcess::OnJosCtrl(int key, int param)
@@ -4299,17 +4344,26 @@ void CProcess::OnJosCtrl(int key, int param)
 			setWorkMode(nextMode);
 		}
 			break;
-		case JOSF2_ENTER_MENU:
-			app_ctrl_setMenu_jos(param);
-			/* To make sure press number key '0' is safe when current displayMode is 'Grid Map View';
-			     So, set the menu index "menuarray[submenu_gunball].pointer" to the first index;
-			     because when 'Grid Map View' , press 'F2' to open Menu, you need input number '0'.
-			*/
-			if(g_displayMode == MENU_GRID_MAP_VIEW){
-				if(msgextMenuCtrl!=NULL){
+		case JOSF2_ENTER_MENU:			
+			if(g_displayMode == MENU_GRID_MAP_VIEW)
+			{
+				#if 0
+				if(msgextMenuCtrl!=NULL)
+				{
 					menu_param_t *pMenuStatus = msgextMenuCtrl;				
-					pMenuStatus->menuarray[submenu_gunball].pointer = 0; 
-				}	
+					pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer = 0; 
+				}
+				#endif
+				SENDST trkmsg2={0};
+				trkmsg2.cmd_ID = enter_gridmap_view;
+				trkmsg2.param[0] = 0;
+				ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
+				app_ctrl_setMenuStat(mainmenu2);			
+				g_displayMode = MENU_MAIN_VIEW;
+			}
+			else
+			{
+				app_ctrl_setMenu_jos(param);
 			}
 			break;
 		default:
@@ -4319,13 +4373,14 @@ void CProcess::OnJosCtrl(int key, int param)
 
 void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 {
-	switch( key ) {
+	switch( key ) 
+	{
 		case 1:
-			{
-				GB_WorkMode nextMode = GB_WorkMode(((int)g_AppWorkMode+1)% MODE_COUNT);
-				setWorkMode(nextMode);
-			}
-		break;
+		{
+			GB_WorkMode nextMode = GB_WorkMode(((int)g_AppWorkMode+1)% MODE_COUNT);
+			setWorkMode(nextMode);
+		}
+			break;
 		case 2:
 			app_ctrl_setMenu();  // Open Menu information
 			break;
@@ -4359,7 +4414,6 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 				}
 			}
 			#endif
-			//printf("\r\n< %d >\r\n", (int)((float)(outputWHF[0])*0.75));
 			break;
 		case 6:
 			{
@@ -4371,7 +4425,6 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			capIndex = (capIndex+1) %2;
 			break;
 		case 8:
-			//pThis->readParams("SaveGridMap.yml");
 			break;
 		case 9:
 			g_GridMapMode  =  (g_GridMapMode + 1) % 3;
@@ -4396,19 +4449,19 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			}
 			break;	
 		case 12:
-			pThis->writeParams("SaveGridMap.yml");
-			
-			//printf("\r\n[%s]:Save GridMap Parameters Success !!\r\n",__func__);
+			pThis->writeParams("SaveGridMap.yml");			
 			break;
 		case SPECIAL_KEY_DOWN:
 			app_ctrl_downMenu();
-			if(g_displayMode == MENU_GRID_MAP_VIEW){
+			if(g_displayMode == MENU_GRID_MAP_VIEW)
+			{
 				m_curNodeIndex = (m_curNodeIndex+GRID_COLS_15+2)%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
-				if(m_curNodeIndex > 112)// total 192/432 nodes
+				if(m_curNodeIndex > 112) // total 204 nodes
 				{
 					m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
 				}
-				else{
+				else
+				{
 					m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
 				}
 			}
@@ -4419,11 +4472,12 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 				int total = (GRID_COLS_15+2)*(GRID_ROWS_11+1);
 				int cols = GRID_COLS_15+2;
 				m_curNodeIndex = (m_curNodeIndex -cols + total)%total;
-				if(m_curNodeIndex > 112)// total 192/432 nodes
+				if(m_curNodeIndex > 112)// total 204 nodes
 				{
 					m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
 				}
-				else{
+				else
+				{
 					m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
 				}
 			}
@@ -4439,15 +4493,14 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 				m_curNodeIndex = (m_curNodeIndex+1)%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
 				#endif
 				
-				//printf("\r\n[%s]: m_curNodeIndex = %d\r\n",__func__,m_curNodeIndex);
-				if(m_curNodeIndex > 112)// total 192/432 nodes
+				if(m_curNodeIndex > 112)// total 204 nodes
 				{
 					m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
 				}
-				else{
+				else
+				{
 					m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
-				}
-				
+				}				
 			}
 			break;
 		case SPECIAL_KEY_LEFT:
@@ -4456,47 +4509,17 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 				m_curNodeIndex = (m_curNodeIndex+  (GRID_COLS+1)*(GRID_ROWS+1) -1 )%((GRID_COLS+1)*(GRID_ROWS+1));
 				#else
 				m_curNodeIndex = (m_curNodeIndex+  (GRID_COLS_15+2)*(GRID_ROWS_11+1) -1 )%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
-
 				#endif
-
-
-				//printf("\r\n[%s]: m_curNodeIndex = %d\r\n",__func__,m_curNodeIndex);
-				if(m_curNodeIndex < 112)// total 192/432 nodes
+				if(m_curNodeIndex < 112) //otal 204 nodes
 				{
 					m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
 				}
 				else
-					{
+				{
 					m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
-
 				}
-			}
-			
+			}			
 			break;
-
-	#if 0
-		case SPECIAL_KEY_RIGHT:			
-			m_display.selected_PicIndex = (m_display.selected_PicIndex +1)%50;
-			break;
-		case SPECIAL_KEY_LEFT:
-			if(m_display.selected_PicIndex == 0){
-				m_display.selected_PicIndex =49;
-			}
-			m_display.selected_PicIndex -= 1;
-			break;
-		case SPECIAL_KEY_DOWN:
-			m_display.selected_PicIndex += 10;
-			if( m_display.selected_PicIndex > 39) {
-				m_display.selected_PicIndex -= 40;
-			}
-			break;
-		case SPECIAL_KEY_UP:
-			m_display.selected_PicIndex -= 10;
-			if( m_display.selected_PicIndex < 9) {
-				m_display.selected_PicIndex += 50;
-			}
-			break;
-	#endif
 		default:
 			break;
 	}
@@ -4693,22 +4716,23 @@ void CProcess::OnKeyDwn(unsigned char key)
 		{
 			app_ctrl_setnumber(key);
 			switch(key){
-				case '0':
-					
-					if(msgextMenuCtrl !=NULL){
-						menu_param_t *pMenuStatus = msgextMenuCtrl;
-						if(g_displayMode == MENU_GRID_MAP_VIEW &&
-							(1 == pMenuStatus->menuarray[submenu_gunball].pointer))
-						{
-							SENDST trkmsg2={0};
-							trkmsg2.cmd_ID = enter_gridmap_view;
-							trkmsg2.param[0] = 0;
-							ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
-							app_ctrl_setMenuStat(mainmenu2);			
-							g_displayMode = MENU_MAIN_VIEW;
-						}
+				case '0':	
+				#if 0
+				if(msgextMenuCtrl !=NULL)
+				{
+					menu_param_t *pMenuStatus = msgextMenuCtrl;
+					if(g_displayMode == MENU_GRID_MAP_VIEW &&
+						(1 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer))
+					{
+						SENDST trkmsg2={0};
+						trkmsg2.cmd_ID = enter_gridmap_view;
+						trkmsg2.param[0] = 0;
+						ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
+						app_ctrl_setMenuStat(mainmenu2);			
+						g_displayMode = MENU_MAIN_VIEW;
 					}
-					
+				}	
+				#endif
 					break;
 				case '1':
 					if(g_displayMode == MENU_GRID_MAP_VIEW)
@@ -5533,7 +5557,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 				{
 					m_pMovDetector->mvOpen(i);	
 					dynamic_config(VP_CFG_MvDetect, 1,NULL);
-					chooseDetect = 10;
+					chooseDetect = 10;					
 				}
 			}
 		}
@@ -5544,8 +5568,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 				if(m_pMovDetector->isRun(i))
 				{
 					dynamic_config(VP_CFG_MvDetect, 0,NULL);
-					m_pMovDetector->mvClose(i);
-					
+					m_pMovDetector->mvClose(i);					
 				}	
 			}
 		}
@@ -7048,37 +7071,40 @@ void CProcess::renderText(enum DrawBehavior drawbehavior)
 {	
 	int window_width = outputWHF[0];
 	int window_height = outputWHF[1];
-	if(drawbehavior == CProcess::DRAW_NOTICE_TEXTS){
-	sprintf(tmp_str[0], "ToTal Nodes: %d", 204/*17X12*/);	
-	putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(window_width/42,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(255,255,0,255), 1);	
+	if(drawbehavior == CProcess::DRAW_NOTICE_TEXTS)
+	{
+		sprintf(tmp_str[0], "ToTal Nodes: %d", 204);	
+		putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(window_width/42,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(255,255,0,255), 1);	
 
-	putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(window_width/9,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-	sprintf(tmp_str[1], "Cur-Node:%d", (m_curNodeIndex+1));	
-	putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(window_width/9,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
+		putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(window_width/9,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
+		sprintf(tmp_str[1], "Cur-Node:%d", (m_curNodeIndex+1));	
+		putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(window_width/9,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,255,255,255), 1);	
 
-	int row = (m_curNodeIndex/(GRID_COLS_15 +2));
-	int col = (m_curNodeIndex%(GRID_COLS_15 +2));
-	putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/5,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-	sprintf(tmp_str[3], "row-%d, col-%d>",row,col );	
-	putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/5,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,255,255), 1);	
+		int row = (m_curNodeIndex/(GRID_COLS_15 +2));
+		int col = (m_curNodeIndex%(GRID_COLS_15 +2));
+		putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/5,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
+		sprintf(tmp_str[3], "<row-%d, col-%d>",row,col );	
+		putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/5,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,255,255), 1);	
 
-	//putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-	//sprintf(tmp_str[4], "Finished:%d",m_successCalibraNum);	
-	//putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
+		//putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
+		//sprintf(tmp_str[4], "Finished:%d",m_successCalibraNum);	
+		//putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,255,255,255), 1);	
 
-	putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(window_width-100,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
-	sprintf(m_appVersion, "V%d.%d.%d",m_AppVersion>>6,(m_AppVersion>>3)&0x07,m_AppVersion&0x07);	
-	putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(window_width-100,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,255,255,255), 1);	
+		putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(window_width-100,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
+		sprintf(m_appVersion, "V%d.%d.%d",m_AppVersion>>6,(m_AppVersion>>3)&0x07,m_AppVersion&0x07);	
+		putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(window_width-100,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,255,255,255), 1);	
+
 	}
 	else if (drawbehavior == CProcess::ERASE_TEXTS)
 	{
 		putText(m_display.m_imgOsd[1],tmp_str[0],cv::Point(window_width/42,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
-		putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(window_width/9,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);
-		putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/4,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
+		putText(m_display.m_imgOsd[1],tmp_str[1],cv::Point(window_width/9,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
+		putText(m_display.m_imgOsd[1],tmp_str[3],cv::Point(window_width/5,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);	
 		//putText(m_display.m_imgOsd[1],tmp_str[4],cv::Point(window_width/2,window_height/43),FONT_HERSHEY_TRIPLEX,0.6, cvScalar(0,0,0,0), 1);	
 		putText(m_display.m_imgOsd[1],m_appVersion,cv::Point(window_width-100,window_height/43),FONT_HERSHEY_TRIPLEX,0.5, cvScalar(0,0,0,0), 1);
-	}else{
-
+	}
+	else
+	{
 	}
 }
 void CProcess::DrawCenterCross(cv::Point pos, int width,int height)

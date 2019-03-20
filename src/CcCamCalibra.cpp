@@ -8,7 +8,7 @@
 #include "CcCamCalibra.h"
 #include <sys/time.h>
 #include "configable.h"
-#include "Ipcctl.h"
+#include "ipc_custom_head.hpp"
 #include <vector>
 #include <iostream>
 using namespace std;
@@ -92,7 +92,7 @@ void CcCamCalibra::PrintMs( const char* text )
 	long long ms = 0;
 	ms = ( (double)(Cur-last)/getTickFrequency() ) * 1000;
 	if(*text != 0){
-		printf("\r\n\r\n[RunTimme]++++++++++++++++++++ [%s] = %d ms\r\n\r\n", text, ms);
+		printf("\r\n\r\n[RunTimme]++++++++++++ [%s] = %d ms\r\n\r\n", text, ms);
 	}
 	last = getTickCount();
 
@@ -187,12 +187,14 @@ bool CcCamCalibra::load_OriginCameraParams( const string& filename, int& flags, 
     fs2["camera_matrix"] >> cameraMatrix2;
     fs2["distortion_coefficients"] >> distCoeffs2;
     fs2["avg_reprojection_error"] >> totalAvgErr;
+#if 0
     cout << "calibration date: " << date << endl
          << "image width:      " << imgwidth << endl
          << "image height:     " << imgheight << endl
          << "camera matrix:    \n" << cameraMatrix2 << endl
          << "distortion coeffs:\n" << distCoeffs2 << endl
          << "avg error:        " << totalAvgErr << endl;   
+#endif
     fs2.release();
     return ret;
 }
@@ -268,31 +270,19 @@ int CcCamCalibra::Run()
 					SENDST trkmsg2={0};
 					trkmsg2.cmd_ID = querypos;
 					ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
-					printf("\r\n [%s]===== Send Message to Ball Camera : MsgID =  querypos \r\n",__FUNCTION__);
-					//flag = OSA_semWait(&m_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/500);
 					return_flag = GB_CondTimedWait(&m_linkage_getPos, 300);
 					if( -1 == return_flag ) {
 						getCurrentPosFlag = false;
 						writeParam_flag = false;
-						printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );
 					}
 					else{
-						printf("\r\n [%s]:=====Recive Meaasge From Ball Camera !!!",__FUNCTION__);
 						getCurrentPosFlag = true;
 						writeParam_flag = true;
-						cout << "\n\n******************Get It << Query Ball Camera Position Sucess ! *****************" << endl;
-						cout << " panPos = "<< panPos << endl;
-						cout << " tiltPos = "<< tiltPos << endl;
-						cout << " zoomPos = "<< zoomPos << endl;
-						cout << "*****************************************************************" << endl;
 					}
 
 
 /**************************************************************************************/
-				cout << "Key_points1.size() = " << key_points1.size() << endl;
-				cout << "Key_points2.size() = " << key_points2.size() << endl;
 				bool_Calibrate = false;
-				//writeParam_flag = true;
 			}
 			
 			if(!homography.empty()) {
@@ -301,7 +291,6 @@ int CcCamCalibra::Run()
 					warpPerspective(undisImage, warp, homography, undisImage.size());
 					resize(warp, warp, Size(warp.cols*scale, warp.rows*scale));					
 					drawChessboardCorners(warp, boardSize, key_points1, false);		
-					//imshow("camera gun warp", warp);
 					warp.copyTo(g_WarpImage);
 					g_bSubmitWarpTexture = true;
 				}
@@ -326,29 +315,18 @@ int CcCamCalibra::Run()
 						pts.push_back(pt);
 					}					
 					bool_Calibrate = false;
-					cout << "match points " << matches.size() << endl;
 //---------------------------------------------------------------------------------------------------
 					SENDST trkmsg={0};
 					trkmsg.cmd_ID = querypos;
 					ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-					printf("\r\n [%s]===== Send Message to Ball Camera : MsgID =  querypos \r\n",__FUNCTION__);
-					//flag = OSA_semWait(&m_linkage_getPos, /*OSA_TIMEOUT_FOREVER*/500);
 					return_flag = GB_CondTimedWait(&m_linkage_getPos, 300);
 					if( -1 == return_flag ) {
 						getCurrentPosFlag  = false;
-						//writeParam_flag = false;
-						printf("%s:LINE :%d    could not get the ball current Pos \n",__func__,__LINE__ );
 					}
 					else
 					{
-						printf("\r\n [%s]:=====Recive Meaasge From Ball Camera !!!",__FUNCTION__);
 						getCurrentPosFlag  = true;
 						writeParam_flag = true;
-						cout << "\n\n******************Get It << Query Ball Camera Position Sucess ! *****************" << endl;
-						cout << " panPos = "<< panPos << endl;
-						cout << " tiltPos = "<< tiltPos << endl;
-						cout << " zoomPos = "<< zoomPos << endl;
-						cout << "*****************************************************************" << endl;
 					}
 //--------------------------------------------------------------------------------------------------
 					
@@ -366,7 +344,6 @@ int CcCamCalibra::Run()
 					else{
 						drawChessboardCorners(warp, boardSize, pts, false);	
 					}
-					//imshow("camera gun warp", warp);
 					warp.copyTo(g_WarpImage);
 					g_bSubmitWarpTexture = true;
 				}
@@ -376,7 +353,6 @@ int CcCamCalibra::Run()
 	if( writeParam_flag ) 
 	{
 		writeParam_flag = false;
-		//g_sysParam->getSysParam().cameracalibrate.Enable_saveParameter = false;
 		if( !getCurrentPosFlag )
 		{
 			cout << "could not get the current Flag \n" << endl;
@@ -399,13 +375,6 @@ int CcCamCalibra::Run()
 			g_camParams.panPos = panPos;
 			g_camParams.tiltPos = tiltPos;
 			g_camParams.zoomPos = zoomPos;		
-			cout << "Write Camera Parameters Success !!!" << endl;
-			cout << "****************************** Current Newest Camera Matrix data ***************************" << endl;
-			cout << "g_camParams.homography = " << g_camParams.homography << endl;
-			cout << "g_camParams.panPos = " << g_camParams.panPos << endl;
-			cout << "g_camParams.tiltPos = " << g_camParams.tiltPos << endl;
-			cout << "g_camParams.zoomPos = " << g_camParams.zoomPos << endl;
-			cout << "*********************************************************************************************************" << endl;
 		}
 	}
 	waitKey(1);
@@ -441,6 +410,7 @@ bool CcCamCalibra::loadLinkageParams( const char* filename,
     fs2["ballPanPos"] >> panPos;
     fs2["ballTiltPos"] >> tiltPos;
     fs2["ballZoomPos"] >> zoomPos;
+	#if 0
     cout << "calibration date: " << date << endl
          << "image width:      " << imgwidth << endl
          << "image height:     " << imgheight << endl
@@ -452,6 +422,7 @@ bool CcCamCalibra::loadLinkageParams( const char* filename,
          << "ballPanPos:\n" << panPos << endl
          << "ballTiltPos:\n" << tiltPos << endl
          << "ballZoomPos:\n" << zoomPos << endl;
+	#endif
     imageSize.width = imgwidth;
     imageSize.height = imgheight;
     fs2.release();
@@ -477,35 +448,24 @@ int CcCamCalibra::find_feature_matches ( const Mat& img_1, const Mat& img_2,
     if(img_1.empty() || img_1.empty())
         return 0;
 
-    //-- åˆå§‹åŒ–
     Mat descriptors_1, descriptors_2;
-    // used in OpenCV3
-    //Ptr<FeatureDetector> detector = ORB::create();
-    //Ptr<DescriptorExtractor> descriptor = ORB::create();
-    // use this if you are in OpenCV2
     Ptr<FeatureDetector> detector = FeatureDetector::create ( "ORB" );
     Ptr<DescriptorExtractor> descriptor = DescriptorExtractor::create ( "ORB" );
     Ptr<DescriptorMatcher> matcher  = DescriptorMatcher::create ( "BruteForce-Hamming" );
-    //-- ç¬¬ä¸€æ­¥:æ£€æµ‹ Oriented FAST è§’ç‚¹ä½ç½®
     detector->detect ( img_1,keypoints_1 );
     detector->detect ( img_2,keypoints_2 );
 
-    //-- ç¬¬äºŒæ­¥:æ ¹æ®è§’ç‚¹ä½ç½®è®¡ç®— BRIEF æè¿°å­
     descriptor->compute ( img_1, keypoints_1, descriptors_1 );
     descriptor->compute ( img_2, keypoints_2, descriptors_2 );
 
     if(descriptors_1.empty() || descriptors_2.empty())
         return 0;
 
-    //-- ç¬¬ä¸‰æ­¥:å¯¹ä¸¤å¹…å›¾åƒä¸­çš„BRIEFæè¿°å­è¿›è¡ŒåŒ¹é…ï¼Œä½¿ç”¨ Hamming è·ç¦»
     vector<DMatch> match;
-    //BFMatcher matcher ( NORM_HAMMING );
     matcher->match ( descriptors_1, descriptors_2, match );
 
-    //-- ç¬¬å››æ­¥:åŒ¹é…ç‚¹å¯¹ç­›é€‰
     double min_dist=10000, max_dist=0;
 
-    //æ‰¾å‡ºæ‰€æœ‰åŒ¹é…ä¹‹é—´çš„æœ€å°è·ç¦»å’Œæœ€å¤§è·ç¦», å³æ˜¯æœ€ç›¸ä¼¼çš„å’Œæœ€ä¸ç›¸ä¼¼çš„ä¸¤ç»„ç‚¹ä¹‹é—´çš„è·ç¦»
     for ( int i = 0; i < descriptors_1.rows; i++ )
     {
         double dist = match[i].distance;
@@ -513,10 +473,6 @@ int CcCamCalibra::find_feature_matches ( const Mat& img_1, const Mat& img_2,
         if ( dist > max_dist ) max_dist = dist;
     }
 
-    //printf ( "-- Max dist : %f \n", max_dist );
-    //printf ( "-- Min dist : %f \n", min_dist );
-
-    //å½“æè¿°å­ä¹‹é—´çš„è·ç¦»å¤§äºŽä¸¤å€çš„æœ€å°è·ç¦»æ—¶,å³è®¤ä¸ºåŒ¹é…æœ‰è¯¯.ä½†æœ‰æ—¶å€™æœ€å°è·ç¦»ä¼šéžå¸¸å°,è®¾ç½®ä¸€ä¸ªç»éªŒå€¼30ä½œä¸ºä¸‹é™.
     double curDistThreshold = min( (max ( 1.5*min_dist, 30.0 )), distThreshold);
     for ( int i = 0; i < descriptors_1.rows; i++ )
     {
@@ -525,13 +481,10 @@ int CcCamCalibra::find_feature_matches ( const Mat& img_1, const Mat& img_2,
             matches.push_back ( match[i] );
         }
     }
-    //-- ç¬¬äº”æ­¥:ç»˜åˆ¶åŒ¹é…ç»“æžœ
     if(bDraw){
-        //Mat img_match;
         Mat img_match;
         drawMatches ( img_1, keypoints_1, img_2, keypoints_2, matches, img_match );
         resize(img_match, img_match, Size(img_match.cols/2, img_match.rows/2));		
-       //imshow ( "matchWnd", img_match );
         img_match.copyTo(g_MatchImage);
 	g_bSubmitMatchTexture = true;
     }
@@ -568,8 +521,6 @@ void CcCamCalibra::cr_decomposeEssentialMat( InputArray _E, OutputArray _R1, Out
 int CcCamCalibra::cr_recoverPose( InputArray E, InputArray _points1, InputArray _points2, InputArray _cameraMatrix,
                      OutputArray _R, OutputArray _t, InputOutputArray _mask)
 {
-//    CV_INSTRUMENT_REGION()
-
     Mat points1, points2, cameraMatrix;
     _points1.getMat().convertTo(points1, CV_64F);
     _points2.getMat().convertTo(points2, CV_64F);
@@ -609,10 +560,6 @@ int CcCamCalibra::cr_recoverPose( InputArray E, InputArray _points1, InputArray 
     P3(Range::all(), Range(0, 3)) = R1 * 1.0; P3.col(3) = -t * 1.0;
     P4(Range::all(), Range(0, 3)) = R2 * 1.0; P4.col(3) = -t * 1.0;
 
-    // Do the cheirality check.
-    // Notice here a threshold dist is used to filter
-    // out far away points (i.e. infinite points) since
-    // there depth may vary between postive and negtive.
     double dist = 50.0;
     Mat Q;
     triangulatePoints(P0, P1, points1, points2, Q);
@@ -664,7 +611,6 @@ int CcCamCalibra::cr_recoverPose( InputArray E, InputArray _points1, InputArray 
     mask3 = mask3.t();
     mask4 = mask4.t();
 
-    // If _mask is given, then use it to filter outliers.
     if (!_mask.empty())
     {
         Mat mask = _mask.getMat();
@@ -727,18 +673,12 @@ int CcCamCalibra::CR_recoverPose( InputArray E, InputArray _points1, InputArray 
     return cr_recoverPose(E, _points1, _points2, cameraMatrix, _R, _t, _mask);
 }
 
-//========================================================================================
-
 void CcCamCalibra::pose_2d2d ( std::vector<KeyPoint> keypoints_1,
                             std::vector<KeyPoint> keypoints_2,
                             std::vector< DMatch > matches,
                             const Mat& K,
                             Mat& R, Mat& t, Mat& H )
 {
-    // ç›¸æœºå†…å‚,TUM Freiburg2
-    //Mat K = ( Mat_<double> ( 3,3 ) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1 );
-
-    //-- æŠŠåŒ¹é…ç‚¹è½¬æ¢ä¸ºvector<Point2f>çš„å½¢å¼
     vector<Point2f> points1;
     vector<Point2f> points2;
 
@@ -748,35 +688,18 @@ void CcCamCalibra::pose_2d2d ( std::vector<KeyPoint> keypoints_1,
         points2.push_back ( keypoints_2[matches[i].trainIdx].pt );
     }
 #if 1
-    //-- è®¡ç®—åŸºç¡€çŸ©é˜µ
     Mat fundamental_matrix;
-    //fundamental_matrix = findFundamentalMat ( points1, points2, CV_FM_8POINT );
     fundamental_matrix = findFundamentalMat ( points1, points2, FM_8POINT );
-    //cout<<"fundamental_matrix is "<<endl<< fundamental_matrix<<endl;
-
-    //-- è®¡ç®—æœ¬è´¨çŸ©é˜µ
-    Point2d principal_point(K.at<double>(0,2), K.at<double>(1,2));//( 325.1, 249.7 );	//ç›¸æœºå…‰å¿ƒ, TUM datasetæ ‡å®šå€¼
-    double focal_length = K.at<double>(0,0);//521;			//ç›¸æœºç„¦è·, TUM datasetæ ‡å®šå€¼
-#if 0
-    Mat essential_matrix;
-    essential_matrix = findEssentialMat ( points1, points2, focal_length, principal_point );
-#else
+    Point2d principal_point(K.at<double>(0,2), K.at<double>(1,2));
+    double focal_length = K.at<double>(0,0);		
     Mat_<double> essential_matrix = K.t()*fundamental_matrix*K;
-#endif
-    cout<<"essential_matrix is "<<endl<< essential_matrix<<endl;
 
     if(essential_matrix.rows == 3 && essential_matrix.cols == 3){
 
     	CR_recoverPose ( essential_matrix, points1, points2, R, t, focal_length, principal_point, noArray() );
-        cout<<"R is "<<endl<<R<<endl;
-        cout<<"t is "<<endl<<t<<endl;
     }
 #endif
-    //-- è®¡ç®—å•åº”çŸ©é˜µ
     H = findHomography ( points1, points2, RANSAC, 3 );
-    //cout<<"homography_matrix is "<<endl<<H<<endl;
-
-
 }
 
 void CcCamCalibra::handle_pose_2d2d ( std::vector<Point2f> points1,
@@ -790,24 +713,15 @@ void CcCamCalibra::handle_pose_2d2d ( std::vector<Point2f> points1,
 
     Point2d principal_point(K.at<double>(0,2), K.at<double>(1,2));
     double focal_length = K.at<double>(0,0);
-#if 0
-    Mat essential_matrix;
-    essential_matrix = findEssentialMat ( points1, points2, focal_length, principal_point );
-#else
     Mat_<double> essential_matrix = K.t()*fundamental_matrix*K;
-#endif
-    cout<<"essential_matrix is "<<endl<< essential_matrix<<endl;
 
     if(essential_matrix.rows == 3 && essential_matrix.cols == 3){
 
     	CR_recoverPose ( essential_matrix, points1, points2, R, t, focal_length, principal_point, noArray() );
-        cout<<"R is "<<endl<<R<<endl;
-        cout<<"t is "<<endl<<t<<endl;
     }
 
     H = findHomography ( points1, points2, RANSAC, 3 );
 }
-/*******************************************************以下是内参标定函数**********************************/
 
 void CcCamCalibra::FindPatternCorners()
 {
@@ -819,8 +733,6 @@ if(imageListForCalibra.size() != 0){
 		if(i==1){
 			 image_size.width = imageListForCalibra[i].cols;
 	            	 image_size.height = imageListForCalibra[i].rows;
-			cout << "image_size.width = " << image_size.width << endl;
-	            	cout << "image_size.height = " << image_size.height << endl;
 		}
 		
 		 Mat imageInput ;
@@ -845,16 +757,16 @@ if(imageListForCalibra.size() != 0){
 
 void CcCamCalibra::FindCorners()
 {
-#if 1
-	while(image_num < imgList.size()) {
-
+	while(image_num < imgList.size())
+	{
 	        filename = imgList[image_num++];
 	        cout << "image_num = " << image_num << endl;
 	        cout << filename.c_str() << endl;
 
 	        cv::Mat imageInput = cv::imread(filename.c_str());
 
-	        if (image_num == 1)  {
+	        if (image_num == 1)  
+		{
 	            image_size.width = imageInput.cols;
 	            image_size.height = imageInput.rows;
 	            cout << "image_size.width = " << image_size.width << endl;
@@ -862,106 +774,43 @@ void CcCamCalibra::FindCorners()
 	        }
 
 	        if (findChessboardCorners(imageInput, pattern_size, corner_points_buf) == 0) {
-	            cout << "can not find chessboard corners!\n";   //找不到角点
+	            cout << "can not find chessboard corners!\n";   
 	            return ;	            
 	        }
 	        else  
 		{
 	            cv::Mat gray;
-
 	            cv::cvtColor(imageInput, gray, CV_RGB2GRAY);
-
-//	            cv::find4QuadCornerSubpix(gray, corner_points_buf, cv::Size(5, 5));
-
 	            cornerSubPix(gray, corner_points_buf, Size(11, 11), Size(-1, -1),
 	            							TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
-
-
 	            corner_points_of_all_imgs.push_back(corner_points_buf);
-/*	            cv::drawChessboardCorners(gray, pattern_size, corner_points_buf, true);
-	            PrintMs();
-           		cv::imshow("camera calibration", gray);
-	            PrintMs("imshow");
-	            cv::waitKey(100);
-*/	            
 	        }
 	    }
-	#else
-			cv::Mat imageInput = ImageLists[0];
-	image_size.width = imageInput.cols;
-	image_size.height = imageInput.rows;
-
-	 if (findChessboardCorners(imageInput, pattern_size, corner_points_buf) == 0) {
-	            cout << "can not find chessboard corners!\n";   //找不到角点
-	            return ;	            
-	        }
-	        else  
-		{
-			printf("))))))))))))))))))))))))))))))))))))))))))))))))))))))))   find corners!!!\r\n");
-	            cv::Mat gray;
-
-	            cv::cvtColor(imageInput, gray, CV_RGB2GRAY);
-
-//	            cv::find4QuadCornerSubpix(gray, corner_points_buf, cv::Size(5, 5));
-
-	            cornerSubPix(gray, corner_points_buf, Size(11, 11), Size(-1, -1),
-	            							TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
-
-
-	            corner_points_of_all_imgs.push_back(corner_points_buf);
-/*	            cv::drawChessboardCorners(gray, pattern_size, corner_points_buf, true);
-	            PrintMs();
-           		cv::imshow("camera calibration", gray);
-	            PrintMs("imshow");
-	            cv::waitKey(100);
-*/	            
-	        }
-
-	#endif
-
-	        cout << endl << "=============== <<  Complete Find All Chess Board Corners >> =============" << endl;
 }
 void CcCamCalibra::getObjectCoordinates()
 {
 	int i, j, k;
-	square_size = Size(40,40);
-	#if 1
-		for (k = 0;k < image_num;k++) { 		 //遍历每一张图片
-			vector<cv::Point3f> tempCornerPoints;//每一幅图片对应的角点数组
-												//遍历所有的角点
-			for (i = 0;i < pattern_size.height;i++)	{
-				for (j = 0;j < pattern_size.width;j++) {
-					cv::Point3f singleRealPoint;	//一个角点的坐标
-					singleRealPoint.x = i * square_size.width;
-					singleRealPoint.y = j * square_size.height;
-					singleRealPoint.z = 0;			//假设z=0
-					tempCornerPoints.push_back(singleRealPoint);
-				}
+	square_size = Size(40,40);	
+	for (k = 0;k < image_num;k++) 
+	{ 		
+		vector<cv::Point3f> tempCornerPoints;
+											
+		for (i = 0;i < pattern_size.height;i++)	{
+			for (j = 0;j < pattern_size.width;j++) {
+				cv::Point3f singleRealPoint;	
+				singleRealPoint.x = i * square_size.width;
+				singleRealPoint.y = j * square_size.height;
+				singleRealPoint.z = 0;		
+				tempCornerPoints.push_back(singleRealPoint);
 			}
-			objectPoints.push_back(tempCornerPoints);
 		}
-	#else
-			vector<cv::Point3f> tempCornerPoints;
-												
-			for (i = 0;i < pattern_size.height;i++)	{
-				for (j = 0;j < pattern_size.width;j++) {
-					cv::Point3f singleRealPoint;	
-					singleRealPoint.x = i *square_size.width;
-					singleRealPoint.y = j *square_size.height;
-					singleRealPoint.z = 0;			
-					tempCornerPoints.push_back(singleRealPoint);
-				}
-			}
-			objectPoints.push_back(tempCornerPoints);
-
-	#endif
-		
+		objectPoints.push_back(tempCornerPoints);
+	}
 	
 }
 
 void CcCamCalibra::calibrate()
 {
-//if(objectPoints.empty() == false && corner_points_of_all_imgs.empty() == false){
 	 cv::calibrateCamera(objectPoints, corner_points_of_all_imgs, image_size, cameraMatrix, distCoefficients, rvecsMat, tvecsMat, 0);
 	    fout << "相机相关参数：" << endl;
 	    fout << "1.内外参数矩阵:" << endl;
@@ -971,33 +820,28 @@ void CcCamCalibra::calibrate()
 	    fout << "大小：" << distCoefficients.size() << endl;
 	    fout << distCoefficients << endl;
 	        fout << endl << "图像相关参数：" << endl;
-	        cv::Mat rotation_Matrix = cv::Mat(3, 3, CV_32FC1, cv::Scalar::all(0));//旋转矩阵
+	        cv::Mat rotation_Matrix = cv::Mat(3, 3, CV_32FC1, cv::Scalar::all(0));
 	        for (int i = 0;i < image_num;i++)
 	        {
 	            fout << "第" << i + 1 << "幅图像的旋转向量：" << endl;
 	            fout << rvecsMat[i] << endl;
 	            fout << "第" << i + 1 << "幅图像的旋转矩阵：" << endl;
-	            cv::Rodrigues(rvecsMat[i], rotation_Matrix);//将旋转向量转换为相对应的旋转矩阵
+	            cv::Rodrigues(rvecsMat[i], rotation_Matrix);
 	            fout << rotation_Matrix << endl;
 	            fout << "第" << i + 1 << "幅图像的平移向量：" << endl;
 	            fout << tvecsMat[i] << endl;
 	        }
-	        //对标定结果进行评价
-	        cout << "================<< Start Calculate Average Error ! >> ==============================" << endl;
-	        //计算每幅图像中的角点数量，假设全部角点都检测到了
 	        int corner_points_counts;
 	        corner_points_counts = pattern_size.width * pattern_size.height;
 	        fout << "每幅图像的标定误差：" << endl;
-	        double err = 0;//单张图像的误差
-	        double total_err = 0;//所有图像的平均误差
+	        double err = 0;
+	        double total_err = 0;
 	      for (int i = 0;i < image_num;i++)
 	        {
-	            vector<cv::Point2f> image_points_calculated;//存放新计算出的投影点的坐标
+	            vector<cv::Point2f> image_points_calculated;
 	            vector<cv::Point3f> tempPointSet = objectPoints[i];
 	            cv::projectPoints(tempPointSet, rvecsMat[i], tvecsMat[i], cameraMatrix, distCoefficients, image_points_calculated);
-	            //计算新的投影点与旧的投影点之间的误差
 	            vector<cv::Point2f> image_points_old = corner_points_of_all_imgs[i];
-	            //将两组数据换成Mat格式
 	            cv::Mat image_points_calculated_mat = cv::Mat(1, image_points_calculated.size(), CV_32FC2);
 	            cv::Mat image_points_old_mat = cv::Mat(1, image_points_old.size(), CV_32FC2);
 	            for (int j = 0;j < tempPointSet.size();j++)
@@ -1006,15 +850,13 @@ void CcCamCalibra::calibrate()
 	                image_points_old_mat.at<cv::Vec2f>(0, j) = cv::Vec2f(image_points_old[j].x, image_points_old[j].y);
 	            }
 	            err = cv::norm(image_points_calculated_mat, image_points_old_mat, cv::NORM_L2);
-//	            err /= corner_points_counts;
 	            err = std::sqrt(err*err/corner_points_counts);
 	            total_err += err;
 	            fout << "第" << i + 1 << "幅图像的平均误差：" << err << "像素" << endl;
 	        }
 	        fout << "总体平均误差：" << total_err / image_num << "像素" << endl;
 	        fout.close();
-cout<<"============================== << Calculate Average Eoor Complite !!! >> ============================" << endl;
-#if 1
+
 		Mat mapx = cv::Mat(image_size, CV_32FC1);
 	        Mat mapy = cv::Mat(image_size, CV_32FC1);
 	        Mat R = Mat::eye(3, 3, CV_32F);
@@ -1029,59 +871,36 @@ cout<<"============================== << Calculate Average Eoor Complite !!! >> 
 	            remap(src_image, new_image, mapx, mapy, cv::INTER_LINEAR);
 	            imshow("Undistortion Image", new_image);
 	            waitKey(0);
-//	            imshow("原始图像", src_image);
-//	            imshow("矫正后图像", new_image);
-//	            StrStm.clear();
-//	            imageFileName.clear();
-//	            StrStm << i + 1;
-//	            StrStm >> imageFileName;
-//	            imageFileName += "_d.jpg";
-//	            cv::imwrite(imageFileName, new_image);
 	        }
-#endif
-	        cout << "======================= Calibrate Complete ! >> ===================================" << endl;
-	//}
 }
+bool CcCamCalibra::read_Pictures()
+{
+	fout.open("caliberation_result.txt");
+	inImgPath.open("calibdata.txt");   
+	vector<string>::iterator p;
+	string temp;
+	if (inImgPath.is_open()) 
+	{			
+		while (getline(inImgPath, temp))
+		{
+			imgList.push_back(temp);
+		}
+	}
+	else
+	{
+		cout << "没有找到文件" << endl;
+		return false;
+	}
+	return true;
+}
+
 void CcCamCalibra::undistortion(Mat distortionImage,Mat &unDistortionImage)
 {
-#if 0
-    //cout<<"undistortion ..."<<endl;
-    Size image_size = distortionImage.size();
-    Mat mapx = Mat(image_size,CV_32FC1);
-    Mat mapy = Mat(image_size,CV_32FC1);
-    Mat R = Mat::eye(3,3,CV_32F);
-    Matx33d intrinsic_matrix_new = cameraMatrix;//intrinsic_matrix;
-    //调节视场大小,乘的系数越小视场越大
-    intrinsic_matrix_new(0,0) *= 0.4;
-    intrinsic_matrix_new(1,1) *= 0.4;
-    //调节校正图中心，建议置于校正图中心
-    intrinsic_matrix_new(0,2) = 0.5 * distortionImage.cols;
-    intrinsic_matrix_new(1,2) = 0.5 * distortionImage.rows;
-    initUndistortRectifyMap(cameraMatrix,distCoefficients,R,intrinsic_matrix_new,image_size,CV_32FC1,mapx,mapy);
-    unDistortionImage = distortionImage.clone();
-    remap(distortionImage,unDistortionImage,mapx, mapy, INTER_CUBIC);
-#endif
 }
-
 void CcCamCalibra::showUndistortImages()
 {
-#if 0
-	Mat unDistortionImage;
-	Mat OriginImage;
-	for(int i =0; i<image_num ; i++){
-		OriginImage = imread(imgList[i].c_str(), 1);
-		undistortion(OriginImage,unDistortionImage);
-		imshow("Undistortion Image", unDistortionImage);
-		waitKey(100);
-	}
-#endif
 }
-
-
-//============================================================================================
-
-//DetectCorners
-
+//====================DetectCorners=====================
 DetectCorners::DetectCorners()
 {
 	OSA_semCreate(&g_detectCorners, 1, 0);
@@ -1202,10 +1021,6 @@ int DetectCorners::Run()
 					memset(savePicname, 0, sizeof(savePicname));
 					sprintf(savePicname, "%02d.bmp",saveCount);					
 					saveCount ++;
-					//imwrite(savePicname,corner_frame);
-		
-	//				m_cutIMG[nsize] = cv::Mat(corner_frame.rows,corner_frame.cols,CV_8UC3);
-	//				cvtColor(corner_frame,m_cutIMG[nsize],CV_YUV2BGR_YUYV);
 					corner_frame.copyTo(m_cutIMG[nsize]);
 					imageListForCalibra.push_back(m_cutIMG[nsize]);
 					captureCount += 1;

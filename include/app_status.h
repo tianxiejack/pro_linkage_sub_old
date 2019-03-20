@@ -3,7 +3,7 @@
 #define _GLOBAL_STATUS_H_
 
 #include "configable.h"
-#include "Ipcctl.h"
+#include "ipc_custom_head.hpp"
 
 #ifdef __cplusplus
 extern "C" {

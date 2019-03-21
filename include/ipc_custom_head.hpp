@@ -136,7 +136,7 @@ typedef struct
 	int maxArea;
 	int minArea;
 	int sensitivity;
-
+	//std::vector<float> mtdSelectArea; 
 }MTD_Config;
 
 typedef struct{

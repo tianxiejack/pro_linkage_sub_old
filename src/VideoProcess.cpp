@@ -2446,8 +2446,7 @@ int CVideoProcess::init()
 //#if (!__IPC__)
 	dsInit.keyboardfunc = keyboard_event; 
 	dsInit.keySpecialfunc = keySpecial_event;
-//#endif
-	
+//#endif	
 	dsInit.timerfunc = call_run;
 	//dsInit.idlefunc = call_run;
 	dsInit.visibilityfunc = visibility_event;
@@ -2487,13 +2486,12 @@ int CVideoProcess::init()
 	}	
 
 //============================================
-if(g_AppWorkMode == AUTO_LINK_MODE){
-	CMD_EXT Msg;
-	Msg.MtdState[Msg.SensorStat] = ipc_eImgAlg_Enable;	
-	app_ctrl_setMtdStat(&Msg);
-	MSGAPI_msgsend(mtd);
-}
-
+	if(g_AppWorkMode == AUTO_LINK_MODE){
+		CMD_EXT Msg;
+		Msg.MtdState[Msg.SensorStat] = ipc_eImgAlg_Enable;	
+		app_ctrl_setMtdStat(&Msg);
+		MSGAPI_msgsend(mtd);
+	}
 //============================================
 	
 	return 0;

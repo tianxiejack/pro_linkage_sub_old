@@ -191,7 +191,11 @@ void* recv_msg(SENDST *RS422)
 	{	
 
 	case mtdFrame:
-		memcpy(&Mtd_Frame, RS422->param, sizeof(Mtd_Frame));
+		memcpy(&g_mtdConfig, RS422->param, sizeof(g_mtdConfig));
+		recvMtdConfigData = true;		
+		printf("\r\nNumber = %d\nTime = %d\nMax = %d\nMin = %d\nSensi = %d\r\n",g_mtdConfig.targetNum,
+			g_mtdConfig.trackTime, g_mtdConfig.maxArea,g_mtdConfig.minArea,g_mtdConfig.sensitivity);
+
 	#if 0
 		printf("RmtdFrame->detectNum = %d\n", Mtd_Frame.detectNum);
 		printf("RmtdFrame->detectSpeed = %d\n", Mtd_Frame.detectSpeed);

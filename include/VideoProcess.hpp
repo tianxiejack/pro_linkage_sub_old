@@ -140,8 +140,12 @@ public:
 	cv::Point m_backNodePos;
 	int m_curNodeIndex;
 	//cv::Point temp_backPoint[GRID_ROWS+1][GRID_COLS+1] ;
-	FileStorage m_readfs;
-	FileStorage m_writefs;
+	cv::FileStorage m_readfs;
+	cv::FileStorage m_writefs;
+
+	cv::FileStorage m_fsReadMtd;
+	cv::FileStorage m_fsWriteMtd;
+
 	vector<position_t> m_trigonoMetricVector;
 	position_t  m_trigonoMetric_Node;
 

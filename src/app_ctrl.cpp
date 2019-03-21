@@ -879,8 +879,7 @@ void app_ctrl_enter()
 			
 		}
 		else if (1 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer)
-		{
-		
+		{		
 			g_displayMode = MENU_GRID_MAP_VIEW;
 			SENDST trkmsg2={0};
 			trkmsg2.cmd_ID = enter_gridmap_view;

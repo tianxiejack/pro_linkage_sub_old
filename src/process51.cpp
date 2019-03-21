@@ -14,6 +14,8 @@
 #include <time.h>
 
 using namespace cr_trigonometricInterpolation;
+using namespace cv;
+
 
 int capIndex =0;
 int gun_resolu[2] = {1920, 1080};
@@ -107,9 +109,8 @@ m_bGridMapCalibrate(false),m_lastRow(-1),m_lastCol(-1),m_successCalibraNum(0),m_
 	plat = this;
 	m_iDelta_X = window_width; 
 	m_iZoom = 2849; // Max view zoom
-
 	//loadConfigParams("SysParm.yml");
-	
+	LoadMtdSelectArea("SaveMtdArea.yml",edge_contours);
 }
 CProcess::~CProcess()
 {
@@ -146,7 +147,12 @@ void CProcess::loadIPCParam()
 			extMenuCtrl.osd_trktime = g_mtdConfig.trackTime;
 			extMenuCtrl.osd_maxsize = g_mtdConfig.maxArea;
 			extMenuCtrl.osd_minsize = g_mtdConfig.minArea;
-			extMenuCtrl.osd_sensi = g_mtdConfig.sensitivity;			
+			extMenuCtrl.osd_sensi = g_mtdConfig.sensitivity;	
+			detectNum = g_mtdConfig.targetNum;
+			maxsize = g_mtdConfig.maxArea;
+			minsize = g_mtdConfig.minArea;
+			sensi = g_mtdConfig.sensitivity;
+
 		}
 		else
 		{
@@ -754,7 +760,7 @@ bool CProcess::saveConfigParams(const char* filename)
 	bool ret = fs2.isOpened();
 	if(!ret)
 	{
-		cout << filename << " can't opened !\n" << endl;
+		cout << filename << "Can't opened !\n" << endl;
 		return false;
 	}
 	else
@@ -4265,18 +4271,38 @@ void CProcess::OnMouseLeftDwn(int x, int y)
 }
 void CProcess::SetMtdConfig(MTD_Config mtdconfig)
 {
-	MTD_Config tempConfig = {0};
+	MTD_Config tempConfig = {0};	
 	tempConfig = mtdconfig;
+/*	
+	CMD_Mtd_Frame sendconfig;
+	sendconfig.detectNum = mtdconfig.targetNum;
+	sendconfig.tmpMaxPixel =mtdconfig.maxArea;
+	sendconfig.tmpMinPixel = mtdconfig.minArea;
+	sendconfig.sensitivityThreshold = mtdconfig.sensitivity;
+	sendconfig.TrkMaxTime = mtdconfig.trackTime;
+*/
 	SENDST	message = {0};
-	message.cmd_ID = storeDefaultWorkMode;
-	int datelength = sizeof(int);
+	message.cmd_ID = storeMtdConfig;
+	memcpy(&message.param[0],&tempConfig, sizeof(MTD_Config));
+	ipc_sendmsg(&message, IPC_FRIMG_MSG);
+
+
+	//MTD_Config tempConfig = {0};	
+	//tempConfig = mtdconfig;	
+	//int datelength = sizeof(int);
+	/*
 	memcpy(&message.param[0*datelength],&tempConfig.targetNum, datelength);
 	memcpy(&message.param[1*datelength],&tempConfig.trackTime, datelength); 	
 	memcpy(&message.param[2*datelength],&tempConfig.maxArea, datelength); 	
 	memcpy(&message.param[3*datelength],&tempConfig.minArea, datelength); 	
-	memcpy(&message.param[4*datelength],&tempConfig.sensitivity, datelength); 	
-	ipc_sendmsg(&message, IPC_FRIMG_MSG);
-	//printf("\r\n[%s]:Send Set Mtd Config  to Linkage ctrl process !!!\r\n",__func__ );
+	memcpy(&message.param[4*datelength],&tempConfig.sensitivity, datelength); 
+	*/	
+	printf("\r\n[%s]:>>>>>>>>>>>>>>>  Send Set Mtd Config  to Linkage ctrl process !!!\r\n",__func__ );
+
+	printf("\r\n[%s]:MTD Config:\r\nTarget Number:%d\r\nTrack Time:%d\r\nMax Area:%d\r\nMin Area:%d\r\nSensitivity:%d\r\n",
+	__func__,tempConfig.targetNum,tempConfig.trackTime, tempConfig.maxArea,tempConfig.minArea,tempConfig.sensitivity);
+
+
 }
 void CProcess::SetDefaultWorkMode( GB_WorkMode workmode )
 {
@@ -4298,9 +4324,9 @@ void CProcess::SetDefaultWorkMode( GB_WorkMode workmode )
 	}
 	SENDST	tmp = {0};
 	tmp.cmd_ID = storeDefaultWorkMode;
-	tmp.param[0] = workModeType;
+	tmp.param[0] = workModeType+1;
 	ipc_sendmsg(&tmp, IPC_FRIMG_MSG);
-	//printf("\r\n[%s]:Send Set Default Work Mode <%d> to Linkage ctrl process !!!\r\n",__func__, workModeType );
+	printf("\r\n[%s]:Send Set Default Work Mode <%d> to Linkage ctrl process !!!\r\n",__func__, workModeType );
 }
 void CProcess::setWorkMode(GB_WorkMode workmode)
 {
@@ -5874,6 +5900,7 @@ int CProcess::usopencvapi2()
 	findContours(mask,contours, noArray(), RETR_EXTERNAL,CHAIN_APPROX_SIMPLE);
 	Mat dstImage = Mat::zeros(mask.size(),CV_8UC1);
 	drawContours(dstImage,contours, -1, Scalar(255,10,10));
+
 	edge_contours = contours;
 	polyWarnRoi = contours;
 
@@ -5920,22 +5947,118 @@ int CProcess::usopencvapi2()
         swprintf(m_display.disMtd[0][4], 33, L"检测区域:%d个", contours.size());
 	}
 
-	for(int i = 0; i < edge_contours.size(); i++)
+	if(edge_contours.size() != 0)
 	{
-		printf("heihei... rigion %d have %d points:\n", i,edge_contours[i].size());
-		for(int j = 0; j < edge_contours[i].size(); j++)
-			printf("(%d,%d),",edge_contours[i][j].x,edge_contours[i][j].y);
-		printf("\n");
+		SaveMtdSelectArea("SaveMtdArea.yml", edge_contours);
 	}
+
 
 	for(int i = 0; i < contours.size(); i++)
 	{
 		printf("%s,%d,i=%d\n",__FILE__,__LINE__, i);
 		m_pMovDetector->setWarningRoi(polyWarnRoi[i], i);
 	}
-	//cv::imshow("aann",dstImage);
-	//cv::waitKey(0);
 }
+
+void CProcess::SaveMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours)
+{
+	char paramName[40];
+	memset(paramName,0,sizeof(paramName));
+	m_fsWriteMtd.open(filename,FileStorage::WRITE);
+	if(m_fsWriteMtd.isOpened())
+	{		
+
+		memset(paramName,0,sizeof(paramName));
+		sprintf(paramName,"AreaCount");	
+		int total_size = edge_contours.size();
+		m_fsWriteMtd<< paramName  << total_size;
+
+	
+		for(int m = 0; m<edge_contours.size(); m++ )
+		{			
+			memset(paramName,0,sizeof(paramName));
+			sprintf(paramName,"AreaIndex_%d",m);
+			int count  =  edge_contours[m].size();
+			m_fsWriteMtd<< paramName << count;
+		}
+
+				
+		for(int i = 0; i < edge_contours.size(); i++)
+		{
+			for(int j = 0; j < edge_contours[i].size(); j++)
+			{
+				
+				sprintf(paramName,"Point_%d_%d_x",i,j);				
+				m_fsWriteMtd<<paramName <<edge_contours[i][j].x;
+				
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"Point_%d_%d_y",i,j);				
+				m_fsWriteMtd<<paramName <<edge_contours[i][j].y;		
+			}		
+		}		
+		m_fsWriteMtd.release();		
+		
+	}
+}
+
+void CProcess::LoadMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > &edge_contours)
+{
+	char paramName[40];
+	memset(paramName,0,sizeof(paramName));
+	int AreaCount=0;
+	int IndexArray[5];
+	
+	m_fsReadMtd.open(filename,FileStorage::READ);
+	if(m_fsReadMtd.isOpened())
+	{
+
+		memset(paramName,0,sizeof(paramName));
+		sprintf(paramName,"AreaCount");				
+		m_fsReadMtd[paramName] >>AreaCount;
+		if(AreaCount !=0)
+		{
+			for(int i=0; i< AreaCount;i++)
+			{
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"AreaIndex_%d",i);				
+				m_fsReadMtd[paramName] >>IndexArray[i];
+			}
+		}
+
+		for(int i=0;i<AreaCount;i++)
+		{
+			edge_contours.push_back(std::vector<cv::Point>());
+			for(int j=0;j<IndexArray[i];j++)
+			{
+				int tmp_x =0,tmp_y=0;
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"Point_%d_%d_x",i,j);				
+				m_fsReadMtd[paramName] >> tmp_x;
+
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"Point_%d_%d_y",i,j);				
+				m_fsReadMtd[paramName] >> tmp_y;
+				edge_contours[i].push_back(cv::Point(tmp_x,tmp_y));
+			}
+		}
+#if 0
+		for(int m=0;m<edge_contours.size();m++)
+		{
+			for(int n=0;n<edge_contours[m].size();n++)
+			{
+				printf("\r\n[%s]:(%d-%d)<%d,%d>\r\n",__func__,m,n,edge_contours[m][n].x,edge_contours[m][n].y);
+			}
+		}
+#endif
+
+	}
+
+
+
+}
+
+
+
 
 int CProcess::setresol(int resoltype)
 {

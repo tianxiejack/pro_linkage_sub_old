@@ -274,6 +274,8 @@ protected:
 	int updateredgridfrrectR();
 	int getmtdedge();
 	int usopencvapi2();
+	void SaveMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours);
+	void LoadMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > &edge_contours);
 
 
 	 static int  MSGAPI_initial(void);

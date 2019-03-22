@@ -2469,6 +2469,7 @@ int CVideoProcess::init()
 
 #if __MOVE_DETECT__
 	initMvDetect();
+	LoadMtdSelectArea("SaveMtdArea.yml",edge_contours);
 #endif
 
 	eventLoop = new EventLoop(proc);
@@ -3209,4 +3210,97 @@ bool CVideoProcess::get_trig_PTZflag()
 {
 	return trig_inter_flag;
 };
+
+
+void CVideoProcess::SaveMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours)
+{
+	char paramName[40];
+	memset(paramName,0,sizeof(paramName));
+	m_fsWriteMtd.open(filename,FileStorage::WRITE);
+	if(m_fsWriteMtd.isOpened())
+	{		
+
+		memset(paramName,0,sizeof(paramName));
+		sprintf(paramName,"AreaCount");	
+		int total_size = edge_contours.size();
+		m_fsWriteMtd<< paramName  << total_size;
+
+	
+		for(int m = 0; m<edge_contours.size(); m++ )
+		{			
+			memset(paramName,0,sizeof(paramName));
+			sprintf(paramName,"AreaIndex_%d",m);
+			int count  =  edge_contours[m].size();
+			m_fsWriteMtd<< paramName << count;
+		}
+
+				
+		for(int i = 0; i < edge_contours.size(); i++)
+		{
+			for(int j = 0; j < edge_contours[i].size(); j++)
+			{
+				
+				sprintf(paramName,"Point_%d_%d_x",i,j);				
+				m_fsWriteMtd<<paramName <<edge_contours[i][j].x;
+				
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"Point_%d_%d_y",i,j);				
+				m_fsWriteMtd<<paramName <<edge_contours[i][j].y;		
+			}		
+		}		
+		m_fsWriteMtd.release();		
+		
+	}
+}
+
+void CVideoProcess::LoadMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > &edge_contours)
+{
+	char paramName[40];
+	memset(paramName,0,sizeof(paramName));
+	int AreaCount=0;
+	int IndexArray[5];	
+	edge_contours.clear(); // Clear The Vector
+	m_fsReadMtd.open(filename,FileStorage::READ);
+	if(m_fsReadMtd.isOpened())
+	{
+		memset(paramName,0,sizeof(paramName));
+		sprintf(paramName,"AreaCount");				
+		m_fsReadMtd[paramName] >>AreaCount;
+		if(AreaCount !=0)
+		{
+			for(int i=0; i< AreaCount;i++)
+			{
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"AreaIndex_%d",i);				
+				m_fsReadMtd[paramName] >>IndexArray[i];
+			}
+		}
+
+		for(int i=0;i<AreaCount;i++)
+		{
+			edge_contours.push_back(std::vector<cv::Point>());
+			for(int j=0;j<IndexArray[i];j++)
+			{
+				int tmp_x =0,tmp_y=0;
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"Point_%d_%d_x",i,j);				
+				m_fsReadMtd[paramName] >> tmp_x;
+
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"Point_%d_%d_y",i,j);				
+				m_fsReadMtd[paramName] >> tmp_y;
+				edge_contours[i].push_back(cv::Point(tmp_x,tmp_y));
+			}
+		}
+#if 1
+		for(int m=0;m<edge_contours.size();m++)
+		{
+			for(int n=0;n<edge_contours[m].size();n++)
+			{
+				printf("\r\n[%s]:(%d-%d)<%d,%d>\r\n",__func__,m,n,edge_contours[m][n].x,edge_contours[m][n].y);
+			}
+		}
+#endif
+	}
+}
 

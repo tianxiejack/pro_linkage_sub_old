@@ -29,11 +29,6 @@ typedef struct{
 }FEATUREPOINT_T;
 
 
-typedef struct{
-	Point2i ver;
-	Point2i pos;
-}POSITION_T;
-
 typedef void ( *pNOTIFYFUNC)(std::vector<FEATUREPOINT_T>& recommendPoints );
 
 
@@ -52,7 +47,7 @@ public:
 	void selectPoint(  cv::Point2i inPixel ); //选择点进行找pos
 	void deletePos( cv::Point2i inPixel );//删除掉该点的pos信息
 
-	bool readParams(std::vector<POSITION_T>& getParam);//读取配置
+	bool readParams(std::vector<FEATUREPOINT_T>& getParam);//读取配置
 	bool writeParams(void);//写配置
 
 	void drawPoints( cv::Mat drawMat,	std::vector<FEATUREPOINT_T>& featurePoints , bool bDraw );
@@ -60,7 +55,7 @@ public:
 	//for test
 	void drawInvisableGrid(cv::Mat drawMat , bool bDraw);//画出隐藏的网格
 	void draw_subdiv( Mat& img ,bool bdraw);//画剖分三角
-	int draw_point_triangle( Mat& img , Point2i fp , vector<POSITION_T> &back,Point2i &pos, bool bdraw );//插入点，画出pos和对应三角形的顶点
+	int draw_point_triangle( Mat& img , Point2i fp , vector<FEATUREPOINT_T> &back,Point2i &pos, bool bdraw );//插入点，画出pos和对应三角形的顶点
 	void getPos( Point2i inPoint , vector<Point2i>& triVertex ,  vector<Point2i>& triPos , Point2i& result );//插入点，返回pos和对应三角形的顶点信息
 	void draw_subdiv_point( Mat& img, Point2i fp, Scalar color );//画点以及对应的剖分三角
 	void getPoints( std::vector<FEATUREPOINT_T>& pointVec); //得到待选的参考点容器
@@ -79,7 +74,7 @@ public:
 	void InterpolationPos( Point2i inPoint , vector<Point2i>& triVertex ,  vector<Point2i>& triPos , Point2i& result );
 	void preprocessPos( vector<Point2i>& inpos );
 	int findposInFpassembel(Point2f &fp , Point2i &pos);
-	void insertVertexAndPosition(vector<POSITION_T> insert);
+	void insertVertexAndPosition(vector<FEATUREPOINT_T> insert);
 	void getTriangleVertex( Point2f fp, vector<Point2i> &result );
 	int Point2getPos(const Point2i inPoint,Point2i &result );
 
@@ -88,7 +83,7 @@ private:
 	pNOTIFYFUNC m_notifyFunc;
 	std::vector<FEATUREPOINT_T> m_featurePoints ;
 	std::vector<INVISABLEGRID_T> m_invisableGrid ;
-	std::vector<POSITION_T> m_canUsedPoints;
+	std::vector<FEATUREPOINT_T> m_canUsedPoints;
 	std::vector<cv::KeyPoint>* m_blockVect;
 
 	int m_gridx,m_gridy;
@@ -97,8 +92,8 @@ private:
 	Mat srcFrame;
 
 	Subdiv2D subdiv;
-	Rect rect;
-	std::vector<POSITION_T> fpassemble;
+	Rect m_rect;
+	std::vector<FEATUREPOINT_T> fpassemble;
 
 	FileStorage m_readfs;
 	FileStorage m_writefs;

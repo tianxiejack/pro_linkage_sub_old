@@ -1774,7 +1774,8 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 
 	if(get_drawpoints_stat())
 	{
-		//m_autofr.drawPoints(m_display.m_imgOsd[extInCtrl->SensorStat], app_recommendPoints, 1)
+		printf("%s,%d, drawPoints\n",__FILE__,__LINE__);
+		m_autofr.drawPoints(m_display.m_imgOsd[extInCtrl->SensorStat], app_recommendPoints, 1);
 		set_drawpoints_stat(false);
 	}
 
@@ -4628,14 +4629,19 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 	if (key == 'i')
 	{
-		if(pMenuStatus->Trig_Inter_Mode)
+		//if(pMenuStatus->Trig_Inter_Mode)
+		{
 			set_find_featurepoint_stat(true);
+		}
 	}
 
 	if (key == 'I')
 	{
-		if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
+		//if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
+		{
+			printf("%s,%d, autoFindPoints\n",__FILE__,__LINE__);
 			m_autofr.autoFindPoints();
+		}
 	}
 	
 	if (key == 'j' || key == 'J')

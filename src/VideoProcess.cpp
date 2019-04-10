@@ -153,8 +153,10 @@ void CVideoProcess::main_proc_func()
 
 		cv::Mat	salientMap, sobelMap;
 
+		//printf("%s,%d",__FILE__,__LINE__);
 		if((video_gaoqing == chId) && (get_find_featurepoint_stat()))
 		{
+			printf("%s,%d, cloneSrcImage\n",__FILE__,__LINE__);
 			m_autofr.cloneSrcImage(frame);
 			set_cloneSrcImage_stat(true);
 			set_find_featurepoint_stat(false);

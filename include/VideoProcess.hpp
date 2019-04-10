@@ -150,6 +150,7 @@ public:
 
 	vector<position_t> m_trigonoMetricVector;
 	position_t  m_trigonoMetric_Node;
+	std::vector<FEATUREPOINT_T> app_recommendPoints;
 
 public:
 	bool get_find_featurepoint_stat(){return find_featurepoint_stat;};
@@ -193,7 +194,7 @@ private:
 	bool cloneSrcImage_stat = false;
 	bool manualInsertRecommendPoints_stat = false;
 	bool drawpoints_stat = false;
-	std::vector<FEATUREPOINT_T> app_recommendPoints;
+	
 public:
 	CVideoProcess();
 	CVideoProcess(int w, int h);

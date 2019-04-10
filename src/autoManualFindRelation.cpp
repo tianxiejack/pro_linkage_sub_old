@@ -12,6 +12,12 @@ CAutoManualFindRelation::CAutoManualFindRelation(int disWidth,int disHeight , in
 	m_featurePoints.clear();
 	m_invisableGrid.clear();
 	m_gridx = m_gridy = 0 ;
+
+	m_rect.x = 0 ;
+	m_rect.y = 0;
+	m_rect.width = disWidth;
+	m_rect.height = disHeight;
+	subdiv.initDelaunay(m_rect);
 }
 
 
@@ -22,7 +28,7 @@ CAutoManualFindRelation::~CAutoManualFindRelation()
 
 void CAutoManualFindRelation::create(pNOTIFYFUNC notifyFunc)
 {
-	m_notifyFunc	 = notifyFunc;
+	m_notifyFunc = notifyFunc;
 	m_blockVect = new std::vector<cv::KeyPoint> [m_row*m_col];
 	generateInvisibleGrid();
 }
@@ -255,13 +261,13 @@ void CAutoManualFindRelation::insertPos( cv::Point2i inPos )
 
 void CAutoManualFindRelation::collectMarkedPoints()
 {
-	POSITION_T tmp;
+	FEATUREPOINT_T tmp;
 	m_canUsedPoints.clear();
 	for(int i=0 ; i<m_featurePoints.size(); i++ )
 	{
 		if(m_featurePoints[i].markFlag)
 		{
-			tmp.ver = m_featurePoints[i].pixel;
+			tmp.pixel = m_featurePoints[i].pixel;
 			tmp.pos = m_featurePoints[i].pos;
 			m_canUsedPoints.push_back(tmp);
 		}
@@ -285,7 +291,7 @@ void CAutoManualFindRelation::deletePos( cv::Point2i inPixel )
 }
 
 
-void CAutoManualFindRelation::insertVertexAndPosition(vector<POSITION_T> insert)
+void CAutoManualFindRelation::insertVertexAndPosition(vector<FEATUREPOINT_T> insert)
 {
 	fpassemble.clear();
 	fpassemble = insert;
@@ -296,9 +302,9 @@ void CAutoManualFindRelation::insertVertexAndPosition(vector<POSITION_T> insert)
 
 void CAutoManualFindRelation::updateSubdiv()
 {
-	for(std::vector<POSITION_T>::iterator plist = fpassemble.begin(); plist != fpassemble.end(); ++plist)
+	for(std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin(); plist != fpassemble.end(); ++plist)
 	{
-		 subdiv.insert( plist->ver );
+		 subdiv.insert( plist->pixel );
 	}
 }
 
@@ -312,7 +318,7 @@ int CAutoManualFindRelation::Point2getPos(const Point2i inPoint,Point2i &result)
 	getTriangleVertex( inPoint , triVertex);
 	for(std::vector<Point2i>::iterator plist = triVertex.begin(); plist != triVertex.end(); ++plist)
 	{
-		if( plist->x <= 0 || plist->x > rect.width || plist->y <= 0 || plist->y > rect.height )
+		if( plist->x <= 0 || plist->x > m_rect.width || plist->y <= 0 || plist->y > m_rect.height )
 			ret = -1;
 		break;
 	}
@@ -352,9 +358,9 @@ void CAutoManualFindRelation::vertex2pos(vector<Point2i> &vertex, vector<Point2i
 	 getPos.clear();
 	 for(int i = 0 ; i< vertex.size(); i++)
 	 {
-		for(std::vector<POSITION_T>::iterator plist = fpassemble.begin(); plist != fpassemble.end(); ++plist)
+		for(std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin(); plist != fpassemble.end(); ++plist)
 		{
-			if( plist->ver == vertex[i] )
+			if( plist->pixel == vertex[i] )
 			{
 				getPos.push_back( plist->pos );
 				break;
@@ -454,7 +460,7 @@ void CAutoManualFindRelation::draw_subdiv( Mat& img ,bool bdraw)
 }
 
 
-int CAutoManualFindRelation::draw_point_triangle( Mat& img , Point2i fp , vector<POSITION_T> &back,Point2i &pos, bool bdraw )
+int CAutoManualFindRelation::draw_point_triangle( Mat& img , Point2i fp , vector<FEATUREPOINT_T> &back,Point2i &pos, bool bdraw )
 {
     int e0=0, vertex=0;
     int num = 0;
@@ -464,7 +470,7 @@ int CAutoManualFindRelation::draw_point_triangle( Mat& img , Point2i fp , vector
     CvScalar color;
     vector<Point2f> orgpoint;
     Point2i tmppos;
-    POSITION_T tmpBack;
+    FEATUREPOINT_T tmpBack;
 
     if(bdraw)
     	color = cvScalar(255,0,255,255);
@@ -482,7 +488,7 @@ int CAutoManualFindRelation::draw_point_triangle( Mat& img , Point2i fp , vector
             if( subdiv.edgeOrg(e, &org) > 0 && subdiv.edgeDst(e, &dst) > 0 )
             {
             	orgpoint.push_back(org);
-            	if( org.x <= 0.00001 || org.x >  rect.width || org.y <= 0.00001 || org.y > rect.height )
+            	if( org.x <= 0.00001 || org.x >  m_rect.width || org.y <= 0.00001 || org.y > m_rect.height )
             		ret = -1;
             }
             e = subdiv.getEdge(e, Subdiv2D::NEXT_AROUND_LEFT);
@@ -509,7 +515,7 @@ int CAutoManualFindRelation::draw_point_triangle( Mat& img , Point2i fp , vector
     		return -1;
     	else
     	{
-    		tmpBack.ver = orgpoint[k];
+    		tmpBack.pixel = orgpoint[k];
     		tmpBack.pos = tmppos;
     		back.push_back(tmpBack);
     	}
@@ -520,9 +526,9 @@ int CAutoManualFindRelation::draw_point_triangle( Mat& img , Point2i fp , vector
 
 int CAutoManualFindRelation::findposInFpassembel(Point2f &fp , Point2i &pos)
 {
-	for(std::vector<POSITION_T>::iterator plist = fpassemble.begin(); plist != fpassemble.end(); ++plist)
+	for(std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin(); plist != fpassemble.end(); ++plist)
 	{
-		if( plist->ver.x == fp.x && plist->ver.y == fp.y )
+		if( plist->pixel.x == fp.x && plist->pixel.y == fp.y )
 		{
 			pos.x = plist->pos.x;
 			pos.y = plist->pos.y;
@@ -537,17 +543,18 @@ void CAutoManualFindRelation::draw_subdiv_point( Mat& img, Point2i fp, Scalar co
     circle( img, fp, 3, color, CV_FILLED, 8, 0 );
 }
 
-bool CAutoManualFindRelation::readParams(std::vector<POSITION_T>& getParam)
+bool CAutoManualFindRelation::readParams(std::vector<FEATUREPOINT_T>& getParam)
 {
 	char paramName[40];
 	memset(paramName,0,sizeof(paramName));
 	string cfgFile;
 	cfgFile = CONFIG_AUTOMANUALFIND_FILE;
+
 	m_readfs.open(cfgFile,FileStorage::READ);
 	int size ;
-	POSITION_T tmpPos;
+	FEATUREPOINT_T tmpPos;
 
-	fpassemble.clear();
+	m_featurePoints.clear();
 	getParam.clear();
 	if(m_readfs.isOpened())
 	{
@@ -555,6 +562,22 @@ bool CAutoManualFindRelation::readParams(std::vector<POSITION_T>& getParam)
 		m_readfs[paramName] >> size ;
 		for(int i=0; i<size; i++)
 		{
+			sprintf(paramName,"points_markFlag_%d",i);
+			m_readfs[paramName] >>tmpPos.markFlag;
+			memset(paramName,0,sizeof(paramName));
+
+			sprintf(paramName,"points_selectFlag_%d",i);
+			m_readfs[paramName] >>tmpPos.selectFlag;
+			memset(paramName,0,sizeof(paramName));
+
+			sprintf(paramName,"points_pixel_x_%d",i);
+			m_readfs[paramName] >>tmpPos.pixel.x;
+			memset(paramName,0,sizeof(paramName));
+
+			sprintf(paramName,"points_pixel_y_%d",i);
+			m_readfs[paramName] >>tmpPos.pixel.y;
+			memset(paramName,0,sizeof(paramName));
+
 			sprintf(paramName,"points_pos_x_%d",i);
 			m_readfs[paramName] >>tmpPos.pos.x;
 			memset(paramName,0,sizeof(paramName));
@@ -563,20 +586,13 @@ bool CAutoManualFindRelation::readParams(std::vector<POSITION_T>& getParam)
 			m_readfs[paramName] >>tmpPos.pos.y;
 			memset(paramName,0,sizeof(paramName));
 
-			sprintf(paramName,"points_ver_x_%d",i);
-			m_readfs[paramName] >>tmpPos.ver.x;
-			memset(paramName,0,sizeof(paramName));
-
-			sprintf(paramName,"points_ver_y_%d",i);
-			m_readfs[paramName] >>tmpPos.ver.y;
-			memset(paramName,0,sizeof(paramName));
-
-			fpassemble.push_back(tmpPos);
+			m_featurePoints.push_back(tmpPos);
 		}
-		getParam = fpassemble;
+		getParam = m_featurePoints;
 		m_readfs.release();
 		return true;
 	}
+
 	return false;
 }
 
@@ -593,24 +609,32 @@ bool CAutoManualFindRelation::writeParams(void)
 	if(m_writefs.isOpened())
 	{
 		sprintf(paramName,"vectorSize");
-		m_writefs<<paramName<<(int)fpassemble.size();
+		m_writefs<<paramName<<(int)m_featurePoints.size();
 
 		for(int i=0; i<fpassemble.size(); i++)
 		{
+			sprintf(paramName,"points_markFlag_%d",i);
+			m_writefs<<paramName<<(int)m_featurePoints[i].markFlag;
+			memset(paramName,0,sizeof(paramName));
+
+			sprintf(paramName,"points_selectFlag_%d",i);
+			m_writefs<<paramName<<(int)m_featurePoints[i].selectFlag;
+			memset(paramName,0,sizeof(paramName));
+
+			sprintf(paramName,"points_pixel_x_%d",i);
+			m_writefs<<paramName<<(int)m_featurePoints[i].pixel.x;
+			memset(paramName,0,sizeof(paramName));
+
+			sprintf(paramName,"points_pixel_y_%d",i);
+			m_writefs<<paramName<<(int)m_featurePoints[i].pixel.y;
+			memset(paramName,0,sizeof(paramName));
+
 			sprintf(paramName,"points_pos_x_%d",i);
-			m_writefs<<paramName<<(int)fpassemble[i].pos.x;
+			m_writefs<<paramName<<(int)m_featurePoints[i].pos.x;
 			memset(paramName,0,sizeof(paramName));
 
 			sprintf(paramName,"points_pos_y_%d",i);
-			m_writefs<<paramName<<(int)fpassemble[i].pos.y;
-			memset(paramName,0,sizeof(paramName));
-
-			sprintf(paramName,"points_ver_x_%d",i);
-			m_writefs<<paramName<<(int)fpassemble[i].ver.x;
-			memset(paramName,0,sizeof(paramName));
-
-			sprintf(paramName,"points_ver_y_%d",i);
-			m_writefs<<paramName<<(int)fpassemble[i].ver.y;
+			m_writefs<<paramName<<(int)m_featurePoints[i].pos.y;
 			memset(paramName,0,sizeof(paramName));
 		}
 		m_writefs.release();

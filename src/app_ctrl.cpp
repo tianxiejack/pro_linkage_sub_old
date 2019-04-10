@@ -848,32 +848,6 @@ void app_ctrl_enter()
 
 	else if(submenu_gridMapCalibrate == pMenuStatus->MenuStat)
 	{
-		#if 0
-		g_displayMode = MENU_SBS;
-		CVideoProcess::m_camCalibra->start_cloneVideoSrc = true;
-		if(0 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer) 
-		{
-			if(CVideoProcess::m_camCalibra->start_cloneVideoSrc = true){
-				OSA_waitMsecs(1500);	
-				CVideoProcess::m_camCalibra->bool_Calibrate = true;
-				g_displayMode = MENU_MATCH_POINT_VIEW;
-			}
-		}
-		else if (1 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer)
-		{
-			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
-			g_displayMode = MENU_SBS;
-			app_ctrl_setMenuStat(submenu_handleMatchPoints);
-			//CVideoProcess::m_camCalibra->Set_Handler_Calibra = true ;
-		}
-		else if(2 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer)
-		{
-			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
-			CVideoProcess::m_camCalibra->Set_Handler_Calibra = false ;
-			app_ctrl_setMenuStat(mainmenu2);			
-			g_displayMode = MENU_MAIN_VIEW;
-		}
-		#endif
 		if(0 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer) 
 		{
 			

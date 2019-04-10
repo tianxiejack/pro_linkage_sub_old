@@ -3117,10 +3117,6 @@ void CProcess::DrawMtd_Rigion_Target()
 				memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
 				ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 			}
-			else
-			{
-				MvBallCamBySelectRectangle(tmp.x+tmp.width/2,tmp.y + tmp.height/2,false);
-			}
 				
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 		}

@@ -2111,10 +2111,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
 								ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 							}
-							else
-							{
-								pThis->MvBallCamByClickGunImg(x,y,false);
-							}
 						}
 				      }
 				}
@@ -2148,12 +2144,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
 								memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
 								ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-						}
-						else
-						{
-							pThis->MvBallCamBySelectRectangle(tmpX,tmpY,true);	
-						}			
-							
+						}						
 						}
 					}
 				}

@@ -1772,6 +1772,14 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 	int grid_width = (int)((float)(outputWHF[0]/16));
 	static int changesensorCnt = 0;
 
+	if(get_drawpoints_stat())
+	{
+		//m_autofr.drawPoints(m_display.m_imgOsd[extInCtrl->SensorStat], app_recommendPoints, 1)
+		set_drawpoints_stat(false);
+	}
+
+
+	
 	if(extInCtrl->changeSensorFlag == 1)
 		++changesensorCnt;
 	if(changesensorCnt == 3){
@@ -4597,6 +4605,17 @@ void CProcess::OnKeyDwn(unsigned char key)
 	{
 		backflag = true;
 	}
+
+	if (key == 'f' || key == 'F')
+	{
+		if(pIStuts->ImgFrezzStat[pIStuts->SensorStat])
+			pIStuts->ImgFrezzStat[pIStuts->SensorStat] = eImgAlg_Disable;
+		else
+			pIStuts->ImgFrezzStat[pIStuts->SensorStat] = eImgAlg_Enable;
+			
+		msgdriv_event(MSGID_EXT_INPUT_ENFREZZ, NULL);
+	}
+
 	if (key == 'g' || key == 'G')
 	{
 		tmpMenuCmd.Trig_Inter_Mode = (pMenuStatus->Trig_Inter_Mode + 1) % 2;
@@ -4607,6 +4626,18 @@ void CProcess::OnKeyDwn(unsigned char key)
 		app_ctrl_getPT();
 	}
 
+	if (key == 'i')
+	{
+		if(pMenuStatus->Trig_Inter_Mode)
+			set_find_featurepoint_stat(true);
+	}
+
+	if (key == 'I')
+	{
+		if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
+			m_autofr.autoFindPoints();
+	}
+	
 	if (key == 'j' || key == 'J')
 	{
 		app_ctrl_save_trig_inter();
@@ -4628,23 +4659,18 @@ void CProcess::OnKeyDwn(unsigned char key)
 		//printf("pIStuts->MtdState[pIStuts->SensorStat]  = %d\n",pIStuts->MtdState[pIStuts->SensorStat] );
 	}
 
-	if (key == 't' || key == 'T')
-		{
-			if(pIStuts->ImgVideoTrans[pIStuts->SensorStat])
-				pIStuts->ImgVideoTrans[pIStuts->SensorStat] = eImgAlg_Disable;
-			else
-				pIStuts->ImgVideoTrans[pIStuts->SensorStat] = eImgAlg_Enable;
-			msgdriv_event(MSGID_EXT_INPUT_RST_THETA, NULL);
-		}
-	if (key == 'f' || key == 'F')
-		{
-			if(pIStuts->ImgFrezzStat[pIStuts->SensorStat])
-				pIStuts->ImgFrezzStat[pIStuts->SensorStat] = eImgAlg_Disable;
-			else
-				pIStuts->ImgFrezzStat[pIStuts->SensorStat] = eImgAlg_Enable;
-			
-			msgdriv_event(MSGID_EXT_INPUT_ENFREZZ, NULL);
-		}
+	if(key == 'l') {
+		m_display.changeDisplayMode(SIDE_BY_SIDE);
+	}
+		
+	if(key == 'M' || key == 'm' ) {
+		m_camCalibra->bool_Calibrate = true;
+		printf("\r\n [%s] ================ Press Key ' m ' : Start to Calibrate!\r\n",__FUNCTION__);
+	}
+
+	if(key =='n' || key == 'N') {
+		m_display.savePic_once = true;
+	}
 
 	if(key == 'o'|| key == 'O')
 	{
@@ -4654,9 +4680,15 @@ void CProcess::OnKeyDwn(unsigned char key)
 	}
 		
 	if (key == 'p'|| key == 'P')
-		{
-			msgdriv_event(MSGID_EXT_INPUT_PICPCROP, NULL);
-		}
+	{
+		msgdriv_event(MSGID_EXT_INPUT_PICPCROP, NULL);
+	}
+		
+	if(key == 'Q') {
+		//m_display.switchDisplayMode();
+		MenuDisplay nextMode = MenuDisplay((int)(g_displayMode+1) % MENU_DISPLAY_COUNT);
+		g_displayMode = nextMode;
+	}
 
 	if(key == 'r'|| key == 'R')
 	{
@@ -4666,252 +4698,190 @@ void CProcess::OnKeyDwn(unsigned char key)
 			proc->delete_app_trig(cur_trig_inter_P);
 		}
 	}
+
+	if (key == 's')
+	{
+		bool stat = get_manualInsertRecommendPoints_stat();
+		if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
+			set_manualInsertRecommendPoints_stat(!stat);
+	}
+
+	if(key == 'S')
+	{
+		set_drawpoints_stat(true);
+	}
 	
+	if (key == 't' || key == 'T')
+	{
+		if(pIStuts->ImgVideoTrans[pIStuts->SensorStat])
+			pIStuts->ImgVideoTrans[pIStuts->SensorStat] = eImgAlg_Disable;
+		else
+			pIStuts->ImgVideoTrans[pIStuts->SensorStat] = eImgAlg_Enable;
+		msgdriv_event(MSGID_EXT_INPUT_RST_THETA, NULL);
+	}
+			
+	if(key == 'U' || key == 'u' ) {
+		m_camCalibra->writeParam_flag = true;
+	}
+		
+	if(key == 'v' || key == 'V') {
+		m_camCalibra->start_cloneVideoSrc = true;
+		printf("\r\n [%s] ================ Press Key ' v ' : Start Clone One Frame Image !\r\n",__FUNCTION__);
+	}
+
 	if(key == 'w'|| key == 'W')
-		{
-			if(pIStuts->ImgMmtshow[pIStuts->SensorStat])
-				pIStuts->ImgMmtshow[pIStuts->SensorStat] = eImgAlg_Disable;
-			else
-				pIStuts->ImgMmtshow[pIStuts->SensorStat] = eImgAlg_Enable;
-			
-			msgdriv_event(MSGID_EXT_INPUT_MMTSHOW, NULL);
-			OSA_printf("MSGID_EXT_INPUT_MMTSHOW\n");
-		}
+	{
+		if(pIStuts->ImgMmtshow[pIStuts->SensorStat])
+			pIStuts->ImgMmtshow[pIStuts->SensorStat] = eImgAlg_Disable;
+		else
+			pIStuts->ImgMmtshow[pIStuts->SensorStat] = eImgAlg_Enable;
+		
+		msgdriv_event(MSGID_EXT_INPUT_MMTSHOW, NULL);
+		OSA_printf("MSGID_EXT_INPUT_MMTSHOW\n");
+	}
 
-
-
+	if (key == 'x'|| key == 'X') {
+		open_handleCalibra = false ; 
+		m_camCalibra->Set_Handler_Calibra = false ;
+		m_camCalibra->start_cloneVideoSrc = false;
+	}
 	
-		if(key == 'v' || key == 'V') {
-			m_camCalibra->start_cloneVideoSrc = true;
-			printf("\r\n [%s] ================ Press Key ' v ' : Start Clone One Frame Image !\r\n",__FUNCTION__);
-		}
-
-		if(key == 'l') {
-			m_display.changeDisplayMode(SIDE_BY_SIDE);
-		}
-		
-		if(key == 'Q') {
-			//m_display.switchDisplayMode();
-			MenuDisplay nextMode = MenuDisplay((int)(g_displayMode+1) % MENU_DISPLAY_COUNT);
-			g_displayMode = nextMode;
-		}
-
-		if(key == 'M' || key == 'm' ) {
-			m_camCalibra->bool_Calibrate = true;
+	if (key == 'y'|| key == 'Y') {		
+		open_handleCalibra = true ;
+		m_camCalibra->Set_Handler_Calibra = true ;
+	}
 			
-		printf("\r\n [%s] ================ Press Key ' m ' : Start to Calibrate!\r\n",__FUNCTION__);
-		}	
-		
-		if(key == 'U' || key == 'u' ) {
-			m_camCalibra->writeParam_flag = true;
-		}
 
-		if (key == 'y'|| key == 'Y') {		
-			open_handleCalibra = true ;
-			m_camCalibra->Set_Handler_Calibra = true ;
-		}
-			
-		if (key == 'x'|| key == 'X') {
-			open_handleCalibra = false ; 
-			m_camCalibra->Set_Handler_Calibra = false ;
-			m_camCalibra->start_cloneVideoSrc = false;
-		}		
+	if (key == 'z')
+	{
+		if(Set_SelectByRect)
+			Set_SelectByRect = false ;
+		else
+			Set_SelectByRect = true ;
+		//pIStuts->ImgZoomStat[0]=(pIStuts->ImgZoomStat[0]+1)%2;
+		//msgdriv_event(MSGID_EXT_INPUT_ENZOOM, NULL);
+	}
 
-		if (key == 'z')
-		{
-			if(Set_SelectByRect)
-				Set_SelectByRect = false ;
-			else
-				Set_SelectByRect = true ;
-			//pIStuts->ImgZoomStat[0]=(pIStuts->ImgZoomStat[0]+1)%2;
-			//msgdriv_event(MSGID_EXT_INPUT_ENZOOM, NULL);
-		}
 
-		if(key =='n' || key == 'N') {
-			m_display.savePic_once = true;
-		}
-
-		if((key >= '0') && (key <= '9'))
-		{
-			app_ctrl_setnumber(key);
-			switch(key){
-				case '0':	
-				#if 0
-				if(msgextMenuCtrl !=NULL)
+	if((key >= '0') && (key <= '9'))
+	{
+		app_ctrl_setnumber(key);
+		switch(key){
+			case '0':	
+				break;
+			case '1':
+				if(g_displayMode == MENU_GRID_MAP_VIEW)
 				{
-					menu_param_t *pMenuStatus = msgextMenuCtrl;
-					if(g_displayMode == MENU_GRID_MAP_VIEW &&
-						(1 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer))
+					setGridMapCalibrate(true);
+					QueryCurBallCamPosition();
+					int row = m_curNodeIndex/(GRID_COLS_15+2);
+					int col = m_curNodeIndex%(GRID_COLS_15+2);
+					m_calibratedNodes[row][col].isShow = true;
+					m_gridNodes[row][col].has_mark = 1;
+					m_calibratedNodes[0][0].x = 60;
+					m_calibratedNodes[0][0].y = 45;
+
+					if(row!=m_lastRow || col!=m_lastCol)
 					{
-						SENDST trkmsg2={0};
-						trkmsg2.cmd_ID = enter_gridmap_view;
-						trkmsg2.param[0] = 0;
-						ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
-						app_ctrl_setMenuStat(mainmenu2);			
-						g_displayMode = MENU_MAIN_VIEW;
+						m_successCalibraNum +=1;
+						m_lastRow = row;
+						m_lastCol = col;
 					}
-				}	
-				#endif
-					break;
-				case '1':
-					if(g_displayMode == MENU_GRID_MAP_VIEW)
+				}
+
+				break;
+			case '2':
+				if(g_displayMode == MENU_GRID_MAP_VIEW)
+				{
+					int total = (GRID_COLS_15+2)*(GRID_ROWS_11+1);
+					int cols = GRID_COLS_15+2;
+					m_curNodeIndex = (m_curNodeIndex -cols + total)%total;
+					if(m_curNodeIndex > 112)	// total 192/432 nodes
 					{
-						setGridMapCalibrate(true);
-						QueryCurBallCamPosition();
-						int row = m_curNodeIndex/(GRID_COLS_15+2);
-						int col = m_curNodeIndex%(GRID_COLS_15+2);
-						m_calibratedNodes[row][col].isShow = true;
-						m_gridNodes[row][col].has_mark = 1;
-						m_calibratedNodes[0][0].x = 60;
-						m_calibratedNodes[0][0].y = 45;
-
-						//printf("\r\n[%s]: Mark Node Position:<%d,%d><%d, %d>\r\n",__func__,row,col,m_calibratedNodes[row][col].x,m_calibratedNodes[row][col].y);
-						if(row!=m_lastRow || col!=m_lastCol)
-						{
-							m_successCalibraNum +=1;
-							m_lastRow = row;
-							m_lastCol = col;
-							//printf("\r\n[%s]: has_calibrated_num = %d\r\n",__func__,m_successCalibraNum);
-						}
+						m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
 					}
-
-					break;
-				case '2':
-					if(g_displayMode == MENU_GRID_MAP_VIEW)
+					else
 					{
-						int total = (GRID_COLS_15+2)*(GRID_ROWS_11+1);
-						int cols = GRID_COLS_15+2;
-						m_curNodeIndex = (m_curNodeIndex -cols + total)%total;
-						if(m_curNodeIndex > 112)	// total 192/432 nodes
-						{
-							m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
-						}
-						else
-						{
-							m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
-						}
-						//printf("\r\n[%s]:Press Number Key = 2\r\n",__FUNCTION__);
+						m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
 					}
-					break;
-				case '3':					
-				#if 0
-					if(g_displayMode == MENU_MAIN_VIEW) {
-						printf("\r\n[%s]:MENU_MAIN_VIEW\r\n",__FUNCTION__);
-						g_displayMode = MENU_GRID_MAP_VIEW;
-					}
-					else if(g_displayMode == MENU_GRID_MAP_VIEW) {
-						g_displayMode = MENU_MAIN_VIEW;
-						printf("\r\n[%s]:MENU_GRID_MAP_VIEW\r\n",__FUNCTION__);
-						//printf("\r\n[%s]:Press Number Key = 3\r\n",__FUNCTION__);
-					}
-					else {
-					}
-				#endif
-				
-					break;
-				case '4':
-					if(g_displayMode == MENU_GRID_MAP_VIEW)
+				}
+				break;
+			case '3':					
+				break;
+			case '4':
+				if(g_displayMode == MENU_GRID_MAP_VIEW)
+				{
+					m_curNodeIndex = (m_curNodeIndex+  (GRID_COLS_15+2)*(GRID_ROWS_11+1) -1 )%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
+					if(m_curNodeIndex < 112)// total 192/432 nodes
 					{
-						
-						#if 0
-						m_curNodeIndex = (m_curNodeIndex+  (GRID_COLS+1)*(GRID_ROWS+1) -1 )%((GRID_COLS+1)*(GRID_ROWS+1));
-						#else
-						m_curNodeIndex = (m_curNodeIndex+  (GRID_COLS_15+2)*(GRID_ROWS_11+1) -1 )%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
-
-						#endif
-
-
-						//printf("\r\n[%s]: m_curNodeIndex = %d\r\n",__func__,m_curNodeIndex);
-						if(m_curNodeIndex < 112)// total 192/432 nodes
-						{
-							m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
-						}
-						else
-						{
-							m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
-
-						}
-						//printf("\r\n[%s]:Press Number Key = 4\r\n",__FUNCTION__);
+						m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
 					}
-
-					break;
-				case '5':
-					if(g_displayMode == MENU_GRID_MAP_VIEW)
+					else
 					{
-						pThis->writeParams("SaveGridMap.yml");
-						//printf("\r\n[%s]:Press Number Key = 5: Save Grid Map Calibrated Results!!!\r\n",__FUNCTION__);
-					}
+						m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
 
-					break;
-				case '6':
-					if(g_displayMode == MENU_GRID_MAP_VIEW)
+					}
+				}
+
+				break;
+			case '5':
+				if(g_displayMode == MENU_GRID_MAP_VIEW)
+				{
+					pThis->writeParams("SaveGridMap.yml");
+				}
+
+				break;
+			case '6':
+				if(g_displayMode == MENU_GRID_MAP_VIEW)
+				{
+					m_curNodeIndex = (m_curNodeIndex+1)%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
+
+					if(m_curNodeIndex > 112)// total 192/432 nodes
 					{
-						
-						#if 0
-						m_curNodeIndex = (m_curNodeIndex+1)%((GRID_COLS+1)*(GRID_ROWS+1));
-						#else
-						m_curNodeIndex = (m_curNodeIndex+1)%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
-						#endif
-						
-						//printf("\r\n[%s]: m_curNodeIndex = %d\r\n",__func__,m_curNodeIndex);
-						if(m_curNodeIndex > 112)// total 192/432 nodes
-						{
-							m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
-						}
-						else{
-							m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
-						}
-				
-			
-						//printf("\r\n[%s]:Press Number Key = 6\r\n",__FUNCTION__);
+						m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
 					}
+					else{
+						m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
+					}
+				}
 
-					break;
-				case '7':
-					if(g_displayMode == MENU_GRID_MAP_VIEW)
+				break;
+			case '7':
+				if(g_displayMode == MENU_GRID_MAP_VIEW)
+				{
+				}
+
+				break;
+			case '8':
+				if(g_displayMode == MENU_GRID_MAP_VIEW)
+				{				
+					m_curNodeIndex = (m_curNodeIndex+GRID_COLS_15+2)%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
+					if(m_curNodeIndex > 112)// total 192/432 nodes
 					{
-						//printf("\r\n[%s]:Press Number Key = 7\r\n",__FUNCTION__);
+						m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
 					}
-
-					break;
-				case '8':
-					if(g_displayMode == MENU_GRID_MAP_VIEW)
-					{
-						
-						m_curNodeIndex = (m_curNodeIndex+GRID_COLS_15+2)%((GRID_COLS_15+2)*(GRID_ROWS_11+1));
-						if(m_curNodeIndex > 112)// total 192/432 nodes
-						{
-							m_display.setGridViewPortPosition(m_gridNodes[4][0].coord_x, 1080-m_gridNodes[4][0].coord_y);
-						}
-						else{
-							m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
-						}
-					
-						//printf("\r\n[%s]:Press Number Key = 8\r\n",__FUNCTION__);
+					else{
+						m_display.setGridViewPortPosition(m_gridNodes[11][10].coord_x, 1080-m_gridNodes[11][10].coord_y);
 					}
+				}
 
-					break;
-				case '9':
-					if(g_displayMode == MENU_GRID_MAP_VIEW)
-					{
-						//printf("\r\n[%s]:Press Number Key = 9\r\n",__FUNCTION__);
-					}
-					break;
-				default:
-					break;
-			}
-
+				break;
+			case '9':
+				if(g_displayMode == MENU_GRID_MAP_VIEW)
+				{
+				}
+				break;
+			default:
+				break;
 		}
+
+	}
 			
 		
-		if(key == 13)
-		{
-			app_ctrl_enter();
-		}
-		
-		
-
-	
+	if(key == 13)
+	{
+		app_ctrl_enter();
+	}
 }
 
 

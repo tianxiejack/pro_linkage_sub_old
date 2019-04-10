@@ -153,6 +153,14 @@ void CVideoProcess::main_proc_func()
 
 		cv::Mat	salientMap, sobelMap;
 
+		if((video_gaoqing == chId) && (get_find_featurepoint_stat()))
+		{
+			m_autofr.cloneSrcImage(frame);
+			set_cloneSrcImage_stat(true);
+			set_find_featurepoint_stat(false);
+		}
+			
+
 		mainProcThrObj.pp ^=1;
 		if(!OnPreProcess(chId, frame))
 			continue;
@@ -495,6 +503,7 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 #endif
 	readParams("SaveGridMap.yml");
 	read_param_trig();
+	m_autofr.create(pnotify_callback);
 	
 	m_pTrigonometric->insertVertexAndPosition(m_trigonoMetricVector);
 #if 0
@@ -1364,7 +1373,7 @@ bool CVideoProcess::readParams(const char* filename)
 
 int CVideoProcess::read_param_trig()
 {
-	m_trig.readParams(app_trig);
+	;//m_trig.readParams(app_trig);
 }
 
 bool CVideoProcess::writeParamsForTriangle(const char* filename)
@@ -1959,6 +1968,13 @@ void CVideoProcess::update_cur_trig_inter_P(int x, int y)
 	}
 }
 
+void CVideoProcess::auto_insertpoint(int x, int y)
+{
+	cv::Point2i inPoint;
+	inPoint.x = x;
+	inPoint.y = y;
+	m_autofr.manualInsertRecommendPoints(inPoint);
+}
 
 static Point ptStart,ptEnd;
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
@@ -2007,13 +2023,19 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 
 	else if(TRIG_INTER_MODE == pThis->m_display.g_CurDisplayMode)
 	{
+		/*
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
 			if(0 == pThis->get_trig_PTZflag())
 			{
 				pThis->update_cur_trig_inter_P(x, y);
 			}
-        }
+       	 }
+        	*/
+        	if(pThis->get_manualInsertRecommendPoints_stat())
+        		pThis->auto_insertpoint(x, y);
+		else
+			;//pThis->auto_getptz(x, y);;
     }
 	else if(pThis->m_display.g_CurDisplayMode == GRID_MAP_VIEW)
 	{
@@ -2815,7 +2837,7 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 	int format = -1;
 	if(frame.cols<=0 || frame.rows<=0)
 		return 0;
-
+	
 //	tstart = getTickCount();
 	int  channel= frame.channels();
 
@@ -3295,3 +3317,8 @@ void CVideoProcess::LoadMtdSelectArea(const char* filename, std::vector< std::ve
 	}
 }
 
+void CVideoProcess::pnotify_callback(std::vector<FEATUREPOINT_T>& recommendPoints)
+{
+	printf("%s,%d, pnotify_callback start!\n",__FILE__,__LINE__);
+	pThis->app_recommendPoints = recommendPoints;
+}

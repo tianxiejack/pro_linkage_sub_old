@@ -16,11 +16,13 @@
 #include "IntrinsicMatrix.h"
 
 #include "trigonometric.hpp"
+#include "autoManualFindRelation.hpp"
 #include "GridMap.h"
 #include "Ipc.hpp"
 
 
 using namespace cr_trigonometricInterpolation;
+using namespace cr_automanualfindrelation;
 
 #define MAX_SUCCESS_IMAGES 160
 #define GRID_CNT_X 19
@@ -150,6 +152,17 @@ public:
 	position_t  m_trigonoMetric_Node;
 
 public:
+	bool get_find_featurepoint_stat(){return find_featurepoint_stat;};
+	void set_find_featurepoint_stat(bool value){find_featurepoint_stat = value;};
+	bool get_cloneSrcImage_stat(){return cloneSrcImage_stat;};
+	void set_cloneSrcImage_stat(bool value){cloneSrcImage_stat = value;};
+	bool get_manualInsertRecommendPoints_stat(){return manualInsertRecommendPoints_stat;};
+	void set_manualInsertRecommendPoints_stat(bool value){manualInsertRecommendPoints_stat = value;};
+	bool get_drawpoints_stat(){return drawpoints_stat;};
+	void set_drawpoints_stat(bool value){drawpoints_stat = value;};
+	void auto_insertpoint(int x, int y);
+	
+	static void pnotify_callback(std::vector<FEATUREPOINT_T>& recommendPoints);
 	void InitGridMapNodes();
 	void InitGridMap16X12();
 	void useTrigonometric(int px, int py);
@@ -175,6 +188,12 @@ private:
 	int m_ScreenWidth,m_ScreenHeight;
 	int m_gridWidth,m_gridHeight;
 	static int m_staticScreenWidth,m_staticScreenHeight;
+	
+	bool find_featurepoint_stat = false;
+	bool cloneSrcImage_stat = false;
+	bool manualInsertRecommendPoints_stat = false;
+	bool drawpoints_stat = false;
+	std::vector<FEATUREPOINT_T> app_recommendPoints;
 public:
 	CVideoProcess();
 	CVideoProcess(int w, int h);
@@ -276,6 +295,7 @@ public:
 	cv::Point cur_trig_inter_P;
 	int trig_inter_flag = 0;	
 	Trigonometric m_trig = Trigonometric(outputWHF[0],outputWHF[1]);
+	CAutoManualFindRelation m_autofr = CAutoManualFindRelation(outputWHF[0],outputWHF[1], 6, 6);
 	vector<position_t> app_trig;
 	void update_cur_trig_inter_P(int x, int y);
 	void SaveMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours);

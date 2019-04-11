@@ -2391,26 +2391,26 @@ void CProcess::Draw_subdiv_point()
 void CProcess::Draw_point_triangle()
 {
 	static int draw_point_triangle_falg = 0;
-	vector<FEATUREPOINT_T> back;
+	
 	Point2i pos;
 	
 	if(draw_point_triangle_falg)
 	{
-		m_autofr.draw_point_triangle(m_display.m_imgOsd[extInCtrl->SensorStat],   point_triangle_bak, back, pos, 0);
+		m_autofr.draw_point_triangle(m_display.m_imgOsd[extInCtrl->SensorStat],   point_triangle_bak, m_back, pos, 0);
 		draw_point_triangle_falg = 0;
 	}
 	if(get_draw_point_triangle_stat())
 	{
 		//printf("%s,%d, Draw_point_triangle\n",__FILE__,__LINE__);
 		point_triangle_bak = point_triangle;
-		m_autofr.draw_point_triangle(m_display.m_imgOsd[extInCtrl->SensorStat],  point_triangle_bak, back, pos, 1);
+		m_autofr.draw_point_triangle(m_display.m_imgOsd[extInCtrl->SensorStat],  point_triangle_bak, m_back, pos, 1);
 
 		if(get_print_stat())
 		{
 			printf("\n\n%s,%d, input pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__,  point_triangle_bak.x,point_triangle_bak.y,pos.x,pos.y);
-			for(int i = 0; i < back.size(); i++)
+			for(int i = 0; i < m_back.size(); i++)
 			{
-				printf("%s,%d, i=%d, pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__, i, back[i].pixel.x,back[i].pixel.y,back[i].pos.x,back[i].pos.y);
+				printf("%s,%d, i=%d, pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__, i, m_back[i].pixel.x,m_back[i].pixel.y,m_back[i].pos.x,m_back[i].pos.y);
 			}
 			set_print_stat(false);
 		}
@@ -4482,16 +4482,38 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 	switch( key ) 
 	{
 		case 1:
-		{
-			GB_WorkMode nextMode = GB_WorkMode(((int)g_AppWorkMode+1)% MODE_COUNT);
-			setWorkMode(nextMode);
-		}
+			//GB_WorkMode nextMode = GB_WorkMode(((int)g_AppWorkMode+1)% MODE_COUNT);
+			//setWorkMode(nextMode);
+
+			printf(" Move ball to destionation  1 Pixel  (%d , %d )    to   Pos (%d,%d ) \n" ,
+					m_back[0].pixel.x,m_back[0].pixel.y,m_back[0].pos.x,m_back[0].pos.y);
+			
+			trkmsg.cmd_ID = acqPosAndZoom;
+			memcpy(&trkmsg.param[0],&m_back[0].pos.x,4);
+			memcpy(&trkmsg.param[4],&m_back[0].pos.y,4);
+			ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 			break;
 		case 2:
-			app_ctrl_setMenu();  // Open Menu information
+			printf(" Move ball to destionation 2  Pixel  (%d , %d )   to  Pos (%d,%d ) \n" ,
+					m_back[1].pixel.x,m_back[1].pixel.y,m_back[1].pos.x,m_back[1].pos.y);
+
+			trkmsg.cmd_ID = acqPosAndZoom;
+			memcpy(&trkmsg.param[0],&m_back[1].pos.x,4);
+			memcpy(&trkmsg.param[4],&m_back[1].pos.y,4);
+			ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+
+			//app_ctrl_setMenu();  // Open Menu information
 			break;
 		case 3:
-			start_calibrate = true;
+			printf(" Move ball to destionation 3   Pixel  (%d , %d )    to  Pos (%d,%d ) \n" ,
+					m_back[2].pixel.x,m_back[2].pixel.y,m_back[2].pos.x,m_back[2].pos.y);
+
+			trkmsg.cmd_ID = acqPosAndZoom;
+			memcpy(&trkmsg.param[0],&m_back[2].pos.x,4);
+			memcpy(&trkmsg.param[4],&m_back[2].pos.y,4);
+			ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+
+			//start_calibrate = true;
 			break;
 		case 4:	
 			g_displayMode = MENU_GRID_MAP_VIEW;

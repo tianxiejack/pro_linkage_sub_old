@@ -215,7 +215,7 @@ private:
 public:
 	Point2i point_triangle;
 	Point2i point_triangle_bak;;
-	
+	vector<FEATUREPOINT_T> m_back;	
 public:
 	CVideoProcess();
 	CVideoProcess(int w, int h);

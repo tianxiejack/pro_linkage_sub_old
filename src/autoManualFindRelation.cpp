@@ -409,9 +409,9 @@ void CAutoManualFindRelation::calcNormalWay(Point2i inPoint,vector<Point2i>& tri
 
 
 /***** 求两点间距离*****/
-float CAutoManualFindRelation::getDistance(Point2i pointO, Point2i pointA)
+double CAutoManualFindRelation::getDistance(Point2i pointO, Point2i pointA)
 {
-    float distance;
+	double distance;
     distance = powf((pointO.x - pointA.x), 2) + powf((pointO.y - pointA.y), 2);
     distance = sqrtf(distance);
     return distance;
@@ -419,7 +419,7 @@ float CAutoManualFindRelation::getDistance(Point2i pointO, Point2i pointA)
 
 /***** 点到直线的距离:P到AB的距离*****/
 //P为线外一点，AB为线段两个端点
-float CAutoManualFindRelation::getDist_P2L(Point2i pointP, Point2i pointA, Point2i pointB)
+double CAutoManualFindRelation::getDist_P2L(Point2i pointP, Point2i pointA, Point2i pointB)
 {
     //求直线方程
     int A = 0, B = 0, C = 0;
@@ -427,8 +427,8 @@ float CAutoManualFindRelation::getDist_P2L(Point2i pointP, Point2i pointA, Point
     B = pointB.x - pointA.x;
     C = pointA.x*pointB.y - pointA.y*pointB.x;
     //代入点到直线距离公式
-    float distance = 0;
-    distance = ((float)abs(A*pointP.x + B*pointP.y + C)) / ((float)sqrtf(A*A + B*B));
+    double distance = 0;
+    distance = ((double)abs(A*pointP.x + B*pointP.y + C)) / ((double)sqrtf(A*A + B*B));
     return distance;
 }
 
@@ -436,9 +436,9 @@ float CAutoManualFindRelation::getDist_P2L(Point2i pointP, Point2i pointA, Point
 void CAutoManualFindRelation::calcDistancePoint2Triangle(Point2i inPoint,vector<Point2i>& triVertex, vector<double>& dis)
 {
 	Point2i A,B;
+	dis.clear();
 	for(int i=0 ; i< 3 ;i++)
 		dis.push_back(  getDist_P2L(inPoint, triVertex[i], triVertex[(i+1)%3])  );
-
 	return ;
 }
 
@@ -448,10 +448,8 @@ void CAutoManualFindRelation::getNear2LineUseTwoPoint2Calc(int flag,Point2i inPo
 	unsigned int d1, d2, d3;
 	double f1;
 
-	d1 = pow((inPoint.x - triVertex[flag].x), 2)
-			+ pow((inPoint.y - triVertex[flag].y), 2);
-	d2 = pow((inPoint.x - triVertex[(flag+1)%3].x), 2)
-			+ pow((inPoint.y - triVertex[(flag+1)%3].y), 2);
+	d1 = getDistance(inPoint, triVertex[flag]);
+	d2 = getDistance(inPoint, triVertex[(flag+1)%3]);
 
 	f1 = (double)d2 /(d1+d2);
 
@@ -467,13 +465,19 @@ void CAutoManualFindRelation::InterpolationPos(Point2i inPoint,vector<Point2i>& 
 
 	std::vector<double> getDis;
 	int flag = 3;
-
+	double min = 1000;
 	calcDistancePoint2Triangle(inPoint,triVertex,getDis);
 
 	for(int i=0 ; i < getDis.size(); i++ )
 	{
 		if( getDis[i] < 20 )
-			flag = i;
+		{
+			if(getDis[i] < min)
+			{
+				min = getDis[i];
+				flag = i;
+			}
+		}
 	}
 
 	if(flag < 3)

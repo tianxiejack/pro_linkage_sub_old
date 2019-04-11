@@ -252,6 +252,10 @@ void CAutoManualFindRelation::insertPos( cv::Point2i inPos )
 		}
 	}
 	collectMarkedPoints();
+
+	if(m_notifyFunc != NULL )
+		(*m_notifyFunc)(m_featurePoints);
+
 	if(m_canUsedPoints.size() > 8 )
 		insertVertexAndPosition(m_canUsedPoints);
 
@@ -287,6 +291,10 @@ void CAutoManualFindRelation::deletePos( cv::Point2i inPixel )
 			m_featurePoints[i].selectFlag = false;
 		}
 	}
+
+	if(m_notifyFunc != NULL )
+		(*m_notifyFunc)(m_featurePoints);
+
 	return ;
 }
 

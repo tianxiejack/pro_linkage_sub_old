@@ -50,6 +50,7 @@ public:
 	bool readParams(std::vector<FEATUREPOINT_T>& getParam);//读取配置
 	bool writeParams(void);//写配置
 
+	int Point2getPos(const Point2i inPoint,Point2i &result ); //输入点获取POS
 	void drawPoints( cv::Mat drawMat,	std::vector<FEATUREPOINT_T>& featurePoints , bool bDraw );
 
 	//for test
@@ -76,7 +77,6 @@ public:
 	int findposInFpassembel(Point2f &fp , Point2i &pos);
 	void insertVertexAndPosition(vector<FEATUREPOINT_T> insert);
 	void getTriangleVertex( Point2f fp, vector<Point2i> &result );
-	int Point2getPos(const Point2i inPoint,Point2i &result );
 
 
 private:

@@ -153,8 +153,7 @@ void CVideoProcess::main_proc_func()
 
 		cv::Mat	salientMap, sobelMap;
 
-		//printf("%s,%d",__FILE__,__LINE__);
-		if((video_gaoqing == chId) && (get_find_featurepoint_stat()))
+		if((GUN_CHID == chId) && (get_find_featurepoint_stat()))
 		{
 			printf("%s,%d, cloneSrcImage\n",__FILE__,__LINE__);
 			m_autofr.cloneSrcImage(frame);
@@ -1375,7 +1374,8 @@ bool CVideoProcess::readParams(const char* filename)
 
 int CVideoProcess::read_param_trig()
 {
-	;//m_trig.readParams(app_trig);
+	//m_trig.readParams(app_trig);
+	m_autofr.readParams(app_recommendPoints);
 }
 
 bool CVideoProcess::writeParamsForTriangle(const char* filename)
@@ -1978,6 +1978,53 @@ void CVideoProcess::auto_insertpoint(int x, int y)
 	m_autofr.manualInsertRecommendPoints(inPoint);
 }
 
+void CVideoProcess::auto_selectpoint(int x, int y)
+{
+	std::vector<FEATUREPOINT_T> app_recommendPoints_tmp = app_recommendPoints;
+	int delta_distance_bak;
+	int insert_index = -1;
+	int delta_distance;
+	
+	for(int i = 0; i < app_recommendPoints_tmp.size();  i++)
+	{
+		int deltax = abs(app_recommendPoints_tmp[i].pixel.x-x);
+		int deltay = abs(app_recommendPoints_tmp[i].pixel.y-y);
+		
+		delta_distance = sqrt(deltax*deltax + deltay*deltay);
+			
+		if(i == 0)
+		{
+			delta_distance_bak = delta_distance;
+			insert_index = i;
+		}
+		else
+		{
+			if(delta_distance < delta_distance_bak)
+			{
+				delta_distance_bak = delta_distance;
+				insert_index = i;
+			}
+
+		}
+	}
+	printf("%s,%d,  delta_distance_bak=%d\n",__FILE__,__LINE__,delta_distance_bak);
+	if((insert_index >= 0))
+	{
+		printf("%s, %d, select pixel(%d, %d),pos(%d,%d)\n", __FILE__,__LINE__,app_recommendPoints_tmp[insert_index].pixel.x,app_recommendPoints_tmp[insert_index].pixel.y,app_recommendPoints_tmp[insert_index].pos.x,app_recommendPoints_tmp[insert_index].pos.y);
+		m_autofr.selectPoint(app_recommendPoints_tmp[insert_index].pixel);
+		set_trig_PTZflag(1);
+	}
+}
+
+void CVideoProcess::insertPos(int x, int y)
+{
+	cv::Point2i inPos;
+	inPos.x = x;
+	inPos.y = y;
+	m_autofr.insertPos(inPos);
+}
+
+
 static Point ptStart,ptEnd;
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
@@ -2025,19 +2072,26 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 
 	else if(TRIG_INTER_MODE == pThis->m_display.g_CurDisplayMode)
 	{
-		/*
+		
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
+			/*
 			if(0 == pThis->get_trig_PTZflag())
 			{
 				pThis->update_cur_trig_inter_P(x, y);
 			}
+			*/
+			if(pThis->get_manualInsertRecommendPoints_stat())
+        			pThis->auto_insertpoint(x, y);
+			else
+			{
+				pThis->auto_selectpoint(x, y);
+				//pThis->auto_getptz(x, y);
+			}
+				
        	 }
-        	*/
-        	if(pThis->get_manualInsertRecommendPoints_stat())
-        		pThis->auto_insertpoint(x, y);
-		else
-			;//pThis->auto_getptz(x, y);;
+        	
+
     }
 	else if(pThis->m_display.g_CurDisplayMode == GRID_MAP_VIEW)
 	{
@@ -2128,7 +2182,9 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								pThis->mapout2inresol(&tmp);
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
-								pThis->m_trig.Point2getPos(inPoint, outPoint);
+								//pThis->m_trig.Point2getPos(inPoint, outPoint);
+								pThis->m_autofr.Point2getPos(inPoint, outPoint);
+								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 								
 								trkmsg.cmd_ID = acqPosAndZoom;
 								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
@@ -2162,7 +2218,9 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								pThis->mapout2inresol(&tmp);
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
-								pThis->m_trig.Point2getPos(inPoint, outPoint);
+								//pThis->m_trig.Point2getPos(inPoint, outPoint);
+								pThis->m_autofr.Point2getPos(inPoint, outPoint);
+								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 								
 								trkmsg.cmd_ID = acqPosAndZoom;
 								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));

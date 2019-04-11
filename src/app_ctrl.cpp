@@ -1253,11 +1253,16 @@ void app_ctrl_settrig_inter(menu_param_t *pInCmd)
 		if(pMenuStatus->Trig_Inter_Mode)
 		{
 			g_displayMode = MENU_TRIG_INTER_MODE;
+			plat->set_find_featurepoint_stat(true);
+			plat->set_drawpoints_stat(true);
 		}
 		else
 		{
 			g_displayMode = MENU_MAIN_VIEW;
-			plat->m_trig.insertVertexAndPosition(plat->app_trig);
+			//plat->m_trig.insertVertexAndPosition(plat->app_trig);
+			plat->set_drawpoints_stat(false);
+			plat->set_find_featurepoint_stat(false);
+			plat->set_manualInsertRecommendPoints_stat(false);
 		}
 	}
 }
@@ -1269,5 +1274,6 @@ void app_ctrl_getPT()
 
 void app_ctrl_save_trig_inter()
 {
-	plat->m_trig.writeParams();
+	//plat->m_trig.writeParams();
+	plat->m_autofr.writeParams();
 }

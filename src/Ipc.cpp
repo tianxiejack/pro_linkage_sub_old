@@ -596,8 +596,9 @@ void* recv_msg(SENDST *RS422)
 				
 				if(proc->get_trig_PTZflag())
 				{
-					proc->set_trig_PTZflag(0);
-					proc->update_app_trig(posOfLinkage.panPos, posOfLinkage.tilPos);
+					printf("%s, %d, insertpos(%d, %d)\n", __FILE__,__LINE__,posOfLinkage.panPos, posOfLinkage.tilPos);
+					proc->insertPos(posOfLinkage.panPos, posOfLinkage.tilPos);
+					//proc->update_app_trig(posOfLinkage.panPos, posOfLinkage.tilPos);
 				}
 				
 				if(proc->getPTZflag()){

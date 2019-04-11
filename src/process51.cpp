@@ -50,7 +50,7 @@ extern bool changeComBaud ;
 extern CProcess *proc;
 extern std::vector< cv::Mat > ImageList;
 extern bool recvMtdConfigData;
-unsigned char  g_GridMapMode = 1;
+unsigned char  g_GridMapMode = 2;
 bool send_signal_flag = true;
 
 void inputtmp(unsigned char cmdid)
@@ -1772,12 +1772,9 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 	int grid_width = (int)((float)(outputWHF[0]/16));
 	static int changesensorCnt = 0;
 
-	if(get_drawpoints_stat())
-	{
-		printf("%s,%d, drawPoints\n",__FILE__,__LINE__);
-		m_autofr.drawPoints(m_display.m_imgOsd[extInCtrl->SensorStat], app_recommendPoints, 1);
-		set_drawpoints_stat(false);
-	}
+
+	Drawfeaturepoints();
+	Drawsubdiv();
 
 
 	
@@ -2341,6 +2338,54 @@ else{
 	return true;
 }
 
+
+void CProcess::Drawfeaturepoints()
+{
+	static int drawpoint_falg = 0;
+	if(drawpoint_falg)
+	{
+		m_autofr.drawPoints(m_display.m_imgOsd[extInCtrl->SensorStat], app_recommendPoints_bak, 0);
+		drawpoint_falg = 0;
+	}
+	if(get_drawpoints_stat())
+	{
+		app_recommendPoints_bak = app_recommendPoints;
+		m_autofr.drawPoints(m_display.m_imgOsd[extInCtrl->SensorStat], app_recommendPoints_bak, 1);
+		drawpoint_falg = 1;
+	}
+}
+
+void CProcess::Drawsubdiv()
+{
+	static int drawsubidv_falg = 0;
+	if(drawsubidv_falg)
+	{
+		m_autofr.draw_subdiv(m_display.m_imgOsd[extInCtrl->SensorStat],  0);
+		drawsubidv_falg = 0;
+	}
+	if(get_drawsubdiv_stat())
+	{
+		printf("%s,%d, draw_subdiv\n",__FILE__,__LINE__);
+		m_autofr.draw_subdiv(m_display.m_imgOsd[extInCtrl->SensorStat],  1);
+		drawsubidv_falg = 1;
+	}
+}
+
+void CProcess::Draw_subdiv_point()
+{
+	static int draw_subidv_point_falg = 0;
+	if(draw_subidv_point_falg)
+	{
+		//m_autofr.draw_subdiv_point(m_display.m_imgOsd[extInCtrl->SensorStat],  0);
+		draw_subidv_point_falg = 0;
+	}
+	if(get_drawsubdiv_point_stat())
+	{
+		printf("%s,%d, draw_subdiv_point\n",__FILE__,__LINE__);
+		//m_autofr.draw_subdiv_point(m_display.m_imgOsd[extInCtrl->SensorStat],  1);
+		draw_subidv_point_falg = 1;
+	}
+}
 
 void CProcess::DrawDragRect()
 {
@@ -3120,7 +3165,8 @@ void CProcess::DrawMtd_Rigion_Target()
 				Point2i inPoint, outPoint;
 				inPoint.x = tmp.x;
 				inPoint.y = tmp.y;
-				m_trig.Point2getPos(inPoint, outPoint);					
+				//m_trig.Point2getPos(inPoint, outPoint);
+				m_autofr.Point2getPos(inPoint, outPoint);
 				trkmsg.cmd_ID = speedloop;
 				memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
 				memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
@@ -4629,7 +4675,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 	if (key == 'i')
 	{
-		//if(pMenuStatus->Trig_Inter_Mode)
+		if(pMenuStatus->Trig_Inter_Mode)
 		{
 			set_find_featurepoint_stat(true);
 		}
@@ -4637,7 +4683,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 	if (key == 'I')
 	{
-		//if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
+		if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
 		{
 			printf("%s,%d, autoFindPoints\n",__FILE__,__LINE__);
 			m_autofr.autoFindPoints();
@@ -4714,16 +4760,16 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 	if(key == 'S')
 	{
-		set_drawpoints_stat(true);
+		bool stat = get_drawpoints_stat();
+		if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
+			set_drawpoints_stat(!stat);
 	}
 	
-	if (key == 't' || key == 'T')
+	if (key == 't')
 	{
-		if(pIStuts->ImgVideoTrans[pIStuts->SensorStat])
-			pIStuts->ImgVideoTrans[pIStuts->SensorStat] = eImgAlg_Disable;
-		else
-			pIStuts->ImgVideoTrans[pIStuts->SensorStat] = eImgAlg_Enable;
-		msgdriv_event(MSGID_EXT_INPUT_RST_THETA, NULL);
+		bool stat = get_drawsubdiv_stat();
+		//if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
+			set_drawsubdiv_stat(!stat);
 	}
 			
 	if(key == 'U' || key == 'u' ) {

@@ -151,6 +151,7 @@ public:
 	vector<position_t> m_trigonoMetricVector;
 	position_t  m_trigonoMetric_Node;
 	std::vector<FEATUREPOINT_T> app_recommendPoints;
+	std::vector<FEATUREPOINT_T> app_recommendPoints_bak;
 
 public:
 	bool get_find_featurepoint_stat(){return find_featurepoint_stat;};
@@ -161,7 +162,14 @@ public:
 	void set_manualInsertRecommendPoints_stat(bool value){manualInsertRecommendPoints_stat = value;};
 	bool get_drawpoints_stat(){return drawpoints_stat;};
 	void set_drawpoints_stat(bool value){drawpoints_stat = value;};
+	bool get_drawsubdiv_stat(){return drawsubdiv_stat;};
+	void set_drawsubdiv_stat(bool value){drawsubdiv_stat = value;};
+	bool get_drawsubdiv_point_stat(){return drawsubdiv_stat_point;};
+	void set_drawsubdiv_point_stat(bool value){drawsubdiv_stat_point = value;};
+	
 	void auto_insertpoint(int x, int y);
+	void auto_selectpoint(int x, int y);
+	void insertPos(int x, int y);
 	
 	static void pnotify_callback(std::vector<FEATUREPOINT_T>& recommendPoints);
 	void InitGridMapNodes();
@@ -194,6 +202,8 @@ private:
 	bool cloneSrcImage_stat = false;
 	bool manualInsertRecommendPoints_stat = false;
 	bool drawpoints_stat = false;
+	bool drawsubdiv_stat = false;
+	bool drawsubdiv_stat_point = false;
 	
 public:
 	CVideoProcess();

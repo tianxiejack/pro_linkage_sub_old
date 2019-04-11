@@ -236,6 +236,7 @@ public:
 	void DrawJoys();
 	void DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness);
 	void DrawMouse();
+	void DrawTrigInter();
 	
 	CMD_EXT* extInCtrl;
 	menu_param_t extMenuCtrl;

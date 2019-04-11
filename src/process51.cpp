@@ -2329,6 +2329,7 @@ else{
 //virtual joystick
 //	DrawJoys();
 	DrawMouse();
+	DrawTrigInter();
 
 	static unsigned int count = 0;
 	if((count & 1) == 1)
@@ -2525,6 +2526,80 @@ void CProcess::DrawMouse()
 		DrawArrow(frame, jos_mouse_bak, linecolor, color);
 		flag = 1;
 	}
+}
+
+void CProcess::DrawTrigInter()
+{
+	int Chid = 1;
+	Mat frame = m_display.m_imgOsd[Chid];
+	cv::Rect recIn;
+	static int osd_flag = 0;
+	static int mode = 0;
+	int color = 0;
+
+	if(osd_flag)
+	{
+	
+		color = 0;
+		if(0 == mode)
+		{
+			recIn.x = 0 + outputWHF[0] / 8;
+		 	recIn.y = 0 + outputWHF[1] / 8;
+		}			
+		else if(1 == mode)
+		{
+			recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
+		 	recIn.y = 0 + outputWHF[1] / 8;
+		}			
+		else if(2 == mode)
+		{
+			recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
+		 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+		}
+		else if(3 == mode)
+		{
+			recIn.x = 0 + outputWHF[0] / 8;
+		 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+		}
+		recIn.width = 15;
+		recIn.height = 15;
+		DrawCross(recIn,color,Chid,false);
+		
+		osd_flag = 0;
+	}
+
+
+	if(MENU_TRIG_INTER_MODE == g_displayMode)
+	{	
+
+		color = 6;
+		mode = m_display.gettrig_pip_mode();
+		if(0 == mode)
+		{
+			recIn.x = 0 + outputWHF[0] / 8;
+		 	recIn.y = 0 + outputWHF[1] / 8;
+		}			
+		else if(1 == mode)
+		{
+			recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
+		 	recIn.y = 0 + outputWHF[1] / 8;
+		}			
+		else if(2 == mode)
+		{
+			recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
+		 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+		}
+		else if(3 == mode)
+		{
+			recIn.x = 0 + outputWHF[0] / 8;
+		 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
+		}
+		recIn.width = 15;
+		recIn.height = 15;
+		DrawCross(recIn,color,Chid,true);
+		osd_flag = 1;
+	}
+
 }
 
 void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness)

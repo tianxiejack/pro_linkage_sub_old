@@ -15,13 +15,10 @@
 #include "CcCamCalibra.h"
 #include "IntrinsicMatrix.h"
 
-#include "trigonometric.hpp"
 #include "autoManualFindRelation.hpp"
 #include "GridMap.h"
 #include "Ipc.hpp"
 
-
-using namespace cr_trigonometricInterpolation;
 using namespace cr_automanualfindrelation;
 
 #define MAX_SUCCESS_IMAGES 160
@@ -148,8 +145,6 @@ public:
 	cv::FileStorage m_fsReadMtd;
 	cv::FileStorage m_fsWriteMtd;
 
-	vector<position_t> m_trigonoMetricVector;
-	position_t  m_trigonoMetric_Node;
 	std::vector<FEATUREPOINT_T> app_recommendPoints;
 	std::vector<FEATUREPOINT_T> app_recommendPoints_bak;
 
@@ -313,20 +308,13 @@ public:
 
 	cv::Point jos_mouse;
 	int mouse_show = 0;
-	void set_mouse_show(int param);
-	cv::Point cur_trig_inter_P;
 	int trig_inter_flag = 0;	
-	Trigonometric m_trig = Trigonometric(outputWHF[0],outputWHF[1]);
 	CAutoManualFindRelation m_autofr = CAutoManualFindRelation(outputWHF[0],outputWHF[1], 6, 6);
-	vector<position_t> app_trig;
-	void update_cur_trig_inter_P(int x, int y);
+	
+	void set_mouse_show(int param);
 	void SaveMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours);
 	void LoadMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > &edge_contours);
 
-private:
-	Trigonometric *m_pTrigonometric;
-public:
-	Trigonometric* createTrigonometric(int imgaeWidth,int imageHeight);	
 protected:
 	MultiChVideo MultiCh;
 	//BigChVideo		BigChannel;	

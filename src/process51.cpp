@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-using namespace cr_trigonometricInterpolation;
 using namespace cv;
 
 
@@ -2330,7 +2329,6 @@ else{
 //virtual joystick
 //	DrawJoys();
 	DrawMouse();
-	DrawTrigInter();
 
 	static unsigned int count = 0;
 	if((count & 1) == 1)
@@ -2527,128 +2525,6 @@ void CProcess::DrawMouse()
 		DrawArrow(frame, jos_mouse_bak, linecolor, color);
 		flag = 1;
 	}
-}
-
-void CProcess::DrawTrigInter()
-{
-	int Chid = 1;
-	Mat frame = m_display.m_imgOsd[Chid];
-	cv::Rect recIn;
-	cv::Point trig_tmp;
-	static int osd_flag = 0;
-	static int osd_flag2 = 0;
-	static vector<position_t> app_trig_bak;
-	static cv::Point cur_trig_inter_P_bak;
-	static int mode = 0;
-	int color = 0;
-	int thickness = 2;
-
-	if(osd_flag)
-	{
-		for(int i = 0; i < app_trig_bak.size(); i++)
-		{
-			color = 0;
-			trig_tmp.x = app_trig_bak[i].ver.x;
-			trig_tmp.y = app_trig_bak[i].ver.y;
-			plat->DrawCircle(frame, trig_tmp, TRIG_RADIUS, color, thickness);
-		}
-
-		{
-			color = 0;
-			if(0 == mode)
-			{
-				recIn.x = 0 + outputWHF[0] / 8;
-			 	recIn.y = 0 + outputWHF[1] / 8;
-			}			
-			else if(1 == mode)
-			{
-				recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
-			 	recIn.y = 0 + outputWHF[1] / 8;
-			}			
-			else if(2 == mode)
-			{
-				recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
-			 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
-			}
-			else if(3 == mode)
-			{
-				recIn.x = 0 + outputWHF[0] / 8;
-			 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
-			}
-			recIn.width = 15;
-			recIn.height = 15;
-			DrawCross(recIn,color,Chid,false);
-		}
-		
-		osd_flag = 0;
-	}
-	if(osd_flag2)
-	{
-		color = 0;
-		trig_tmp.x = cur_trig_inter_P_bak.x;
-		trig_tmp.y = cur_trig_inter_P_bak.y;
-		plat->DrawCircle(frame, trig_tmp, TRIG_RADIUS, color, thickness);
-
-		osd_flag2 = 0;
-	}
-
-	
-	if(MENU_TRIG_INTER_MODE == g_displayMode)
-	{
-		app_trig_bak = app_trig;
-		
-		for(int i = 0; i < app_trig_bak.size(); i++)
-		{
-			color = 5;
-			trig_tmp.x = app_trig_bak[i].ver.x;
-			trig_tmp.y = app_trig_bak[i].ver.y;
-			plat->DrawCircle(frame, trig_tmp, TRIG_RADIUS, color, thickness);
-		}
-
-		if(get_trig_PTZflag())
-		{
-			color = 3;
-			cur_trig_inter_P_bak = cur_trig_inter_P;
-
-			trig_tmp.x = cur_trig_inter_P_bak.x;
-			trig_tmp.y = cur_trig_inter_P_bak.y;
-			plat->DrawCircle(frame, trig_tmp, TRIG_RADIUS, color, thickness);
-
-			osd_flag2 = 1;	
-
-		}
-		
-		{
-			color = 6;
-			mode = m_display.gettrig_pip_mode();
-			if(0 == mode)
-			{
-				recIn.x = 0 + outputWHF[0] / 8;
-			 	recIn.y = 0 + outputWHF[1] / 8;
-			}			
-			else if(1 == mode)
-			{
-				recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
-			 	recIn.y = 0 + outputWHF[1] / 8;
-			}			
-			else if(2 == mode)
-			{
-				recIn.x = outputWHF[0] / 4 * 3 + outputWHF[0] / 8;
-			 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
-			}
-			else if(3 == mode)
-			{
-				recIn.x = 0 + outputWHF[0] / 8;
-			 	recIn.y = outputWHF[1] /4 * 3 + outputWHF[1] / 8;
-			}
-			recIn.width = 15;
-			recIn.height = 15;
-			DrawCross(recIn,color,Chid,true);
-		}
-
-		osd_flag = 1;
-	}
-
 }
 
 void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness)
@@ -3197,7 +3073,6 @@ void CProcess::DrawMtd_Rigion_Target()
 				Point2i inPoint, outPoint;
 				inPoint.x = tmp.x;
 				inPoint.y = tmp.y;
-				//m_trig.Point2getPos(inPoint, outPoint);
 				m_autofr.Point2getPos(inPoint, outPoint);
 				trkmsg.cmd_ID = speedloop;
 				memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
@@ -3790,52 +3665,6 @@ void CProcess::RefreshBallPTZ(int in_panPos, int in_tilPos, int in_zoom)
 	tiltPos = in_tilPos ;
 	zoomPos = in_zoom ;
 	return;
-}
-
-void CProcess::update_app_trig(int in_panPos, int in_tilPos)
-{
-	int dist,dx,dy;
-	int valid_p_flag = 0;
-	position_t tmp;
-	tmp.ver.x = proc->cur_trig_inter_P.x;
-	tmp.ver.y = proc->cur_trig_inter_P.y;
-	tmp.pos.x = in_panPos;
-	tmp.pos.y = in_tilPos;
-
-	std::vector<position_t>::iterator pPos_t = proc->app_trig.begin();
-	for( ; pPos_t != proc->app_trig.end(); pPos_t++)
-	{
-		dx = tmp.ver.x - pPos_t->ver.x;
-		dy = tmp.ver.y - pPos_t->ver.y;
-		dist = sqrt(abs(dx * dx) + abs(dy * dy));
-
-		if(dist >= 0 && dist <= TRIG_RADIUS)
-		{
-			proc->app_trig.erase(pPos_t);
-			proc->app_trig.insert(pPos_t, tmp);
-			return;
-		}
-		else if(dist > TRIG_RADIUS && dist <= 2 * TRIG_RADIUS)
-			valid_p_flag = 1;
-	}
-
-	if(!valid_p_flag)
-	{
-		proc->app_trig.push_back(tmp);
-	}
-}
-
-void CProcess::delete_app_trig(cv::Point curp)
-{
-	std::vector<position_t>::iterator pPos_t = app_trig.begin();
-	for( ; pPos_t != app_trig.end(); pPos_t++)
-	{
-		if((curp.x == pPos_t->ver.x) && (curp.y == pPos_t->ver.y))
-		{
-			app_trig.erase(pPos_t);
-			return;
-		}
-	}
 }
 
 void CProcess::setBallPos(int in_panPos, int in_tilPos, int in_zoom)
@@ -4482,9 +4311,18 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 	switch( key ) 
 	{
 		case 1:
-			//GB_WorkMode nextMode = GB_WorkMode(((int)g_AppWorkMode+1)% MODE_COUNT);
-			//setWorkMode(nextMode);
-
+			{
+				GB_WorkMode nextMode = GB_WorkMode(((int)g_AppWorkMode+1)% MODE_COUNT);
+				setWorkMode(nextMode);
+			}
+			break;
+		case 2:
+			app_ctrl_setMenu();  // Open Menu information
+			break;
+		case 3:
+			start_calibrate = true;
+			break;
+		case 10:
 			printf(" Move ball to destionation  1 Pixel  (%d , %d )    to   Pos (%d,%d ) \n" ,
 					m_back[0].pixel.x,m_back[0].pixel.y,m_back[0].pos.x,m_back[0].pos.y);
 			
@@ -4493,7 +4331,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			memcpy(&trkmsg.param[4],&m_back[0].pos.y,4);
 			ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 			break;
-		case 2:
+		case 11:
 			printf(" Move ball to destionation 2  Pixel  (%d , %d )   to  Pos (%d,%d ) \n" ,
 					m_back[1].pixel.x,m_back[1].pixel.y,m_back[1].pos.x,m_back[1].pos.y);
 
@@ -4501,10 +4339,8 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			memcpy(&trkmsg.param[0],&m_back[1].pos.x,4);
 			memcpy(&trkmsg.param[4],&m_back[1].pos.y,4);
 			ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-
-			//app_ctrl_setMenu();  // Open Menu information
 			break;
-		case 3:
+		case 12:
 			printf(" Move ball to destionation 3   Pixel  (%d , %d )    to  Pos (%d,%d ) \n" ,
 					m_back[2].pixel.x,m_back[2].pixel.y,m_back[2].pos.x,m_back[2].pos.y);
 
@@ -4512,8 +4348,6 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			memcpy(&trkmsg.param[0],&m_back[2].pos.x,4);
 			memcpy(&trkmsg.param[4],&m_back[2].pos.y,4);
 			ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-
-			//start_calibrate = true;
 			break;
 		case 4:	
 			g_displayMode = MENU_GRID_MAP_VIEW;
@@ -4557,6 +4391,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		case 9:
 			g_GridMapMode  =  (g_GridMapMode + 1) % 3;
 			break;
+		/*
 		case 10:
 			m_intrMatObj->setCalibrateSwitch(true);			
 			break;
@@ -4579,6 +4414,7 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 		case 12:
 			pThis->writeParams("SaveGridMap.yml");			
 			break;
+			*/
 		case SPECIAL_KEY_DOWN:
 			app_ctrl_downMenu();
 			if(g_displayMode == MENU_GRID_MAP_VIEW)
@@ -4801,7 +4637,6 @@ void CProcess::OnKeyDwn(unsigned char key)
 		if(get_trig_PTZflag())
 		{
 			proc->set_trig_PTZflag(0);
-			proc->delete_app_trig(cur_trig_inter_P);
 		}
 	}
 

@@ -50,9 +50,6 @@ extern std::vector< cv::Mat > ImageList;
 EventLoop *eventLoop = NULL;
 extern CProcess *proc ;
 
-
-using namespace cr_trigonometricInterpolation;
-
 int CVideoProcess::MAIN_threadCreate(void)
 {
 	int iRet = OSA_SOK;
@@ -402,7 +399,7 @@ int CVideoProcess::m_staticScreenWidth = outputWHF[0];
 int CVideoProcess::m_staticScreenHeight = outputWHF[1];
 CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 	m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_display(CDisplayer(w,h)),
-	m_backNodePos(cv::Point(-10,-10)),m_curNodeIndex(0),m_pTrigonometric(new Trigonometric(w,h))
+	m_backNodePos(cv::Point(-10,-10)),m_curNodeIndex(0)
 {
 	imageListForCalibra.clear();
 	pThis = this;
@@ -504,31 +501,9 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 #endif
 	readParams("SaveGridMap.yml");
 	read_param_trig();
-	m_autofr.create(pnotify_callback);
-	
-	m_pTrigonometric->insertVertexAndPosition(m_trigonoMetricVector);
-#if 0
-	m_trig.writeParams();
-	m_trig.draw_subdiv(m_display.m_imgOsd[0], true);
-	vector<position_t> temp_position;
-	Point2i getDstPos;
-	Point2i inputPoint = Point2i(1300,800);
-	m_trig.draw_point_triangle(m_display.m_imgOsd[0], inputPoint, temp_position,getDstPos,true);
-#endif
-	
+	m_autofr.create(pnotify_callback);	
 }
 
-Trigonometric* CVideoProcess::createTrigonometric(int imgaeWidth,int imageHeight)
-{
-	if(m_pTrigonometric == NULL)
-	{
-		m_pTrigonometric = new Trigonometric(imgaeWidth, imageHeight);
-		return m_pTrigonometric;	
-	}
-	else{
-		return m_pTrigonometric;	
-	}
-}
 CVideoProcess::CVideoProcess()
 	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_curNodeIndex(0)		
 {
@@ -1332,33 +1307,9 @@ bool CVideoProcess::readParams(const char* filename)
 						{
 							pThis->addMarkNum();
 						}
-						if(i>=5){
-							m_trigonoMetric_Node.ver.x = m_gridNodes[i][j].coord_x;
-							m_trigonoMetric_Node.ver.y = m_gridNodes[i][j].coord_y;
-
-							m_trigonoMetric_Node.pos.x =m_readGridNodes[i][j].pano;
-							m_trigonoMetric_Node.pos.y =m_readGridNodes[i][j].tilt;
-							m_trigonoMetricVector.push_back(m_trigonoMetric_Node);
-							
-						}
 					}
 
-
-					std::vector<position_t>::iterator itr = m_trigonoMetricVector.begin();
-					int line=0;
-				#if 0
-					for(; itr != m_trigonoMetricVector.end(); itr++)
-					{
-						line++;
-						if(line%10 == 0)
-						{
-							//printf("\r\n");
-						}
-						//printf("\r\nVertex:<%d,%d>, PTZ: <%d,%d>\r\n", (*itr).ver.x,
-							 (*itr).ver.y, (*itr).pos.x,(*itr).pos.y);
-					}
-				#endif
-					
+					int line=0;	
 				}				
 				m_readfs.release();
 				return true;
@@ -1374,7 +1325,6 @@ bool CVideoProcess::readParams(const char* filename)
 
 int CVideoProcess::read_param_trig()
 {
-	//m_trig.readParams(app_trig);
 	m_autofr.readParams(app_recommendPoints);
 }
 
@@ -1934,42 +1884,6 @@ printf("\r\n[%s]: Send PTZ Message to Ball Camera !!",__func__);
 	return Vp;
 }
 
-void CVideoProcess::update_cur_trig_inter_P(int x, int y)
-{
-	int dx, dy, dist;
-	int valid_p_flag = 0;
-	std::vector<position_t>::iterator pPos_t = app_trig.begin();
-	
-	for( ; pPos_t != app_trig.end(); pPos_t++)
-	{
-		dx = x - pPos_t->ver.x;
-		dy = y - pPos_t->ver.y;
-		dist = sqrt(abs(dx * dx) + abs(dy * dy));
-		if(dist >= 0 && dist <= TRIG_RADIUS)
-		{
-			cur_trig_inter_P.x = pPos_t->ver.x;
-			cur_trig_inter_P.y = pPos_t->ver.y;
-			set_trig_PTZflag(1);
-			return;
-		}
-		else if(dist > TRIG_RADIUS && dist <= 2 * TRIG_RADIUS)
-		{
-			valid_p_flag = 1;
-		}
-	}
-
-	if(valid_p_flag)
-	{
-		set_trig_PTZflag(0);
-	}
-	else
-	{
-		cur_trig_inter_P.x = x;
-		cur_trig_inter_P.y = y;
-		set_trig_PTZflag(1);
-	}
-}
-
 void CVideoProcess::auto_insertpoint(int x, int y)
 {
 	printf("%s, %d,%s start\n",__FILE__,__LINE__,__FUNCTION__);
@@ -2004,7 +1918,6 @@ void CVideoProcess::moveball(int x, int y)
 								//pThis->mapgun2fullscreen_point(&tmp.x,&tmp.y);
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
-								//pThis->m_trig.Point2getPos(inPoint, outPoint);
 								pThis->m_autofr.Point2getPos(inPoint, outPoint);
 								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 								
@@ -2112,12 +2025,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
-			/*
-			if(0 == pThis->get_trig_PTZflag())
-			{
-				pThis->update_cur_trig_inter_P(x, y);
-			}
-			*/
 			int stat = pThis->get_manualInsertRecommendPoints_stat();
 			if(1 == stat)
 			{
@@ -2227,7 +2134,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
 								inPoint.y = (inPoint.y - 540) * 2;
-								//pThis->m_trig.Point2getPos(inPoint, outPoint);
 								pThis->m_autofr.Point2getPos(inPoint, outPoint);
 								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 								
@@ -2265,7 +2171,6 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
 								inPoint.y = (inPoint.y - 540) * 2;
-								//pThis->m_trig.Point2getPos(inPoint, outPoint);
 								pThis->m_autofr.Point2getPos(inPoint, outPoint);
 								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 								

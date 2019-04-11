@@ -13,10 +13,10 @@ CPP_SRCS += \
 ../src/VideoProcess.cpp \
 ../src/WorkThread.cpp \
 ../src/app_ctrl.cpp \
+../src/autoManualFindRelation.cpp \
 ../src/cuda_mem.cpp \
 ../src/process51.cpp \
 ../src/test_videoProcess.cpp \
-../src/trigonometric.cpp \
 ../src/v4l2camera.cpp 
 
 CU_SRCS += \
@@ -35,11 +35,11 @@ OBJS += \
 ./src/VideoProcess.o \
 ./src/WorkThread.o \
 ./src/app_ctrl.o \
+./src/autoManualFindRelation.o \
 ./src/cuda.o \
 ./src/cuda_mem.o \
 ./src/process51.o \
 ./src/test_videoProcess.o \
-./src/trigonometric.o \
 ./src/v4l2camera.o 
 
 CPP_DEPS += \
@@ -52,10 +52,10 @@ CPP_DEPS += \
 ./src/VideoProcess.d \
 ./src/WorkThread.d \
 ./src/app_ctrl.d \
+./src/autoManualFindRelation.d \
 ./src/cuda_mem.d \
 ./src/process51.d \
 ./src/test_videoProcess.d \
-./src/trigonometric.d \
 ./src/v4l2camera.d 
 
 

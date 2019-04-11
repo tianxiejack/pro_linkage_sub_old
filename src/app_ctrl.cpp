@@ -1259,7 +1259,6 @@ void app_ctrl_settrig_inter(menu_param_t *pInCmd)
 		else
 		{
 			g_displayMode = MENU_MAIN_VIEW;
-			//plat->m_trig.insertVertexAndPosition(plat->app_trig);
 			plat->set_send_mat_stat(false);
 			plat->set_manualInsertRecommendPoints_stat(0);
 			plat->set_drawpoints_stat(false);
@@ -1277,6 +1276,5 @@ void app_ctrl_getPT()
 
 void app_ctrl_save_trig_inter()
 {
-	//plat->m_trig.writeParams();
 	plat->m_autofr.writeParams();
 }

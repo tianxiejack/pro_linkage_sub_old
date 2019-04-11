@@ -189,8 +189,6 @@ public:
 	void setBallImagePoint(int &x, int &y);
 	void Init_CameraMatrix();
 	void manualHandleKeyPoints(int &x,int &y);	
-	void update_app_trig(int in_panPos, int in_tilPos);
-	void delete_app_trig(cv::Point curp);
 	Point getCurrentMouseClickPoint();
 	Point getBallImagePoint();	
 	Point replaceClickPoints(int pointX, int pointY);
@@ -238,7 +236,6 @@ public:
 	void DrawJoys();
 	void DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness);
 	void DrawMouse();
-	void DrawTrigInter();
 	
 	CMD_EXT* extInCtrl;
 	menu_param_t extMenuCtrl;

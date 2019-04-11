@@ -9,11 +9,7 @@
 #include "msgDriv.h"
 #include "locale.h"
 #include "wchar.h"
-#include "trigonometric.hpp"
 #include "Ipc.hpp"
-
-
-using namespace cr_trigonometricInterpolation;
 
 #define DATAIN_TSK_PRI              (2)
 #define DATAIN_TSK_STACK_SIZE       (0)
@@ -598,7 +594,7 @@ void* recv_msg(SENDST *RS422)
 				{
 					printf("%s, %d, insertpos(%d, %d)\n", __FILE__,__LINE__,posOfLinkage.panPos, posOfLinkage.tilPos);
 					proc->insertPos(posOfLinkage.panPos, posOfLinkage.tilPos);
-					//proc->update_app_trig(posOfLinkage.panPos, posOfLinkage.tilPos);
+					proc->set_trig_PTZflag(0);
 				}
 				
 				if(proc->getPTZflag()){

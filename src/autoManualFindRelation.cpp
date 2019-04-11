@@ -244,7 +244,7 @@ void CAutoManualFindRelation::insertPos(cv::Point2i inPos)
 	if (m_notifyFunc != NULL)
 		(*m_notifyFunc)(m_featurePoints);
 
-	if (m_canUsedPoints.size() > 8)
+	if (m_canUsedPoints.size() > 3)
 		insertVertexAndPosition(m_canUsedPoints);
 
 	return;

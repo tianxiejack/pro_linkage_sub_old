@@ -77,7 +77,7 @@ public:
 	int findposInFpassembel(Point2f &fp , Point2i &pos);
 	void insertVertexAndPosition(vector<FEATUREPOINT_T> insert);
 	void getTriangleVertex( Point2f fp, vector<Point2i> &result );
-
+	bool readParamsForTest();
 
 private:
 	pNOTIFYFUNC m_notifyFunc;
@@ -97,6 +97,9 @@ private:
 
 	FileStorage m_readfs;
 	FileStorage m_writefs;
+
+
+	cv::Point2i m_testPixel;
 };
 
 }

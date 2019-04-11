@@ -457,6 +457,10 @@ int CAutoManualFindRelation::draw_point_triangle(Mat& img, Point2i fp,vector<FEA
 	Point2i tmppos;
 	FEATUREPOINT_T tmpBack;
 
+	readParamsForTest();
+	fp.x = m_testPixel.x;
+	fp.y = m_testPixel.y;
+	printf("%s : line:%d     inPoint (%d , %d) \n",__func__,__LINE__,fp.x , fp.y);
 
 	if (bdraw)
 		color = cvScalar(255, 0, 255, 255);
@@ -615,5 +619,28 @@ bool CAutoManualFindRelation::writeParams(void)
 		return true;
 	}
 
+	return false;
+}
+
+bool CAutoManualFindRelation::readParamsForTest()
+{
+	char paramName[40];
+	memset(paramName, 0, sizeof(paramName));
+	string cfgFile;
+	cfgFile = "ConfigForTest.yml";
+
+	m_readfs.open(cfgFile, FileStorage::READ);
+	int size;
+	FEATUREPOINT_T tmpPos;
+
+	if (m_readfs.isOpened()) {
+		sprintf(paramName, "x");
+		m_readfs[paramName] >> m_testPixel.x;
+		sprintf(paramName, "y");
+		m_readfs[paramName] >> m_testPixel.y;
+
+		m_readfs.release();
+		return true;
+	}
 	return false;
 }

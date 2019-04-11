@@ -386,19 +386,17 @@ void CAutoManualFindRelation::preprocessPos(vector<Point2i>& inpos)
 
 void CAutoManualFindRelation::calcNormalWay(Point2i inPoint,vector<Point2i>& triVertex, vector<Point2i>& triPos,Point2i& result)
 {
-	unsigned int d1, d2, d3;
+	double d1, d2, d3;
 	double f1, f2, f3, dtmp;
 
-	d1 = pow((inPoint.x - triVertex[0].x), 2)
-			+ pow((inPoint.y - triVertex[0].y), 2);
-	d2 = pow((inPoint.x - triVertex[1].x), 2)
-			+ pow((inPoint.y - triVertex[1].y), 2);
-	d3 = pow((inPoint.x - triVertex[2].x), 2)
-			+ pow((inPoint.y - triVertex[2].y), 2);
+	d1 = getDistance(inPoint , triVertex[0]);
+	d2 = getDistance(inPoint , triVertex[1]);
+	d3 = getDistance(inPoint , triVertex[2]);
 
-	dtmp = 1 + (double) d1 / d2 + (double) d2 / d3;
+
+	dtmp = 1 + d1 / d2 + d2 / d3;
 	f1 = 1 / dtmp;
-	f2 = (double) d1 / d2 * f1;
+	f2 =  d1 / d2 * f1;
 	f3 = 1 - f1 - f2;
 
 	result.x = f1 * triPos[0].x + f2 * triPos[1].x + f3 * triPos[2].x;
@@ -445,13 +443,13 @@ void CAutoManualFindRelation::calcDistancePoint2Triangle(Point2i inPoint,vector<
 
 void CAutoManualFindRelation::getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,vector<Point2i>& triVertex, vector<Point2i>& triPos,Point2i& result)
 {
-	unsigned int d1, d2, d3;
+	double d1, d2;
 	double f1;
 
 	d1 = getDistance(inPoint, triVertex[flag]);
 	d2 = getDistance(inPoint, triVertex[(flag+1)%3]);
 
-	f1 = (double)d2 /(d1+d2);
+	f1 = d2 /(d1+d2);
 
 	result.x = f1 * triPos[flag].x + (1 - f1) * triPos[(flag+1)%3].x;
 	result.y = f1 * triPos[flag].y + (1 - f1) * triPos[(flag+1)%3].y;

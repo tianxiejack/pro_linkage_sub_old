@@ -1775,6 +1775,7 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 
 	Drawfeaturepoints();
 	Drawsubdiv();
+	Draw_point_triangle();
 
 
 	
@@ -2387,6 +2388,33 @@ void CProcess::Draw_subdiv_point()
 	}
 }
 
+void CProcess::Draw_point_triangle()
+{
+	static int draw_point_triangle_falg = 0;
+	vector<FEATUREPOINT_T> back;
+	Point2i pos;
+	
+	if(draw_point_triangle_falg)
+	{
+		m_autofr.draw_point_triangle(m_display.m_imgOsd[extInCtrl->SensorStat],   point_triangle_bak, back, pos, 0);
+		draw_point_triangle_falg = 0;
+	}
+	if(get_draw_point_triangle_stat())
+	{
+		//printf("%s,%d, Draw_point_triangle\n",__FILE__,__LINE__);
+		point_triangle_bak = point_triangle;
+		m_autofr.draw_point_triangle(m_display.m_imgOsd[extInCtrl->SensorStat],  point_triangle_bak, back, pos, 1);
+
+		printf("\n\n%s,%d, input pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__,  point_triangle_bak.x,point_triangle_bak.y,pos.x,pos.y);
+		for(int i = 0; i < back.size(); i++)
+		{
+			printf("%s,%d, i=%d, pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__, i, back[i].pixel.x,back[i].pixel.y,back[i].pos.x,back[i].pos.y);
+		}
+
+		draw_point_triangle_falg = 1;
+	}
+}
+	
 void CProcess::DrawDragRect()
 {
 	unsigned int drawRectId;
@@ -4663,7 +4691,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 		msgdriv_event(MSGID_EXT_INPUT_ENFREZZ, NULL);
 	}
 
-	if (key == 'g' || key == 'G')
+	if (key == 'g')
 	{
 		tmpMenuCmd.Trig_Inter_Mode = (pMenuStatus->Trig_Inter_Mode + 1) % 2;
 		app_ctrl_settrig_inter(&tmpMenuCmd);
@@ -4677,7 +4705,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 	{
 		if(pMenuStatus->Trig_Inter_Mode)
 		{
-			set_find_featurepoint_stat(true);
+			set_send_mat_stat(true);
 		}
 	}
 
@@ -4753,23 +4781,33 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 	if (key == 's')
 	{
-		bool stat = get_manualInsertRecommendPoints_stat();
-		if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
-			set_manualInsertRecommendPoints_stat(!stat);
+		int stat = get_manualInsertRecommendPoints_stat();
+		stat = (stat + 1) % 3;
+		if(pMenuStatus->Trig_Inter_Mode)
+		{
+			set_manualInsertRecommendPoints_stat(stat);
+		}
+		if(stat != 2)
+			set_draw_point_triangle_stat(false);
 	}
 
 	if(key == 'S')
 	{
 		bool stat = get_drawpoints_stat();
-		if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
+		if(pMenuStatus->Trig_Inter_Mode)
 			set_drawpoints_stat(!stat);
 	}
 	
 	if (key == 't')
 	{
 		bool stat = get_drawsubdiv_stat();
-		//if((pMenuStatus->Trig_Inter_Mode) && (get_cloneSrcImage_stat()))
+		if(pMenuStatus->Trig_Inter_Mode)
 			set_drawsubdiv_stat(!stat);
+	}
+
+	if (key == 'T')
+	{
+	
 	}
 			
 	if(key == 'U' || key == 'u' ) {

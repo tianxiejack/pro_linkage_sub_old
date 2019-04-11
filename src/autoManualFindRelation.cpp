@@ -261,6 +261,8 @@ void CAutoManualFindRelation::collectMarkedPoints()
 			m_canUsedPoints.push_back(tmp);
 		}
 	}
+
+	insertVertexAndPosition(m_canUsedPoints) ;
 	return;
 }
 
@@ -421,20 +423,24 @@ void CAutoManualFindRelation::draw_subdiv(Mat& img, bool bdraw)
 	subdiv.getTriangleList(triangleList);
 	vector<Point> pt(3);
 	CvScalar color;
+	int linewidth = 1;
 	if (bdraw)
 		color = cvScalar(0, 100, 255, 255);
 	else
+	{
 		color = cvScalar(0, 0, 0, 0);
-	printf("triangleList.size()=%d \n ",triangleList.size());
+		linewidth = 2 ;
+	}
+
 	for (size_t i = 0; i < triangleList.size(); i++)
 	{
 		Vec6f t = triangleList[i];
 		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
 		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
 		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
-		line(img, pt[0], pt[1], color, 1, CV_AA, 0);
-		line(img, pt[1], pt[2], color, 1, CV_AA, 0);
-		line(img, pt[2], pt[0], color, 1, CV_AA, 0);
+		line(img, pt[0], pt[1], color, linewidth, CV_AA, 0);
+		line(img, pt[1], pt[2], color, linewidth, CV_AA, 0);
+		line(img, pt[2], pt[0], color, linewidth, CV_AA, 0);
 	}
 	return;
 }
@@ -451,11 +457,12 @@ int CAutoManualFindRelation::draw_point_triangle(Mat& img, Point2i fp,vector<FEA
 	Point2i tmppos;
 	FEATUREPOINT_T tmpBack;
 
+
 	if (bdraw)
 		color = cvScalar(255, 0, 255, 255);
 	else
 		color = cvScalar(0, 0, 0, 0);
-
+	
 	subdiv.locate(fp, e0, vertex);
 
 	if (e0 > 0) {
@@ -560,9 +567,9 @@ bool CAutoManualFindRelation::readParams(std::vector<FEATUREPOINT_T>& getParam)
 		}
 		getParam = m_featurePoints;
 		m_readfs.release();
+		collectMarkedPoints();
 		return true;
 	}
-	collectMarkedPoints();
 	return false;
 }
 

@@ -153,12 +153,12 @@ void CVideoProcess::main_proc_func()
 
 		cv::Mat	salientMap, sobelMap;
 
-		if((GUN_CHID == chId) && (get_find_featurepoint_stat()))
+		if((GUN_CHID == chId) && (get_send_mat_stat()))
 		{
 			printf("%s,%d, cloneSrcImage\n",__FILE__,__LINE__);
 			m_autofr.cloneSrcImage(frame);
 			set_cloneSrcImage_stat(true);
-			set_find_featurepoint_stat(false);
+			set_send_mat_stat(false);
 		}
 			
 
@@ -1972,10 +1972,22 @@ void CVideoProcess::update_cur_trig_inter_P(int x, int y)
 
 void CVideoProcess::auto_insertpoint(int x, int y)
 {
+	printf("%s, %d,%s start\n",__FILE__,__LINE__,__FUNCTION__);
 	cv::Point2i inPoint;
 	inPoint.x = x;
 	inPoint.y = y;
 	m_autofr.manualInsertRecommendPoints(inPoint);
+}
+
+
+void CVideoProcess::auto_draw_triangle_point(int x, int y)
+{
+	printf("%s, %d,%s start\n",__FILE__,__LINE__,__FUNCTION__);
+	Point2i point_tmp;
+	point_tmp.x = x;
+	point_tmp.y = y;
+	point_triangle = point_tmp;
+	set_draw_point_triangle_stat(true);
 }
 
 void CVideoProcess::auto_selectpoint(int x, int y)
@@ -2081,14 +2093,19 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 				pThis->update_cur_trig_inter_P(x, y);
 			}
 			*/
-			if(pThis->get_manualInsertRecommendPoints_stat())
+			int stat = pThis->get_manualInsertRecommendPoints_stat();
+			if(1 == stat)
+			{
         			pThis->auto_insertpoint(x, y);
-			else
+			}
+			else if(2 == stat)
+			{
+        			pThis->auto_draw_triangle_point(x, y);
+			}
+			else if(0 == stat)
 			{
 				pThis->auto_selectpoint(x, y);
-				//pThis->auto_getptz(x, y);
-			}
-				
+			}	
        	 }
         	
 
@@ -2180,8 +2197,10 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								tmp.x = x;
 								tmp.y = y;
 								pThis->mapout2inresol(&tmp);
+								//pThis->mapgun2fullscreen_point(&tmp.x,&tmp.y);
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
+								inPoint.y = (inPoint.y - 540) * 2;
 								//pThis->m_trig.Point2getPos(inPoint, outPoint);
 								pThis->m_autofr.Point2getPos(inPoint, outPoint);
 								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
@@ -2216,8 +2235,10 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								tmp.x = x;
 								tmp.y = y;
 								pThis->mapout2inresol(&tmp);
+								//pThis->mapgun2fullscreen_point(&tmp.x,&tmp.y);
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
+								inPoint.y = (inPoint.y - 540) * 2;
 								//pThis->m_trig.Point2getPos(inPoint, outPoint);
 								pThis->m_autofr.Point2getPos(inPoint, outPoint);
 								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);

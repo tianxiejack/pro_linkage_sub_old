@@ -233,6 +233,7 @@ public:
 	void Drawfeaturepoints();
 	void Drawsubdiv();
 	void Draw_subdiv_point();
+	void Draw_point_triangle();
 	void DrawDragRect();
 	void DrawJoys();
 	void DrawCircle(Mat frame, cv::Point center, int radius, int colour, int thickness);

@@ -154,20 +154,23 @@ public:
 	std::vector<FEATUREPOINT_T> app_recommendPoints_bak;
 
 public:
-	bool get_find_featurepoint_stat(){return find_featurepoint_stat;};
-	void set_find_featurepoint_stat(bool value){find_featurepoint_stat = value;};
+	bool get_send_mat_stat(){return send_mat_stat;};
+	void set_send_mat_stat(bool value){send_mat_stat = value;};
 	bool get_cloneSrcImage_stat(){return cloneSrcImage_stat;};
 	void set_cloneSrcImage_stat(bool value){cloneSrcImage_stat = value;};
-	bool get_manualInsertRecommendPoints_stat(){return manualInsertRecommendPoints_stat;};
-	void set_manualInsertRecommendPoints_stat(bool value){manualInsertRecommendPoints_stat = value;};
+	int get_manualInsertRecommendPoints_stat(){return manualInsertRecommendPoints_stat;};
+	void set_manualInsertRecommendPoints_stat(int value){manualInsertRecommendPoints_stat = value;printf("%s, %d,manualInsertRecommendPoints_stat=%d\n",__FILE__,__LINE__,manualInsertRecommendPoints_stat);};
 	bool get_drawpoints_stat(){return drawpoints_stat;};
 	void set_drawpoints_stat(bool value){drawpoints_stat = value;};
 	bool get_drawsubdiv_stat(){return drawsubdiv_stat;};
 	void set_drawsubdiv_stat(bool value){drawsubdiv_stat = value;};
-	bool get_drawsubdiv_point_stat(){return drawsubdiv_stat_point;};
-	void set_drawsubdiv_point_stat(bool value){drawsubdiv_stat_point = value;};
+	bool get_drawsubdiv_point_stat(){return drawsubdiv_point_stat;};
+	void set_drawsubdiv_point_stat(bool value){drawsubdiv_point_stat = value;};
+	bool get_draw_point_triangle_stat(){return draw_point_triangle_stat;};
+	void set_draw_point_triangle_stat(bool value){draw_point_triangle_stat = value;};
 	
 	void auto_insertpoint(int x, int y);
+	void auto_draw_triangle_point(int x, int y);
 	void auto_selectpoint(int x, int y);
 	void insertPos(int x, int y);
 	
@@ -198,12 +201,16 @@ private:
 	int m_gridWidth,m_gridHeight;
 	static int m_staticScreenWidth,m_staticScreenHeight;
 	
-	bool find_featurepoint_stat = false;
+	bool send_mat_stat = false;
 	bool cloneSrcImage_stat = false;
-	bool manualInsertRecommendPoints_stat = false;
+	int manualInsertRecommendPoints_stat = 0;
 	bool drawpoints_stat = false;
 	bool drawsubdiv_stat = false;
-	bool drawsubdiv_stat_point = false;
+	bool drawsubdiv_point_stat = false;
+	bool draw_point_triangle_stat = false;
+public:
+	Point2i point_triangle;
+	Point2i point_triangle_bak;;
 	
 public:
 	CVideoProcess();

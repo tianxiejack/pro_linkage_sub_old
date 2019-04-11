@@ -457,10 +457,10 @@ int CAutoManualFindRelation::draw_point_triangle(Mat& img, Point2i fp,vector<FEA
 	Point2i tmppos;
 	FEATUREPOINT_T tmpBack;
 
-	readParamsForTest();
-	fp.x = m_testPixel.x;
-	fp.y = m_testPixel.y;
-	printf("%s : line:%d     inPoint (%d , %d) \n",__func__,__LINE__,fp.x , fp.y);
+	//readParamsForTest();
+	//fp.x = m_testPixel.x;
+	//fp.y = m_testPixel.y;
+	//printf("%s : line:%d     inPoint (%d , %d) \n",__func__,__LINE__,fp.x , fp.y);
 
 	if (bdraw)
 		color = cvScalar(255, 0, 255, 255);

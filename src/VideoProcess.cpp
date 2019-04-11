@@ -1987,7 +1987,32 @@ void CVideoProcess::auto_draw_triangle_point(int x, int y)
 	point_tmp.x = x;
 	point_tmp.y = y;
 	point_triangle = point_tmp;
+	set_print_stat(true);
 	set_draw_point_triangle_stat(true);
+
+}
+
+
+void CVideoProcess::moveball(int x, int y)
+{
+								SENDST trkmsg={0};
+								cv::Point tmp;
+								Point2i inPoint, outPoint;
+								tmp.x = x;
+								tmp.y = y;
+								pThis->mapout2inresol(&tmp);
+								//pThis->mapgun2fullscreen_point(&tmp.x,&tmp.y);
+								inPoint.x = tmp.x;
+								inPoint.y = tmp.y;
+								//pThis->m_trig.Point2getPos(inPoint, outPoint);
+								pThis->m_autofr.Point2getPos(inPoint, outPoint);
+								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
+								
+								trkmsg.cmd_ID = acqPosAndZoom;
+								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
+								memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
+								ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+
 }
 
 void CVideoProcess::auto_selectpoint(int x, int y)
@@ -2101,6 +2126,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			else if(2 == stat)
 			{
         			pThis->auto_draw_triangle_point(x, y);
+				pThis->moveball(x, y);
 			}
 			else if(0 == stat)
 			{

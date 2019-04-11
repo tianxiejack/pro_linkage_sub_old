@@ -168,9 +168,12 @@ public:
 	void set_drawsubdiv_point_stat(bool value){drawsubdiv_point_stat = value;};
 	bool get_draw_point_triangle_stat(){return draw_point_triangle_stat;};
 	void set_draw_point_triangle_stat(bool value){draw_point_triangle_stat = value;};
+	bool get_print_stat(){return draw_print_stat;};
+	void set_print_stat(bool value){draw_print_stat = value;};
 	
 	void auto_insertpoint(int x, int y);
 	void auto_draw_triangle_point(int x, int y);
+	void moveball(int x, int y);
 	void auto_selectpoint(int x, int y);
 	void insertPos(int x, int y);
 	
@@ -208,6 +211,7 @@ private:
 	bool drawsubdiv_stat = false;
 	bool drawsubdiv_point_stat = false;
 	bool draw_point_triangle_stat = false;
+	bool draw_print_stat = false;
 public:
 	Point2i point_triangle;
 	Point2i point_triangle_bak;;

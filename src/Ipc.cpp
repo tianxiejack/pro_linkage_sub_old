@@ -593,7 +593,7 @@ void* recv_msg(SENDST *RS422)
 		case querypos:
 			{
 				memcpy(&posOfLinkage,RS422->param,sizeof(posOfLinkage));
-				
+				printf("%s, %d, querypos get(%d, %d)\n", __FILE__,__LINE__,posOfLinkage.panPos, posOfLinkage.tilPos);
 				if(proc->get_trig_PTZflag())
 				{
 					printf("%s, %d, insertpos(%d, %d)\n", __FILE__,__LINE__,posOfLinkage.panPos, posOfLinkage.tilPos);

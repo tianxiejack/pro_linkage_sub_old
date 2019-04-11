@@ -2405,10 +2405,14 @@ void CProcess::Draw_point_triangle()
 		point_triangle_bak = point_triangle;
 		m_autofr.draw_point_triangle(m_display.m_imgOsd[extInCtrl->SensorStat],  point_triangle_bak, back, pos, 1);
 
-		printf("\n\n%s,%d, input pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__,  point_triangle_bak.x,point_triangle_bak.y,pos.x,pos.y);
-		for(int i = 0; i < back.size(); i++)
+		if(get_print_stat())
 		{
-			printf("%s,%d, i=%d, pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__, i, back[i].pixel.x,back[i].pixel.y,back[i].pos.x,back[i].pos.y);
+			printf("\n\n%s,%d, input pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__,  point_triangle_bak.x,point_triangle_bak.y,pos.x,pos.y);
+			for(int i = 0; i < back.size(); i++)
+			{
+				printf("%s,%d, i=%d, pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__, i, back[i].pixel.x,back[i].pixel.y,back[i].pos.x,back[i].pos.y);
+			}
+			set_print_stat(false);
 		}
 
 		draw_point_triangle_falg = 1;
@@ -4654,11 +4658,11 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 	if(key == 'c'|| key == 'C')
 	{
-		if(pIStuts->AvtTrkStat)
-			pIStuts->AvtTrkStat = eTrk_mode_acq;
-		else
-			pIStuts->AvtTrkStat = eTrk_mode_target;
-		msgdriv_event(MSGID_EXT_INPUT_TRACK, NULL);
+
+
+
+
+				
 	}
 
 	if(key == 'd'|| key == 'D')

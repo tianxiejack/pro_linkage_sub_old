@@ -79,6 +79,16 @@ public:
 	void getTriangleVertex( Point2f fp, vector<Point2i> &result );
 	bool readParamsForTest();
 
+
+	void calcNormalWay(Point2i inPoint,vector<Point2i>& triVertex, vector<Point2i>& triPos,Point2i& result);
+
+
+	float getDistance(Point2i pointO, Point2i pointA);
+	float getDist_P2L(Point2i pointP, Point2i pointA, Point2i pointB);
+	void calcDistancePoint2Triangle(Point2i inPoint,vector<Point2i>& triVertex, vector<double>& dis);
+	void getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,vector<Point2i>& triVertex, vector<Point2i>& triPos,Point2i& result);
+
+
 private:
 	pNOTIFYFUNC m_notifyFunc;
 	std::vector<FEATUREPOINT_T> m_featurePoints ;

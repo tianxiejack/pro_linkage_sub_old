@@ -374,6 +374,7 @@ protected:
 	mouserect mapgun2fullscreen(mouserect rectcur);
 	int mapgun2fullscreen_point(int *x, int *y);
 	int mapfullscreen2gun_pointv20(int *x, int *y);
+	int mapgun2fullscreen_auto(int *x, int *y);
 	mouserect maprect(mouserect rectcur,mouserect rectsrc,mouserect rectdest);
 	int maprect_point(int *x, int *y, mouserect rectsrc,mouserect rectdest);
 	void sendIPC_Time(int value);

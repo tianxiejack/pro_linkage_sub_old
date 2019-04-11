@@ -361,8 +361,8 @@ void CAutoManualFindRelation::vertex2pos( vector<Point2i> &vertex )
 static bool comp(const FEATUREPOINT_T &a, const FEATUREPOINT_T &b)
 {
 	unsigned int tmpa, tmpb;
-	tmpa = a.pixel.x;
-	tmpb = b.pixel.y;
+	tmpa = a.pos.x;
+	tmpb = b.pos.y;
 	return tmpa < tmpb;
 }
 
@@ -374,15 +374,15 @@ void CAutoManualFindRelation::preprocessPos()
 	if (sizeNum)
 		sort(m_calcPos.begin(), m_calcPos.end(), comp);
 
-	if (abs(m_calcPos[2].pixel.x - m_calcPos[0].pixel.x) > 18000) {
-		m_calcPos[0].pixel.x += 36000;
-		if (m_calcPos[1].pixel.x < 18000)
-			m_calcPos[1].pixel.x += 36000;
+	if (abs(m_calcPos[2].pos.x - m_calcPos[0].pos.x) > 18000) {
+		m_calcPos[0].pos.x += 36000;
+		if (m_calcPos[1].pos.x < 18000)
+			m_calcPos[1].pos.x += 36000;
 	}
 
 	for (int j = 0; j < 3; j++) {
-		if (m_calcPos[j].pixel.y > 32000) {
-			m_calcPos[j].pixel.y = 32768 - m_calcPos[j].pixel.y;
+		if (m_calcPos[j].pos.y > 32000) {
+			m_calcPos[j].pos.y = 32768 - m_calcPos[j].pos.y;
 		}
 	}
 
@@ -400,13 +400,24 @@ void CAutoManualFindRelation::calcNormalWay(Point2i inPoint,vector<Point2i>& tri
 	d3 = getDistance(inPoint , m_calcPos[2].pixel);
 
 
-	dtmp = 1 + d1 / d2 + d2 / d3;
+	dtmp = 1 + d1 / d2 + d1 / d3;
 	f1 = 1 / dtmp;
 	f2 =  d1 / d2 * f1;
 	f3 = 1 - f1 - f2;
 
+	printf("point 0 , f1 = %f, pixel(%d, %d), pos(%d, %d)\n", f1,  m_calcPos[0].pixel.x , m_calcPos[0].pixel.y , m_calcPos[0].pos.x ,m_calcPos[0].pos.y);
+	printf("point 1 , f2 = %f, pixel(%d, %d), pos(%d, %d)\n", f2,  m_calcPos[1].pixel.x , m_calcPos[1].pixel.y , m_calcPos[1].pos.x ,m_calcPos[1].pos.y);
+	printf("point 2 , f3 = %f, pixel(%d, %d), pos(%d, %d)\n", f3,  m_calcPos[2].pixel.x , m_calcPos[2].pixel.y , m_calcPos[2].pos.x ,m_calcPos[2].pos.y);
+
+
+
 	result.x = f1 * m_calcPos[0].pos.x + f2 * m_calcPos[1].pos.x + f3 * m_calcPos[2].pos.x;
 	result.y = f1 * m_calcPos[0].pos.y + f2 * m_calcPos[1].pos.y + f3 * m_calcPos[2].pos.y;
+
+	printf("inpoint  pixel(%d, %d), pos(%d, %d)\n", inPoint.x, inPoint.y , result.x ,result.y );
+
+
+
 
 	return ;
 }

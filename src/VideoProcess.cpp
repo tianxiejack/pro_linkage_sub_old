@@ -1191,6 +1191,26 @@ int CVideoProcess::mapfullscreen2gun_pointv20(int *x, int *y)
 	return maprect_point(x, y, rect1080p, rectgun);
 }
 
+
+int CVideoProcess::mapgun2fullscreen_auto(int *x, int *y)
+{
+	mouserect rect1080p;
+	mouserect rectgun;
+	
+	rect1080p.x = 0;
+	rect1080p.y = 0;
+	rect1080p.w =m_ScreenWidth;// 1920;
+	rect1080p.h = m_ScreenHeight;
+
+	rectgun.x = 0;
+	rectgun.y = m_ScreenHeight/2;
+	rectgun.w =m_ScreenWidth;// 1920;
+	rectgun.h = m_ScreenHeight/2;
+	
+	return maprect_point(x, y, rectgun, rect1080p);
+}
+
+
 mouserect CVideoProcess::maprect(mouserect rectcur,mouserect rectsrc,mouserect rectdest)
 {
 	mouserect rect_result;
@@ -2130,10 +2150,10 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								tmp.x = x;
 								tmp.y = y;
 								pThis->mapout2inresol(&tmp);
-								//pThis->mapgun2fullscreen_point(&tmp.x,&tmp.y);
+								pThis->mapgun2fullscreen_auto(&tmp.x,&tmp.y);
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
-								inPoint.y = (inPoint.y - 540) * 2;
+								//inPoint.y = (inPoint.y - 540) * 2;
 								pThis->m_autofr.Point2getPos(inPoint, outPoint);
 								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 								
@@ -2167,10 +2187,10 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								tmp.x = x;
 								tmp.y = y;
 								pThis->mapout2inresol(&tmp);
-								//pThis->mapgun2fullscreen_point(&tmp.x,&tmp.y);
+								pThis->mapgun2fullscreen_auto(&tmp.x,&tmp.y);
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
-								inPoint.y = (inPoint.y - 540) * 2;
+								//inPoint.y = (inPoint.y - 540) * 2;
 								pThis->m_autofr.Point2getPos(inPoint, outPoint);
 								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 								

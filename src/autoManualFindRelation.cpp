@@ -302,11 +302,10 @@ int CAutoManualFindRelation::Point2getPos(const Point2i inPoint,Point2i &result)
 {
 	int ret = 0;
 	vector<Point2i> triVertex;
-	vector<Point2i> triPos;
 
 	getTriangleVertex(inPoint, triVertex);
-	for (std::vector<Point2i>::iterator plist = triVertex.begin();
-			plist != triVertex.end(); ++plist) {
+	for (std::vector<Point2i>::iterator plist = triVertex.begin();plist != triVertex.end(); ++plist)
+	{
 		if (plist->x <= 0 || plist->x > m_rect.width || plist->y <= 0
 				|| plist->y > m_rect.height)
 			ret = -1;
@@ -316,8 +315,8 @@ int CAutoManualFindRelation::Point2getPos(const Point2i inPoint,Point2i &result)
 	if (-1 == ret)
 		return ret;
 
-	vertex2pos(triVertex, triPos);
-	getPos(inPoint, triVertex, triPos, result);
+	vertex2pos( triVertex );
+	getPos(inPoint, triVertex, result);
 	return ret;
 }
 
@@ -338,14 +337,20 @@ void CAutoManualFindRelation::getTriangleVertex(Point2f fp,vector<Point2i> &resu
 	}
 }
 
-void CAutoManualFindRelation::vertex2pos(vector<Point2i> &vertex,vector<Point2i> & getPos)
+void CAutoManualFindRelation::vertex2pos( vector<Point2i> &vertex )
 {
-	getPos.clear();
-	for (int i = 0; i < vertex.size(); i++) {
-		for (std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin();
-				plist != fpassemble.end(); ++plist) {
-			if (plist->pixel == vertex[i]) {
-				getPos.push_back(plist->pos);
+	FEATUREPOINT_T tmp;
+	m_calcPos.clear();
+
+	for (int i = 0; i < vertex.size(); i++)
+	{
+		for (std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin();plist != fpassemble.end(); ++plist)
+		{
+			if (plist->pixel == vertex[i])
+			{
+				tmp.pixel = plist->pixel;
+				tmp.pos = plist->pos;
+				m_calcPos.push_back(tmp);
 				break;
 			}
 		}
@@ -353,30 +358,31 @@ void CAutoManualFindRelation::vertex2pos(vector<Point2i> &vertex,vector<Point2i>
 	return;
 }
 
-static bool comp(const Point2i &a, const Point2i &b)
+static bool comp(const FEATUREPOINT_T &a, const FEATUREPOINT_T &b)
 {
 	unsigned int tmpa, tmpb;
-	tmpa = a.x;
-	tmpb = b.x;
+	tmpa = a.pixel.x;
+	tmpb = b.pixel.y;
 	return tmpa < tmpb;
 }
 
-void CAutoManualFindRelation::preprocessPos(vector<Point2i>& inpos) 
+void CAutoManualFindRelation::preprocessPos()
 {
-	int min = 40000, max = 0;
-	int sizeNum = inpos.size();
-	if (sizeNum)
-		sort(inpos.begin(), inpos.end(), comp);
 
-	if (abs(inpos[2].x - inpos[0].x) > 18000) {
-		inpos[0].x += 36000;
-		if (inpos[1].x < 18000)
-			inpos[1].x += 36000;
+	int min = 40000, max = 0;
+	int sizeNum = m_calcPos.size();
+	if (sizeNum)
+		sort(m_calcPos.begin(), m_calcPos.end(), comp);
+
+	if (abs(m_calcPos[2].pixel.x - m_calcPos[0].pixel.x) > 18000) {
+		m_calcPos[0].pixel.x += 36000;
+		if (m_calcPos[1].pixel.x < 18000)
+			m_calcPos[1].pixel.x += 36000;
 	}
 
 	for (int j = 0; j < 3; j++) {
-		if (inpos[j].y > 32000) {
-			inpos[j].y = 32768 - inpos[j].y;
+		if (m_calcPos[j].pixel.y > 32000) {
+			m_calcPos[j].pixel.y = 32768 - m_calcPos[j].pixel.y;
 		}
 	}
 
@@ -384,14 +390,14 @@ void CAutoManualFindRelation::preprocessPos(vector<Point2i>& inpos)
 }
 
 
-void CAutoManualFindRelation::calcNormalWay(Point2i inPoint,vector<Point2i>& triVertex, vector<Point2i>& triPos,Point2i& result)
+void CAutoManualFindRelation::calcNormalWay(Point2i inPoint,vector<Point2i>& triVertex,Point2i& result)
 {
 	double d1, d2, d3;
 	double f1, f2, f3, dtmp;
 
-	d1 = getDistance(inPoint , triVertex[0]);
-	d2 = getDistance(inPoint , triVertex[1]);
-	d3 = getDistance(inPoint , triVertex[2]);
+	d1 = getDistance(inPoint , m_calcPos[0].pixel);
+	d2 = getDistance(inPoint , m_calcPos[1].pixel);
+	d3 = getDistance(inPoint , m_calcPos[2].pixel);
 
 
 	dtmp = 1 + d1 / d2 + d2 / d3;
@@ -399,8 +405,8 @@ void CAutoManualFindRelation::calcNormalWay(Point2i inPoint,vector<Point2i>& tri
 	f2 =  d1 / d2 * f1;
 	f3 = 1 - f1 - f2;
 
-	result.x = f1 * triPos[0].x + f2 * triPos[1].x + f3 * triPos[2].x;
-	result.y = f1 * triPos[0].y + f2 * triPos[1].y + f3 * triPos[2].y;
+	result.x = f1 * m_calcPos[0].pos.x + f2 * m_calcPos[1].pos.x + f3 * m_calcPos[2].pos.x;
+	result.y = f1 * m_calcPos[0].pos.y + f2 * m_calcPos[1].pos.y + f3 * m_calcPos[2].pos.y;
 
 	return ;
 }
@@ -436,29 +442,29 @@ void CAutoManualFindRelation::calcDistancePoint2Triangle(Point2i inPoint,vector<
 	Point2i A,B;
 	dis.clear();
 	for(int i=0 ; i< 3 ;i++)
-		dis.push_back(  getDist_P2L(inPoint, triVertex[i], triVertex[(i+1)%3])  );
+		dis.push_back(  getDist_P2L(inPoint, m_calcPos[i].pixel, m_calcPos[(i+1)%3].pixel) );
 	return ;
 }
 
 
-void CAutoManualFindRelation::getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,vector<Point2i>& triVertex, vector<Point2i>& triPos,Point2i& result)
+void CAutoManualFindRelation::getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,vector<Point2i>& triVertex,Point2i& result)
 {
 	double d1, d2;
 	double f1;
 
-	d1 = getDistance(inPoint, triVertex[flag]);
-	d2 = getDistance(inPoint, triVertex[(flag+1)%3]);
+	d1 = getDistance(inPoint, m_calcPos[flag].pixel);
+	d2 = getDistance(inPoint, m_calcPos[(flag+1)%3].pixel);
 
 	f1 = d2 /(d1+d2);
 
-	result.x = f1 * triPos[flag].x + (1 - f1) * triPos[(flag+1)%3].x;
-	result.y = f1 * triPos[flag].y + (1 - f1) * triPos[(flag+1)%3].y;
+	result.x = f1 * m_calcPos[flag].pos.x + (1 - f1) * m_calcPos[(flag+1)%3].pos.x;
+	result.y = f1 * m_calcPos[flag].pos.y + (1 - f1) * m_calcPos[(flag+1)%3].pos.y;
 
 	return ;
 }
 
 
-void CAutoManualFindRelation::InterpolationPos(Point2i inPoint,vector<Point2i>& triVertex, vector<Point2i>& triPos, Point2i& result)
+void CAutoManualFindRelation::InterpolationPos(Point2i inPoint,vector<Point2i>& triVertex, Point2i& result)
 {
 
 	std::vector<double> getDis;
@@ -479,9 +485,9 @@ void CAutoManualFindRelation::InterpolationPos(Point2i inPoint,vector<Point2i>& 
 	}
 
 	if(flag < 3)
-		getNear2LineUseTwoPoint2Calc(flag,inPoint,triVertex,triPos,result);
+		getNear2LineUseTwoPoint2Calc(flag,inPoint,triVertex,result);
 	else
-		calcNormalWay(inPoint,triVertex, triPos,result);
+		calcNormalWay(inPoint,triVertex,result);
 
 	result.x %= 36000;
 	if (result.y < 0)
@@ -490,10 +496,10 @@ void CAutoManualFindRelation::InterpolationPos(Point2i inPoint,vector<Point2i>& 
 	return;
 }
 
-void CAutoManualFindRelation::getPos(Point2i inPoint,vector<Point2i>& triVertex, vector<Point2i>& triPos, Point2i& result)
+void CAutoManualFindRelation::getPos(Point2i inPoint,vector<Point2i>& triVertex, Point2i& result)
 {
-	preprocessPos(triPos);
-	InterpolationPos(inPoint, triVertex, triPos, result);
+	preprocessPos();
+	InterpolationPos(inPoint, triVertex, result);
 	return;
 }
 

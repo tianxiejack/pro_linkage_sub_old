@@ -236,6 +236,9 @@ void CAutoManualFindRelation::selectPoint(  cv::Point2i inPixel )
 		}
 	}
 
+	if(m_notifyFunc != NULL )
+		(*m_notifyFunc)(m_featurePoints);
+
 	return ;
 }
 

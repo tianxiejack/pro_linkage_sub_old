@@ -169,7 +169,7 @@ public:
 	void auto_insertpoint(int x, int y);
 	void auto_draw_triangle_point(int x, int y);
 	void moveball(int x, int y);
-	void auto_selectpoint(int x, int y);
+	void auto_selectpoint_limit(int x, int y);
 	void insertPos(int x, int y);
 	
 	static void pnotify_callback(std::vector<FEATUREPOINT_T>& recommendPoints);

@@ -1935,11 +1935,10 @@ void CVideoProcess::moveball(int x, int y)
 								tmp.x = x;
 								tmp.y = y;
 								pThis->mapout2inresol(&tmp);
-								//pThis->mapgun2fullscreen_point(&tmp.x,&tmp.y);
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
 								pThis->m_autofr.Point2getPos(inPoint, outPoint);
-								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
+								printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 								
 								trkmsg.cmd_ID = acqPosAndZoom;
 								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
@@ -1948,7 +1947,7 @@ void CVideoProcess::moveball(int x, int y)
 
 }
 
-void CVideoProcess::auto_selectpoint(int x, int y)
+void CVideoProcess::auto_selectpoint_limit(int x, int y)
 {
 	std::vector<FEATUREPOINT_T> app_recommendPoints_tmp = app_recommendPoints;
 	int delta_distance_bak;
@@ -1977,14 +1976,15 @@ void CVideoProcess::auto_selectpoint(int x, int y)
 
 		}
 	}
-	printf("%s,%d,  delta_distance_bak=%d\n",__FILE__,__LINE__,delta_distance_bak);
-	if((insert_index >= 0))
+	printf("%s,%d,  delta_distance = %d\n",__FILE__,__LINE__,delta_distance_bak);
+	if((insert_index >= 0) && (delta_distance_bak <= 15))
 	{
 		printf("%s, %d, select pixel(%d, %d),pos(%d,%d)\n", __FILE__,__LINE__,app_recommendPoints_tmp[insert_index].pixel.x,app_recommendPoints_tmp[insert_index].pixel.y,app_recommendPoints_tmp[insert_index].pos.x,app_recommendPoints_tmp[insert_index].pos.y);
 		m_autofr.selectPoint(app_recommendPoints_tmp[insert_index].pixel);
 		set_trig_PTZflag(1);
 	}
 }
+
 
 void CVideoProcess::insertPos(int x, int y)
 {
@@ -2057,7 +2057,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 			}
 			else if(GRIDINTER_CALIBRATION_MODE == stat)
 			{
-				pThis->auto_selectpoint(x, y);
+				pThis->auto_selectpoint_limit(x, y);
 			}	
        	 }
         	
@@ -2155,7 +2155,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								inPoint.y = tmp.y;
 								//inPoint.y = (inPoint.y - 540) * 2;
 								pThis->m_autofr.Point2getPos(inPoint, outPoint);
-								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
+								printf("%s, %d,click inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 								
 								trkmsg.cmd_ID = acqPosAndZoom;
 								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
@@ -2192,7 +2192,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								inPoint.y = tmp.y;
 								//inPoint.y = (inPoint.y - 540) * 2;
 								pThis->m_autofr.Point2getPos(inPoint, outPoint);
-								printf("%s, %d,inPoint(%d,%d),outPoint(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
+								printf("%s, %d,drag inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 								
 								trkmsg.cmd_ID = acqPosAndZoom;
 								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));

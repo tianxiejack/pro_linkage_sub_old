@@ -3124,12 +3124,15 @@ void CProcess::DrawMtd_Rigion_Target()
 		}
 		if((0 == lose_timer_flag) && (mvListsum.size() > 0) && cur_targetRect.width && cur_targetRect.height )
 		{
+			Point2i inPoint, outPoint;
 			color = 6;
 			cur_targetRect_bak = cur_targetRect;
 			recttmp.x = cur_targetRect_bak.x;
 			recttmp.y = cur_targetRect_bak.y;
 			recttmp.w = cur_targetRect_bak.width;
 			recttmp.h = cur_targetRect_bak.height;
+			inPoint.x = recttmp.x + recttmp.w / 2;
+			inPoint.y = recttmp.y + recttmp.h / 2;
 			recttmp = mapfullscreen2gunv20(recttmp);
 			tmp.x = recttmp.x;
 			tmp.y = recttmp.y;
@@ -3145,10 +3148,8 @@ void CProcess::DrawMtd_Rigion_Target()
 			}
 			else if(2 == g_GridMapMode)
 			{
-				Point2i inPoint, outPoint;
-				inPoint.x = tmp.x;
-				inPoint.y = tmp.y;
 				m_autofr.Point2getPos(inPoint, outPoint);
+				printf("%s, %d,aurolinkage inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 				trkmsg.cmd_ID = speedloop;
 				memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
 				memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 

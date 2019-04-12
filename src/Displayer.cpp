@@ -3421,7 +3421,7 @@ void CDisplayer::gl_display(void)
 
 		int fontx2 =580;
 		int fonty2 = 40;
-		chinese_osd(fontx2,fonty2,L"s: 模式切换;  I:自动找特征点;  h:获取当前PTZ值并标定选中特征点;  j:保存标定结果",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+		chinese_osd(fontx2,fonty2,L"s:模式切换;  I:自动找特征点;  h:查询当前PTZ值并与选中特征点匹配;  j:保存标定结果",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 	}
 
 	switch(displayMode){

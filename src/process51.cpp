@@ -5891,9 +5891,7 @@ int CProcess::usopencvapi2()
 		mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
 		setx = floatx;
 		sety = floaty;
-		//polyWarnRoi[0] = cv::Point(setx, sety);
 		polyWarnRoi[i][0] = cv::Point(setx, sety);
-		//floaty = floaty / 2 + 540;
 		mapfullscreen2gun_pointv20(&setx, &sety);
 		edge_contours[i][0].x = setx;
 		edge_contours[i][0].y = sety;
@@ -5906,10 +5904,8 @@ int CProcess::usopencvapi2()
 
 			setx = floatx;
 			sety = floaty;
-			//polyWarnRoi[i] = cv::Point(setx, sety);
 			polyWarnRoi[i][j] = cv::Point(setx, sety);
-			
-			//floaty = floaty / 2 + 540;
+
 			mapfullscreen2gun_pointv20(&setx, &sety);
 			edge_contours[i][j].x = setx;
 			edge_contours[i][j].y = sety;
@@ -5933,7 +5929,6 @@ int CProcess::usopencvapi2()
 
 	for(int i = 0; i < contours.size(); i++)
 	{
-		printf("%s,%d,i=%d\n",__FILE__,__LINE__, i);
 		m_pMovDetector->setWarningRoi(polyWarnRoi[i], i);
 	}
 }

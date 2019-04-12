@@ -42,7 +42,7 @@ const int ZERO_ANGLE = 0;
 
 typedef struct
 {
-	int state;//1:is clicked,  0:not be clicked
+	int state;// is clicked,  0:not be clicked
 	int rigionindex;//rigion num
 }grid_node;
 
@@ -123,19 +123,13 @@ public:
 	Mat gun_srcMat_remap;
 	Point LeftPoint;
 	Point RightPoint;
-	#if 0
-	GridMapNode m_gridNodes[GRID_ROWS+1][GRID_COLS+1];
-	GridMapNode m_readGridNodes[GRID_ROWS+1][GRID_COLS+1];
-	MarkMapNode m_calibratedNodes[GRID_ROWS+1][GRID_COLS+1];
-	cv::Point m_nodePos[GRID_ROWS+1][GRID_COLS+1];
-	#else
+
 	GridMapNode m_gridNodes[GRID_ROWS_11+1][GRID_COLS_15+3];	
 	GridMapNode m_readGridNodes[GRID_ROWS_11+1][GRID_COLS_15+1];
 	MarkMapNode m_calibratedNodes[GRID_ROWS_11+1][GRID_COLS_15+3];
 	cv::Point m_nodePos[GRID_ROWS_11+1][GRID_COLS_15+2];
 	int m_intervalCOl[GRID_COLS_15+10];
 
-	#endif
 	cv::Point m_backNodePos;
 	int m_curNodeIndex;
 	//cv::Point temp_backPoint[GRID_ROWS+1][GRID_COLS+1] ;
@@ -183,7 +177,6 @@ public:
 	void insertPos(int x, int y);
 	
 	static void pnotify_callback(std::vector<FEATUREPOINT_T>& recommendPoints);
-	void InitGridMapNodes();
 	void InitGridMap16X12();
 	void useTrigonometric(int px, int py);
 
@@ -309,8 +302,6 @@ public:
 	int m_draw;
 	RectfNode mRect[MAX_CHAN][100];
 	int m_tempX, m_tempY, m_rectn[MAX_CHAN];
-	int setrigon_flag;
-	int setrigon_polygon;
 	
 	int m_click_v20L, m_click_v20R;
 	RectfNode mRectv20L;
@@ -354,7 +345,6 @@ protected:
 	int configEnhFromFile();	
 	void process_event(int type, int iPrm, void *pPrm);
 	int process_frame(int chId, int virchID, Mat frame);
-	int process_mtd(ALGMTD_HANDLE pChPrm, Mat frame_gray, Mat frame_dis);
 	#if __TRACK__
 	Track_InfoObj *trackinfo_obj;
 	int process_track(int trackStatus, Mat frame_gray, Mat frame_dis, UTC_RECT_float &rcResult);
@@ -366,10 +356,6 @@ protected:
 	static CVideoProcess *pThis;
 	static void call_run(int value);
 	static int callback_process(void *handle, int chId, int virchId, Mat frame);
-
-	static void processtimeMenu(int value);
-	static void processsmanualcarliMenu(int value);
-	static void processsautocarliMenu(int value);
 	
 	int click_legal(int x, int y);
 	int move_legal(int x, int y);
@@ -387,7 +373,6 @@ protected:
 	int mapgun2fullscreen_auto(int *x, int *y);
 	mouserect maprect(mouserect rectcur,mouserect rectsrc,mouserect rectdest);
 	int maprect_point(int *x, int *y, mouserect rectsrc,mouserect rectdest);
-	void sendIPC_Time(int value);
 
 	int map1080p2normal_point(float *x, float *y);
 	int mapnormal2curchannel_point(float *x, float *y, int w, int h);
@@ -395,10 +380,6 @@ protected:
 	int mapnormal2curchannel_rect(mouserectf *rect, int w, int h);
 	static void mousemove_event(GLint xMouse, GLint yMouse);
 	void mouse_eventv20(int button, int state, int x, int y);
-	static void menu_event(int value);
-	static void processrigionMenu(int value);
-	static void processrigionselMenu(int value);
-	static void processrigionpolygonMenu(int value);
 	int InJoys(int x, int y);
 	void mapout2inresol(cv::Point *tmppoint);
 	void sendjoyevent(cv::Point tmppoint);
@@ -407,12 +388,7 @@ protected:
 	cv::Point get_joycenter();
 	void addstartpoint(int x, int y, int curId);
 	void addendpoint(int x, int y, int curId);
-		
-#if __MOVE_DETECT__
-	static void processmaxnumMenu(int value);
-	static void processmaxtargetsizeMenu(int value);
-	static void processmintargetsizeMenu(int value);
-#endif
+
 	static void keyboard_event(unsigned char key, int x, int y);
 	static void keySpecial_event( int key, int x, int y);
 	static void visibility_event(int state);

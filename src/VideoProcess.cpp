@@ -465,8 +465,6 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 	m_click = m_draw = m_tempX = m_tempY = 0;
 	memset(m_rectn, 0, sizeof(m_rectn));
 	memset(mRect, 0, sizeof(mRect));
-	setrigon_flag = 0;
-	setrigon_polygon = 0;
 
 	m_click_v20L = m_click_v20R = 0;
 	memset(&mRectv20L, 0, sizeof(mRectv20L));
@@ -494,11 +492,8 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 			m_intervalCOl[i] = m_gridWidth;
 		}
 	}
-#if 0
-	InitGridMapNodes();
-#else
+
 	InitGridMap16X12();
-#endif
 	readParams("SaveGridMap.yml");
 	read_param_trig();
 	m_autofr.create(pnotify_callback);	
@@ -561,8 +556,6 @@ CVideoProcess::CVideoProcess()
 	m_click = m_draw = m_tempX = m_tempY = 0;
 	memset(m_rectn, 0, sizeof(m_rectn));
 	memset(mRect, 0, sizeof(mRect));
-	setrigon_flag = 0;
-	setrigon_polygon = 0;
 
 	m_click_v20L = m_click_v20R = 0;
 	memset(&mRectv20L, 0, sizeof(mRectv20L));
@@ -664,132 +657,6 @@ void CVideoProcess::InitGridMap16X12()
 	m_calibratedNodes[0][0].y = 45;
 
 }
-void CVideoProcess::InitGridMapNodes()
-{
-#if 0
-	int row_offset = (IMG_WIDTH - (GRID_COLS*GRID_WIDTH) ) / 2;
-	int col_offset =  (IMG_HEIGHT - (GRID_ROWS*GRID_HEIGHT)) / 2;
-
-	for(int i =0; i<= GRID_ROWS; i++)
-	{
-		for(int j=0; j<= GRID_COLS; j++)
-		{
-			m_gridNodes[i][j].pano= 0;
-			m_gridNodes[i][j].tilt = 0;
-			m_gridNodes[i][j].zoom = 2849; // ball camera min zoom value
-			m_gridNodes[i][j].coord_x = row_offset + j * GRID_WIDTH;
-			m_gridNodes[i][j].coord_y = col_offset + i * GRID_HEIGHT;
-			m_gridNodes[i][j].isCircle = true;
-			m_nodePos[i][j].x = m_gridNodes[i][j].coord_x;
-			m_nodePos[i][j].y = m_gridNodes[i][j].coord_y;
-				m_calibratedNodes[i][j].x =m_nodePos[i][j].x;
-				m_calibratedNodes[i][j].y =m_nodePos[i][j].y; 
-				m_calibratedNodes[i][j].isShow = false;
-
-		}		
-	}
-	printf("\r\nInit Grid Map Success &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\r\n");
-#endif
-}
-
-
-void CVideoProcess::processtimeMenu(int value)
-{
-	if(0 == value)
-	{
-		pThis->m_time_show = 1;
-		pThis->m_time_flag = 1;
-	}
-	else if(1 == value)
-		pThis->m_time_show = 0;
-
-	pThis->sendIPC_Time(value);
-}
-
-void CVideoProcess::sendIPC_Time(int value)
-{
-	osdtext_t* osd_ipc = ipc_getosdtextstatus_p();
-
-	osd_ipc->osdID[osdID_time] = disOsdBuf[osdID_time].osdID = osdID_time;
-
-	if(value == 0)
-		osd_ipc->ctrl[osdID_time] = disOsdBuf[osdID_time].ctrl = 1;
-	else if(value == 1)
-		osd_ipc->ctrl[osdID_time] = disOsdBuf[osdID_time].ctrl = 0;
-
-	setlocale(LC_ALL, "zh_CN.UTF-8");
-	memcpy(&disOsdBufbak[osdID_time],&disOsdBuf[osdID_time],sizeof(osdbuffer_t));
-	swprintf(disOsd[osdID_time], 33, L"%s", disOsdBuf[osdID_time].buf);
-
-	SENDST test = {0};
-	test.cmd_ID = read_shm_osdtext;
-	test.param[0] = osdID_time;
-	ipc_sendmsg(&test, IPC_FRIMG_MSG);
-}
-
-void CVideoProcess::processsmanualcarliMenu(int value)
-{
-	//printf("%s start, value = %d\n", __FUNCTION__, value);
-	switch(value){
-		case 0:
-			g_sysParam->getSysParam().cameracalibrate.Enable_handleCalibrate = true;
-			g_sysParam->getSysParam().cameracalibrate.Enable_Undistortion = true;
-			break;
-		case 1:
-			g_sysParam->getSysParam().cameracalibrate.Enable_cloneSrcImage = true;
-			break;
-		case 2:
-			g_sysParam->getSysParam().cameracalibrate.Enable_calculateMatrix= true;
-			break;
-		case 3:
-			g_sysParam->getSysParam().cameracalibrate.Enable_saveParameter= true;
-			break;
-		case 4:
-			g_sysParam->getSysParam().cameracalibrate.Enable_handleCalibrate = false;
-			g_sysParam->getSysParam().cameracalibrate.Enable_Undistortion = false;	
-			g_sysParam->getSysParam().cameracalibrate.Enable_cloneSrcImage = false;	
-			g_sysParam->getSysParam().cameracalibrate.Enable_calculateMatrix= false;	
-			g_sysParam->getSysParam().cameracalibrate.Enable_saveParameter= false;	
-			//g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
-		break;
-		default :
-			break;
-	}	
-}
-
-void CVideoProcess::processsautocarliMenu(int value)
-{
-	//printf("%s start, value=%d\n", __FUNCTION__, value);
-	switch(value){
-		#if 0
-		case 0:
-			g_sysParam->getSysParam().cameracalibrate.Enable_handleCalibrate = true;
-			g_sysParam->getSysParam().cameracalibrate.Enable_Undistortion = true;
-			break;
-		#endif
-		case 1:
-			g_sysParam->getSysParam().cameracalibrate.Enable_cloneSrcImage = true;
-			break;
-		case 2:
-			g_sysParam->getSysParam().cameracalibrate.Enable_calculateMatrix= true;
-			break;
-		case 3:
-			g_sysParam->getSysParam().cameracalibrate.Enable_saveParameter= true;
-			break;
-		case 4:
-			g_sysParam->getSysParam().cameracalibrate.Enable_handleCalibrate = false;
-			g_sysParam->getSysParam().cameracalibrate.Enable_Undistortion = false;	
-			g_sysParam->getSysParam().cameracalibrate.Enable_cloneSrcImage = false;	
-			g_sysParam->getSysParam().cameracalibrate.Enable_calculateMatrix= false;	
-			g_sysParam->getSysParam().cameracalibrate.Enable_saveParameter= false;	
-			//g_sysParam->getSysParam().cameracalibrate.Enable_AutoDetectMoveTargets = false;
-		break;
-		default :
-			break;
-	}	
-}
-
-
 
 int CVideoProcess::click_legal(int x, int y)
 {
@@ -2275,17 +2142,6 @@ void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
 	app_ctrl_setMtdRigion(&tmpCmd);
 }
 
-void CVideoProcess::menu_event(int value)
-{
-	switch(value)
-    {
-		case 0:
-			pThis->OnKeyDwn('a');
-			break;
-		default:
-			break;
-	}
-}
 void CVideoProcess::addstartpoint(int x, int y, int curId)
 {
 	pThis->m_rectn[curId] = 0;
@@ -2314,23 +2170,6 @@ void CVideoProcess::addendpoint(int x, int y, int curId)
 		printf("mouse rect reached maxnum:100!\n");
 		pThis->m_rectn[curId]--;
 	}
-}
-
-void CVideoProcess::processrigionMenu(int value)
-{
-	//printf("set rigion\n");
-	pThis->setrigon_flag = 1;
-}
-
-void CVideoProcess::processrigionselMenu(int value)
-{
-	//printf("%s start, value=%d\n", __FUNCTION__, value);
-}
-
-void CVideoProcess::processrigionpolygonMenu(int value)
-{
-	//printf("%s start, value=%d\n", __FUNCTION__, value);
-	pThis->setrigon_polygon = 1;
 }
 
 int CVideoProcess::InJoys(int x, int y)
@@ -2415,31 +2254,6 @@ cv::Point CVideoProcess::get_joycenter()
 	return cv::Point(vdisWH[0][0]/8+20, vdisWH[0][1]/2 - vdisWH[0][0]/8);
 }
 
-#if __MOVE_DETECT__
-void CVideoProcess::processmaxnumMenu(int value)
-{
-	if(0 == value)
-		pThis->detectNum = 5;
-	else if(1 == value)
-		pThis->detectNum = 10;
-}
-
-void CVideoProcess::processmaxtargetsizeMenu(int value)
-{
-	if(0 == value)
-		pThis->maxsize= 40000;
-	else if(1 == value)
-		pThis->maxsize= 50000;
-}
-
-void CVideoProcess::processmintargetsizeMenu(int value)
-{
-	if(0 == value)
-		pThis->minsize= 100;
-	else if(1 == value)
-		pThis->minsize= 1000;
-}
-#endif
 void CVideoProcess::keyboard_event(unsigned char key, int x, int y)
 {
 	pThis->OnKeyDwn(key);
@@ -2470,22 +2284,10 @@ void CVideoProcess::close_event(void)
 int CVideoProcess::init()
 {
 	DS_InitPrm dsInit;
-	memset(&dsInit, 0, sizeof(DS_InitPrm));
-	dsInit.timefunc = processtimeMenu;	
-	dsInit.manualcarli = processsmanualcarliMenu;
-	dsInit.autocarli = processsautocarliMenu;	
-	dsInit.menufunc = menu_event;
+	memset(&dsInit, 0, sizeof(DS_InitPrm));	
 	dsInit.mousefunc = mouse_event;
 	dsInit.passivemotionfunc = mousemove_event;
 	dsInit.motionfunc = mousemotion_event;
-	dsInit.setrigion = processrigionMenu;
-	dsInit.rigionsel = processrigionselMenu;
-	dsInit.rigionpolygon = processrigionpolygonMenu;
-#if __MOVE_DETECT__
-	dsInit.maxnum = processmaxnumMenu;
-	dsInit.maxsize= processmaxtargetsizeMenu;
-	dsInit.minsize= processmintargetsizeMenu;
-#endif
 	dsInit.disFPS = 30; // 20181219
 	dsInit.disSched = 33 ; //   3.5      
 //#if (!__IPC__)
@@ -3092,36 +2894,6 @@ int CVideoProcess::process_track(int trackStatus, Mat frame_gray, Mat frame_dis,
 #endif
 
 vector<Rect> Box(MAX_TARGET_NUMBER);
-int CVideoProcess::process_mtd(ALGMTD_HANDLE pChPrm, Mat frame_gray, Mat frame_dis)
-{
-	
-
-#if 0
-	if(pChPrm != NULL && (pChPrm->state > 0))
-	{
-//		medium.create(frame_gray.rows, frame_gray.cols, frame_gray.type());
-
-//		MediumFliter(frame_gray.data, medium.data, pChPrm->i_width, pChPrm->i_height);
-
-		GaussFliter(frame_gray.data, pChPrm->Img[0], pChPrm->i_width, pChPrm->i_height);
-		
-
-		for(i = 0; i < MAX_SCALER; i++)
-		{
-			DownSample(pChPrm, pChPrm->Img[i], pChPrm->Img[i+1],
-										pChPrm->i_width>>i, pChPrm->i_height>>i);
-		}
-
-		IMG_sobel(pChPrm->Img[1], pChPrm->sobel, pChPrm->i_width>>1,	 pChPrm->i_height>>1);
-
-		AutoDetectTarget(pChPrm, frame_gray.data);
-
-		FilterMultiTarget(pChPrm);
-
-	}
-#endif
-	return 0;
-}
 
 #if __MOVE_DETECT__
 void	CVideoProcess::initMvDetect()

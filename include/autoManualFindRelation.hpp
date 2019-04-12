@@ -26,6 +26,7 @@ typedef struct{
 	bool selectFlag;
 	cv::Point2i pixel;
 	cv::Point2i pos;
+	double distance;
 }FEATUREPOINT_T;
 
 
@@ -73,7 +74,7 @@ public:
 	void updateSubdiv();
 	void vertex2pos(vector<Point2i> &vertex);
 	void InterpolationPos( Point2i inPoint , Point2i& result );
-	void preprocessPos();
+	void preprocessPos(std::vector<FEATUREPOINT_T>& calcPos);
 	int findposInFpassembel(Point2f &fp , Point2i &pos);
 	void insertVertexAndPosition(vector<FEATUREPOINT_T> insert);
 	void getTriangleVertex( Point2f fp, vector<Point2i> &result );
@@ -89,6 +90,9 @@ public:
 	void calcDistancePoint2Triangle(Point2i inPoint, vector<double>& dis);
 	void getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,Point2i& result);
 	void initDivsubObj();
+	void getHomography2estimateConer();
+
+	void findThreeNearestPointInCanUsedPoints2estimate( std::vector<FEATUREPOINT_T> featurPoints );
 
 private:
 	pNOTIFYFUNC m_notifyFunc;

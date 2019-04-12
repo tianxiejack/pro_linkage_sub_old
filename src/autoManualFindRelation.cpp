@@ -247,6 +247,33 @@ void CAutoManualFindRelation::insertPos(cv::Point2i inPos)
 	return;
 }
 
+
+static bool compDistance(const FEATUREPOINT_T &a, const FEATUREPOINT_T &b)
+{
+	double tmpa, tmpb;
+	tmpa = a.distance;
+	tmpb = b.distance;
+	return tmpa < tmpb;
+}
+
+static bool compPixelx(const FEATUREPOINT_T &a, const FEATUREPOINT_T &b)
+{
+	double tmpa, tmpb;
+	tmpa = a.pixel.x;
+	tmpb = b.pixel.x;
+	return tmpa < tmpb;
+}
+
+static bool compPixely(const FEATUREPOINT_T &a, const FEATUREPOINT_T &b)
+{
+	double tmpa, tmpb;
+	tmpa = a.pixel.y;
+	tmpb = b.pixel.y;
+	return tmpa < tmpb;
+}
+
+
+
 void CAutoManualFindRelation::collectMarkedPoints() 
 {
 	FEATUREPOINT_T tmp;
@@ -260,8 +287,19 @@ void CAutoManualFindRelation::collectMarkedPoints()
 		}
 	}
 
-	if( m_canUsedPoints.size() > 3 )
+	if( m_canUsedPoints.size() >= 3 )
+	{
+		getHomography2estimateConer();
+
+			for(int i=0 ; i< m_canUsedPoints.size() ; i++)
+			{
+				if (m_canUsedPoints[i].pos.y > 32000 )
+					m_canUsedPoints[i].pos.y = 32768 - m_canUsedPoints[i].pos.y;
+			}
+	
+		findThreeNearestPointInCanUsedPoints2estimate( m_canUsedPoints );
 		insertVertexAndPosition(m_canUsedPoints) ;
+	}
 	return;
 }
 
@@ -301,7 +339,8 @@ void CAutoManualFindRelation::insertVertexAndPosition(vector<FEATUREPOINT_T> ins
 
 void CAutoManualFindRelation::updateSubdiv() 
 {
-	for (std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin();plist != fpassemble.end(); ++plist) {
+	for (std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin();plist != fpassemble.end(); ++plist)
+	{
 		m_pSubdiv->insert(plist->pixel);
 	}
 }
@@ -374,23 +413,23 @@ static bool comp(const FEATUREPOINT_T &a, const FEATUREPOINT_T &b)
 	return tmpa < tmpb;
 }
 
-void CAutoManualFindRelation::preprocessPos()
+void CAutoManualFindRelation::preprocessPos(std::vector<FEATUREPOINT_T>& calcPos)
 {
 
 	int min = 40000, max = 0;
-	int sizeNum = m_calcPos.size();
+	int sizeNum = calcPos.size();
 	if (sizeNum)
-		sort(m_calcPos.begin(), m_calcPos.end(), comp);
+		sort(calcPos.begin(), calcPos.end(), comp);
 
-	if (abs(m_calcPos[2].pos.x - m_calcPos[0].pos.x) > 18000) {
-		m_calcPos[0].pos.x += 36000;
-		if (m_calcPos[1].pos.x < 18000)
-			m_calcPos[1].pos.x += 36000;
+	if (abs(calcPos[2].pos.x - calcPos[0].pos.x) > 18000) {
+		calcPos[0].pos.x += 36000;
+		if (calcPos[1].pos.x < 18000)
+			calcPos[1].pos.x += 36000;
 	}
 
 	for (int j = 0; j < 3; j++) {
-		if (m_calcPos[j].pos.y > 32000) {
-			m_calcPos[j].pos.y = 32768 - m_calcPos[j].pos.y;
+		if (calcPos[j].pos.y > 32000) {
+			calcPos[j].pos.y = 32768 - calcPos[j].pos.y;
 		}
 	}
 
@@ -532,7 +571,7 @@ void CAutoManualFindRelation::InterpolationPos(Point2i inPoint, Point2i& result)
 
 void CAutoManualFindRelation::getPos(Point2i inPoint, Point2i& result)
 {
-	preprocessPos();
+	preprocessPos(m_calcPos);
 	InterpolationPos(inPoint, result);
 	return;
 }
@@ -780,4 +819,176 @@ bool CAutoManualFindRelation::readParamsForTest()
 		return true;
 	}
 	return false;
+}
+
+void CAutoManualFindRelation::getHomography2estimateConer()
+{
+	vector<cv::Point2f> pixel , pos;
+	vector<cv::Point2d> cornor , estPos;
+
+	printf("m_calcPos.size()  = %d \n",m_canUsedPoints.size());
+	for(int i=0; i < m_canUsedPoints.size() ; i++ )
+	{
+		pixel.push_back(m_canUsedPoints[i].pixel);
+		if(	m_canUsedPoints[i].pos.y > 32768)
+			m_canUsedPoints[i].pos.y = 32768 - m_canUsedPoints[i].pos.y ;
+		pos.push_back(m_canUsedPoints[i].pos);
+	}
+
+	Mat H = findHomography ( pixel, pos, RANSAC, 3 );//
+
+	cv::Point2i tmp;
+	tmp.x = 1 ;
+	tmp.y = 1;
+	cornor.push_back(tmp);
+
+	tmp.x = 1920 ;
+	tmp.y = 1;
+	cornor.push_back(tmp);
+
+	tmp.x = 1920;
+	tmp.y = 1080;
+	cornor.push_back(tmp);
+
+	tmp.x = 1;
+	tmp.y = 1080;
+	cornor.push_back(tmp);
+
+	perspectiveTransform(cornor, estPos, H);
+
+	for(int i=0 ;i < cornor.size() ; i++)
+	{
+		printf("cornor  %d , x,y (%f, %f)   , pos (%f , %f ) \n" , i , cornor[i].x , cornor[i].y , estPos[i].x , estPos[i].y );
+	}
+
+	FEATUREPOINT_T pConor;
+	for(int i=0 ;i < cornor.size() ; i++)
+	{
+		pConor.markFlag = true;
+		pConor.pixel = cornor[i];
+		pConor.pos = estPos[i];
+		//m_canUsedPoints.push_back(pConor);
+	}
+
+	return ;
+}
+
+void CAutoManualFindRelation::findThreeNearestPointInCanUsedPoints2estimate(std::vector<FEATUREPOINT_T> featurPoints )
+{
+	std::vector<FEATUREPOINT_T> featureBk;
+	FEATUREPOINT_T tmpFeature;
+	cv::Point2i inPoint ;
+	double tmpRatio;
+	int d1,d2;
+
+	featureBk = featurPoints;
+	// point ( 0 , 0)
+	inPoint.x = 0 ;
+	inPoint.y = 0;
+	for(int i=0 ; i < featurPoints.size() ; i++ )
+		featurPoints[i].distance = getDistance(inPoint , featurPoints[i].pixel);
+	sort(featurPoints.begin(), featurPoints.end(), compDistance);
+	featurPoints.erase(featurPoints.begin()+3 , featurPoints.end());
+
+	sort(featurPoints.begin(), featurPoints.end(), compPixelx);
+	d1 = featurPoints[2].pixel.x - featurPoints[0].pixel.x;
+	d2 = featurPoints[0].pixel.x - inPoint.x ;
+	tmpRatio = (d1 + d2)/d1 ;
+	tmpFeature.pixel.x = 0;
+	tmpFeature.pos.x = featurPoints[2].pos.x - (double)(featurPoints[2].pos.x - featurPoints[0].pos.x)*tmpRatio;
+
+	sort(featurPoints.begin(), featurPoints.end(), compPixely);
+	d1 = featurPoints[2].pixel.y - featurPoints[0].pixel.y;
+	d2 = featurPoints[0].pixel.y - inPoint.y ;
+	tmpRatio = (d1 + d2)/d1 ;
+	tmpFeature.pixel.y = 0;
+	tmpFeature.pos.y = featurPoints[2].pos.y - (double)(featurPoints[2].pos.y - featurPoints[0].pos.y)*tmpRatio;
+
+	tmpFeature.markFlag = true;
+	tmpFeature.selectFlag = false;
+	m_canUsedPoints.push_back(tmpFeature);
+	printf(" pixel (%d , %d ) ,   pos  (%d , %d) \n" , tmpFeature.pixel.x , tmpFeature.pixel.y , tmpFeature.pos.x , tmpFeature.pos.y );
+	// point ( 1920 , 0)
+	featurPoints = featureBk ;
+	inPoint.x = 1920 ;
+	inPoint.y = 0;
+	for(int i=0 ; i < featurPoints.size() ; i++ )
+		featurPoints[i].distance = getDistance(inPoint , featurPoints[i].pixel);
+	sort(featurPoints.begin(), featurPoints.end(), compDistance);
+	featurPoints.erase(featurPoints.begin()+3 , featurPoints.end());
+
+	sort(featurPoints.begin(), featurPoints.end(), compPixelx);
+	d1 = featurPoints[2].pixel.x - featurPoints[0].pixel.x ;
+	d2 = inPoint.x - featurPoints[2].pixel.x  ;
+	tmpRatio = (d1 + d2)/d1 ;
+	tmpFeature.pixel.x = 1920;
+	tmpFeature.pos.x = featurPoints[0].pos.x + (double)(featurPoints[2].pos.x - featurPoints[0].pos.x)*tmpRatio;
+
+	sort(featurPoints.begin(), featurPoints.end(), compPixely);
+	d1 = featurPoints[2].pixel.y - featurPoints[0].pixel.y;
+	d2 = featurPoints[0].pixel.y - inPoint.y ;
+	tmpRatio = (d1 + d2)/d1 ;
+	tmpFeature.pixel.y = 0;
+	tmpFeature.pos.y = featurPoints[2].pos.y - (double)(featurPoints[2].pos.y - featurPoints[0].pos.y)*tmpRatio;
+
+	tmpFeature.markFlag = true;
+	tmpFeature.selectFlag = false;
+	m_canUsedPoints.push_back(tmpFeature);
+	printf(" pixel (%d , %d ) ,   pos  (%d , %d) \n" , tmpFeature.pixel.x , tmpFeature.pixel.y , tmpFeature.pos.x , tmpFeature.pos.y );
+	//point (1920 , 1080)
+	featurPoints = featureBk ;
+	inPoint.x = 1920 ;
+	inPoint.y = 1080;
+	for(int i=0 ; i < featurPoints.size() ; i++ )
+		featurPoints[i].distance = getDistance(inPoint , featurPoints[i].pixel);
+	sort(featurPoints.begin(), featurPoints.end(), compDistance);
+	featurPoints.erase(featurPoints.begin()+3 , featurPoints.end());
+
+	sort(featurPoints.begin(), featurPoints.end(), compPixelx);
+	d1 = featurPoints[2].pixel.x - featurPoints[0].pixel.x ;
+	d2 = inPoint.x - featurPoints[2].pixel.x  ;
+	tmpRatio = (d1 + d2)/d1 ;
+	tmpFeature.pixel.x = 1920;
+	tmpFeature.pos.x = featurPoints[0].pos.x + (double)(featurPoints[2].pos.x - featurPoints[0].pos.x)*tmpRatio;
+
+	sort(featurPoints.begin(), featurPoints.end(), compPixely);
+	d1 = featurPoints[2].pixel.y - featurPoints[0].pixel.y ;
+	d2 = inPoint.y - featurPoints[2].pixel.y;
+	tmpRatio = (d1 + d2)/d1 ;
+	tmpFeature.pixel.y = 1080;
+	tmpFeature.pos.y = featurPoints[2].pos.y + (double)(featurPoints[2].pos.y - featurPoints[0].pos.y)*tmpRatio;
+
+	tmpFeature.markFlag = true;
+	tmpFeature.selectFlag = false;
+	m_canUsedPoints.push_back(tmpFeature);
+	printf(" pixel (%d , %d ) ,   pos  (%d , %d) \n" , tmpFeature.pixel.x , tmpFeature.pixel.y , tmpFeature.pos.x , tmpFeature.pos.y );
+	//point (0 , 1080 )
+	featurPoints = featureBk ;
+	inPoint.x = 0 ;
+	inPoint.y = 1080;
+	for(int i=0 ; i < featurPoints.size() ; i++ )
+		featurPoints[i].distance = getDistance(inPoint , featurPoints[i].pixel);
+	sort(featurPoints.begin(), featurPoints.end(), compDistance);
+	featurPoints.erase(featurPoints.begin()+3 , featurPoints.end());
+
+	sort(featurPoints.begin(), featurPoints.end(), compPixelx);
+	d1 = featurPoints[2].pixel.x - featurPoints[0].pixel.x;
+	d2 = featurPoints[0].pixel.x - inPoint.x ;
+	tmpRatio = (d1 + d2)/d1 ;
+	tmpFeature.pixel.x = 0;
+	tmpFeature.pos.x = featurPoints[2].pos.x - (double)(featurPoints[2].pos.x - featurPoints[0].pos.x)*tmpRatio;
+
+	sort(featurPoints.begin(), featurPoints.end(), compPixely);
+	d1 = featurPoints[2].pixel.y - featurPoints[0].pixel.y ;
+	d2 = inPoint.y - featurPoints[2].pixel.y;
+	tmpRatio = (d1 + d2)/d1 ;
+	tmpFeature.pixel.y = 1080;
+	tmpFeature.pos.y = featurPoints[2].pos.y + (double)(featurPoints[2].pos.y - featurPoints[0].pos.y)*tmpRatio;
+
+	tmpFeature.markFlag = true;
+	tmpFeature.selectFlag = false;
+	m_canUsedPoints.push_back(tmpFeature);
+
+	printf(" pixel (%d , %d ) ,   pos  (%d , %d) \n" , tmpFeature.pixel.x , tmpFeature.pixel.y , tmpFeature.pos.x , tmpFeature.pos.y );
+	return ;
 }

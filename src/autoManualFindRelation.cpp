@@ -405,9 +405,12 @@ void CAutoManualFindRelation::calcNormalWay(Point2i inPoint , Point2i& result , 
 		f3 = 1 - f1 - f2;
 	#else
 		calcTriArea(inPoint , dis , area);
-		f1 = 1/ (1 + area[1]/area[2] + area[1]/area[0] );
-		f2 = area[1]/area[2] * f1;
+		f1 = 1/ (1 + area[2]/area[1] + area[0]/area[1] );
+		f2 = area[2]/area[1] * f1;
 		f3 = 1 - f1 - f2 ;
+
+		printf("\n************* Area  p0 =%f  , p1 =%f , p2 = %f f\n", area[1],area[2],area[0] );
+
 	#endif
 	result.x = f1 * m_calcPos[0].pos.x + f2 * m_calcPos[1].pos.x + f3 * m_calcPos[2].pos.x;
 	result.y = f1 * m_calcPos[0].pos.y + f2 * m_calcPos[1].pos.y + f3 * m_calcPos[2].pos.y;

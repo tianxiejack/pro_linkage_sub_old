@@ -154,17 +154,27 @@ public:
 	bool get_cloneSrcImage_stat(){return cloneSrcImage_stat;};
 	void set_cloneSrcImage_stat(bool value){cloneSrcImage_stat = value;};
 	GRIDINTER_Mode get_manualInsertRecommendPoints_stat(){return manualInsertRecommendPoints_stat;};
-	void set_manualInsertRecommendPoints_stat(GRIDINTER_Mode value){manualInsertRecommendPoints_stat = value;printf("%s, %d,manualInsertRecommendPoints_stat=%d\n",__FILE__,__LINE__,manualInsertRecommendPoints_stat);};
+	void set_manualInsertRecommendPoints_stat(GRIDINTER_Mode value)
+		{
+			manualInsertRecommendPoints_stat = value;
+			if(GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE == value)
+				set_showpip_stat(false);
+			else
+				set_showpip_stat(true);
+			
+			if(GRIDINTER_TEST_MODE != value)
+				set_draw_point_triangle_stat(false);
+		};
 	bool get_drawpoints_stat(){return drawpoints_stat;};
 	void set_drawpoints_stat(bool value){drawpoints_stat = value;};
 	bool get_drawsubdiv_stat(){return drawsubdiv_stat;};
 	void set_drawsubdiv_stat(bool value){drawsubdiv_stat = value;};
-	bool get_drawsubdiv_point_stat(){return drawsubdiv_point_stat;};
-	void set_drawsubdiv_point_stat(bool value){drawsubdiv_point_stat = value;};
 	bool get_draw_point_triangle_stat(){return draw_point_triangle_stat;};
 	void set_draw_point_triangle_stat(bool value){draw_point_triangle_stat = value;};
 	bool get_print_stat(){return draw_print_stat;};
 	void set_print_stat(bool value){draw_print_stat = value;};
+	bool get_showpip_stat(){return draw_pip_stat;};
+	void set_showpip_stat(bool value){draw_pip_stat = value;};
 	
 	void auto_insertpoint(int x, int y);
 	void auto_draw_triangle_point(int x, int y);
@@ -204,9 +214,9 @@ private:
 	GRIDINTER_Mode manualInsertRecommendPoints_stat = GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE;
 	bool drawpoints_stat = false;
 	bool drawsubdiv_stat = false;
-	bool drawsubdiv_point_stat = false;
 	bool draw_point_triangle_stat = false;
 	bool draw_print_stat = false;
+	bool draw_pip_stat = false;
 public:
 	Point2i point_triangle;
 	Point2i point_triangle_bak;;

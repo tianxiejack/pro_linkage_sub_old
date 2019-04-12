@@ -230,7 +230,6 @@ public:
 	void DrawGridMapNodeCircles_16X12(bool drawFlag);
 	void Drawfeaturepoints();
 	void Drawsubdiv();
-	void Draw_subdiv_point();
 	void Draw_point_triangle();
 	void DrawDragRect();
 	void DrawJoys();

@@ -2371,22 +2371,6 @@ void CProcess::Drawsubdiv()
 	}
 }
 
-void CProcess::Draw_subdiv_point()
-{
-	static int draw_subidv_point_falg = 0;
-	if(draw_subidv_point_falg)
-	{
-		//m_autofr.draw_subdiv_point(m_display.m_imgOsd[extInCtrl->SensorStat],  0);
-		draw_subidv_point_falg = 0;
-	}
-	if(get_drawsubdiv_point_stat())
-	{
-		printf("%s,%d, draw_subdiv_point\n",__FILE__,__LINE__);
-		//m_autofr.draw_subdiv_point(m_display.m_imgOsd[extInCtrl->SensorStat],  1);
-		draw_subidv_point_falg = 1;
-	}
-}
-
 void CProcess::Draw_point_triangle()
 {
 	static int draw_point_triangle_falg = 0;
@@ -2569,7 +2553,7 @@ void CProcess::DrawTrigInter()
 	}
 
 
-	if(MENU_TRIG_INTER_MODE == g_displayMode)
+	if((MENU_TRIG_INTER_MODE == g_displayMode) && get_showpip_stat())
 	{	
 
 		color = 6;
@@ -4690,13 +4674,19 @@ void CProcess::OnKeyDwn(unsigned char key)
 		m_display.savePic_once = true;
 	}
 
-	if(key == 'o'|| key == 'O')
+	if(key == 'o')
 	{
 		int mode = plat->m_display.gettrig_pip_mode();
 		mode = (mode + 1) % 4;
 		plat->m_display.settrig_pip_mode(mode);
 	}
-		
+
+	if(key == 'O')
+	{
+		bool stat = plat->get_showpip_stat();
+		plat->set_showpip_stat(!stat);
+	}
+	
 	if (key == 'p'|| key == 'P')
 	{
 		msgdriv_event(MSGID_EXT_INPUT_PICPCROP, NULL);
@@ -4724,8 +4714,6 @@ void CProcess::OnKeyDwn(unsigned char key)
 		{
 			set_manualInsertRecommendPoints_stat(stat);
 		}
-		if(stat != GRIDINTER_TEST_MODE)
-			set_draw_point_triangle_stat(false);
 	}
 
 	if(key == 'S')

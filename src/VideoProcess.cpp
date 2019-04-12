@@ -1929,21 +1929,21 @@ void CVideoProcess::auto_draw_triangle_point(int x, int y)
 
 void CVideoProcess::moveball(int x, int y)
 {
-								SENDST trkmsg={0};
-								cv::Point tmp;
-								Point2i inPoint, outPoint;
-								tmp.x = x;
-								tmp.y = y;
-								pThis->mapout2inresol(&tmp);
-								inPoint.x = tmp.x;
-								inPoint.y = tmp.y;
-								pThis->m_autofr.Point2getPos(inPoint, outPoint);
-								printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
-								
-								trkmsg.cmd_ID = acqPosAndZoom;
-								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
-								memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
-								ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	SENDST trkmsg={0};
+	cv::Point tmp;
+	Point2i inPoint, outPoint;
+	tmp.x = x;
+	tmp.y = y;
+	pThis->mapout2inresol(&tmp);
+	inPoint.x = tmp.x;
+	inPoint.y = tmp.y;
+	pThis->m_autofr.Point2getPos(inPoint, outPoint);
+	printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
+					
+	trkmsg.cmd_ID = acqPosAndZoom;
+	memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
+	memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int));
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 
 }
 

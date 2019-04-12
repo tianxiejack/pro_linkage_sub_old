@@ -3270,21 +3270,24 @@ void CDisplayer::linkageSwitchMode(void)
 			{
 				int mode = gettrig_pip_mode();
 				RenderVideoOnOrthoView(VIDEO_0, 0,0,outputWHF[0],outputWHF[1]);
-				if(0 == mode)
+				if(plat->get_showpip_stat())
 				{
-					RenderVideoOnOrthoView(VIDEO_1, 0, outputWHF[1]/4*3, outputWHF[0]/4, outputWHF[1]/4);
-				}
-				else if(1 == mode)
-				{
-					RenderVideoOnOrthoView(VIDEO_1, outputWHF[0]/4*3, outputWHF[1]/4*3, outputWHF[0]/4, outputWHF[1]/4);
-				}
-				else if(2 == mode)
-				{
-					RenderVideoOnOrthoView(VIDEO_1, outputWHF[0]/4*3, 0, outputWHF[0]/4, outputWHF[1]/4);
-				}
-				if(3 == mode)
-				{
-					RenderVideoOnOrthoView(VIDEO_1, 0, 0, outputWHF[0]/4, outputWHF[1]/4);
+					if(0 == mode)
+					{
+						RenderVideoOnOrthoView(VIDEO_1, 0, outputWHF[1]/4*3, outputWHF[0]/4, outputWHF[1]/4);
+					}
+					else if(1 == mode)
+					{
+						RenderVideoOnOrthoView(VIDEO_1, outputWHF[0]/4*3, outputWHF[1]/4*3, outputWHF[0]/4, outputWHF[1]/4);
+					}
+					else if(2 == mode)
+					{
+						RenderVideoOnOrthoView(VIDEO_1, outputWHF[0]/4*3, 0, outputWHF[0]/4, outputWHF[1]/4);
+					}
+					if(3 == mode)
+					{
+						RenderVideoOnOrthoView(VIDEO_1, 0, 0, outputWHF[0]/4, outputWHF[1]/4);
+					}
 				}
 				if( g_CurDisplayMode != TRIG_INTER_MODE)
 					g_CurDisplayMode = TRIG_INTER_MODE;

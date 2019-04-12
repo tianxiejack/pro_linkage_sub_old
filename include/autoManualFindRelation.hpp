@@ -57,7 +57,7 @@ public:
 	void drawInvisableGrid(cv::Mat drawMat , bool bDraw);//画出隐藏的网格
 	void draw_subdiv( Mat& img ,bool bdraw);//画剖分三角
 	int draw_point_triangle( Mat& img , Point2i fp , vector<FEATUREPOINT_T> &back,Point2i &pos, bool bdraw );//插入点，画出pos和对应三角形的顶点
-	void getPos( Point2i inPoint , vector<Point2i>& triVertex  , Point2i& result );//插入点，返回pos和对应三角形的顶点信息
+	void getPos( Point2i inPoint , Point2i& result );//插入点，返回pos和对应三角形的顶点信息
 	void draw_subdiv_point( Mat& img, Point2i fp, Scalar color );//画点以及对应的剖分三角
 	void getPoints( std::vector<FEATUREPOINT_T>& pointVec); //得到待选的参考点容器
 
@@ -72,7 +72,7 @@ public:
 
 	void updateSubdiv();
 	void vertex2pos(vector<Point2i> &vertex);
-	void InterpolationPos( Point2i inPoint , vector<Point2i>& triVertex  , Point2i& result );
+	void InterpolationPos( Point2i inPoint , Point2i& result );
 	void preprocessPos();
 	int findposInFpassembel(Point2f &fp , Point2i &pos);
 	void insertVertexAndPosition(vector<FEATUREPOINT_T> insert);
@@ -80,13 +80,13 @@ public:
 	bool readParamsForTest();
 
 
-	void calcNormalWay(Point2i inPoint,vector<Point2i>& triVertex,Point2i& result);
+	void calcNormalWay(Point2i inPoint,Point2i& result);
 
 
 	double getDistance(Point2i pointO, Point2i pointA);
 	double getDist_P2L(Point2i pointP, Point2i pointA, Point2i pointB);
-	void calcDistancePoint2Triangle(Point2i inPoint,vector<Point2i>& triVertex, vector<double>& dis);
-	void getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,vector<Point2i>& triVertex,Point2i& result);
+	void calcDistancePoint2Triangle(Point2i inPoint, vector<double>& dis);
+	void getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,Point2i& result);
 
 
 private:

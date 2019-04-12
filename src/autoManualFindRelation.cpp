@@ -316,7 +316,7 @@ int CAutoManualFindRelation::Point2getPos(const Point2i inPoint,Point2i &result)
 		return ret;
 
 	vertex2pos( triVertex );
-	getPos(inPoint, triVertex, result);
+	getPos(inPoint, result);
 	return ret;
 }
 
@@ -390,7 +390,7 @@ void CAutoManualFindRelation::preprocessPos()
 }
 
 
-void CAutoManualFindRelation::calcNormalWay(Point2i inPoint,vector<Point2i>& triVertex,Point2i& result)
+void CAutoManualFindRelation::calcNormalWay(Point2i inPoint , Point2i& result)
 {
 	double d1, d2, d3;
 	double f1, f2, f3, dtmp;
@@ -448,7 +448,7 @@ double CAutoManualFindRelation::getDist_P2L(Point2i pointP, Point2i pointA, Poin
 }
 
 
-void CAutoManualFindRelation::calcDistancePoint2Triangle(Point2i inPoint,vector<Point2i>& triVertex, vector<double>& dis)
+void CAutoManualFindRelation::calcDistancePoint2Triangle(Point2i inPoint, vector<double>& dis)
 {
 	Point2i A,B;
 	dis.clear();
@@ -458,7 +458,7 @@ void CAutoManualFindRelation::calcDistancePoint2Triangle(Point2i inPoint,vector<
 }
 
 
-void CAutoManualFindRelation::getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,vector<Point2i>& triVertex,Point2i& result)
+void CAutoManualFindRelation::getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,Point2i& result)
 {
 	double d1, d2;
 	double f1;
@@ -475,13 +475,13 @@ void CAutoManualFindRelation::getNear2LineUseTwoPoint2Calc(int flag,Point2i inPo
 }
 
 
-void CAutoManualFindRelation::InterpolationPos(Point2i inPoint,vector<Point2i>& triVertex, Point2i& result)
+void CAutoManualFindRelation::InterpolationPos(Point2i inPoint, Point2i& result)
 {
 
 	std::vector<double> getDis;
 	int flag = 3;
 	double min = 1000;
-	calcDistancePoint2Triangle(inPoint,triVertex,getDis);
+	calcDistancePoint2Triangle(inPoint,getDis);
 
 	for(int i=0 ; i < getDis.size(); i++ )
 	{
@@ -496,9 +496,9 @@ void CAutoManualFindRelation::InterpolationPos(Point2i inPoint,vector<Point2i>& 
 	}
 
 	if(flag < 3)
-		getNear2LineUseTwoPoint2Calc(flag,inPoint,triVertex,result);
+		getNear2LineUseTwoPoint2Calc(flag,inPoint,result);
 	else
-		calcNormalWay(inPoint,triVertex,result);
+		calcNormalWay(inPoint,result);
 
 	result.x %= 36000;
 	if (result.y < 0)
@@ -507,10 +507,10 @@ void CAutoManualFindRelation::InterpolationPos(Point2i inPoint,vector<Point2i>& 
 	return;
 }
 
-void CAutoManualFindRelation::getPos(Point2i inPoint,vector<Point2i>& triVertex, Point2i& result)
+void CAutoManualFindRelation::getPos(Point2i inPoint, Point2i& result)
 {
 	preprocessPos();
-	InterpolationPos(inPoint, triVertex, result);
+	InterpolationPos(inPoint, result);
 	return;
 }
 

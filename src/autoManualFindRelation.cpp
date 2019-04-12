@@ -510,9 +510,9 @@ void CAutoManualFindRelation::InterpolationPos(Point2i inPoint, Point2i& result)
 		}
 	}
 
-	if(flag < 3)
-		getNear2LineUseTwoPoint2Calc(flag,inPoint,result);
-	else
+	//if(flag < 3)
+	//	getNear2LineUseTwoPoint2Calc(flag,inPoint,result);
+	//else
 		calcNormalWay(inPoint,result,getDis);
 
 	result.x %= 36000;

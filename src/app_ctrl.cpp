@@ -1260,7 +1260,7 @@ void app_ctrl_settrig_inter(menu_param_t *pInCmd)
 		{
 			g_displayMode = MENU_MAIN_VIEW;
 			plat->set_send_mat_stat(false);
-			plat->set_manualInsertRecommendPoints_stat(0);
+			plat->set_manualInsertRecommendPoints_stat(GRIDINTER_CALIBRATION_MODE);
 			plat->set_drawpoints_stat(false);
 			plat->set_drawsubdiv_stat(false);
 			plat->set_drawsubdiv_point_stat(false);
@@ -1277,4 +1277,5 @@ void app_ctrl_getPT()
 void app_ctrl_save_trig_inter()
 {
 	plat->m_autofr.writeParams();
+	printf("%s, %d, have saved trig inter params\n", __FILE__,__LINE__);
 }

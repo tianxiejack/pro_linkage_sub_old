@@ -252,6 +252,13 @@ typedef enum _GB_WorkMode{ // This App Has three work mode : Handle, Auto, and O
 	MODE_COUNT		
 }GB_WorkMode;
 
+typedef enum _GRIDINTER_Mode{
+	GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE = 0,
+	GRIDINTER_CALIBRATION_MODE,
+	GRIDINTER_TEST_MODE,
+	GRIDINTER_COUNT,
+}GRIDINTER_Mode;
+
 typedef struct _UI_CONNECT_ACTION{	
 	int CurCalibraCam;   // gun camera == 0;  ball camera == 1;
 }UI_CONNECT_ACTION;

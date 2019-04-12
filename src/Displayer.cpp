@@ -3401,6 +3401,28 @@ void CDisplayer::gl_display(void)
 		int fonty = 9;
 		chinese_osd(fontx,fonty,L"数字键: 2、4、6、8代表:上、左、右、下移动红色光标; 1代表获取当前球机的PTZ值; 5代表保存已标定的结点PTZ值",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 	}
+	else if(displayMode == TRIG_INTER_MODE){
+		int fontx = 900;
+		int fonty =10;
+		GRIDINTER_Mode mode = plat->get_manualInsertRecommendPoints_stat();
+		switch(mode){
+			case GRIDINTER_CALIBRATION_MODE:
+				chinese_osd(fontx,fonty,L"标定模式",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+				break;
+			case GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE:
+				chinese_osd(fontx,fonty,L"插入特征点模式",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+				break;
+			case GRIDINTER_TEST_MODE:
+				chinese_osd(fontx,fonty,L"调试模式",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+				break;
+			default:
+				break;
+		}
+
+		int fontx2 =580;
+		int fonty2 = 40;
+		chinese_osd(fontx2,fonty2,L"s: 模式切换;  I:自动找特征点;  h:获取当前PTZ值并标定选中特征点;  j:保存标定结果",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+	}
 
 	switch(displayMode){
 		case CALIBRATE_CAPTURE:

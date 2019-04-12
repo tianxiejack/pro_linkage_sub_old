@@ -153,8 +153,8 @@ public:
 	void set_send_mat_stat(bool value){send_mat_stat = value;};
 	bool get_cloneSrcImage_stat(){return cloneSrcImage_stat;};
 	void set_cloneSrcImage_stat(bool value){cloneSrcImage_stat = value;};
-	int get_manualInsertRecommendPoints_stat(){return manualInsertRecommendPoints_stat;};
-	void set_manualInsertRecommendPoints_stat(int value){manualInsertRecommendPoints_stat = value;printf("%s, %d,manualInsertRecommendPoints_stat=%d\n",__FILE__,__LINE__,manualInsertRecommendPoints_stat);};
+	GRIDINTER_Mode get_manualInsertRecommendPoints_stat(){return manualInsertRecommendPoints_stat;};
+	void set_manualInsertRecommendPoints_stat(GRIDINTER_Mode value){manualInsertRecommendPoints_stat = value;printf("%s, %d,manualInsertRecommendPoints_stat=%d\n",__FILE__,__LINE__,manualInsertRecommendPoints_stat);};
 	bool get_drawpoints_stat(){return drawpoints_stat;};
 	void set_drawpoints_stat(bool value){drawpoints_stat = value;};
 	bool get_drawsubdiv_stat(){return drawsubdiv_stat;};
@@ -201,7 +201,7 @@ private:
 	
 	bool send_mat_stat = false;
 	bool cloneSrcImage_stat = false;
-	int manualInsertRecommendPoints_stat = 0;
+	GRIDINTER_Mode manualInsertRecommendPoints_stat = GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE;
 	bool drawpoints_stat = false;
 	bool drawsubdiv_stat = false;
 	bool drawsubdiv_point_stat = false;

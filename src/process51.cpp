@@ -4717,13 +4717,13 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 	if (key == 's')
 	{
-		int stat = get_manualInsertRecommendPoints_stat();
-		stat = (stat + 1) % 3;
+		GRIDINTER_Mode stat = get_manualInsertRecommendPoints_stat();
+		stat = (GRIDINTER_Mode)((stat + 1) % GRIDINTER_COUNT);
 		if(pMenuStatus->Trig_Inter_Mode)
 		{
 			set_manualInsertRecommendPoints_stat(stat);
 		}
-		if(stat != 2)
+		if(stat != GRIDINTER_TEST_MODE)
 			set_draw_point_triangle_stat(false);
 	}
 

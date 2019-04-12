@@ -2045,17 +2045,17 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
-			int stat = pThis->get_manualInsertRecommendPoints_stat();
-			if(1 == stat)
+			GRIDINTER_Mode stat = pThis->get_manualInsertRecommendPoints_stat();
+			if(GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE == stat)
 			{
         			pThis->auto_insertpoint(x, y);
 			}
-			else if(2 == stat)
+			else if(GRIDINTER_TEST_MODE == stat)
 			{
         			pThis->auto_draw_triangle_point(x, y);
 				pThis->moveball(x, y);
 			}
-			else if(0 == stat)
+			else if(GRIDINTER_CALIBRATION_MODE == stat)
 			{
 				pThis->auto_selectpoint(x, y);
 			}	

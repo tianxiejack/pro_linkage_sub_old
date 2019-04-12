@@ -88,7 +88,7 @@ public:
 	double getDist_P2L(Point2i pointP, Point2i pointA, Point2i pointB);
 	void calcDistancePoint2Triangle(Point2i inPoint, vector<double>& dis);
 	void getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,Point2i& result);
-
+	void initDivsubObj();
 
 private:
 	pNOTIFYFUNC m_notifyFunc;
@@ -102,7 +102,7 @@ private:
 	int m_disWidth,m_disHeight;
 	Mat srcFrame;
 
-	Subdiv2D subdiv;
+	Subdiv2D* m_pSubdiv;
 	Rect m_rect;
 	std::vector<FEATUREPOINT_T> fpassemble;
 	std::vector<FEATUREPOINT_T> m_calcPos;
@@ -110,7 +110,8 @@ private:
 	FileStorage m_readfs;
 	FileStorage m_writefs;
 
-
+	vector<Point2f> m_orgpointBK;
+	cv::Point2i m_fpDrawTest;
 	cv::Point2i m_testPixel;
 };
 

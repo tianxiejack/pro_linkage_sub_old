@@ -15,12 +15,14 @@ CAutoManualFindRelation::CAutoManualFindRelation(int disWidth, int disHeight,int
 	m_rect.y = 0;
 	m_rect.width = disWidth;
 	m_rect.height = disHeight;
-	subdiv.initDelaunay(m_rect);
+	m_pSubdiv = new Subdiv2D;
+	m_pSubdiv->initDelaunay(m_rect);
 }
 
 CAutoManualFindRelation::~CAutoManualFindRelation() 
 {
 	delete[] m_blockVect;
+	delete m_pSubdiv;
 }
 
 void CAutoManualFindRelation::create(pNOTIFYFUNC notifyFunc)
@@ -171,11 +173,9 @@ void CAutoManualFindRelation::autoFindPoints()
 	detector->detect(srcFrame, keypoints);
 	clearVector2Init();
 	handleKeyPoints(keypoints);
-
+	initDivsubObj();
 	if (m_notifyFunc != NULL)
 		(*m_notifyFunc)(m_featurePoints);
-
-	printf("!!! keypoints = %d  \n", keypoints.size());
 	return;
 }
 
@@ -244,9 +244,6 @@ void CAutoManualFindRelation::insertPos(cv::Point2i inPos)
 	if (m_notifyFunc != NULL)
 		(*m_notifyFunc)(m_featurePoints);
 
-	if (m_canUsedPoints.size() > 3)
-		insertVertexAndPosition(m_canUsedPoints);
-
 	return;
 }
 
@@ -254,7 +251,8 @@ void CAutoManualFindRelation::collectMarkedPoints()
 {
 	FEATUREPOINT_T tmp;
 	m_canUsedPoints.clear();
-	for (int i = 0; i < m_featurePoints.size(); i++) {
+	for (int i = 0; i < m_featurePoints.size(); i++) 
+	{
 		if (m_featurePoints[i].markFlag) {
 			tmp.pixel = m_featurePoints[i].pixel;
 			tmp.pos = m_featurePoints[i].pos;
@@ -262,7 +260,8 @@ void CAutoManualFindRelation::collectMarkedPoints()
 		}
 	}
 
-	insertVertexAndPosition(m_canUsedPoints) ;
+	if( m_canUsedPoints.size() > 3 )
+		insertVertexAndPosition(m_canUsedPoints) ;
 	return;
 }
 
@@ -282,6 +281,16 @@ void CAutoManualFindRelation::deletePos(cv::Point2i inPixel)
 	return;
 }
 
+
+void CAutoManualFindRelation::initDivsubObj()
+{
+	delete m_pSubdiv;
+	m_pSubdiv = new Subdiv2D();
+	m_pSubdiv->initDelaunay(m_rect);
+	return ;
+}
+
+
 void CAutoManualFindRelation::insertVertexAndPosition(vector<FEATUREPOINT_T> insert) 
 {
 	fpassemble.clear();
@@ -292,9 +301,8 @@ void CAutoManualFindRelation::insertVertexAndPosition(vector<FEATUREPOINT_T> ins
 
 void CAutoManualFindRelation::updateSubdiv() 
 {
-	for (std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin();
-			plist != fpassemble.end(); ++plist) {
-		subdiv.insert(plist->pixel);
+	for (std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin();plist != fpassemble.end(); ++plist) {
+		m_pSubdiv->insert(plist->pixel);
 	}
 }
 
@@ -324,15 +332,15 @@ void CAutoManualFindRelation::getTriangleVertex(Point2f fp,vector<Point2i> &resu
 {
 	int e0 = 0, vertex = 0;
 	Point2i tmp;
-	subdiv.locate(fp, e0, vertex);
+	m_pSubdiv->locate(fp, e0, vertex);
 	if (e0 > 0) {
 		int e = e0;
 		do {
 			Point2f org, dst;
-			if (subdiv.edgeOrg(e, &org) > 0 && subdiv.edgeDst(e, &dst) > 0) {
+			if (m_pSubdiv->edgeOrg(e, &org) > 0 && m_pSubdiv->edgeDst(e, &dst) > 0) {
 				result.push_back(org);
 			}
-			e = subdiv.getEdge(e, Subdiv2D::NEXT_AROUND_LEFT);
+			e = m_pSubdiv->getEdge(e, Subdiv2D::NEXT_AROUND_LEFT);
 		} while (e != e0);
 	}
 }
@@ -532,7 +540,7 @@ void CAutoManualFindRelation::getPos(Point2i inPoint, Point2i& result)
 void CAutoManualFindRelation::draw_subdiv(Mat& img, bool bdraw)
 {
 	vector<Vec6f> triangleList;
-	subdiv.getTriangleList(triangleList);
+	m_pSubdiv->getTriangleList(triangleList);
 	vector<Point> pt(3);
 	CvScalar color;
 	int linewidth = 1;
@@ -564,6 +572,7 @@ int CAutoManualFindRelation::draw_point_triangle(Mat& img, Point2i fp,vector<FEA
 	int ret = 0;
 	int flag;
 	int index;
+	int lineWidth = 3;
 	CvScalar color;
 	vector<Point2f> orgpoint;
 	Point2i tmppos;
@@ -577,40 +586,56 @@ int CAutoManualFindRelation::draw_point_triangle(Mat& img, Point2i fp,vector<FEA
 	if (bdraw)
 		color = cvScalar(255, 0, 255, 255);
 	else
+	{
 		color = cvScalar(0, 0, 0, 0);
-	
-	subdiv.locate(fp, e0, vertex);
+		lineWidth = 4;
+	}
+	m_pSubdiv->locate(fp, e0, vertex);
 
 	if (e0 > 0) {
 		int e = e0;
 		do {
 			Point2f org, dst;
-			if (subdiv.edgeOrg(e, &org) > 0 && subdiv.edgeDst(e, &dst) > 0) {
+			if (m_pSubdiv->edgeOrg(e, &org) > 0 && m_pSubdiv->edgeDst(e, &dst) > 0) {
 				orgpoint.push_back(org);
 				if (org.x <= 0.00001 || org.x > m_rect.width || org.y <= 0.00001
 						|| org.y > m_rect.height)
 					ret = -1;
 			}
-			e = subdiv.getEdge(e, Subdiv2D::NEXT_AROUND_LEFT);
+			e = m_pSubdiv->getEdge(e, Subdiv2D::NEXT_AROUND_LEFT);//NEXT_AROUND_LEFT
 		} while (e != e0);
 	}
+
+	if(m_orgpointBK.size()>=3)
+	for (int k = 0; k < 3; k++)
+	{
+		index = (k + 1) % 3;
+		line(img, m_orgpointBK[k], m_orgpointBK[index], cvScalar(0, 0, 0, 0), 4, CV_AA, 0);
+	}
+
+	m_orgpointBK = orgpoint;
 
 	if (-1 == ret)
 		return ret;
 
-	for (int k = 0; k < 3; k++) {
+	for (int k = 0; k < 3; k++)
+	{
 		index = (k + 1) % 3;
-		line(img, orgpoint[k], orgpoint[index], color, 3, CV_AA, 0);
+		line(img, m_orgpointBK[k], m_orgpointBK[index], color, lineWidth, CV_AA, 0);
 	}
+	draw_subdiv_point(img, m_fpDrawTest, cvScalar(0, 0, 0, 0));
+	m_fpDrawTest = fp ;
+	draw_subdiv_point(img, m_fpDrawTest, color);
 
-	draw_subdiv_point(img, fp, color);
 	back.clear();
-	for (int k = 0; k < 3; k++) {
+	for (int k = 0; k < 3; k++)
+	{
 		flag = findposInFpassembel(orgpoint[k], tmppos);
 
 		if (-1 == flag)
 			return -1;
-		else {
+		else
+		{
 			tmpBack.pixel = orgpoint[k];
 			tmpBack.pos = tmppos;
 			back.push_back(tmpBack);

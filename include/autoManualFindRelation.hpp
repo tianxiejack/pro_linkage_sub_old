@@ -80,7 +80,8 @@ public:
 	bool readParamsForTest();
 
 
-	void calcNormalWay(Point2i inPoint,Point2i& result);
+	void calcNormalWay(Point2i inPoint,Point2i& result,vector<double>& dis);
+	void calcTriArea(Point2i inPoint , vector<double>& dis , vector<double>& area);
 
 
 	double getDistance(Point2i pointO, Point2i pointA);

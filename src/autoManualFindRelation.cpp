@@ -390,34 +390,32 @@ void CAutoManualFindRelation::preprocessPos()
 }
 
 
-void CAutoManualFindRelation::calcNormalWay(Point2i inPoint , Point2i& result)
+void CAutoManualFindRelation::calcNormalWay(Point2i inPoint , Point2i& result , vector<double>& dis)
 {
 	double d1, d2, d3;
 	double f1, f2, f3, dtmp;
-
-	d1 = getDistance(inPoint , m_calcPos[0].pixel);
-	d2 = getDistance(inPoint , m_calcPos[1].pixel);
-	d3 = getDistance(inPoint , m_calcPos[2].pixel);
-
-
-	dtmp = 1 + d1 / d2 + d1 / d3;
-	f1 = 1 / dtmp;
-	f2 =  d1 / d2 * f1;
-	f3 = 1 - f1 - f2;
+	vector<double> area;
+	#if 0
+		d1 = getDistance(inPoint , m_calcPos[0].pixel);
+		d2 = getDistance(inPoint , m_calcPos[1].pixel);
+		d3 = getDistance(inPoint , m_calcPos[2].pixel);
+		dtmp = 1 + d1 / d2 + d1 / d3;
+		f1 = 1 / dtmp;
+		f2 =  d1 / d2 * f1;
+		f3 = 1 - f1 - f2;
+	#else
+		calcTriArea(inPoint , dis , area);
+		f1 = 1/ (1 + area[1]/area[2] + area[1]/area[0] );
+		f2 = area[1]/area[2] * f1;
+		f3 = 1 - f1 - f2 ;
+	#endif
+	result.x = f1 * m_calcPos[0].pos.x + f2 * m_calcPos[1].pos.x + f3 * m_calcPos[2].pos.x;
+	result.y = f1 * m_calcPos[0].pos.y + f2 * m_calcPos[1].pos.y + f3 * m_calcPos[2].pos.y;
 
 	printf("point 0 , f1 = %f, pixel(%d, %d), pos(%d, %d)\n", f1,  m_calcPos[0].pixel.x , m_calcPos[0].pixel.y , m_calcPos[0].pos.x ,m_calcPos[0].pos.y);
 	printf("point 1 , f2 = %f, pixel(%d, %d), pos(%d, %d)\n", f2,  m_calcPos[1].pixel.x , m_calcPos[1].pixel.y , m_calcPos[1].pos.x ,m_calcPos[1].pos.y);
 	printf("point 2 , f3 = %f, pixel(%d, %d), pos(%d, %d)\n", f3,  m_calcPos[2].pixel.x , m_calcPos[2].pixel.y , m_calcPos[2].pos.x ,m_calcPos[2].pos.y);
-
-
-
-	result.x = f1 * m_calcPos[0].pos.x + f2 * m_calcPos[1].pos.x + f3 * m_calcPos[2].pos.x;
-	result.y = f1 * m_calcPos[0].pos.y + f2 * m_calcPos[1].pos.y + f3 * m_calcPos[2].pos.y;
-
 	printf("inpoint  pixel(%d, %d), pos(%d, %d)\n", inPoint.x, inPoint.y , result.x ,result.y );
-
-
-
 
 	return ;
 }
@@ -447,6 +445,18 @@ double CAutoManualFindRelation::getDist_P2L(Point2i pointP, Point2i pointA, Poin
     return distance;
 }
 
+void CAutoManualFindRelation::calcTriArea(Point2i inPoint , vector<double>& dis , vector<double>& area)
+{
+	double tmpDis , tmpAera;
+	area.clear();
+	for(int i=0; i < 3 ; i++ )
+	{
+		tmpDis = getDistance(m_calcPos[i].pixel, m_calcPos[(i+1)%3].pixel);
+		tmpAera = tmpDis * dis[i] * 0.5 ;
+		area.push_back(tmpAera);
+	}
+	return ;
+}
 
 void CAutoManualFindRelation::calcDistancePoint2Triangle(Point2i inPoint, vector<double>& dis)
 {
@@ -454,8 +464,10 @@ void CAutoManualFindRelation::calcDistancePoint2Triangle(Point2i inPoint, vector
 	dis.clear();
 	for(int i=0 ; i< 3 ;i++)
 		dis.push_back(  getDist_P2L(inPoint, m_calcPos[i].pixel, m_calcPos[(i+1)%3].pixel) );
+
 	return ;
 }
+
 
 
 void CAutoManualFindRelation::getNear2LineUseTwoPoint2Calc(int flag,Point2i inPoint,Point2i& result)
@@ -498,7 +510,7 @@ void CAutoManualFindRelation::InterpolationPos(Point2i inPoint, Point2i& result)
 	if(flag < 3)
 		getNear2LineUseTwoPoint2Calc(flag,inPoint,result);
 	else
-		calcNormalWay(inPoint,result);
+		calcNormalWay(inPoint,result,getDis);
 
 	result.x %= 36000;
 	if (result.y < 0)

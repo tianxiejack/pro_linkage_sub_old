@@ -17,6 +17,7 @@ CAutoManualFindRelation::CAutoManualFindRelation(int disWidth, int disHeight,int
 	m_rect.height = disHeight;
 	m_pSubdiv = new Subdiv2D;
 	m_pSubdiv->initDelaunay(m_rect);
+	triangleListBK.clear();
 }
 
 CAutoManualFindRelation::~CAutoManualFindRelation() 
@@ -581,6 +582,20 @@ void CAutoManualFindRelation::draw_subdiv(Mat& img, bool bdraw)
 	vector<Point> pt(3);
 	CvScalar color;
 	int linewidth = 1;
+
+	for (size_t i = 0; i < triangleListBK.size(); i++)
+	{
+		Vec6f t = triangleListBK[i];
+		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+		line(img, pt[0], pt[1], cvScalar(0, 0, 0, 0), 1, CV_AA, 0);
+		line(img, pt[1], pt[2], cvScalar(0, 0, 0, 0), 1, CV_AA, 0);
+		line(img, pt[2], pt[0], cvScalar(0, 0, 0, 0), 1, CV_AA, 0);
+	}
+
+	triangleListBK = triangleList;
+
 	if (bdraw)
 		color = cvScalar(0, 100, 255, 255);
 	else
@@ -589,9 +604,9 @@ void CAutoManualFindRelation::draw_subdiv(Mat& img, bool bdraw)
 		linewidth = 2 ;
 	}
 
-	for (size_t i = 0; i < triangleList.size(); i++)
+	for (size_t i = 0; i < triangleListBK.size(); i++)
 	{
-		Vec6f t = triangleList[i];
+		Vec6f t = triangleListBK[i];
 		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
 		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
 		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));

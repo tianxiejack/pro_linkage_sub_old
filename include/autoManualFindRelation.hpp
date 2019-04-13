@@ -101,6 +101,7 @@ private:
 	std::vector<FEATUREPOINT_T> m_canUsedPoints;
 	std::vector<cv::KeyPoint>* m_blockVect;
 
+	vector<Vec6f> triangleListBK;
 	int m_gridx,m_gridy;
 	int m_row,m_col;
 	int m_disWidth,m_disHeight;

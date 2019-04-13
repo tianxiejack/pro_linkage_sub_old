@@ -56,11 +56,14 @@ public:
 
 	//for test
 	void drawInvisableGrid(cv::Mat drawMat , bool bDraw);//画出隐藏的网格
-	void draw_subdiv( Mat& img ,bool bdraw);//画剖分三角
+	void draw_subdiv( Mat& img ,vector<Vec6f> triangleList ,bool bdraw);//画剖分三角
 	int draw_point_triangle( Mat& img , Point2i fp , vector<FEATUREPOINT_T> &back,Point2i &pos, bool bdraw );//插入点，画出pos和对应三角形的顶点
 	void getPos( Point2i inPoint , Point2i& result );//插入点，返回pos和对应三角形的顶点信息
 	void draw_subdiv_point( Mat& img, Point2i fp, Scalar color );//画点以及对应的剖分三角
 	void getPoints( std::vector<FEATUREPOINT_T>& pointVec); //得到待选的参考点容器
+
+	void getTriangleList(vector<Vec6f>& triangleList);
+
 
 	//used only inside
 	void handleKeyPoints( std::vector<KeyPoint>& keypoints );
@@ -101,7 +104,6 @@ private:
 	std::vector<FEATUREPOINT_T> m_canUsedPoints;
 	std::vector<cv::KeyPoint>* m_blockVect;
 
-	vector<Vec6f> triangleListBK;
 	int m_gridx,m_gridy;
 	int m_row,m_col;
 	int m_disWidth,m_disHeight;

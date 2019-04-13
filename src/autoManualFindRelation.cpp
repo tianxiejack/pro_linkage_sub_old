@@ -17,7 +17,6 @@ CAutoManualFindRelation::CAutoManualFindRelation(int disWidth, int disHeight,int
 	m_rect.height = disHeight;
 	m_pSubdiv = new Subdiv2D;
 	m_pSubdiv->initDelaunay(m_rect);
-	triangleListBK.clear();
 }
 
 CAutoManualFindRelation::~CAutoManualFindRelation() 
@@ -562,6 +561,8 @@ void CAutoManualFindRelation::InterpolationPos(Point2i inPoint, Point2i& result)
 	calcNormalWay(inPoint,result,getDis);
 
 	result.x %= 36000;
+	if(result.x < 0)
+		result.x += 36000;
 	if (result.y < 0)
 		result.y = 32768 - result.y;
 
@@ -575,26 +576,19 @@ void CAutoManualFindRelation::getPos(Point2i inPoint, Point2i& result)
 	return;
 }
 
-void CAutoManualFindRelation::draw_subdiv(Mat& img, bool bdraw)
+
+void CAutoManualFindRelation::getTriangleList(vector<Vec6f>& triangleList)
 {
-	vector<Vec6f> triangleList;
 	m_pSubdiv->getTriangleList(triangleList);
+	return ;
+}
+
+
+void CAutoManualFindRelation::draw_subdiv(Mat& img, vector<Vec6f> triangleList , bool bdraw)
+{
 	vector<Point> pt(3);
 	CvScalar color;
 	int linewidth = 1;
-
-	for (size_t i = 0; i < triangleListBK.size(); i++)
-	{
-		Vec6f t = triangleListBK[i];
-		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
-		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
-		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
-		line(img, pt[0], pt[1], cvScalar(0, 0, 0, 0), 1, CV_AA, 0);
-		line(img, pt[1], pt[2], cvScalar(0, 0, 0, 0), 1, CV_AA, 0);
-		line(img, pt[2], pt[0], cvScalar(0, 0, 0, 0), 1, CV_AA, 0);
-	}
-
-	triangleListBK = triangleList;
 
 	if (bdraw)
 		color = cvScalar(0, 100, 255, 255);
@@ -604,9 +598,9 @@ void CAutoManualFindRelation::draw_subdiv(Mat& img, bool bdraw)
 		linewidth = 2 ;
 	}
 
-	for (size_t i = 0; i < triangleListBK.size(); i++)
+	for (size_t i = 0; i < triangleList.size(); i++)
 	{
-		Vec6f t = triangleListBK[i];
+		Vec6f t = triangleList[i];
 		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
 		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
 		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));

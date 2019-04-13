@@ -42,7 +42,7 @@ const int ZERO_ANGLE = 0;
 
 typedef struct
 {
-	int state;//1:is clicked,  0:not be clicked
+	int state;// is clicked,  0:not be clicked
 	int rigionindex;//rigion num
 }grid_node;
 
@@ -123,19 +123,13 @@ public:
 	Mat gun_srcMat_remap;
 	Point LeftPoint;
 	Point RightPoint;
-	#if 0
-	GridMapNode m_gridNodes[GRID_ROWS+1][GRID_COLS+1];
-	GridMapNode m_readGridNodes[GRID_ROWS+1][GRID_COLS+1];
-	MarkMapNode m_calibratedNodes[GRID_ROWS+1][GRID_COLS+1];
-	cv::Point m_nodePos[GRID_ROWS+1][GRID_COLS+1];
-	#else
+
 	GridMapNode m_gridNodes[GRID_ROWS_11+1][GRID_COLS_15+3];	
 	GridMapNode m_readGridNodes[GRID_ROWS_11+1][GRID_COLS_15+1];
 	MarkMapNode m_calibratedNodes[GRID_ROWS_11+1][GRID_COLS_15+3];
 	cv::Point m_nodePos[GRID_ROWS_11+1][GRID_COLS_15+2];
 	int m_intervalCOl[GRID_COLS_15+10];
 
-	#endif
 	cv::Point m_backNodePos;
 	int m_curNodeIndex;
 	//cv::Point temp_backPoint[GRID_ROWS+1][GRID_COLS+1] ;
@@ -154,17 +148,27 @@ public:
 	bool get_cloneSrcImage_stat(){return cloneSrcImage_stat;};
 	void set_cloneSrcImage_stat(bool value){cloneSrcImage_stat = value;};
 	GRIDINTER_Mode get_manualInsertRecommendPoints_stat(){return manualInsertRecommendPoints_stat;};
-	void set_manualInsertRecommendPoints_stat(GRIDINTER_Mode value){manualInsertRecommendPoints_stat = value;printf("%s, %d,manualInsertRecommendPoints_stat=%d\n",__FILE__,__LINE__,manualInsertRecommendPoints_stat);};
+	void set_manualInsertRecommendPoints_stat(GRIDINTER_Mode value)
+		{
+			manualInsertRecommendPoints_stat = value;
+			if(GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE == value)
+				set_showpip_stat(false);
+			else
+				set_showpip_stat(true);
+			
+			if(GRIDINTER_TEST_MODE != value)
+				set_draw_point_triangle_stat(false);
+		};
 	bool get_drawpoints_stat(){return drawpoints_stat;};
 	void set_drawpoints_stat(bool value){drawpoints_stat = value;};
 	bool get_drawsubdiv_stat(){return drawsubdiv_stat;};
 	void set_drawsubdiv_stat(bool value){drawsubdiv_stat = value;};
-	bool get_drawsubdiv_point_stat(){return drawsubdiv_point_stat;};
-	void set_drawsubdiv_point_stat(bool value){drawsubdiv_point_stat = value;};
 	bool get_draw_point_triangle_stat(){return draw_point_triangle_stat;};
 	void set_draw_point_triangle_stat(bool value){draw_point_triangle_stat = value;};
 	bool get_print_stat(){return draw_print_stat;};
 	void set_print_stat(bool value){draw_print_stat = value;};
+	bool get_showpip_stat(){return draw_pip_stat;};
+	void set_showpip_stat(bool value){draw_pip_stat = value;};
 	
 	void auto_insertpoint(int x, int y);
 	void auto_draw_triangle_point(int x, int y);
@@ -173,7 +177,6 @@ public:
 	void insertPos(int x, int y);
 	
 	static void pnotify_callback(std::vector<FEATUREPOINT_T>& recommendPoints);
-	void InitGridMapNodes();
 	void InitGridMap16X12();
 	void useTrigonometric(int px, int py);
 
@@ -204,9 +207,9 @@ private:
 	GRIDINTER_Mode manualInsertRecommendPoints_stat = GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE;
 	bool drawpoints_stat = false;
 	bool drawsubdiv_stat = false;
-	bool drawsubdiv_point_stat = false;
 	bool draw_point_triangle_stat = false;
 	bool draw_print_stat = false;
+	bool draw_pip_stat = false;
 public:
 	Point2i point_triangle;
 	Point2i point_triangle_bak;;
@@ -299,8 +302,6 @@ public:
 	int m_draw;
 	RectfNode mRect[MAX_CHAN][100];
 	int m_tempX, m_tempY, m_rectn[MAX_CHAN];
-	int setrigon_flag;
-	int setrigon_polygon;
 	
 	int m_click_v20L, m_click_v20R;
 	RectfNode mRectv20L;
@@ -344,7 +345,6 @@ protected:
 	int configEnhFromFile();	
 	void process_event(int type, int iPrm, void *pPrm);
 	int process_frame(int chId, int virchID, Mat frame);
-	int process_mtd(ALGMTD_HANDLE pChPrm, Mat frame_gray, Mat frame_dis);
 	#if __TRACK__
 	Track_InfoObj *trackinfo_obj;
 	int process_track(int trackStatus, Mat frame_gray, Mat frame_dis, UTC_RECT_float &rcResult);
@@ -356,10 +356,6 @@ protected:
 	static CVideoProcess *pThis;
 	static void call_run(int value);
 	static int callback_process(void *handle, int chId, int virchId, Mat frame);
-
-	static void processtimeMenu(int value);
-	static void processsmanualcarliMenu(int value);
-	static void processsautocarliMenu(int value);
 	
 	int click_legal(int x, int y);
 	int move_legal(int x, int y);
@@ -377,7 +373,6 @@ protected:
 	int mapgun2fullscreen_auto(int *x, int *y);
 	mouserect maprect(mouserect rectcur,mouserect rectsrc,mouserect rectdest);
 	int maprect_point(int *x, int *y, mouserect rectsrc,mouserect rectdest);
-	void sendIPC_Time(int value);
 
 	int map1080p2normal_point(float *x, float *y);
 	int mapnormal2curchannel_point(float *x, float *y, int w, int h);
@@ -385,10 +380,6 @@ protected:
 	int mapnormal2curchannel_rect(mouserectf *rect, int w, int h);
 	static void mousemove_event(GLint xMouse, GLint yMouse);
 	void mouse_eventv20(int button, int state, int x, int y);
-	static void menu_event(int value);
-	static void processrigionMenu(int value);
-	static void processrigionselMenu(int value);
-	static void processrigionpolygonMenu(int value);
 	int InJoys(int x, int y);
 	void mapout2inresol(cv::Point *tmppoint);
 	void sendjoyevent(cv::Point tmppoint);
@@ -397,12 +388,7 @@ protected:
 	cv::Point get_joycenter();
 	void addstartpoint(int x, int y, int curId);
 	void addendpoint(int x, int y, int curId);
-		
-#if __MOVE_DETECT__
-	static void processmaxnumMenu(int value);
-	static void processmaxtargetsizeMenu(int value);
-	static void processmintargetsizeMenu(int value);
-#endif
+
 	static void keyboard_event(unsigned char key, int x, int y);
 	static void keySpecial_event( int key, int x, int y);
 	static void visibility_event(int state);

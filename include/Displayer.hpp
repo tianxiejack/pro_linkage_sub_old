@@ -140,23 +140,11 @@ typedef struct _ds_init_param{
 	int disFPS;      // Add 20181219
 	float disSched;  // Add 20181219
 	
-	
-	void (*timefunc)(int value);
-	void (*manualcarli)(int value);
 	void (*autocarli)(int value);
 	void (*closecarli)(int value);
 	void (*passivemotionfunc)(GLint xMouse, GLint yMouse);
 	void (*motionfunc)(GLint xMouse, GLint yMouse);
 	void (*mousefunc)(int button, int state, int x, int y);
-	void (*menufunc)(int value);
-	void (*setrigion)(int value);
-	void (*rigionsel)(int value);
-	void (*rigionpolygon)(int value);
-#if __MOVE_DETECT__
-	void (*maxnum)(int value);
-	void (*maxsize)(int value);
-	void (*minsize)(int value);
-#endif
 
 	//void (*reshapefunc)(int width, int height);
 	void (*keyboardfunc)(unsigned char key, int x, int y);
@@ -450,31 +438,6 @@ protected:
 	static void _display(void);
 	static void _timeFunc(int value);
 	static void _reshape(int width, int height);
-	static void processLinkageMenu(int value);
-	static void processDMMenu(int value);
-	static void processgunResMenu(int value);
-	static void processballResMenu(int value);
-	static void processposMenu(int value);
-	static void processsizeMenu(int value);
-	static void processnameMenu(int value);
-	static void processfontsizeMenu(int value);
-	static void processosdposMenu(int value);
-	static void processbuadrateMenu(int value);
-	static void processdatabitMenu(int value);
-	static void processstopbitMenu(int value);
-	static void processparityMenu(int value);
-	static void processaddressMenu(int value);
-	static void processprotocolMenu(int value);
-	static void processSenMenu(int value);
-	static void processtargetspeedMenu(int value);
-	static void processtargetdircMenu(int value);
-	static void processdetectcondMenu(int value);
-	static void processpolarMenu(int value);
-	static void processdurationMenu(int value);
-	static void processmtdmodeMenu(int value);
-	static void processredetectMenu(int value);
-	static void processalarmputMenu(int value);
-
 	static void _close(void);
 	void gl_resize(void);
 
@@ -527,10 +490,8 @@ public:
 	void GetFPS();
 	FLOAT2 chinese_osd(int x,int y,wchar_t* text,char font,char fontsize,unsigned char r,unsigned char g,unsigned char b,unsigned char a,int win_width,int win_height);
 
-	void IrisAndFocus();
 	int OSDFunc();
 	void MtdOSDFunc();
-	void drawtriangle(Mat frame, char direction, char alpha);
 	int MenuFunc(int index);
 	void processdurationMenu_osd(int value);
 	int trig_pip_mode = 0;

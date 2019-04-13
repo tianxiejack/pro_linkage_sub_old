@@ -1255,15 +1255,13 @@ void app_ctrl_settrig_inter(menu_param_t *pInCmd)
 			g_displayMode = MENU_TRIG_INTER_MODE;
 			plat->set_send_mat_stat(true);
 			plat->set_drawpoints_stat(true);
+			plat->set_manualInsertRecommendPoints_stat(GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE);
 		}
 		else
 		{
 			g_displayMode = MENU_MAIN_VIEW;
-			plat->set_send_mat_stat(false);
-			plat->set_manualInsertRecommendPoints_stat(GRIDINTER_CALIBRATION_MODE);
 			plat->set_drawpoints_stat(false);
 			plat->set_drawsubdiv_stat(false);
-			plat->set_drawsubdiv_point_stat(false);
 			plat->set_draw_point_triangle_stat(false);
 		}
 	}

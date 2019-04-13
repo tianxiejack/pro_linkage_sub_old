@@ -2371,22 +2371,6 @@ void CProcess::Drawsubdiv()
 	}
 }
 
-void CProcess::Draw_subdiv_point()
-{
-	static int draw_subidv_point_falg = 0;
-	if(draw_subidv_point_falg)
-	{
-		//m_autofr.draw_subdiv_point(m_display.m_imgOsd[extInCtrl->SensorStat],  0);
-		draw_subidv_point_falg = 0;
-	}
-	if(get_drawsubdiv_point_stat())
-	{
-		printf("%s,%d, draw_subdiv_point\n",__FILE__,__LINE__);
-		//m_autofr.draw_subdiv_point(m_display.m_imgOsd[extInCtrl->SensorStat],  1);
-		draw_subidv_point_falg = 1;
-	}
-}
-
 void CProcess::Draw_point_triangle()
 {
 	static int draw_point_triangle_falg = 0;
@@ -2569,7 +2553,7 @@ void CProcess::DrawTrigInter()
 	}
 
 
-	if(MENU_TRIG_INTER_MODE == g_displayMode)
+	if((MENU_TRIG_INTER_MODE == g_displayMode) && get_showpip_stat())
 	{	
 
 		color = 6;
@@ -4690,13 +4674,19 @@ void CProcess::OnKeyDwn(unsigned char key)
 		m_display.savePic_once = true;
 	}
 
-	if(key == 'o'|| key == 'O')
+	if(key == 'o')
 	{
 		int mode = plat->m_display.gettrig_pip_mode();
 		mode = (mode + 1) % 4;
 		plat->m_display.settrig_pip_mode(mode);
 	}
-		
+
+	if(key == 'O')
+	{
+		bool stat = plat->get_showpip_stat();
+		plat->set_showpip_stat(!stat);
+	}
+	
 	if (key == 'p'|| key == 'P')
 	{
 		msgdriv_event(MSGID_EXT_INPUT_PICPCROP, NULL);
@@ -4724,8 +4714,6 @@ void CProcess::OnKeyDwn(unsigned char key)
 		{
 			set_manualInsertRecommendPoints_stat(stat);
 		}
-		if(stat != GRIDINTER_TEST_MODE)
-			set_draw_point_triangle_stat(false);
 	}
 
 	if(key == 'S')
@@ -5903,9 +5891,7 @@ int CProcess::usopencvapi2()
 		mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
 		setx = floatx;
 		sety = floaty;
-		//polyWarnRoi[0] = cv::Point(setx, sety);
 		polyWarnRoi[i][0] = cv::Point(setx, sety);
-		//floaty = floaty / 2 + 540;
 		mapfullscreen2gun_pointv20(&setx, &sety);
 		edge_contours[i][0].x = setx;
 		edge_contours[i][0].y = sety;
@@ -5918,10 +5904,8 @@ int CProcess::usopencvapi2()
 
 			setx = floatx;
 			sety = floaty;
-			//polyWarnRoi[i] = cv::Point(setx, sety);
 			polyWarnRoi[i][j] = cv::Point(setx, sety);
-			
-			//floaty = floaty / 2 + 540;
+
 			mapfullscreen2gun_pointv20(&setx, &sety);
 			edge_contours[i][j].x = setx;
 			edge_contours[i][j].y = sety;
@@ -5945,7 +5929,6 @@ int CProcess::usopencvapi2()
 
 	for(int i = 0; i < contours.size(); i++)
 	{
-		printf("%s,%d,i=%d\n",__FILE__,__LINE__, i);
 		m_pMovDetector->setWarningRoi(polyWarnRoi[i], i);
 	}
 }

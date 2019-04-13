@@ -1770,13 +1770,6 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 	int grid_height = (int)((float)(outputWHF[1]/12));
 	int grid_width = (int)((float)(outputWHF[0]/16));
 	static int changesensorCnt = 0;
-
-
-	Drawfeaturepoints();
-	Drawsubdiv();
-	Draw_point_triangle();
-
-
 	
 	if(extInCtrl->changeSensorFlag == 1)
 		++changesensorCnt;
@@ -2330,6 +2323,9 @@ else{
 //	DrawJoys();
 	DrawMouse();
 	DrawTrigInter();
+	Drawfeaturepoints();
+	Draw_point_triangle();
+	Drawsubdiv();
 
 	static unsigned int count = 0;
 	if((count & 1) == 1)
@@ -2350,6 +2346,7 @@ void CProcess::Drawfeaturepoints()
 	if(get_drawpoints_stat())
 	{
 		app_recommendPoints_bak = app_recommendPoints;
+		//printf("%s, %d, app_recommendPoints.size=%d\n", __FILE__, __LINE__,app_recommendPoints.size());
 		m_autofr.drawPoints(m_display.m_imgOsd[extInCtrl->SensorStat], app_recommendPoints_bak, 1);
 		drawpoint_falg = 1;
 	}
@@ -2358,15 +2355,18 @@ void CProcess::Drawfeaturepoints()
 void CProcess::Drawsubdiv()
 {
 	static int drawsubidv_falg = 0;
+	static vector<Vec6f> triangleList;
+	
 	if(drawsubidv_falg)
 	{
-		m_autofr.draw_subdiv(m_display.m_imgOsd[extInCtrl->SensorStat],  0);
+		m_autofr.draw_subdiv(m_display.m_imgOsd[extInCtrl->SensorStat],  triangleList, 0);
 		drawsubidv_falg = 0;
 	}
 	if(get_drawsubdiv_stat())
 	{
-		printf("%s,%d, draw_subdiv\n",__FILE__,__LINE__);
-		m_autofr.draw_subdiv(m_display.m_imgOsd[extInCtrl->SensorStat],  1);
+		//printf("%s,%d, draw_subdiv\n",__FILE__,__LINE__);
+		m_autofr.getTriangleList(triangleList);
+		m_autofr.draw_subdiv(m_display.m_imgOsd[extInCtrl->SensorStat],  triangleList, 1);
 		drawsubidv_falg = 1;
 	}
 }

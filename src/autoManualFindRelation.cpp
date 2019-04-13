@@ -595,7 +595,6 @@ void CAutoManualFindRelation::draw_subdiv(Mat& img, vector<Vec6f> triangleList ,
 	else
 	{
 		color = cvScalar(0, 0, 0, 0);
-		linewidth = 2 ;
 	}
 
 	for (size_t i = 0; i < triangleList.size(); i++)
@@ -604,9 +603,9 @@ void CAutoManualFindRelation::draw_subdiv(Mat& img, vector<Vec6f> triangleList ,
 		pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
 		pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
 		pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
-		line(img, pt[0], pt[1], color, linewidth, CV_AA, 0);
-		line(img, pt[1], pt[2], color, linewidth, CV_AA, 0);
-		line(img, pt[2], pt[0], color, linewidth, CV_AA, 0);
+		line(img, pt[0], pt[1], color, linewidth);
+		line(img, pt[1], pt[2], color, linewidth);
+		line(img, pt[2], pt[0], color, linewidth);
 	}
 	return;
 }
@@ -629,7 +628,6 @@ int CAutoManualFindRelation::draw_point_triangle(Mat& img, Point2i fp,vector<FEA
 	else
 	{
 		color = cvScalar(0, 0, 0, 0);
-		lineWidth = 4;
 	}
 	m_pSubdiv->locate(fp, e0, vertex);
 
@@ -651,7 +649,7 @@ int CAutoManualFindRelation::draw_point_triangle(Mat& img, Point2i fp,vector<FEA
 	for (int k = 0; k < 3; k++)
 	{
 		index = (k + 1) % 3;
-		line(img, m_orgpointBK[k], m_orgpointBK[index], cvScalar(0, 0, 0, 0), 4, CV_AA, 0);
+		line(img, m_orgpointBK[k], m_orgpointBK[index], cvScalar(0, 0, 0, 0), lineWidth);
 	}
 
 	m_orgpointBK = orgpoint;
@@ -662,7 +660,7 @@ int CAutoManualFindRelation::draw_point_triangle(Mat& img, Point2i fp,vector<FEA
 	for (int k = 0; k < 3; k++)
 	{
 		index = (k + 1) % 3;
-		line(img, m_orgpointBK[k], m_orgpointBK[index], color, lineWidth, CV_AA, 0);
+		line(img, m_orgpointBK[k], m_orgpointBK[index], color, lineWidth);
 	}
 	draw_subdiv_point(img, m_fpDrawTest, cvScalar(0, 0, 0, 0));
 	m_fpDrawTest = fp ;

@@ -239,7 +239,8 @@ void CAutoManualFindRelation::insertPos(cv::Point2i inPos)
 {
 	for (int i = 0; i < m_featurePoints.size(); i++) 
 	{
-		if (m_featurePoints[i].selectFlag == true) {
+		if (m_featurePoints[i].selectFlag == true) 
+		{
 			m_featurePoints[i].pos = inPos;
 			m_featurePoints[i].markFlag = true;
 			m_featurePoints[i].selectFlag = false;
@@ -286,7 +287,8 @@ void CAutoManualFindRelation::collectMarkedPoints()
 	m_canUsedPoints.clear();
 	for (int i = 0; i < m_featurePoints.size(); i++) 
 	{
-		if (m_featurePoints[i].markFlag) {
+		if (m_featurePoints[i].markFlag)
+		{
 			tmp.pixel = m_featurePoints[i].pixel;
 			tmp.pos = m_featurePoints[i].pos;
 			m_canUsedPoints.push_back(tmp);
@@ -337,6 +339,7 @@ void CAutoManualFindRelation::insertVertexAndPosition(vector<FEATUREPOINT_T> ins
 
 void CAutoManualFindRelation::updateSubdiv() 
 {
+	initDivsubObj();
 	for (std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin();plist != fpassemble.end(); ++plist)
 	{
 		if(plist->pixel.x == 1920)
@@ -611,11 +614,6 @@ int CAutoManualFindRelation::draw_point_triangle(Mat& img, Point2i fp,vector<FEA
 	vector<Point2f> orgpoint;
 	Point2i tmppos;
 	FEATUREPOINT_T tmpBack;
-
-	//readParamsForTest();
-	//fp.x = m_testPixel.x;
-	//fp.y = m_testPixel.y;
-	//printf("%s : line:%d     inPoint (%d , %d) \n",__func__,__LINE__,fp.x , fp.y);
 
 	if (bdraw)
 		color = cvScalar(255, 0, 255, 255);

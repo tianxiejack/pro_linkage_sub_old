@@ -65,10 +65,11 @@ void CAutoManualFindRelation::drawInvisableGrid(cv::Mat drawMat, bool bDraw)
 
 	if (bDraw)
 		colour = {255,255,0,255};
-		else
+	else
 		colour = {0,0,0,0};
 
-	for (int i = 0; i < m_row; i++) {
+	for (int i = 0; i < m_row; i++) 
+	{
 		p1.x = 0;
 		p1.y = i * m_gridy;
 		p2.x = m_disWidth;
@@ -76,7 +77,8 @@ void CAutoManualFindRelation::drawInvisableGrid(cv::Mat drawMat, bool bDraw)
 		cv::line(drawMat, p1, p2, colour, 3, 8, 0);
 	}
 
-	for (int i = 0; i < m_col; i++) {
+	for (int i = 0; i < m_col; i++) 
+	{
 		p1.x = i * m_gridx;
 		p1.y = 0;
 		p2.x = i * m_gridx;
@@ -115,10 +117,13 @@ void CAutoManualFindRelation::selectPointInBlock()
 	int tmpj;
 	FEATUREPOINT_T ptmp;
 
-	for (int i = 0; i < m_row * m_col; i++) {
+	for (int i = 0; i < m_row * m_col; i++) 
+	{
 		maxResponse = 0;
-		for (int j = 0; j < m_blockVect[i].size(); j++) {
-			if (maxResponse < m_blockVect[i][j].response) {
+		for (int j = 0; j < m_blockVect[i].size(); j++) 
+		{
+			if (maxResponse < m_blockVect[i][j].response) 
+			{
 				maxResponse = m_blockVect[i][j].response;
 				ptmp.pixel = m_blockVect[i][j].pt;
 			}
@@ -134,7 +139,8 @@ void CAutoManualFindRelation::selectPointInBlock()
 	return;
 }
 
-void CAutoManualFindRelation::handleKeyPoints(std::vector<KeyPoint>& keypoints) {
+void CAutoManualFindRelation::handleKeyPoints(std::vector<KeyPoint>& keypoints) 
+{
 	FEATUREPOINT_T tmp;
 
 	//特征点分布到块里
@@ -287,17 +293,9 @@ void CAutoManualFindRelation::collectMarkedPoints()
 		}
 	}
 
-	if( m_canUsedPoints.size() >= 3 )
+	if( m_canUsedPoints.size() >= 4 )
 	{
 		getHomography2estimateConer();
-
-			for(int i=0 ; i< m_canUsedPoints.size() ; i++)
-			{
-				if (m_canUsedPoints[i].pos.y > 32000 )
-					m_canUsedPoints[i].pos.y = 32768 - m_canUsedPoints[i].pos.y;
-			}
-	
-		findThreeNearestPointInCanUsedPoints2estimate( m_canUsedPoints );
 		insertVertexAndPosition(m_canUsedPoints) ;
 	}
 	return;
@@ -341,6 +339,16 @@ void CAutoManualFindRelation::updateSubdiv()
 {
 	for (std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin();plist != fpassemble.end(); ++plist)
 	{
+		if(plist->pixel.x == 1920)
+			plist->pixel.x--;
+		else if(plist->pixel.x == 0)
+			plist->pixel.x++;
+			
+		if(plist->pixel.y == 1080)
+			plist->pixel.y--;
+		else if(plist->pixel.y == 0 )
+			plist->pixel.y++;
+	
 		m_pSubdiv->insert(plist->pixel);
 	}
 }
@@ -442,31 +450,21 @@ void CAutoManualFindRelation::calcNormalWay(Point2i inPoint , Point2i& result , 
 	double d1, d2, d3;
 	double f1, f2, f3, dtmp;
 	vector<double> area;
-	#if 0
-		d1 = getDistance(inPoint , m_calcPos[0].pixel);
-		d2 = getDistance(inPoint , m_calcPos[1].pixel);
-		d3 = getDistance(inPoint , m_calcPos[2].pixel);
-		dtmp = 1 + d1 / d2 + d1 / d3;
-		f1 = 1 / dtmp;
-		f2 =  d1 / d2 * f1;
-		f3 = 1 - f1 - f2;
-	#else
-		calcTriArea(inPoint , dis , area);
-		f1 = 1/ (1 + area[2]/area[1] + area[0]/area[1] );
-		f2 = area[2]/area[1] * f1;
-		f3 = 1 - f1 - f2 ;
 
-		printf("\n************* Area  p0 =%f  , p1 =%f , p2 = %f f\n", area[1],area[2],area[0] );
+	calcTriArea(inPoint , dis , area);
+	f1 = 1/ (1 + area[2]/area[1] + area[0]/area[1] );
+	f2 = area[2]/area[1] * f1;
+	f3 = 1 - f1 - f2 ;
 
-	#endif
 	result.x = f1 * m_calcPos[0].pos.x + f2 * m_calcPos[1].pos.x + f3 * m_calcPos[2].pos.x;
 	result.y = f1 * m_calcPos[0].pos.y + f2 * m_calcPos[1].pos.y + f3 * m_calcPos[2].pos.y;
-
+#if 0
+	printf("\n************* Area  p0 =%f  , p1 =%f , p2 = %f f\n", area[1],area[2],area[0] );
 	printf("point 0 , f1 = %f, pixel(%d, %d), pos(%d, %d)\n", f1,  m_calcPos[0].pixel.x , m_calcPos[0].pixel.y , m_calcPos[0].pos.x ,m_calcPos[0].pos.y);
 	printf("point 1 , f2 = %f, pixel(%d, %d), pos(%d, %d)\n", f2,  m_calcPos[1].pixel.x , m_calcPos[1].pixel.y , m_calcPos[1].pos.x ,m_calcPos[1].pos.y);
 	printf("point 2 , f3 = %f, pixel(%d, %d), pos(%d, %d)\n", f3,  m_calcPos[2].pixel.x , m_calcPos[2].pixel.y , m_calcPos[2].pos.x ,m_calcPos[2].pos.y);
 	printf("inpoint  pixel(%d, %d), pos(%d, %d)\n", inPoint.x, inPoint.y , result.x ,result.y );
-
+#endif
 	return ;
 }
 
@@ -557,10 +555,7 @@ void CAutoManualFindRelation::InterpolationPos(Point2i inPoint, Point2i& result)
 		}
 	}
 
-	//if(flag < 3)
-	//	getNear2LineUseTwoPoint2Calc(flag,inPoint,result);
-	//else
-		calcNormalWay(inPoint,result,getDis);
+	calcNormalWay(inPoint,result,getDis);
 
 	result.x %= 36000;
 	if (result.y < 0)
@@ -826,7 +821,7 @@ void CAutoManualFindRelation::getHomography2estimateConer()
 	vector<cv::Point2f> pixel , pos;
 	vector<cv::Point2d> cornor , estPos;
 
-	printf("m_calcPos.size()  = %d \n",m_canUsedPoints.size());
+	//printf("m_calcPos.size()  = %d \n",m_canUsedPoints.size());
 	for(int i=0; i < m_canUsedPoints.size() ; i++ )
 	{
 		pixel.push_back(m_canUsedPoints[i].pixel);
@@ -838,22 +833,30 @@ void CAutoManualFindRelation::getHomography2estimateConer()
 	Mat H = findHomography ( pixel, pos, RANSAC, 3 );//
 
 	cv::Point2i tmp;
-	tmp.x = 1 ;
-	tmp.y = 1;
+	tmp.x = 0;
+	tmp.y = 0;
 	cornor.push_back(tmp);
 
 	tmp.x = 1920 ;
-	tmp.y = 1;
+	tmp.y = 0;
 	cornor.push_back(tmp);
 
 	tmp.x = 1920;
 	tmp.y = 1080;
 	cornor.push_back(tmp);
 
-	tmp.x = 1;
+	tmp.x = 0;
 	tmp.y = 1080;
 	cornor.push_back(tmp);
 
+	tmp.x = 1920/2;
+	tmp.y = 0;
+	cornor.push_back(tmp);
+
+	tmp.x = 1920/2;
+	tmp.y = 1080;
+	cornor.push_back(tmp);
+	
 	perspectiveTransform(cornor, estPos, H);
 
 	for(int i=0 ;i < cornor.size() ; i++)
@@ -865,9 +868,10 @@ void CAutoManualFindRelation::getHomography2estimateConer()
 	for(int i=0 ;i < cornor.size() ; i++)
 	{
 		pConor.markFlag = true;
+		pConor.selectFlag = false;
 		pConor.pixel = cornor[i];
 		pConor.pos = estPos[i];
-		//m_canUsedPoints.push_back(pConor);
+		m_canUsedPoints.push_back(pConor);
 	}
 
 	return ;

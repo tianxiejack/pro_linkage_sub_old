@@ -1899,23 +1899,76 @@ void CVideoProcess::app_set_triangle_point(int x, int y)
 }
 
 
-void CVideoProcess::moveball(int x, int y)
+void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 {
 	SENDST trkmsg={0};
-	cv::Point tmp;
+	LinkagePos postmp;
 	Point2i inPoint, outPoint;
-	tmp.x = x;
-	tmp.y = y;
-	pThis->mapout2inresol(&tmp);
-	inPoint.x = tmp.x;
-	inPoint.y = tmp.y;
+	inPoint.x = x;
+	inPoint.y = y;
+	pThis->m_autofr.Point2getPos(inPoint, outPoint);
+	printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
+					
+	trkmsg.cmd_ID = speedloop;
+	postmp.panPos = outPoint.x;
+	postmp.tilPos = outPoint.y;
+	postmp.zoom = getCurrentZoomValue();
+	memcpy(&trkmsg.param,&postmp, sizeof(postmp));
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+
+}
+
+void CVideoProcess::grid_manuallinkage_moveball(int x, int y, int changezoom)
+{
+	SENDST trkmsg={0};
+	LinkagePos postmp;
+	Point2i inPoint, outPoint;
+	
+	int delta_X ;
+	int offset_x = 0;
+
+	if(changezoom)
+	{
+		switch(m_display.g_CurDisplayMode) 
+		{
+			case TRIG_INTER_MODE:	
+				offset_x = 0;  
+				break;
+			case MAIN_VIEW:
+				offset_x =0;
+				break;			
+			default:
+				break;
+		}
+
+		LeftPoint.x -= offset_x;
+		RightPoint.x -=offset_x;
+		
+		delta_X = abs(LeftPoint.x - RightPoint.x) ;
+		
+		if(delta_X < MIN_VALID_RECT_WIDTH_IN_PIXEL)
+		{
+			postmp.zoom = getCurrentZoomValue();
+		}
+		else
+		{
+			postmp.zoom = checkZoomPosTable(delta_X);		
+		}
+	}
+	else
+		postmp.zoom = getCurrentZoomValue();
+
+	inPoint.x = x;
+	inPoint.y = y;
 	pThis->m_autofr.Point2getPos(inPoint, outPoint);
 	printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 					
 	trkmsg.cmd_ID = acqPosAndZoom;
-	memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
-	memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int));
+	postmp.panPos = outPoint.x;
+	postmp.tilPos = outPoint.y;
+	memcpy(&trkmsg.param,&postmp, sizeof(postmp));
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+
 
 }
 
@@ -1971,7 +2024,11 @@ void CVideoProcess::process_trigmode_left_point(int x, int y)
 			set_jos_mouse_mode(jos_mode);
 		else
 		{
-			moveball(x, y);
+			cv::Point tmp;
+			tmp.x = x;
+			tmp.y = y;
+			pThis->mapout2inresol(&tmp);
+			grid_manuallinkage_moveball(tmp.x, tmp.y, 0);
 			app_set_triangle_point(x, y);
 		}
 	}
@@ -2009,6 +2066,144 @@ void CVideoProcess::stoptwinkle()
 	m_display.EraseTwinklePoint();
 	get_featurepoint();
 	set_twinkle_flag(false);
+}
+
+int CVideoProcess::checkZoomPosTable(int delta)
+{
+	int Delta_X = delta;
+	int setZoom = 2849 ;
+	#if 0
+	if( 420 < Delta_X && Delta_X<960){		
+		setZoom = 6800;
+	}
+	else if(320 < Delta_X ){ 
+		setZoom = 9400;
+	}
+	else if(240 < Delta_X ){
+		setZoom = 12530;
+	}
+	else if(200 < Delta_X ){
+		setZoom = 15100;
+	}
+	else if(170 < Delta_X){
+		setZoom = 19370;
+	}
+	else  if(145 < Delta_X ){
+		setZoom = 20800;
+	}
+	else  if(140 < Delta_X ){
+		setZoom = 23336;
+	}
+	else  if(112 < Delta_X ){
+		setZoom = 26780;
+	}
+	else  if(104 < Delta_X ){
+		setZoom = 29916;
+	}
+	else  if(96 < Delta_X ){
+		setZoom = 33330;
+	}
+	else  if(90 < Delta_X ){
+		setZoom = 36750;
+	}
+	else  if(84 < Delta_X){
+		setZoom = 39320;
+	}
+	else  if(76 < Delta_X ){
+		setZoom = 43870;
+	}
+	else  if(68 < Delta_X ){
+		setZoom = 46440;
+	}
+	else  if(62 < Delta_X ){
+		setZoom = 49230;
+	}
+	else  if(56< Delta_X ){
+		setZoom = 52265;
+	}
+	else  if(50 < Delta_X ){
+		setZoom = 55560;
+	}
+	else  if(44 < Delta_X){
+		setZoom = 58520;
+	}
+	else  if(38 < Delta_X ){
+		setZoom = 61240;
+	}
+	else  if(32 < Delta_X){
+		setZoom = 63890;
+	}
+	else  if(26 < Delta_X ){
+		setZoom = 65535;
+	}
+#endif
+	if(Delta_X >= 960){
+		setZoom = 2849;
+	}
+	else if( 420 <= Delta_X && Delta_X<960){		
+		setZoom = 2849;
+	}
+	else if(320 <= Delta_X && Delta_X < 420){ 
+		setZoom = 6268;
+	}
+	else if(240 <= Delta_X && Delta_X <320){
+		setZoom = 9117;
+	}
+	else if(200 <= Delta_X && Delta_X <240){
+		setZoom = 11967;
+	}
+	else if(170 <= Delta_X && Delta_X <200){
+		setZoom = 15101;
+	}
+	else  if(145 <= Delta_X && Delta_X <170){
+		setZoom = 18520;
+	}
+	else  if(140 <= Delta_X && Delta_X <145){
+		setZoom = 21058;
+	}
+	else  if(112 <= Delta_X && Delta_X <140){
+		setZoom = 24504;
+	}
+	else  if(104 <= Delta_X && Delta_X <112){
+		setZoom = 28208;
+	}
+	else  if(96 <= Delta_X && Delta_X <104){
+		setZoom = 33330;
+	}
+	else  if(90 <= Delta_X && Delta_X <96){
+		setZoom = 36750;
+	}
+	else  if(84 <= Delta_X && Delta_X <90){
+		setZoom = 39320;
+	}
+	else  if(76 <= Delta_X && Delta_X <84){
+		setZoom = 43870;
+	}
+	else  if(68 <= Delta_X && Delta_X <76){
+		setZoom = 46440;
+	}
+	else  if(62 <= Delta_X && Delta_X <68){
+		setZoom = 49230;
+	}
+	else  if(56<= Delta_X && Delta_X <62 ){
+		setZoom = 52265;
+	}
+	else  if(50 <= Delta_X && Delta_X < 56){
+		setZoom = 55560;
+	}
+	else  if(44 <= Delta_X && Delta_X <50){
+		setZoom = 58520;
+	}
+	else  if(38 <= Delta_X && Delta_X < 44){
+		setZoom = 61240;
+	}
+	else  if(32 <= Delta_X && Delta_X < 38){
+		setZoom = 63890;
+	}
+	else  if(0 <= Delta_X && Delta_X <32){
+		setZoom = 65535;
+	}	
+	return setZoom;
 }
 
 static Point ptStart,ptEnd;
@@ -2159,14 +2354,7 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 								pThis->mapgun2fullscreen_auto(&tmp.x,&tmp.y);
 								inPoint.x = tmp.x;
 								inPoint.y = tmp.y;
-								//inPoint.y = (inPoint.y - 540) * 2;
-								pThis->m_autofr.Point2getPos(inPoint, outPoint);
-								printf("%s, %d,click inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
-								
-								trkmsg.cmd_ID = acqPosAndZoom;
-								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
-								memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
-								ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+								pThis->grid_manuallinkage_moveball(inPoint.x,inPoint.y, 0);
 							}
 						}
 				      }
@@ -2181,30 +2369,24 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 							isRectangleStartPointValid = false;
 							isRectValid  = false;
 						
-						if(1 == g_GridMapMode)
-						{
-							pThis->MvBallCamUseLinearDeviationSelectRect(tmpX, tmpY, true);
-						}
-						else if(2 == g_GridMapMode)
-						{
-								SENDST trkmsg={0};
-								cv::Point tmp;
-								Point2i inPoint, outPoint;
-								tmp.x = x;
-								tmp.y = y;
-								pThis->mapout2inresol(&tmp);
-								pThis->mapgun2fullscreen_auto(&tmp.x,&tmp.y);
-								inPoint.x = tmp.x;
-								inPoint.y = tmp.y;
-								//inPoint.y = (inPoint.y - 540) * 2;
-								pThis->m_autofr.Point2getPos(inPoint, outPoint);
-								printf("%s, %d,drag inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
-								
-								trkmsg.cmd_ID = acqPosAndZoom;
-								memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
-								memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
-								ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-						}						
+							if(1 == g_GridMapMode)
+							{
+								pThis->MvBallCamUseLinearDeviationSelectRect(tmpX, tmpY, true);
+							}
+							else if(2 == g_GridMapMode)
+							{
+									cv::Point tmp;
+									int delx = abs(pThis->LeftPoint.x - pThis->RightPoint.x);
+									int dely = abs(pThis->LeftPoint.y - pThis->RightPoint.y);
+									int startx = pThis->LeftPoint.x < pThis->RightPoint.x ? pThis->LeftPoint.x : pThis->RightPoint.x;
+									int starty = pThis->LeftPoint.y < pThis->RightPoint.y ? pThis->LeftPoint.y : pThis->RightPoint.y;
+									tmp.x = delx / 2 + startx;
+									tmp.y = dely /2 + starty;		
+		
+									pThis->mapout2inresol(&tmp);
+									pThis->mapgun2fullscreen_auto(&tmp.x,&tmp.y);
+									pThis->grid_manuallinkage_moveball(tmp.x,tmp.y, 1);
+							}						
 						}
 					}
 				}

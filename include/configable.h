@@ -18,6 +18,8 @@
 #define MIN_MTDSENSI		10
 #define MAX_MTDSENSI		100
 
+#define MIN_VALID_RECT_WIDTH_IN_PIXEL 10
+
 #define TRIG_RADIUS	4
 
 

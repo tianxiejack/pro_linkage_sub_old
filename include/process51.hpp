@@ -139,7 +139,6 @@ private:
 public:
 	enum
 	{
-		MIN_VALID_RECT_WIDTH_IN_PIXEL = 10,
 		JOSF1_OPEN_AUTOLINKMODE = 1,
 		JOSF2_ENTER_MENU=2,
 		CONST_VARIABLE_COUNT		
@@ -192,7 +191,6 @@ public:
 	Point getBallImagePoint();	
 	Point replaceClickPoints(int pointX, int pointY);
 	Mat undisImageGun;		
-	int checkZoomPosTable(int delta);
 	int checkZoomPosNewTable(int delta);	
 public:
 	CProcess();

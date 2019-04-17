@@ -167,7 +167,8 @@ public:
 	bool point_in_pip(int x, int y);
 	void app_manualInsertRecommendPoints(int x, int y);
 	void app_set_triangle_point(int x, int y);
-	void moveball(int x, int y);
+	void grid_autolinkage_moveball(int x, int y);
+	void grid_manuallinkage_moveball(int x, int y, int changezoom);
 	void app_selectPoint(int x, int y);
 	void app_insertPos(int x, int y);
 	void app_deletePoint(int x, int y);
@@ -179,6 +180,7 @@ public:
 	void process_trigmode_right_point(int x, int y);
 	void start_twinkle(int x, int y);
 	void stoptwinkle();
+	int checkZoomPosTable(int delta);
 
 	
 	static void pnotify_callback(std::vector<FEATUREPOINT_T>& recommendPoints);

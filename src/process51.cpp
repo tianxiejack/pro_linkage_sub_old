@@ -3131,12 +3131,7 @@ void CProcess::DrawMtd_Rigion_Target()
 			}
 			else if(2 == g_GridMapMode)
 			{
-				m_autofr.Point2getPos(inPoint, outPoint);
-				printf("%s, %d,aurolinkage inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
-				trkmsg.cmd_ID = speedloop;
-				memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
-				memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
-				ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+				grid_autolinkage_moveball(inPoint.x, inPoint.y);
 			}
 				
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
@@ -3326,143 +3321,6 @@ int CProcess::checkZoomPosNewTable(int delta)
 	return setZoom;
 
 
-}
-int CProcess::checkZoomPosTable(int delta)
-{
-	int Delta_X = delta;
-	int setZoom = 2849 ;
-	#if 0
-	if( 420 < Delta_X && Delta_X<960){		
-		setZoom = 6800;
-	}
-	else if(320 < Delta_X ){ 
-		setZoom = 9400;
-	}
-	else if(240 < Delta_X ){
-		setZoom = 12530;
-	}
-	else if(200 < Delta_X ){
-		setZoom = 15100;
-	}
-	else if(170 < Delta_X){
-		setZoom = 19370;
-	}
-	else  if(145 < Delta_X ){
-		setZoom = 20800;
-	}
-	else  if(140 < Delta_X ){
-		setZoom = 23336;
-	}
-	else  if(112 < Delta_X ){
-		setZoom = 26780;
-	}
-	else  if(104 < Delta_X ){
-		setZoom = 29916;
-	}
-	else  if(96 < Delta_X ){
-		setZoom = 33330;
-	}
-	else  if(90 < Delta_X ){
-		setZoom = 36750;
-	}
-	else  if(84 < Delta_X){
-		setZoom = 39320;
-	}
-	else  if(76 < Delta_X ){
-		setZoom = 43870;
-	}
-	else  if(68 < Delta_X ){
-		setZoom = 46440;
-	}
-	else  if(62 < Delta_X ){
-		setZoom = 49230;
-	}
-	else  if(56< Delta_X ){
-		setZoom = 52265;
-	}
-	else  if(50 < Delta_X ){
-		setZoom = 55560;
-	}
-	else  if(44 < Delta_X){
-		setZoom = 58520;
-	}
-	else  if(38 < Delta_X ){
-		setZoom = 61240;
-	}
-	else  if(32 < Delta_X){
-		setZoom = 63890;
-	}
-	else  if(26 < Delta_X ){
-		setZoom = 65535;
-	}
-#endif
-	if(Delta_X >= 960){
-		setZoom = 2849;
-	}
-	else if( 420 <= Delta_X && Delta_X<960){		
-		setZoom = 2849;
-	}
-	else if(320 <= Delta_X && Delta_X < 420){ 
-		setZoom = 6268;
-	}
-	else if(240 <= Delta_X && Delta_X <320){
-		setZoom = 9117;
-	}
-	else if(200 <= Delta_X && Delta_X <240){
-		setZoom = 11967;
-	}
-	else if(170 <= Delta_X && Delta_X <200){
-		setZoom = 15101;
-	}
-	else  if(145 <= Delta_X && Delta_X <170){
-		setZoom = 18520;
-	}
-	else  if(140 <= Delta_X && Delta_X <145){
-		setZoom = 21058;
-	}
-	else  if(112 <= Delta_X && Delta_X <140){
-		setZoom = 24504;
-	}
-	else  if(104 <= Delta_X && Delta_X <112){
-		setZoom = 28208;
-	}
-	else  if(96 <= Delta_X && Delta_X <104){
-		setZoom = 33330;
-	}
-	else  if(90 <= Delta_X && Delta_X <96){
-		setZoom = 36750;
-	}
-	else  if(84 <= Delta_X && Delta_X <90){
-		setZoom = 39320;
-	}
-	else  if(76 <= Delta_X && Delta_X <84){
-		setZoom = 43870;
-	}
-	else  if(68 <= Delta_X && Delta_X <76){
-		setZoom = 46440;
-	}
-	else  if(62 <= Delta_X && Delta_X <68){
-		setZoom = 49230;
-	}
-	else  if(56<= Delta_X && Delta_X <62 ){
-		setZoom = 52265;
-	}
-	else  if(50 <= Delta_X && Delta_X < 56){
-		setZoom = 55560;
-	}
-	else  if(44 <= Delta_X && Delta_X <50){
-		setZoom = 58520;
-	}
-	else  if(38 <= Delta_X && Delta_X < 44){
-		setZoom = 61240;
-	}
-	else  if(32 <= Delta_X && Delta_X < 38){
-		setZoom = 63890;
-	}
-	else  if(0 <= Delta_X && Delta_X <32){
-		setZoom = 65535;
-	}	
-	return setZoom;
 }
 
 void CProcess::Set_K_ByNewDeltaX(int delta_x)
@@ -4084,6 +3942,7 @@ void CProcess::MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChang
 
 
 }
+	
 void CProcess::MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom)
 {	
 	int point_X , point_Y , offset_x , offset_y,tmp_zoomPos; 

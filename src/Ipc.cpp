@@ -367,8 +367,11 @@ void* recv_msg(SENDST *RS422)
 			{
 				pMsg->MtdState[pMsg->SensorStat] = ipc_eImgAlg_Disable;
 			}
-			app_ctrl_setMtdStat(pMsg);
-			MSGAPI_msgsend(mtd);
+			if(MENU_TRIG_INTER_MODE != g_displayMode)
+			{
+				app_ctrl_setMtdStat(pMsg);
+				MSGAPI_msgsend(mtd);
+			}
 			break;
 
 		case mtdSelect:		
@@ -590,11 +593,12 @@ void* recv_msg(SENDST *RS422)
 			{
 				memcpy(&posOfLinkage,RS422->param,sizeof(posOfLinkage));
 				printf("%s, %d, querypos get(%d, %d)\n", __FILE__,__LINE__,posOfLinkage.panPos, posOfLinkage.tilPos);
-				if(proc->get_trig_PTZflag())
+				if(proc->get_twinkle_flag())
 				{
-					printf("%s, %d, insertpos(%d, %d)\n", __FILE__,__LINE__,posOfLinkage.panPos, posOfLinkage.tilPos);
-					proc->insertPos(posOfLinkage.panPos, posOfLinkage.tilPos);
-					proc->set_trig_PTZflag(0);
+					proc->app_selectPoint(proc->twinkle_point.x,proc->twinkle_point.y);
+					proc->app_insertPos(posOfLinkage.panPos, posOfLinkage.tilPos);
+					proc->stoptwinkle();
+					proc->set_jos_mouse_mode(mouse_mode);
 				}
 				
 				if(proc->getPTZflag()){
@@ -653,6 +657,7 @@ void* recv_msg(SENDST *RS422)
 			break;
 		case josctrl:
 			memcpy(&Rjosctrl,RS422->param,sizeof(Rjosctrl));
+			printf("%s,%d,type=%d, workmode=%d\n",__FILE__,__LINE__,Rjosctrl.type, Rjosctrl.workMode);
 			switch(Rjosctrl.type)
 			{
 				case cursor_move:
@@ -705,7 +710,7 @@ void* recv_msg(SENDST *RS422)
 					if(1 == state)
 						mouse_state = GLUT_DOWN;//0
 					else if(0 == state)
-						mouse_state = GLUT_UP;//1
+						mouse_state = GLUT_UP;// 
 					else 
 						param_flag = 1;
 

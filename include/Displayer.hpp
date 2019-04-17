@@ -493,6 +493,8 @@ public:
 	int OSDFunc();
 	void MtdOSDFunc();
 	int MenuFunc(int index);
+	void DrawTwinklePoint();
+	void EraseTwinklePoint();
 	void processdurationMenu_osd(int value);
 	int trig_pip_mode = 0;
 	void settrig_pip_mode(int mode)

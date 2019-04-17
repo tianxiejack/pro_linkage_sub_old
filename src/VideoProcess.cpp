@@ -496,7 +496,8 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 	InitGridMap16X12();
 	readParams("SaveGridMap.yml");
 	read_param_trig();
-	m_autofr.create(pnotify_callback);	
+	m_autofr.create(pnotify_callback);
+	createtimer();
 }
 
 CVideoProcess::CVideoProcess()
@@ -596,6 +597,11 @@ int CVideoProcess::creat()
 	return 0;
 }
 
+void CVideoProcess::createtimer()
+{
+	twinkle_point_id = dtimer.createTimer();
+	dtimer.registerTimer(twinkle_point_id, VTcallback, &twinkle_point_id);
+}
 int CVideoProcess::destroy()
 {
 	stop();
@@ -616,6 +622,22 @@ int CVideoProcess::destroy()
 	}	
 
 	return 0;
+}
+
+void CVideoProcess::VTcallback(void *p)
+{
+	static int flag = 1;
+	int a = *(int *)p;
+
+	if(a == pThis->twinkle_point_id)
+	{
+		if(flag)
+			pThis->m_display.DrawTwinklePoint();
+		else
+			pThis->m_display.EraseTwinklePoint();
+
+		flag = !flag;
+	}
 }
 
 void CVideoProcess::InitGridMap16X12()
@@ -1771,7 +1793,52 @@ printf("\r\n[%s]: Send PTZ Message to Ball Camera !!",__func__);
 	return Vp;
 }
 
-void CVideoProcess::auto_insertpoint(int x, int y)
+void CVideoProcess::evade_pip(int x, int y)
+{
+	int mode = m_display.gettrig_pip_mode();
+	mode = (mode + 1) % 4;
+	m_display.settrig_pip_mode(mode);
+}
+
+bool CVideoProcess::point_in_pip(int x, int y)
+{
+	int mode = m_display.gettrig_pip_mode();
+	int startx = 0;
+	int endx = 0;
+	int starty = 0;
+	int endy = 0;
+	
+	if(0 == mode)
+	{
+		startx = 0;	
+		starty = 0;
+	}
+	else if(1 == mode)
+	{
+		startx = outputWHF[0]/4*3;
+		starty = 0;
+	}
+	else if(2 == mode)
+	{
+		startx = outputWHF[0]/4*3;
+		starty = outputWHF[1]/4*3;
+	}
+	if(3 == mode)
+	{
+		startx = 0;
+		starty = outputWHF[1]/4*3;
+	}
+
+	endx = startx + outputWHF[0]/4;
+	endy = starty + outputWHF[1]/4;
+
+	if(x>=startx && x<=endx && y>=starty && y<=endy)
+		return true;
+	else 
+		return false;
+}
+
+void CVideoProcess::app_manualInsertRecommendPoints(int x, int y)
 {
 	printf("%s, %d,%s start\n",__FILE__,__LINE__,__FUNCTION__);
 	cv::Point2i inPoint;
@@ -1780,41 +1847,7 @@ void CVideoProcess::auto_insertpoint(int x, int y)
 	m_autofr.manualInsertRecommendPoints(inPoint);
 }
 
-
-void CVideoProcess::auto_draw_triangle_point(int x, int y)
-{
-	printf("%s, %d,%s start\n",__FILE__,__LINE__,__FUNCTION__);
-	Point2i point_tmp;
-	point_tmp.x = x;
-	point_tmp.y = y;
-	point_triangle = point_tmp;
-	set_print_stat(true);
-	set_draw_point_triangle_stat(true);
-
-}
-
-
-void CVideoProcess::moveball(int x, int y)
-{
-	SENDST trkmsg={0};
-	cv::Point tmp;
-	Point2i inPoint, outPoint;
-	tmp.x = x;
-	tmp.y = y;
-	pThis->mapout2inresol(&tmp);
-	inPoint.x = tmp.x;
-	inPoint.y = tmp.y;
-	pThis->m_autofr.Point2getPos(inPoint, outPoint);
-	printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
-					
-	trkmsg.cmd_ID = acqPosAndZoom;
-	memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
-	memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int));
-	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-
-}
-
-void CVideoProcess::auto_selectpoint_limit(int x, int y)
+bool CVideoProcess::in_recommand_vector(int x, int y, cv::Point2i &outPixel)
 {
 	std::vector<FEATUREPOINT_T> app_recommendPoints_tmp = app_recommendPoints;
 	int delta_distance_bak;
@@ -1846,25 +1879,142 @@ void CVideoProcess::auto_selectpoint_limit(int x, int y)
 	printf("%s,%d,  delta_distance = %d\n",__FILE__,__LINE__,delta_distance_bak);
 	if((insert_index >= 0) && (delta_distance_bak <= 15))
 	{
-		printf("%s, %d, select pixel(%d, %d),pos(%d,%d)\n", __FILE__,__LINE__,app_recommendPoints_tmp[insert_index].pixel.x,app_recommendPoints_tmp[insert_index].pixel.y,app_recommendPoints_tmp[insert_index].pos.x,app_recommendPoints_tmp[insert_index].pos.y);
-		m_autofr.selectPoint(app_recommendPoints_tmp[insert_index].pixel);
-		set_trig_PTZflag(1);
+		outPixel = app_recommendPoints_tmp[insert_index].pixel;
+		return true;
 	}
+
+	outPixel.x = x;
+	outPixel.y = y;
+	return false;
+}
+
+void CVideoProcess::app_set_triangle_point(int x, int y)
+{
+	printf("%s, %d,%s start\n",__FILE__,__LINE__,__FUNCTION__);
+	Point2i point_tmp;
+	point_tmp.x = x;
+	point_tmp.y = y;
+	point_triangle = point_tmp;
+	set_print_stat(true);
 }
 
 
-void CVideoProcess::insertPos(int x, int y)
+void CVideoProcess::moveball(int x, int y)
 {
+	SENDST trkmsg={0};
+	cv::Point tmp;
+	Point2i inPoint, outPoint;
+	tmp.x = x;
+	tmp.y = y;
+	pThis->mapout2inresol(&tmp);
+	inPoint.x = tmp.x;
+	inPoint.y = tmp.y;
+	pThis->m_autofr.Point2getPos(inPoint, outPoint);
+	printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
+					
+	trkmsg.cmd_ID = acqPosAndZoom;
+	memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
+	memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int));
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+
+}
+
+void CVideoProcess::app_selectPoint(int x, int y)
+{
+	cv::Point2i outPixel;
+	if(!in_recommand_vector(x, y, outPixel))
+	{
+		app_manualInsertRecommendPoints(x, y);
+	}
+
+	printf("%s, %d, app select point(%d, %d)\n", __FILE__,__LINE__,outPixel.x,outPixel.y);
+	m_autofr.selectPoint(outPixel);
+}
+
+
+void CVideoProcess::app_insertPos(int x, int y)
+{
+	printf("%s, %d, app insertpos(%d, %d)\n", __FILE__,__LINE__,x, y);
 	cv::Point2i inPos;
 	inPos.x = x;
 	inPos.y = y;
 	m_autofr.insertPos(inPos);
 }
 
+void CVideoProcess::app_deletePoint(int x, int y)
+{
+	cv::Point2i outPixel;
+	if(in_recommand_vector(x, y, outPixel))
+	{
+		m_autofr.deletePoint(outPixel);
+	}
+}
+
+void CVideoProcess::app_self_deletePoint(cv::Point2i Pixel)
+{
+	for(int  i = 0; i < app_recommendPoints.size(); i++)
+		if(app_recommendPoints[i].pixel == Pixel)
+			app_recommendPoints.erase(app_recommendPoints.begin() + i);
+}
+
+void CVideoProcess::process_trigmode_left_point(int x, int y)
+{
+	if(point_in_pip(x, y))
+	{
+		evade_pip(x, y);
+	}
+	else
+	{
+		start_twinkle(x, y);
+			
+		if(m_autofr.getcalibnum() < 4)
+			set_jos_mouse_mode(jos_mode);
+		else
+		{
+			moveball(x, y);
+			app_set_triangle_point(x, y);
+		}
+	}
+}
+
+void CVideoProcess::process_trigmode_right_point(int x, int y)
+{
+	app_deletePoint(x, y);
+}
+
+void CVideoProcess::start_twinkle(int x, int y)
+{
+	get_featurepoint();
+	cv::Point2i outPixel;
+	if(in_recommand_vector(x, y, outPixel))
+	{
+		app_self_deletePoint(outPixel);
+		twinkle_point = outPixel;
+	}
+	else
+	{
+		cv::Point2i outPixel_tmp;
+		outPixel_tmp.x = x;
+		outPixel_tmp.y = y;
+		twinkle_point = outPixel_tmp;
+	}
+	
+	dtimer.startTimer(pThis->twinkle_point_id, 500);
+	set_twinkle_flag(true);
+}
+
+void CVideoProcess::stoptwinkle()
+{
+	dtimer.stopTimer(twinkle_point_id);
+	m_display.EraseTwinklePoint();
+	get_featurepoint();
+	set_twinkle_flag(false);
+}
 
 static Point ptStart,ptEnd;
 void CVideoProcess::mouse_event(int button, int state, int x, int y)
 {
+
 	unsigned int curId;
 	static int tempX=0,tempY=0;
 	 static bool isRectangleStartPointValid = false;
@@ -1912,23 +2062,12 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		{
-			GRIDINTER_Mode stat = pThis->get_manualInsertRecommendPoints_stat();
-			if(GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE == stat)
-			{
-        			pThis->auto_insertpoint(x, y);
-			}
-			else if(GRIDINTER_TEST_MODE == stat)
-			{
-        			pThis->auto_draw_triangle_point(x, y);
-				pThis->moveball(x, y);
-			}
-			else if(GRIDINTER_CALIBRATION_MODE == stat)
-			{
-				pThis->auto_selectpoint_limit(x, y);
-			}	
-       	 }
-        	
-
+			pThis->process_trigmode_left_point(x, y);
+       	}
+		else if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+		{
+			pThis->process_trigmode_right_point(x, y);
+		}
     }
 	else if(pThis->m_display.g_CurDisplayMode == GRID_MAP_VIEW)
 	{
@@ -3018,16 +3157,6 @@ const bool CVideoProcess::getMtdState()
 {
 	return m_bMoveDetect;
 }
-void CVideoProcess::set_trig_PTZflag(bool flag)
-{
-	trig_inter_flag = flag;
-	return ;
-};
-bool CVideoProcess::get_trig_PTZflag()
-{
-	return trig_inter_flag;
-};
-
 
 void CVideoProcess::SaveMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours)
 {
@@ -3125,4 +3254,35 @@ void CVideoProcess::pnotify_callback(std::vector<FEATUREPOINT_T>& recommendPoint
 {
 	printf("%s,%d, pnotify_callback start!\n",__FILE__,__LINE__);
 	pThis->app_recommendPoints = recommendPoints;
+}
+
+void CVideoProcess::set_jos_mouse_mode(jos_mouse_Mode mode)
+{
+	printf("%s, %d,set_jos_mouse_mode=%d\n", __FILE__,__LINE__, mode);
+	set_gridinter_mode(mode);
+	SENDST trkmsg2={0};
+	trkmsg2.cmd_ID = jos_mouse_mode;
+	trkmsg2.param[0] = mode;
+	ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
+}
+
+void CVideoProcess::app_getPT()
+{
+	QueryCurBallCamPosition();
+}
+
+void CVideoProcess::QueryCurBallCamPosition()
+{
+	int flag =0;	
+	int ret =0;
+	SENDST trkmsg={0};
+	trkmsg.cmd_ID = querypos;
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	printf("\r\n[%s]:Send Query PTZ Command ... ... \r\n",__func__);
+	return;
+}
+
+void CVideoProcess::get_featurepoint()
+{
+	pThis->m_autofr.get_featurepoint(pThis->app_recommendPoints);
 }

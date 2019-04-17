@@ -18,6 +18,7 @@
 #include "autoManualFindRelation.hpp"
 #include "GridMap.h"
 #include "Ipc.hpp"
+#include "DxTimer.hpp"
 
 using namespace cr_automanualfindrelation;
 
@@ -147,18 +148,8 @@ public:
 	void set_send_mat_stat(bool value){send_mat_stat = value;};
 	bool get_cloneSrcImage_stat(){return cloneSrcImage_stat;};
 	void set_cloneSrcImage_stat(bool value){cloneSrcImage_stat = value;};
-	GRIDINTER_Mode get_manualInsertRecommendPoints_stat(){return manualInsertRecommendPoints_stat;};
-	void set_manualInsertRecommendPoints_stat(GRIDINTER_Mode value)
-		{
-			manualInsertRecommendPoints_stat = value;
-			if(GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE == value)
-				set_showpip_stat(false);
-			else
-				set_showpip_stat(true);
-			
-			if(GRIDINTER_TEST_MODE != value)
-				set_draw_point_triangle_stat(false);
-		};
+	jos_mouse_Mode get_gridinter_mode(){return gridinter_mode;};
+	void set_gridinter_mode(jos_mouse_Mode value){gridinter_mode = value;};
 	bool get_drawpoints_stat(){return drawpoints_stat;};
 	void set_drawpoints_stat(bool value){drawpoints_stat = value;};
 	bool get_drawsubdiv_stat(){return drawsubdiv_stat;};
@@ -169,14 +160,32 @@ public:
 	void set_print_stat(bool value){draw_print_stat = value;};
 	bool get_showpip_stat(){return draw_pip_stat;};
 	void set_showpip_stat(bool value){draw_pip_stat = value;};
-	
-	void auto_insertpoint(int x, int y);
-	void auto_draw_triangle_point(int x, int y);
+	void set_twinkle_flag(bool flag){twinkle_flag = flag;};
+	bool get_twinkle_flag(){return twinkle_flag;};
+
+	void evade_pip(int x, int y);
+	bool point_in_pip(int x, int y);
+	void app_manualInsertRecommendPoints(int x, int y);
+	void app_set_triangle_point(int x, int y);
 	void moveball(int x, int y);
-	void auto_selectpoint_limit(int x, int y);
-	void insertPos(int x, int y);
+	void app_selectPoint(int x, int y);
+	void app_insertPos(int x, int y);
+	void app_deletePoint(int x, int y);
+	void app_self_deletePoint(cv::Point2i Pixel);
+	bool in_recommand_vector(int x, int y, cv::Point2i &outPixel);
+	void createtimer();
+	static void VTcallback(void *p);
+	void process_trigmode_left_point(int x, int y);
+	void process_trigmode_right_point(int x, int y);
+	void start_twinkle(int x, int y);
+	void stoptwinkle();
+
 	
 	static void pnotify_callback(std::vector<FEATUREPOINT_T>& recommendPoints);
+	void set_jos_mouse_mode(jos_mouse_Mode mode);
+	void app_getPT();
+	void get_featurepoint();
+	void QueryCurBallCamPosition();
 	void InitGridMap16X12();
 	void useTrigonometric(int px, int py);
 
@@ -192,8 +201,6 @@ public:
 	int read_param_trig();
 	void setMtdState(bool flag);
 	const bool getMtdState();
-	void set_trig_PTZflag(bool flag);
-	bool get_trig_PTZflag();
 private:
 	Mat m_GrayMat;
 	Mat m_Gun_GrayMat;
@@ -204,7 +211,7 @@ private:
 	
 	bool send_mat_stat = false;
 	bool cloneSrcImage_stat = false;
-	GRIDINTER_Mode manualInsertRecommendPoints_stat = GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE;
+	jos_mouse_Mode gridinter_mode = mouse_mode;
 	bool drawpoints_stat = false;
 	bool drawsubdiv_stat = false;
 	bool draw_point_triangle_stat = false;
@@ -309,7 +316,10 @@ public:
 
 	cv::Point jos_mouse;
 	int mouse_show = 0;
-	int trig_inter_flag = 0;	
+	bool twinkle_flag = false;
+	DxTimer dtimer;
+	int twinkle_point_id;
+	cv::Point2i twinkle_point, twinkle_point_bak;
 	CAutoManualFindRelation m_autofr = CAutoManualFindRelation(outputWHF[0],outputWHF[1], 6, 6);
 	
 	void set_mouse_show(int param);

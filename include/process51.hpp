@@ -36,7 +36,7 @@ typedef struct{
 	mouse_t Mtdmouseclick;
 	PointNode Mtdmousemotion;
 	
-	int resol_deng, mtdnum_deng,trktime_deng,maxsize_deng,minsize_deng,sensi_deng;//1:dianmie fanying
+	int resol_deng, mtdnum_deng,trktime_deng,maxsize_deng,minsize_deng,sensi_deng;// dianmie fanying
 	int resol_type_tmp, resol_type;
 	int osd_mudnum, osd_trktime, osd_maxsize, osd_minsize, osd_sensi;
 	int baud_light;
@@ -178,7 +178,6 @@ public:
 	void MvBallCamByClickBallIMg(int x, int y);
 	void MoveBall();
 	void Test_Match_result(int x, int y);
-	void QueryCurBallCamPosition();
 	void setBallPos(int in_panPos, int in_tilPos, int in_zoom);
 	void RefreshBallPTZ(int in_panPos, int in_tilPos, int in_zoom);
 	void refreshClickPoint(int x, int y);
@@ -373,8 +372,7 @@ public:
 	char timearrbak[128];
 	int timexbak, timeybak;
 
-	DxTimer dtimer;
-    int resol_light_id, resol_apply_id, mtdnum_light_id, trktime_light_id, maxsize_light_id, minsize_light_id, sensi_light_id, baud_light_id;
+   	 int resol_light_id, resol_apply_id, mtdnum_light_id, trktime_light_id, maxsize_light_id, minsize_light_id, sensi_light_id, baud_light_id;
 	int save_flag;
 	int cnt_down;
 

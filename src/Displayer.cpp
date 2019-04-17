@@ -1869,11 +1869,11 @@ int CDisplayer::menu_init( )
             {"请输入密码呼出菜单", "密码输入错误，","按回车后再次输入", "按回车确认", "按F2退出"},
             /*{"内参标定","枪球画面标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},*/
             /*{"枪球自动标定","枪球手动标定","返回"},*/
-            {"设置默认工作模式","网格标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},
+            {"设置默认工作模式","枪球标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},
             /*{"网格标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},*/
             /*{"枪机内参标定","球机内参标定","返回"},*/
             {"手动联动模式","自动联动模式","单控球机模式","返回"},
-            {"   ","枪机画面网格标定","   "},
+           /* {"   ","枪机画面网格标定","   "},*/
             {"检测区域选择","目标个数     1","跟踪持续时间 1秒","最大目标面积 10000像素","最小目标面积 9像素","灵敏度       30","返回"},
             {"扫描方式均为逐行扫描","格式 1920x1080@60Hz","应用","返回"},
             {"使用串口设置","使用网络设置","返回"},
@@ -1930,11 +1930,13 @@ int CDisplayer::menu_init( )
 	disMenuBuf[mainmenu0][2].posy = 4 * (int)((float)outputWHF[1] *0.056f);
 	disMenuBuf[mainmenu0][3].posy = 5 * (int)((float)outputWHF[1] *0.056f);
 	//disMenuBuf[submenu_DefaultWorkMode][2].posy = 4 * (int)((float)outputWHF[1] *0.056f);
-	
+
+	/*
 	disMenuBuf[submenu_gridMapCalibrate][1].posx= (int)((float)outputWHF[0] *0.75f);
 	disMenuBuf[submenu_gridMapCalibrate][1].posy = (int)((float)outputWHF[1] /200.0f);
 	disMenuBuf[submenu_gridMapCalibrate][2].posx = (int)((float)outputWHF[0] *0.917f);
 	disMenuBuf[submenu_gridMapCalibrate][2].posy = (int)((float)outputWHF[1] /200.0f);
+	*/
 	
 	disMenuBuf[submenu_setball][2].posy = 4 * (int)((float)outputWHF[1] *0.056f);
 	disMenuBuf[submenu_setcom][4].posy = 6 * (int)((float)outputWHF[1] *0.056f);
@@ -1958,7 +1960,7 @@ int CDisplayer::menu_init( )
 	disMenuBuf[mainmenu1][2].color= 3;
 	disMenuBuf[mainmenu2][0].color= 3;
 	disMenuBuf[submenu_DefaultWorkMode][0].color= 3;
-	disMenuBuf[submenu_gridMapCalibrate][0].color= 3;
+	//disMenuBuf[submenu_gridMapCalibrate][0].color= 3;
 	disMenuBuf[submenu_mtd][0].color= 3;
 	disMenuBuf[submenu_setball][0].color= 3;
 	disMenuBuf[submenu_setcom][0].color= 3;
@@ -2574,24 +2576,21 @@ void CDisplayer::gl_display(void)
 	else if(displayMode == TRIG_INTER_MODE){
 		int fontx = 900;
 		int fonty =10;
-		GRIDINTER_Mode mode = plat->get_manualInsertRecommendPoints_stat();
+		jos_mouse_Mode mode = plat->get_gridinter_mode();
 		switch(mode){
-			case GRIDINTER_CALIBRATION_MODE:
-				chinese_osd(fontx,fonty,L"标定模式",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			case jos_mode:
+				chinese_osd(fontx,fonty,L"控球模式",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 				break;
-			case GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE:
-				chinese_osd(fontx,fonty,L"插入特征点模式",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
-				break;
-			case GRIDINTER_TEST_MODE:
-				chinese_osd(fontx,fonty,L"调试模式",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+			case mouse_mode:
+				chinese_osd(fontx,fonty,L"鼠标模式",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 				break;
 			default:
 				break;
 		}
 
-		int fontx2 =580;
-		int fonty2 = 40;
-		chinese_osd(fontx2,fonty2,L"s:模式切换;  I:自动找特征点;  h:查询当前PTZ值并与选中特征点匹配;  j:保存标定结果",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
+		int fontx2 =500;
+		int fonty2 = 50;
+		chinese_osd(fontx2,fonty2,L"鼠标左键:选择点 鼠标右键:删除点 回车:确认 F1:控球模式 0:删除所有点  1:保存",1,4,255,255,255,255,VIDEO_DIS_WIDTH,VIDEO_DIS_HEIGHT);
 	}
 
 	switch(displayMode){
@@ -2932,6 +2931,17 @@ void CDisplayer::MtdOSDFunc()
 	return;
 }
 
+ void CDisplayer::DrawTwinklePoint()
+{	
+	plat->twinkle_point_bak = plat->twinkle_point;
+	cv::circle(m_imgOsd[plat->extInCtrl->SensorStat] , plat->twinkle_point_bak , 3 ,cvScalar(0,0,255,255), 2, 8, 0 );		
+}
+
+ void CDisplayer::EraseTwinklePoint()
+ {
+ 	cv::circle(m_imgOsd[plat->extInCtrl->SensorStat] ,plat->twinkle_point_bak , 3 ,cvScalar(0,0,0,0), 2, 8, 0 );
+ }
+	
 // Load the shader from the source text
 void CDisplayer::gltLoadShaderSrc(const char *szShaderSrc, GLuint shader)
 {

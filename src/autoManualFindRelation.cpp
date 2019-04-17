@@ -303,22 +303,35 @@ void CAutoManualFindRelation::collectMarkedPoints()
 	return;
 }
 
-void CAutoManualFindRelation::deletePos(cv::Point2i inPixel)
+void CAutoManualFindRelation::deletePoint(cv::Point2i inPixel)
 {
 	for (int i = 0; i < m_featurePoints.size(); i++) {
-		if (m_featurePoints[i].selectFlag == true) {
-			m_featurePoints[i].pixel = inPixel;
-			m_featurePoints[i].markFlag = false;
-			m_featurePoints[i].selectFlag = false;
+		if (m_featurePoints[i].pixel == inPixel) 
+		{
+			m_featurePoints.erase(m_featurePoints.begin()+i);
+			printf("after erase, m_featurePoints size=%d\n", m_featurePoints.size());
 		}
 	}
 
+	collectMarkedPoints();
+	
 	if (m_notifyFunc != NULL)
 		(*m_notifyFunc)(m_featurePoints);
 
 	return;
 }
 
+void CAutoManualFindRelation::deleteallPoints()
+{
+	m_featurePoints.clear();
+	fpassemble.clear();
+	initDivsubObj();
+
+	if (m_notifyFunc != NULL)
+		(*m_notifyFunc)(m_featurePoints);
+
+	return;
+}
 
 void CAutoManualFindRelation::initDivsubObj()
 {
@@ -1000,4 +1013,22 @@ void CAutoManualFindRelation::findThreeNearestPointInCanUsedPoints2estimate(std:
 
 	printf(" pixel (%d , %d ) ,   pos  (%d , %d) \n" , tmpFeature.pixel.x , tmpFeature.pixel.y , tmpFeature.pos.x , tmpFeature.pos.y );
 	return ;
+}
+
+int CAutoManualFindRelation::getcalibnum()
+{
+	int num = 0;
+	for(int i = 0; i < m_featurePoints.size(); i++)
+	{
+		if(m_featurePoints[i].markFlag)
+			num++;
+	}
+	printf("get m_featurePoints num:%d\n", num);
+		return num;
+}
+
+
+int CAutoManualFindRelation::get_featurepoint(std::vector<FEATUREPOINT_T> &featurePoints)
+{
+	featurePoints = m_featurePoints;
 }

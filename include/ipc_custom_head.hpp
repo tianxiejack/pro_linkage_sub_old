@@ -81,7 +81,8 @@ typedef enum
     workmode,
     enter_gridmap_view,
     storeMtdConfig,
-    storeDefaultWorkMode,    
+    storeDefaultWorkMode,
+    jos_mouse_mode,
     invalid
 }CMD_ID;
 
@@ -123,6 +124,12 @@ typedef enum{
 }jos_Mode;
 
 typedef enum{
+	jos_mode = 1,
+	mouse_mode,
+	exit_calibrate_mode
+}jos_mouse_Mode;
+
+typedef enum{
 	cursor_up = 1,
 	cursor_down,
 	cursor_left,
@@ -136,7 +143,7 @@ typedef struct
 	int maxArea;
 	int minArea;
 	int sensitivity;
-	//std::vector<float> mtdSelectArea; 
+	//std::vector<float> mtdSelectArea;
 }MTD_Config;
 
 typedef struct{
@@ -544,8 +551,6 @@ typedef struct{
 	unsigned int AimW;
 	unsigned int AimH;
 }AcqBoxWH;
-
-
 
 /** universal status **/
 typedef struct

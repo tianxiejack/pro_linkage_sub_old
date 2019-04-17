@@ -165,7 +165,7 @@ void CProcess::loadIPCParam()
 		memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
 		memset(extMenuCtrl.disPasswd, 0, sizeof(extMenuCtrl.disPasswd));
 
-		int cnt[menumaxid] = {4,5,7,4,3,7,6,3,5,5,3}; //  "menubuf[menumaxid][7][128]" each element counts
+		int cnt[menumaxid] = {4,5,7,4,7,6,3,5,5,3}; //  "menubuf[menumaxid][7][128]" each element counts
 		memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
 		for(int i = 0; i < menumaxid; i++)
 		{
@@ -538,15 +538,16 @@ void CProcess::TimerCreate()
 	maxsize_light_id = dtimer.createTimer();
 	minsize_light_id = dtimer.createTimer();
 	sensi_light_id = dtimer.createTimer();
+	baud_light_id = dtimer.createTimer();
 	mouse_show_id = dtimer.createTimer();
+
 	dtimer.registerTimer(resol_light_id, Tcallback, &resol_light_id);
 	dtimer.registerTimer(resol_apply_id, Tcallback, &resol_apply_id);
-    dtimer.registerTimer(mtdnum_light_id, Tcallback, &mtdnum_light_id);
-    dtimer.registerTimer(trktime_light_id, Tcallback, &trktime_light_id);
-    dtimer.registerTimer(maxsize_light_id, Tcallback, &maxsize_light_id);
-    dtimer.registerTimer(minsize_light_id, Tcallback, &minsize_light_id);
-    dtimer.registerTimer(sensi_light_id, Tcallback, &sensi_light_id);
-	baud_light_id = dtimer.createTimer();
+    	dtimer.registerTimer(mtdnum_light_id, Tcallback, &mtdnum_light_id);
+    	dtimer.registerTimer(trktime_light_id, Tcallback, &trktime_light_id);
+    	dtimer.registerTimer(maxsize_light_id, Tcallback, &maxsize_light_id);
+    	dtimer.registerTimer(minsize_light_id, Tcallback, &minsize_light_id);
+    	dtimer.registerTimer(sensi_light_id, Tcallback, &sensi_light_id);
 	dtimer.registerTimer(baud_light_id, Tcallback, &baud_light_id);
 	dtimer.registerTimer(mouse_show_id, Tcallback, &mouse_show_id);
 }
@@ -672,8 +673,7 @@ void CProcess::Tcallback(void *p)
 	{
 		if(sThis->mouse_show)
 			sThis->set_mouse_show(0);
-	}
-		
+	}		
 }
 
 void CProcess::Init_CameraMatrix()
@@ -2384,7 +2384,6 @@ void CProcess::Draw_point_triangle()
 	}
 	if(get_draw_point_triangle_stat())
 	{
-		//printf("%s,%d, Draw_point_triangle\n",__FILE__,__LINE__);
 		point_triangle_bak = point_triangle;
 		m_autofr.draw_point_triangle(m_display.m_imgOsd[extInCtrl->SensorStat],  point_triangle_bak, m_back, pos, 1);
 
@@ -3146,7 +3145,7 @@ void CProcess::DrawMtd_Rigion_Target()
 		flag = 1;
 	}
 }
-
+ 
 static inline void my_rotate(GLfloat result[16], float theta)
 {
 	float rads = float(theta/180.0f) * CV_PI;
@@ -3743,17 +3742,6 @@ void CProcess::refreshClickPoint(int x, int y)
 	return ;
 }
 
-void CProcess::QueryCurBallCamPosition()
-{
-	int flag =0;	
-	int ret =0;
-	SENDST trkmsg={0};
-	trkmsg.cmd_ID = querypos;
-	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-	printf("\r\n[%s]:Send Query PTZ Command ... ... \r\n",__func__);
-	return;
-}
-
 void CProcess::Test_Match_result(int x, int y)
 {
 	int offsetX = m_winWidth/2;
@@ -4335,8 +4323,22 @@ void CProcess::OnJosCtrl(int key, int param)
 	{
 		case JOSF1_OPEN_AUTOLINKMODE:
 		{
-			GB_WorkMode nextMode = (GB_WorkMode)(param - 1);
-			setWorkMode(nextMode);
+			if(MENU_TRIG_INTER_MODE == g_displayMode)
+			{
+				int num = m_autofr.getcalibnum();
+				//if(num >= 4)
+				{
+					if(get_twinkle_flag())
+						set_jos_mouse_mode(jos_mode);
+					else
+						set_jos_mouse_mode(mouse_mode);
+				}
+			}
+			else
+			{
+				GB_WorkMode nextMode = (GB_WorkMode)(param - 1);
+				setWorkMode(nextMode);
+			}
 		}
 			break;
 		case JOSF2_ENTER_MENU:			
@@ -4409,9 +4411,9 @@ void CProcess::OnSpecialKeyDwn(int key,int x, int y)
 			memcpy(&trkmsg.param[4],&m_back[2].pos.y,4);
 			ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 			break;
-		case 4:	
-			g_displayMode = MENU_GRID_MAP_VIEW;
-			break;
+		//case 4:	
+			//g_displayMode = MENU_GRID_MAP_VIEW;
+			//break;
 		case 5:	
 			show_TrigonometricMat = true;
 			#if 0
@@ -4620,7 +4622,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 	}
 	if (key == 'h' || key == 'H')
 	{
-		app_ctrl_getPT();
+		app_getPT();
 	}
 
 	if (key == 'i')
@@ -4670,10 +4672,16 @@ void CProcess::OnKeyDwn(unsigned char key)
 		printf("\r\n [%s] ================ Press Key ' m ' : Start to Calibrate!\r\n",__FUNCTION__);
 	}
 
-	if(key =='n' || key == 'N') {
+	if(key =='n') {
 		m_display.savePic_once = true;
 	}
-
+	
+	if( key == 'N')
+	{
+		bool stat = get_draw_point_triangle_stat();
+		set_draw_point_triangle_stat(!stat);
+	}
+	
 	if(key == 'o')
 	{
 		int mode = plat->m_display.gettrig_pip_mode();
@@ -4700,19 +4708,15 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 	if(key == 'r'|| key == 'R')
 	{
-		if(get_trig_PTZflag())
-		{
-			proc->set_trig_PTZflag(0);
-		}
 	}
 
 	if (key == 's')
 	{
-		GRIDINTER_Mode stat = get_manualInsertRecommendPoints_stat();
-		stat = (GRIDINTER_Mode)((stat + 1) % GRIDINTER_COUNT);
+		jos_mouse_Mode stat = get_gridinter_mode();
+		stat = (jos_mouse_Mode)((stat + 1) % exit_calibrate_mode);
 		if(pMenuStatus->Trig_Inter_Mode)
 		{
-			set_manualInsertRecommendPoints_stat(stat);
+			set_gridinter_mode(stat);
 		}
 	}
 

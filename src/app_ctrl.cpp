@@ -595,15 +595,28 @@ void app_ctrl_setMenu_jos(int menu_state)
 		return;
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
-	if(1 == menu_state)
+	if(MENU_TRIG_INTER_MODE == g_displayMode)
 	{
-		if(-1 == pMenuStatus->MenuStat)
-			app_ctrl_setMenuStat(mainmenu0);
+		menu_param_t tmpMenuCmd = {0};
+		tmpMenuCmd.Trig_Inter_Mode = 0;
+		app_ctrl_settrig_inter(&tmpMenuCmd);
+		app_ctrl_setMenuStat(mainmenu2);
+		plat->stoptwinkle();
+		plat->set_jos_mouse_mode(exit_calibrate_mode);
 	}
-	else if(0 == menu_state)
+	else
 	{
-		app_ctrl_setMenuStat(-1);
+		if(1 == menu_state)
+		{
+			if(-1 == pMenuStatus->MenuStat)
+				app_ctrl_setMenuStat(mainmenu0);
+		}
+		else if(0 == menu_state)
+		{
+			app_ctrl_setMenuStat(-1);
+		}
 	}
+
 }
 
 void app_ctrl_setMenu()
@@ -614,7 +627,7 @@ void app_ctrl_setMenu()
 		return;
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
-
+	
 	if(-1 == pMenuStatus->MenuStat)
 		app_ctrl_setMenuStat(mainmenu0);
 	else if(mainmenu0 == pMenuStatus->MenuStat)
@@ -635,8 +648,20 @@ void app_ctrl_setnumber(char key)
 		return;
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
-	
-	if(mainmenu0 == pMenuStatus->MenuStat)
+
+	if(MENU_TRIG_INTER_MODE == g_displayMode)
+	{
+		if(key == '0')
+		{
+			plat->m_autofr.deleteallPoints();
+			plat->set_jos_mouse_mode(mouse_mode);
+		}
+		else if(key == '1')
+		{
+			app_ctrl_save_trig_inter();
+		}
+	}
+	else if(mainmenu0 == pMenuStatus->MenuStat)
 	{
 		int offset = strlen(pMenuStatus->Passwd) * sizeof(char);		
 		if(offset < sizeof(pMenuStatus->Passwd) - 1)
@@ -768,7 +793,11 @@ void app_ctrl_enter()
 	CMD_EXT *pIStuts = msgextInCtrl;
 	menu_param_t *pMenuStatus = msgextMenuCtrl;
 
-	if(1 == pIStuts->MtdSetRigion)
+	if(MENU_TRIG_INTER_MODE == g_displayMode)
+	{
+		plat->app_getPT();
+	}
+	else if(1 == pIStuts->MtdSetRigion)
 	{
 		app_ctrl_savemtdrigion();
 	}
@@ -789,8 +818,39 @@ void app_ctrl_enter()
 	}
 	else if(mainmenu2 == pMenuStatus->MenuStat)
 	{
-		if((pMenuStatus->menuarray[mainmenu2].pointer >= 0) && (pMenuStatus->menuarray[mainmenu2].pointer <= 4))
-			app_ctrl_setMenuStat(pMenuStatus->menuarray[mainmenu2].pointer + 3);
+		switch(pMenuStatus->menuarray[mainmenu2].pointer)
+		{
+			case 0:
+				app_ctrl_setMenuStat(submenu_DefaultWorkMode);
+				break;
+			case 1:
+				{
+					if(AUTO_LINK_MODE != g_AppWorkMode)
+					{
+						menu_param_t tmpMenuCmd = {0};
+						tmpMenuCmd.Trig_Inter_Mode = 1;
+						app_ctrl_settrig_inter(&tmpMenuCmd);
+						plat->set_jos_mouse_mode(mouse_mode);
+						app_ctrl_setMenuStat(-1);
+					}
+				}
+				break;
+			case 2:
+				app_ctrl_setMenuStat(submenu_mtd);
+				break;
+			case 3:
+				app_ctrl_setMenuStat(submenu_setimg);
+				break;
+			case 4:
+				app_ctrl_setMenuStat(submenu_setball);
+				break;
+			case 5:
+				break;
+			case 6:
+				break;
+			default:
+				break;
+		}
 	}
 
 	else if(submenu_DefaultWorkMode == pMenuStatus->MenuStat)
@@ -823,7 +883,7 @@ void app_ctrl_enter()
 			plat->SetDefaultWorkMode(setting_WorkMode);
 		}
 	}
-
+/*
 	else if(submenu_gridMapCalibrate == pMenuStatus->MenuStat)
 	{
 		if(0 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer) 
@@ -842,16 +902,15 @@ void app_ctrl_enter()
 		}
 		else if(2 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer)
 		{
-		/*
-			SENDST trkmsg2={0};
-			trkmsg2.cmd_ID = enter_gridmap_view;
-			trkmsg2.param[0] = 0;
-			ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
-			app_ctrl_setMenuStat(mainmenu2);			
-			g_displayMode = MENU_MAIN_VIEW;
-		*/
+			//SENDST trkmsg2={0};
+			//trkmsg2.cmd_ID = enter_gridmap_view;
+			//trkmsg2.param[0] = 0;
+			//ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
+			//app_ctrl_setMenuStat(mainmenu2);			
+			//g_displayMode = MENU_MAIN_VIEW;
 		}		
 	}
+
 	else if(submenu_handleMatchPoints == pMenuStatus->MenuStat)
 	{
         if(0 == pMenuStatus->menuarray[submenu_handleMatchPoints].pointer){
@@ -875,6 +934,7 @@ void app_ctrl_enter()
 		}
 
 	}
+	*/
 	else if(submenu_mtd == pMenuStatus->MenuStat)
 	{
 		if(0 == pMenuStatus->menuarray[submenu_mtd].pointer)
@@ -1063,6 +1123,7 @@ void app_ctrl_enter()
 			app_ctrl_setMenuStat(submenu_setball);
 	}
 
+
 	printf("\r\n[%s]: pIStuts->MenuStat = %d ",__FUNCTION__, pMenuStatus->MenuStat);
 }
 
@@ -1231,9 +1292,10 @@ void app_ctrl_settrig_inter(menu_param_t *pInCmd)
 		if(pMenuStatus->Trig_Inter_Mode)
 		{
 			g_displayMode = MENU_TRIG_INTER_MODE;
+			plat->set_showpip_stat(true);
 			plat->set_send_mat_stat(true);
 			plat->set_drawpoints_stat(true);
-			plat->set_manualInsertRecommendPoints_stat(GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE);
+			plat->set_gridinter_mode(mouse_mode);
 		}
 		else
 		{
@@ -1245,10 +1307,6 @@ void app_ctrl_settrig_inter(menu_param_t *pInCmd)
 	}
 }
 
-void app_ctrl_getPT()
-{
-	plat->QueryCurBallCamPosition();
-}
 
 void app_ctrl_save_trig_inter()
 {

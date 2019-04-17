@@ -26,7 +26,7 @@ typedef enum{
 	mainmenu1,
 	mainmenu2,
 	submenu_DefaultWorkMode,// submenu_carli
-	submenu_gridMapCalibrate, //"submenu_gunball" is replaced by "submenu_gridMapCalibrate"
+	//submenu_gridMapCalibrate, //"submenu_gunball" is replaced by "submenu_gridMapCalibrate"
 	submenu_mtd,
 	submenu_setimg,
 	submenu_setball,
@@ -253,9 +253,8 @@ typedef enum _GB_WorkMode{ // This App Has three work mode : Handle, Auto, and O
 }GB_WorkMode;
 
 typedef enum _GRIDINTER_Mode{
-	GRIDINTER_MANUALINSERTRECOMMENDPOINTS_MODE = 0,
-	GRIDINTER_CALIBRATION_MODE,
-	GRIDINTER_TEST_MODE,
+	GRIDINTER_CTRLBALL_MODE = 0,
+	GRIDINTER_MOUSE_MODE,
 	GRIDINTER_COUNT,
 }GRIDINTER_Mode;
 

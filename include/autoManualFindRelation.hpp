@@ -46,7 +46,8 @@ public:
 	void manualInsertRecommendPoints( cv::Point2i inPoint );//手动增加待选参考点
 	void insertPos(  cv::Point2i inPos );//插入pos到选择的点
 	void selectPoint(  cv::Point2i inPixel ); //选择点进行找pos
-	void deletePos( cv::Point2i inPixel );//删除掉该点的pos信息
+	void deletePoint( cv::Point2i inPixel );//删除特征点
+	void deleteallPoints();
 
 	bool readParams(std::vector<FEATUREPOINT_T>& getParam);//读取配置
 	bool writeParams(void);//写配置
@@ -96,6 +97,8 @@ public:
 	void getHomography2estimateConer();
 
 	void findThreeNearestPointInCanUsedPoints2estimate( std::vector<FEATUREPOINT_T> featurPoints );
+	int getcalibnum();
+	int get_featurepoint(std::vector<FEATUREPOINT_T> &featurePoints);
 
 private:
 	pNOTIFYFUNC m_notifyFunc;

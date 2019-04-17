@@ -736,6 +736,10 @@ void* recv_msg(SENDST *RS422)
 				}
 					break;
 				case ctrlMode:
+				{
+					int ctrlMode = Rjosctrl.ctrlMode;
+					proc->SetCtrlmode(ctrlMode);
+				}
 					break;						
 				default:
 					break;

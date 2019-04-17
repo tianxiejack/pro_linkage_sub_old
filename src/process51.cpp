@@ -4323,22 +4323,8 @@ void CProcess::OnJosCtrl(int key, int param)
 	{
 		case JOSF1_OPEN_AUTOLINKMODE:
 		{
-			if(MENU_TRIG_INTER_MODE == g_displayMode)
-			{
-				int num = m_autofr.getcalibnum();
-				//if(num >= 4)
-				{
-					if(get_twinkle_flag())
-						set_jos_mouse_mode(jos_mode);
-					else
-						set_jos_mouse_mode(mouse_mode);
-				}
-			}
-			else
-			{
-				GB_WorkMode nextMode = (GB_WorkMode)(param - 1);
-				setWorkMode(nextMode);
-			}
+			GB_WorkMode nextMode = (GB_WorkMode)(param - 1);
+			setWorkMode(nextMode);
 		}
 			break;
 		case JOSF2_ENTER_MENU:			
@@ -4365,6 +4351,21 @@ void CProcess::OnJosCtrl(int key, int param)
 			break;
 		default:
 			break;
+	}
+}
+
+void CProcess::SetCtrlmode(int mode)
+{
+	if(MENU_TRIG_INTER_MODE == g_displayMode)
+	{
+		int num = m_autofr.getcalibnum();
+		//if(num >= 4)
+		{
+			if(get_twinkle_flag())
+				set_jos_mouse_mode(jos_mode);
+			else
+				set_jos_mouse_mode(mouse_mode);
+		}
 	}
 }
 

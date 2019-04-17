@@ -215,6 +215,7 @@ public:
 	void setWorkMode(GB_WorkMode workmode);
 	void SetDefaultWorkMode( GB_WorkMode workmode );
 	void SetMtdConfig( MTD_Config mtdconfig );
+	void SetCtrlmode(int mode);
 
 	void DrawMtdYellowGrid();
 	void DrawMtdRedGrid();

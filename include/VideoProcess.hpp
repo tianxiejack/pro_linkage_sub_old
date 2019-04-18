@@ -465,9 +465,7 @@ public:
 		int minsize;
 		int sensi;
 		cv::Rect cur_targetRect, cur_targetRect_bak;
-		int losenumber = -1;
-		int lose_timer_flag = 0;
-		
+		int losenumber = -1;		
 
 		int setrigion_flagv20;
 		struct{

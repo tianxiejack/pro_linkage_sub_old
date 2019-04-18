@@ -1606,8 +1606,6 @@ void CProcess::switchMvTargetForwad()
 		chooseDetect = 10;
 		memset( &cur_targetRect,0,sizeof(cur_targetRect));
 	}
-	lose_timer_flag = 0;
-
 }
 
 void CProcess::addMvListValidNum(char num)
@@ -1706,11 +1704,10 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 
 			if(!flag)
 			{
-				if((chooseDetect == (*pMvList).number) && (0 == lose_timer_flag))
+				if((chooseDetect == (*pMvList).number))
 				{
 					losenumber = (*pMvList).number;
 					cur_targetRect = (*pMvList).trkobj.targetRect;
-					lose_timer_flag = 1;
 					chooseDetect = 10;
 				}
 				removeMvListValidNum((*pMvList).number);
@@ -3105,7 +3102,7 @@ void CProcess::DrawMtd_Rigion_Target()
 
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 		}
-		if((0 == lose_timer_flag) && (mvListsum.size() > 0) && cur_targetRect.width && cur_targetRect.height )
+		if((mvListsum.size() > 0) && cur_targetRect.width && cur_targetRect.height )
 		{
 			Point2i inPoint, outPoint;
 			color = 6;

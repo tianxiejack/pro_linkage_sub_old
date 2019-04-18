@@ -20,6 +20,8 @@
 #include "Ipc.hpp"
 #include "DxTimer.hpp"
 
+#include "sceneProcess.hpp"
+
 using namespace cr_automanualfindrelation;
 
 #define MAX_SUCCESS_IMAGES 160
@@ -109,6 +111,8 @@ typedef struct{
 	char number;
 	TRK_RECT_INFO trkobj;
 }TRK_INFO_APP;
+
+typedef Rect_<double> Rect2d;
 
 class CVideoProcess
 {
@@ -484,6 +488,13 @@ public:
 		int joys_click;
 #endif
 
+public:
+	
+	CSceneProcess* pScene;
+	bool m_bAutoLink;
+	Rect2d m_sceInitRect,m_sceInitRectBK;
+	int m_chSceneNum;
+	cv::Rect m_mainObjBK;
 
 };
 

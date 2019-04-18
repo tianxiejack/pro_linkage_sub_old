@@ -315,6 +315,27 @@ void CVideoProcess::main_proc_func()
 				{
 					m_pMovDetector->setFrame(frame_gray,i,2,minsize,maxsize,sensi);
 				}
+
+
+				if(m_bAutoLink)
+				{
+					if(m_chSceneNum < 3)
+						m_chSceneNum++;
+
+					if( 1 == m_chSceneNum){
+						m_sceInitRect.x = cur_targetRect_bak.x;
+						m_sceInitRect.y = cur_targetRect_bak.y;
+						m_sceInitRect.width = cur_targetRect_bak.width;
+						m_sceInitRect.height = cur_targetRect_bak.height;
+						pScene->sceneLockInit( frame_gray , m_sceInitRect );
+					}else{
+						if(pScene->sceneLockProcess( frame_gray , m_sceInitRect ))
+							m_sceInitRectBK = m_sceInitRect;
+
+						grid_autolinkage_moveball(m_sceInitRectBK.x + m_sceInitRectBK.width/2, 
+							m_sceInitRectBK.y + m_sceInitRectBK.height/2);
+					}
+				}
 			}
 		#endif
 		}
@@ -399,7 +420,7 @@ int CVideoProcess::m_staticScreenWidth = outputWHF[0];
 int CVideoProcess::m_staticScreenHeight = outputWHF[1];
 CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 	m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_display(CDisplayer(w,h)),
-	m_backNodePos(cv::Point(-10,-10)),m_curNodeIndex(0)
+	m_backNodePos(cv::Point(-10,-10)),m_curNodeIndex(0),m_bAutoLink(false),m_chSceneNum(0)
 {
 	imageListForCalibra.clear();
 	pThis = this;
@@ -593,7 +614,12 @@ int CVideoProcess::creat()
 	if(m_pMovDetector == NULL)
 		m_pMovDetector = MvDetector_Create();
 	OSA_assert(m_pMovDetector != NULL);
+
+	pScene = new CSceneProcess();
+	
 #endif
+
+	
 	return 0;
 }
 
@@ -615,6 +641,7 @@ int CVideoProcess::destroy()
 
 #if __MOVE_DETECT__
 	DeInitMvDetect();
+	delete pScene;
 #endif
 	if( eventLoop != NULL )
 	{
@@ -2721,6 +2748,10 @@ int CVideoProcess::dynamic_config(int type, int iPrm, void* pPrm)
 		break;
 	case VP_CFG_MvDetect:
 		m_bMoveDetect = iPrm;
+		if(m_bMoveDetect){
+			m_chSceneNum = 0;
+			m_bAutoLink = false;
+		}
 		break;
 	default:
 		break;

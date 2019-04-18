@@ -1606,6 +1606,7 @@ void CProcess::switchMvTargetForwad()
 		chooseDetect = 10;
 		memset( &cur_targetRect,0,sizeof(cur_targetRect));
 	}
+	return ;
 }
 
 void CProcess::addMvListValidNum(char num)
@@ -1682,7 +1683,6 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 		for( ; pMvList !=  mvList->end(); )
 		{
 			tmpIndex = (*pMvList).trkobj.index;
-
 			flag = 0;
 			std::vector<TRK_RECT_INFO>::iterator pDetect = detect.begin();
 			for( ; pDetect != detect.end(); )
@@ -1704,10 +1704,8 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 
 			if(!flag)
 			{
-				if((chooseDetect == (*pMvList).number))
-				{
+				if( chooseDetect == (*pMvList).number ){
 					losenumber = (*pMvList).number;
-					cur_targetRect = (*pMvList).trkobj.targetRect;
 					chooseDetect = 10;
 				}
 				removeMvListValidNum((*pMvList).number);
@@ -1746,6 +1744,8 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 				memcpy((void*)&(pTmpMv.trkobj),(void *)&(detect[i++].targetRect),sizeof(TRK_RECT_INFO));
 				mvList->push_back(pTmpMv);
 			}
+			if( chooseDetect == 10 )
+				chooseDetect = pTmpMv.number;
 		}
 	}
 	
@@ -3022,8 +3022,19 @@ void CProcess::DrawMtd_Rigion_Target()
 				tmp.height = recttmp.h;
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 		}
-			
-		DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,0);
+		
+		{
+			recttmp.x = cur_targetRect_bak.x;
+			recttmp.y = cur_targetRect_bak.y;
+			recttmp.w = cur_targetRect_bak.width;
+			recttmp.h = cur_targetRect_bak.height;
+			recttmp = mapfullscreen2gunv20(recttmp);
+			tmp.x = recttmp.x;
+			tmp.y = recttmp.y;
+			tmp.width = recttmp.w;
+			tmp.height = recttmp.h;
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);	
+		}		
 		flag = 0;
 	}
 
@@ -3067,6 +3078,7 @@ void CProcess::DrawMtd_Rigion_Target()
 			m_bAutoLink = false;
 			switchMvTargetForwad();
 			forwardflag = 0;
+			
 		}
 		else if(backflag)
 		{
@@ -3094,46 +3106,45 @@ void CProcess::DrawMtd_Rigion_Target()
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 		}
 
-
-
-#if 1
+		#if 1
 		if( !m_bAutoLink && (mvListsum.size()>0) && cur_targetRect.width && cur_targetRect.height )		
 		{			
 			cur_targetRect_bak = cur_targetRect;
 			m_bAutoLink = true;
 		}
-	
-		recttmp.x = m_sceInitRect.x;
-		recttmp.y = m_sceInitRect.y;
-		recttmp.w = m_sceInitRect.width;
-		recttmp.h = m_sceInitRect.height;
-		recttmp = mapfullscreen2gunv20(recttmp);
-		m_mainObjBK.x = recttmp.x;
-		m_mainObjBK.y = recttmp.y;
-		m_mainObjBK.width = recttmp.w;
-		m_mainObjBK.height = recttmp.h;
+			recttmp.x = m_sceInitRect.x;
+			recttmp.y = m_sceInitRect.y;
+			recttmp.width = m_sceInitRect.width;
+			recttmp.height = m_sceInitRect.height;
+			recttmp = mapfullscreen2gunv20(recttmp);
+			tmp.x = recttmp.x;
+			tmp.y = recttmp.y;
+			tmp.width = recttmp.w;
+			tmp.height = recttmp.h;
+			
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,6);
 		
-		DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,6);
-		
-#else
+		#endif
 
-		
+	#if 0
 		if((mvListsum.size() > 0) && cur_targetRect.width && cur_targetRect.height )
 		{
 			Point2i inPoint, outPoint;
 			color = 6;
-			cur_targetRect_bak = cur_targetRect;
+
+			#if 1
 			recttmp.x = cur_targetRect_bak.x;
 			recttmp.y = cur_targetRect_bak.y;
 			recttmp.w = cur_targetRect_bak.width;
 			recttmp.h = cur_targetRect_bak.height;
 			inPoint.x = recttmp.x + recttmp.w / 2;
 			inPoint.y = recttmp.y + recttmp.h / 2;
-			recttmp = mapfullscreen2gunv20(recttmp);
-			tmp.x = recttmp.x;
-			tmp.y = recttmp.y;
-			tmp.width = recttmp.w;
-			tmp.height = recttmp.h;
+			
+			//recttmp = mapfullscreen2gunv20(recttmp);
+			//tmp.x = recttmp.x;
+			//tmp.y = recttmp.y;
+			//tmp.width = recttmp.w;
+			//tmp.height = recttmp.h;
 
 			if(1 == g_GridMapMode)
 			{
@@ -3144,12 +3155,28 @@ void CProcess::DrawMtd_Rigion_Target()
 			}
 			else if(2 == g_GridMapMode)
 			{
+<<<<<<< HEAD
+				m_autofr.Point2getPos(inPoint, outPoint);
+			//	printf("%s, %d,aurolinkage inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
+				trkmsg.cmd_ID = speedloop;
+				memcpy(&trkmsg.param[0],&(outPoint.x), sizeof(int));
+				memcpy(&trkmsg.param[4],&(outPoint.y), sizeof(int)); 
+				ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+=======
 				grid_autolinkage_moveball(inPoint.x, inPoint.y);
+>>>>>>> dbb04062b6375bb27d1005c5bb29436f535431e6
 			}
-				
+			#endif	
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
-		}
-	#endif	
+			
+		}else
+			cur_targetRect_bak.width = cur_targetRect_bak.height = 0;
+		#endif
+
+
+
+		
+		
 		flag = 1;
 	}
 }

@@ -1939,7 +1939,7 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 	trkmsg.cmd_ID = speedloop;
 	postmp.panPos = outPoint.x;
 	postmp.tilPos = outPoint.y;
-	postmp.zoom = getCurrentZoomValue();
+	postmp.zoom = 0;
 	memcpy(&trkmsg.param,&postmp, sizeof(postmp));
 	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
 
@@ -1975,7 +1975,7 @@ void CVideoProcess::grid_manuallinkage_moveball(int x, int y, int changezoom)
 		
 		if(delta_X < MIN_VALID_RECT_WIDTH_IN_PIXEL)
 		{
-			postmp.zoom = getCurrentZoomValue();
+			postmp.zoom = 0;
 		}
 		else
 		{
@@ -1983,7 +1983,7 @@ void CVideoProcess::grid_manuallinkage_moveball(int x, int y, int changezoom)
 		}
 	}
 	else
-		postmp.zoom = getCurrentZoomValue();
+		postmp.zoom = 0;
 
 	inPoint.x = x;
 	inPoint.y = y;

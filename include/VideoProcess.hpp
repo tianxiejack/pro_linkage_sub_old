@@ -489,12 +489,14 @@ public:
 #endif
 
 public:
-	
+	bool judgeMainObjInOut(Rect2d inTarget);
 	CSceneProcess* pScene;
-	bool m_bAutoLink;
+	bool m_bAutoLink,m_mainObjDrawFlag;
 	Rect2d m_sceInitRect,m_sceInitRectBK;
 	int m_chSceneNum;
 	cv::Rect m_mainObjBK;
+	OSA_SemHndl m_mvObjSync;
+	
 
 };
 

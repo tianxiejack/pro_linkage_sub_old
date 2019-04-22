@@ -371,6 +371,9 @@ void CAutoManualFindRelation::updateSubdiv()
 
 int CAutoManualFindRelation::Point2getPos(const Point2i inPoint,Point2i &result) 
 {
+	if(inPoint.x <= m_rect.x || inPoint.x >= m_rect.width || inPoint.y <= m_rect.y || inPoint.y >= m_rect.height)
+		return -1;
+		
 	int ret = 0;
 	vector<Point2i> triVertex;
 

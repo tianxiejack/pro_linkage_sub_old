@@ -1651,14 +1651,26 @@ char CProcess::getMvListNextValidNum(char index)
 bool comp(const TRK_RECT_INFO &a,const TRK_RECT_INFO &b)
 {
 	unsigned int tmpa ,tmpb;
-	unsigned int mx,my;
-	mx = abs(a.targetRect.x - plat->cur_targetRect_bak.x);
-	my = abs(a.targetRect.y - plat->cur_targetRect_bak.y);
-	tmpa = mx*mx + my*my;
-	mx = abs(b.targetRect.x - plat->cur_targetRect_bak.x);
-	my = abs(b.targetRect.y - plat->cur_targetRect_bak.y);
-	tmpb = mx*mx + my*my;
-	return tmpa<tmpb;
+ 	unsigned int mx,my;
+	unsigned int cenax,cenay,cenbx,cenby;
+
+	cenax = a.targetRect.x + a.targetRect.width/2;
+	cenay = a.targetRect.y + a.targetRect.height/2;
+	cenbx = plat->m_mainObjBK.x + plat->m_mainObjBK.width/2;
+	cenby = plat->m_mainObjBK.y + plat->m_mainObjBK.height/2;	
+	mx = abs(cenax - cenbx);
+	my = abs(cenay - cenby);
+ 	tmpa = mx*mx + my*my;
+
+	cenax = b.targetRect.x + b.targetRect.width/2;
+	cenay = b.targetRect.y + b.targetRect.height/2;
+	cenbx = plat->m_mainObjBK.x + plat->m_mainObjBK.width/2;
+	cenby = plat->m_mainObjBK.y + plat->m_mainObjBK.height/2;	
+	mx = abs(cenax - cenbx);
+	my = abs(cenay - cenby);
+ 	tmpb = mx*mx + my*my;
+	
+ 	return tmpa<tmpb;
 }
 
 void CProcess::getTargetNearToCenter(std::vector<TRK_RECT_INFO> *pVec)
@@ -2065,7 +2077,7 @@ osdindex++;	//cross aim
 //mtd grid
 	DrawMtdYellowGrid();
 	DrawMtdRedGrid();
-	DrawMtd_Rigion_Target();
+	//DrawMtd_Rigion_Target(frame);
 
 #endif
 
@@ -2977,6 +2989,7 @@ void CProcess::DrawMtdRedGrid()
 
 void CProcess::DrawMtd_Rigion_Target()
 {
+	static bool mainObjFlag = false;
 	unsigned int mtd_warningbox_Id;
 	Osd_cvPoint startwarnpoly,endwarnpoly;
 	int polwarn_flag = 0;
@@ -3022,8 +3035,11 @@ void CProcess::DrawMtd_Rigion_Target()
 				tmp.height = recttmp.h;
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 		}
-			
-		DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,0);
+
+		if(mainObjFlag){
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,0);
+			mainObjFlag = false;
+		}
 		flag = 0;
 	}
 
@@ -3065,6 +3081,7 @@ void CProcess::DrawMtd_Rigion_Target()
 		{
 			m_chSceneNum = 0;
 			m_bAutoLink = false;
+			m_sceInitRect.width=0;
 			switchMvTargetForwad();
 			forwardflag = 0;
 		}
@@ -3094,26 +3111,32 @@ void CProcess::DrawMtd_Rigion_Target()
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 		}
 
-
-
 #if 1
-		if( !m_bAutoLink && (mvListsum.size()>0) && cur_targetRect.width && cur_targetRect.height )		
+		if((mvListsum.size()>0) && cur_targetRect.width && cur_targetRect.height )		
 		{			
 			cur_targetRect_bak = cur_targetRect;
-			m_bAutoLink = true;
+
+			if( m_bAutoLink && (0 == m_chSceneNum))
+				OSA_semSignal(&m_mvObjSync);
+
+			if(false == m_bAutoLink)
+				m_bAutoLink = true;
 		}
+
+		if(m_mainObjDrawFlag){
+			recttmp.x = m_sceInitRectBK.x;
+			recttmp.y = m_sceInitRectBK.y;
+			recttmp.w = m_sceInitRectBK.width;
+			recttmp.h = m_sceInitRectBK.height;
+			recttmp = mapfullscreen2gunv20(recttmp);
+			m_mainObjBK.x = recttmp.x;
+			m_mainObjBK.y = recttmp.y;
+			m_mainObjBK.width = recttmp.w;
+			m_mainObjBK.height = recttmp.h;
 	
-		recttmp.x = m_sceInitRect.x;
-		recttmp.y = m_sceInitRect.y;
-		recttmp.w = m_sceInitRect.width;
-		recttmp.h = m_sceInitRect.height;
-		recttmp = mapfullscreen2gunv20(recttmp);
-		m_mainObjBK.x = recttmp.x;
-		m_mainObjBK.y = recttmp.y;
-		m_mainObjBK.width = recttmp.w;
-		m_mainObjBK.height = recttmp.h;
-		
-		DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,6);
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,6);
+			mainObjFlag = true;				
+		}
 		
 #else
 
@@ -3153,7 +3176,8 @@ void CProcess::DrawMtd_Rigion_Target()
 		flag = 1;
 	}
 }
- 
+
+
 static inline void my_rotate(GLfloat result[16], float theta)
 {
 	float rads = float(theta/180.0f) * CV_PI;

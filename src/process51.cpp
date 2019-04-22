@@ -2065,7 +2065,7 @@ osdindex++;	//cross aim
 //mtd grid
 	DrawMtdYellowGrid();
 	DrawMtdRedGrid();
-	DrawMtd_Rigion_Target();
+	//DrawMtd_Rigion_Target(frame);
 
 #endif
 
@@ -3022,8 +3022,9 @@ void CProcess::DrawMtd_Rigion_Target()
 				tmp.height = recttmp.h;
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 		}
-			
-		DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,0);
+
+		if(m_mainObjBK.width)
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,0);
 		flag = 0;
 	}
 
@@ -3065,6 +3066,7 @@ void CProcess::DrawMtd_Rigion_Target()
 		{
 			m_chSceneNum = 0;
 			m_bAutoLink = false;
+			m_sceInitRect.width=0;
 			switchMvTargetForwad();
 			forwardflag = 0;
 		}
@@ -3094,15 +3096,18 @@ void CProcess::DrawMtd_Rigion_Target()
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 		}
 
-
-
 #if 1
-		if( !m_bAutoLink && (mvListsum.size()>0) && cur_targetRect.width && cur_targetRect.height )		
+		if((mvListsum.size()>0) && cur_targetRect.width && cur_targetRect.height )		
 		{			
 			cur_targetRect_bak = cur_targetRect;
-			m_bAutoLink = true;
+
+			if( m_bAutoLink && (0 == m_chSceneNum))
+				OSA_semSignal(&m_mvObjSync);
+
+			if(false == m_bAutoLink)
+				m_bAutoLink = true;
 		}
-	
+
 		recttmp.x = m_sceInitRect.x;
 		recttmp.y = m_sceInitRect.y;
 		recttmp.w = m_sceInitRect.width;
@@ -3112,8 +3117,9 @@ void CProcess::DrawMtd_Rigion_Target()
 		m_mainObjBK.y = recttmp.y;
 		m_mainObjBK.width = recttmp.w;
 		m_mainObjBK.height = recttmp.h;
-		
-		DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,6);
+
+		if(m_mainObjBK.width)
+			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,6);
 		
 #else
 

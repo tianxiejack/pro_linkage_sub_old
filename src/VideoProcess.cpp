@@ -311,36 +311,36 @@ void CVideoProcess::main_proc_func()
 		#if __MOVE_DETECT__
 			if(m_pMovDetector != NULL)
 			{
-				for(int i = 0; i < MAX_MTDRIGION_NUM; i++)
-				{
+				for(int i = 0; i < MAX_MTDRIGION_NUM; i++){
 					m_pMovDetector->setFrame(frame_gray,i,2,minsize,maxsize,sensi);
 				}
 
+				if(m_bAutoLink){
 
-				if(m_bAutoLink)
-				{
-					if(m_chSceneNum < 3)
-						m_chSceneNum++;
+					if( 0 == m_chSceneNum){
+						OSA_semWait(&m_mvObjSync,OSA_TIMEOUT_FOREVER);
 
-					if( 1 == m_chSceneNum){
 						m_sceInitRect.x = cur_targetRect_bak.x;
 						m_sceInitRect.y = cur_targetRect_bak.y;
 						m_sceInitRect.width = cur_targetRect_bak.width;
 						m_sceInitRect.height = cur_targetRect_bak.height;
 						pScene->sceneLockInit( frame_gray , m_sceInitRect );
-					}else{
+						m_chSceneNum = 1;						
+					}
+		
+					if( 1 == m_chSceneNum){
 						if(pScene->sceneLockProcess( frame_gray , m_sceInitRect ))
 							m_sceInitRectBK = m_sceInitRect;
 
 						grid_autolinkage_moveball(m_sceInitRectBK.x + m_sceInitRectBK.width/2, 
-							m_sceInitRectBK.y + m_sceInitRectBK.height/2);
+							m_sceInitRectBK.y + m_sceInitRectBK.height/2);				
 					}
 				}
 			}
 		#endif
 		}
 		
-		OnProcess(chId, frame);
+		OnProcess(chId, frame_gray);
 		framecount++;
 
 	/************************* while ********************************/
@@ -607,6 +607,8 @@ int CVideoProcess::creat()
 
 	MAIN_threadCreate();
 	OSA_mutexCreate(&m_mutex);
+	OSA_semCreate(&m_mvObjSync,1,0);
+
 	OnCreate();
 
 	
@@ -633,6 +635,7 @@ int CVideoProcess::destroy()
 	stop();
 	OSA_mutexDelete(&m_mutex);
 	MAIN_threadDestroy();
+	OSA_semDelete(&m_mvObjSync);
 
 	MultiCh.destroy();
 	m_display.destroy();
@@ -1934,15 +1937,17 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 	inPoint.x = x;
 	inPoint.y = y;
 	pThis->m_autofr.Point2getPos(inPoint, outPoint);
-	printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
-					
-	trkmsg.cmd_ID = speedloop;
-	postmp.panPos = outPoint.x;
-	postmp.tilPos = outPoint.y;
-	postmp.zoom = 0;
-	memcpy(&trkmsg.param,&postmp, sizeof(postmp));
-	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	//printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 
+	if( -1 != pThis->m_autofr.Point2getPos(inPoint, outPoint)){				
+		trkmsg.cmd_ID = speedloop;
+		postmp.panPos = outPoint.x;
+		postmp.tilPos = outPoint.y;
+		postmp.zoom = 0;
+		memcpy(&trkmsg.param,&postmp, sizeof(postmp));
+		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	}
+	return ;
 }
 
 void CVideoProcess::grid_manuallinkage_moveball(int x, int y, int changezoom)
@@ -3318,7 +3323,9 @@ void CVideoProcess::NotifyFunc(void *context, int chId)
 	int cnt = pThis->detect_vect_arr.size() > 3 ? 3 : pThis->detect_vect_arr.size();
 	pThis->detect_vect_arr[chId].clear();
 	pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect_arr[chId],chId);
-	
+
+
+	proc->DrawMtd_Rigion_Target();
 	//pParent->m_display.m_bOsd = true;
 	//pThis->m_display.UpDateOsd(0);
 }

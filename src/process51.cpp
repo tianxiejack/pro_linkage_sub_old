@@ -1735,6 +1735,8 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 		{	
 			if(mvList->size() >= detectNum)
 				break ;
+			if(i >= detect.size())
+				break;
 			pTmpMv.number = getMvListFirstUnusedNum();
 			if(pTmpMv.number < 10)
 			{
@@ -5827,13 +5829,13 @@ int CProcess::usopencvapi2()
 		SaveMtdSelectArea("SaveMtdArea.yml", polyWarnRoi);
 	}
 
-printf("useopencv2api:%d area\n", polyWarnRoi.size());
-for(int i = 0; i< polyWarnRoi.size(); i++)
-{
-	for(int j = 0; j < polyWarnRoi[i].size(); j++)
-		printf("(%d, %d),", polyWarnRoi[i][i].x,polyWarnRoi[i][j].y);
-	printf("\n");
-}
+	printf("useopencv2api:%d area\n", polyWarnRoi.size());
+	for(int i = 0; i< polyWarnRoi.size(); i++)
+	{
+		for(int j = 0; j < polyWarnRoi[i].size(); j++)
+			printf("(%d, %d),", polyWarnRoi[i][j].x,polyWarnRoi[i][j].y);
+		printf("\n");
+	}
 
 	for(int i = 0; i < contours.size(); i++)
 	{

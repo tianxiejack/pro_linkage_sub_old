@@ -1651,14 +1651,26 @@ char CProcess::getMvListNextValidNum(char index)
 bool comp(const TRK_RECT_INFO &a,const TRK_RECT_INFO &b)
 {
 	unsigned int tmpa ,tmpb;
-	unsigned int mx,my;
-	mx = abs(a.targetRect.x - plat->cur_targetRect_bak.x);
-	my = abs(a.targetRect.y - plat->cur_targetRect_bak.y);
-	tmpa = mx*mx + my*my;
-	mx = abs(b.targetRect.x - plat->cur_targetRect_bak.x);
-	my = abs(b.targetRect.y - plat->cur_targetRect_bak.y);
-	tmpb = mx*mx + my*my;
-	return tmpa<tmpb;
+ 	unsigned int mx,my;
+	unsigned int cenax,cenay,cenbx,cenby;
+
+	cenax = a.targetRect.x + a.targetRect.width/2;
+	cenay = a.targetRect.y + a.targetRect.height/2;
+	cenbx = plat->m_mainObjBK.x + plat->m_mainObjBK.width/2;
+	cenby = plat->m_mainObjBK.y + plat->m_mainObjBK.height/2;	
+	mx = abs(cenax - cenbx);
+	my = abs(cenay - cenby);
+ 	tmpa = mx*mx + my*my;
+
+	cenax = b.targetRect.x + b.targetRect.width/2;
+	cenay = b.targetRect.y + b.targetRect.height/2;
+	cenbx = plat->m_mainObjBK.x + plat->m_mainObjBK.width/2;
+	cenby = plat->m_mainObjBK.y + plat->m_mainObjBK.height/2;	
+	mx = abs(cenax - cenbx);
+	my = abs(cenay - cenby);
+ 	tmpb = mx*mx + my*my;
+	
+ 	return tmpa<tmpb;
 }
 
 void CProcess::getTargetNearToCenter(std::vector<TRK_RECT_INFO> *pVec)

@@ -2663,7 +2663,6 @@ int CVideoProcess::init()
 
 
 #if __MOVE_DETECT__
-	initMvDetect();
 	LoadMtdSelectArea("SaveMtdArea.yml",edge_contours);
 #endif
 
@@ -3253,9 +3252,6 @@ void	CVideoProcess::initMvDetect()
 	int	i;
 	mouserect recttmp;
 	OSA_printf("%s:mvDetect start ", __func__);
-	OSA_assert(m_pMovDetector != NULL);
-
-	m_pMovDetector->init(NotifyFunc, (void*)this);
 					
 	std::vector<cv::Point> polyWarnRoi ;
 	polyWarnRoi.resize(4);
@@ -3414,11 +3410,17 @@ void CVideoProcess::SaveMtdSelectArea(const char* filename, std::vector< std::ve
 
 void CVideoProcess::LoadMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > &edge_contours)
 {
+	std::vector< std::vector< cv::Point > > polyWarnRoi;
 	char paramName[40];
 	memset(paramName,0,sizeof(paramName));
 	int AreaCount=0;
 	int IndexArray[5];	
 	edge_contours.clear(); // Clear The Vector
+	int init_mtd = 0;
+
+	OSA_assert(m_pMovDetector != NULL);
+	m_pMovDetector->init(NotifyFunc, (void*)this);
+	
 	m_fsReadMtd.open(filename,FileStorage::READ);
 	if(m_fsReadMtd.isOpened())
 	{
@@ -3438,6 +3440,7 @@ void CVideoProcess::LoadMtdSelectArea(const char* filename, std::vector< std::ve
 		for(int i=0;i<AreaCount;i++)
 		{
 			edge_contours.push_back(std::vector<cv::Point>());
+			polyWarnRoi.push_back(std::vector<cv::Point>());
 			for(int j=0;j<IndexArray[i];j++)
 			{
 				int tmp_x =0,tmp_y=0;
@@ -3448,19 +3451,33 @@ void CVideoProcess::LoadMtdSelectArea(const char* filename, std::vector< std::ve
 				memset(paramName,0,sizeof(paramName));
 				sprintf(paramName,"Point_%d_%d_y",i,j);				
 				m_fsReadMtd[paramName] >> tmp_y;
+				polyWarnRoi[i].push_back(cv::Point(tmp_x,tmp_y));
+				mapfullscreen2gun_pointv20(&tmp_x, &tmp_y);
 				edge_contours[i].push_back(cv::Point(tmp_x,tmp_y));
 			}
 		}
 #if 1
-		for(int m=0;m<edge_contours.size();m++)
+		printf("polyWarnRoi.size()=%d,edge_contours.size()=%d\n",polyWarnRoi.size(),edge_contours.size());
+		for(int m=0;m<polyWarnRoi.size();m++)
 		{
-			for(int n=0;n<edge_contours[m].size();n++)
+			for(int n=0;n<polyWarnRoi[m].size();n++)
 			{
-				printf("\r\n[%s]:(%d-%d)<%d,%d>\r\n",__func__,m,n,edge_contours[m][n].x,edge_contours[m][n].y);
+				printf("\r\n[%s]:(%d-%d)<%d,%d>\r\n",__func__,m,n,polyWarnRoi[m][n].x,polyWarnRoi[m][n].y);
+			}
+			if(polyWarnRoi[m].size()>0)
+			{
+				m_pMovDetector->setWarnMode(WARN_WARN_MODE, m);
+				m_pMovDetector->setWarningRoi(polyWarnRoi[m],	m);
+				init_mtd = 1;
 			}
 		}
 #endif
 	}
+	else
+		printf("%s, %d,open %s failed\n",__FILE__, __LINE__, filename);
+
+	if(!init_mtd)
+		initMvDetect();
 }
 
 void CVideoProcess::pnotify_callback(std::vector<FEATUREPOINT_T>& recommendPoints)

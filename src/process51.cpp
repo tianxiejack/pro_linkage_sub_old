@@ -5798,11 +5798,18 @@ int CProcess::usopencvapi2()
         swprintf(m_display.disMtd[0][4], 33, L"检测区域:%d个", contours.size());
 	}
 
-	if(edge_contours.size() != 0)
+	if(polyWarnRoi.size() != 0)
 	{
-		SaveMtdSelectArea("SaveMtdArea.yml", edge_contours);
+		SaveMtdSelectArea("SaveMtdArea.yml", polyWarnRoi);
 	}
 
+printf("useopencv2api:%d area\n", polyWarnRoi.size());
+for(int i = 0; i< polyWarnRoi.size(); i++)
+{
+	for(int j = 0; j < polyWarnRoi[i].size(); j++)
+		printf("(%d, %d),", polyWarnRoi[i][i].x,polyWarnRoi[i][j].y);
+	printf("\n");
+}
 
 	for(int i = 0; i < contours.size(); i++)
 	{

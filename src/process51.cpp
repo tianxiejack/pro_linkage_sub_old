@@ -165,7 +165,7 @@ void CProcess::loadIPCParam()
 		memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
 		memset(extMenuCtrl.disPasswd, 0, sizeof(extMenuCtrl.disPasswd));
 
-		int cnt[menumaxid] = {4,5,7,4,7,6,3,5,5,3}; //  "menubuf[menumaxid][7][128]" each element counts
+		int cnt[menumaxid] = {4,5,3,4,7,6,3,5,5,3}; //  "menubuf[menumaxid][7][128]" each element counts
 		memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
 		for(int i = 0; i < menumaxid; i++)
 		{

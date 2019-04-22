@@ -2977,6 +2977,7 @@ void CProcess::DrawMtdRedGrid()
 
 void CProcess::DrawMtd_Rigion_Target()
 {
+	static bool mainObjFlag = false;
 	unsigned int mtd_warningbox_Id;
 	Osd_cvPoint startwarnpoly,endwarnpoly;
 	int polwarn_flag = 0;
@@ -3023,8 +3024,10 @@ void CProcess::DrawMtd_Rigion_Target()
 				DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
 		}
 
-		if(m_mainObjBK.width)
+		if(mainObjFlag){
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,0);
+			mainObjFlag = false;
+		}
 		flag = 0;
 	}
 
@@ -3108,18 +3111,20 @@ void CProcess::DrawMtd_Rigion_Target()
 				m_bAutoLink = true;
 		}
 
-		recttmp.x = m_sceInitRect.x;
-		recttmp.y = m_sceInitRect.y;
-		recttmp.w = m_sceInitRect.width;
-		recttmp.h = m_sceInitRect.height;
-		recttmp = mapfullscreen2gunv20(recttmp);
-		m_mainObjBK.x = recttmp.x;
-		m_mainObjBK.y = recttmp.y;
-		m_mainObjBK.width = recttmp.w;
-		m_mainObjBK.height = recttmp.h;
-
-		if(m_mainObjBK.width)
+		if(m_mainObjDrawFlag){
+			recttmp.x = m_sceInitRectBK.x;
+			recttmp.y = m_sceInitRectBK.y;
+			recttmp.w = m_sceInitRectBK.width;
+			recttmp.h = m_sceInitRectBK.height;
+			recttmp = mapfullscreen2gunv20(recttmp);
+			m_mainObjBK.x = recttmp.x;
+			m_mainObjBK.y = recttmp.y;
+			m_mainObjBK.width = recttmp.w;
+			m_mainObjBK.height = recttmp.h;
+	
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], m_mainObjBK ,6);
+			mainObjFlag = true;				
+		}
 		
 #else
 
@@ -3159,7 +3164,8 @@ void CProcess::DrawMtd_Rigion_Target()
 		flag = 1;
 	}
 }
- 
+
+
 static inline void my_rotate(GLfloat result[16], float theta)
 {
 	float rads = float(theta/180.0f) * CV_PI;

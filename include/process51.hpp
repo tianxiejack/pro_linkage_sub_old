@@ -167,6 +167,7 @@ public:
 	bool loadConfigParams(const char* filename);
 	bool saveConfigParams(const char* filename);
 
+
 	void MvBallCamBySelectRectangle(int x, int y,bool needChangeZoom);
 	void MvBallCamUseLinearDeviationSelectRect(int x, int y,bool needChangeZoom);
 	void MvBallCamByClickGunImg(int x, int y,bool needChangeZoom);	

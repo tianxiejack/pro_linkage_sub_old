@@ -319,19 +319,20 @@ void CVideoProcess::main_proc_func()
 
 					if( 0 == m_chSceneNum){
 						OSA_semWait(&m_mvObjSync,OSA_TIMEOUT_FOREVER);
-
 						m_sceInitRect.x = cur_targetRect_bak.x;
 						m_sceInitRect.y = cur_targetRect_bak.y;
 						m_sceInitRect.width = cur_targetRect_bak.width;
 						m_sceInitRect.height = cur_targetRect_bak.height;
 						pScene->sceneLockInit( frame_gray , m_sceInitRect );
-						m_chSceneNum = 1;						
+						m_chSceneNum = 1;	
+						m_mainObjDrawFlag = true;
 					}
 		
 					if( 1 == m_chSceneNum){
 						if(pScene->sceneLockProcess( frame_gray , m_sceInitRect ))
-							m_sceInitRectBK = m_sceInitRect;
-
+							if(judgeMainObjInOut(m_sceInitRect))
+								m_sceInitRectBK = m_sceInitRect;
+							
 						grid_autolinkage_moveball(m_sceInitRectBK.x + m_sceInitRectBK.width/2, 
 							m_sceInitRectBK.y + m_sceInitRectBK.height/2);				
 					}
@@ -347,6 +348,35 @@ void CVideoProcess::main_proc_func()
 	}
 	OSA_printf("%s: Main Proc Tsk Is Exit...\n",__func__);
 }
+
+bool CVideoProcess::judgeMainObjInOut(Rect2d inTarget)
+{
+	
+	cv::Point2f rc_center ;
+	rc_center = cv::Point2f(inTarget.x + inTarget.width/2,inTarget.y + inTarget.height/2);
+	double	distance	= cv::pointPolygonTest( edge_contours_bak[0], rc_center, true );///1.0
+
+	double	tgw	= inTarget.width;
+	double	tgh	= inTarget.height;
+	double	diagd	 = sqrt(tgw*tgw+tgh*tgh);
+	double	maxd	=  diagd*3/4;
+	double	mind	=	tgw>tgh?tgw/4:tgh/4;
+	maxd = maxd<60.0?60.0:maxd;
+	
+	bool retFlag = false;
+	if(distance>=mind){//TARGET_IN_POLYGON;
+		retFlag = true;
+	}else if(distance>-mind	&&	distance<mind){//TARGET_IN_EDGE;
+		retFlag = true;
+	}else if(distance<=	-mind){//TARGET_OUT_POLYGON;
+		retFlag = false;
+	}else{//TARGET_NORAM;
+		retFlag = true;
+	}
+	
+	return retFlag;
+}
+
 
 int CVideoProcess::MAIN_threadDestroy(void)
 {
@@ -420,7 +450,7 @@ int CVideoProcess::m_staticScreenWidth = outputWHF[0];
 int CVideoProcess::m_staticScreenHeight = outputWHF[1];
 CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 	m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_display(CDisplayer(w,h)),
-	m_backNodePos(cv::Point(-10,-10)),m_curNodeIndex(0),m_bAutoLink(false),m_chSceneNum(0)
+	m_backNodePos(cv::Point(-10,-10)),m_curNodeIndex(0),m_bAutoLink(false),m_chSceneNum(0),m_mainObjDrawFlag(false)
 {
 	imageListForCalibra.clear();
 	pThis = this;
@@ -3323,7 +3353,6 @@ void CVideoProcess::NotifyFunc(void *context, int chId)
 	int cnt = pThis->detect_vect_arr.size() > 3 ? 3 : pThis->detect_vect_arr.size();
 	pThis->detect_vect_arr[chId].clear();
 	pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect_arr[chId],chId);
-
 
 	proc->DrawMtd_Rigion_Target();
 	//pParent->m_display.m_bOsd = true;

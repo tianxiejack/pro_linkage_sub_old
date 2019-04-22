@@ -484,6 +484,7 @@ public:
 		int mtdcnt;
 		std::vector< std::vector< cv::Point > > edge_contours;
 		std::vector< std::vector< cv::Point > > edge_contours_bak;
+		std::vector< std::vector< cv::Point > > edge_contours_notMap;
 		cv::Point jcenter_s;
 		int joys_click;
 #endif

@@ -3082,6 +3082,7 @@ void CProcess::DrawMtd_Rigion_Target()
 			m_chSceneNum = 0;
 			m_bAutoLink = false;
 			m_sceInitRect.width=0;
+			m_mainObjDrawFlag=false;
 			switchMvTargetForwad();
 			forwardflag = 0;
 		}
@@ -5839,6 +5840,10 @@ for(int i = 0; i< polyWarnRoi.size(); i++)
 	{
 		m_pMovDetector->setWarningRoi(polyWarnRoi[i], i);
 	}
+
+	edge_contours_notMap = polyWarnRoi ; 
+	
+	return 0;
 }
 
 

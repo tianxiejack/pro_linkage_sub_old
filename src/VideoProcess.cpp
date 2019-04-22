@@ -351,10 +351,12 @@ void CVideoProcess::main_proc_func()
 
 bool CVideoProcess::judgeMainObjInOut(Rect2d inTarget)
 {
-	
+	std::vector< cv::Point > counters;
 	cv::Point2f rc_center ;
 	rc_center = cv::Point2f(inTarget.x + inTarget.width/2,inTarget.y + inTarget.height/2);
-	double	distance	= cv::pointPolygonTest( edge_contours_bak[0], rc_center, true );///1.0
+
+	
+	double	distance	= cv::pointPolygonTest( edge_contours_notMap[0], rc_center, true );///1.0
 
 	double	tgw	= inTarget.width;
 	double	tgh	= inTarget.height;
@@ -371,7 +373,7 @@ bool CVideoProcess::judgeMainObjInOut(Rect2d inTarget)
 	}else if(distance<=	-mind){//TARGET_OUT_POLYGON;
 		retFlag = false;
 	}else{//TARGET_NORAM;
-		retFlag = true;
+		retFlag = false;
 	}
 	
 	return retFlag;
@@ -2785,6 +2787,7 @@ int CVideoProcess::dynamic_config(int type, int iPrm, void* pPrm)
 		if(m_bMoveDetect){
 			m_chSceneNum = 0;
 			m_bAutoLink = false;
+			m_mainObjDrawFlag = false;
 		}
 		break;
 	default:
@@ -3317,6 +3320,16 @@ void	CVideoProcess::initMvDetect()
 		recttmp.y = vdisWH[0][1] * min_height_ratio;
 		recttmp.w = vdisWH[0][0] * (max_width_ratio - min_width_ratio);
 		recttmp.h = vdisWH[0][1] * (max_height_ratio - min_height_ratio); 
+		
+		pThis->edge_contours_notMap[0][0].x = recttmp.x;
+		pThis->edge_contours_notMap[0][0].y = recttmp.y;
+		pThis->edge_contours_notMap[0][1].x = recttmp.x+recttmp.w;
+		pThis->edge_contours_notMap[0][1].y = recttmp.y;
+		pThis->edge_contours_notMap[0][2].x = recttmp.x+recttmp.w;
+		pThis->edge_contours_notMap[0][2].y = recttmp.y+recttmp.h;
+		pThis->edge_contours_notMap[0][3].x = recttmp.x;
+		pThis->edge_contours_notMap[0][3].y = recttmp.y+recttmp.h;
+		
 		recttmp = mapfullscreen2gun(recttmp);
 		pThis->edge_contours[0][0].x = recttmp.x;
 		pThis->edge_contours[0][0].y = recttmp.y;
@@ -3493,6 +3506,8 @@ void CVideoProcess::LoadMtdSelectArea(const char* filename, std::vector< std::ve
 			}
 		}
 #if 1
+		edge_contours_notMap = polyWarnRoi;
+
 		printf("polyWarnRoi.size()=%d,edge_contours.size()=%d\n",polyWarnRoi.size(),edge_contours.size());
 		for(int m=0;m<polyWarnRoi.size();m++)
 		{

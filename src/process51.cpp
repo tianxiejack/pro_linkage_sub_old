@@ -165,7 +165,7 @@ void CProcess::loadIPCParam()
 		memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
 		memset(extMenuCtrl.disPasswd, 0, sizeof(extMenuCtrl.disPasswd));
 
-		int cnt[menumaxid] = {4,5,7,4,7,6,3,5,5,3}; //  "menubuf[menumaxid][7][128]" each element counts
+		int cnt[menumaxid] = {4,5,3,4,7,6,3,5,5,3}; //  "menubuf[menumaxid][7][128]" each element counts
 		memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
 		for(int i = 0; i < menumaxid; i++)
 		{
@@ -1735,6 +1735,8 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 		{	
 			if(mvList->size() >= detectNum)
 				break ;
+			if(i >= detect.size())
+				break;
 			pTmpMv.number = getMvListFirstUnusedNum();
 			if(pTmpMv.number < 10)
 			{
@@ -5828,13 +5830,13 @@ int CProcess::usopencvapi2()
 		SaveMtdSelectArea("SaveMtdArea.yml", polyWarnRoi);
 	}
 
-printf("useopencv2api:%d area\n", polyWarnRoi.size());
-for(int i = 0; i< polyWarnRoi.size(); i++)
-{
-	for(int j = 0; j < polyWarnRoi[i].size(); j++)
-		printf("(%d, %d),", polyWarnRoi[i][i].x,polyWarnRoi[i][j].y);
-	printf("\n");
-}
+	printf("useopencv2api:%d area\n", polyWarnRoi.size());
+	for(int i = 0; i< polyWarnRoi.size(); i++)
+	{
+		for(int j = 0; j < polyWarnRoi[i].size(); j++)
+			printf("(%d, %d),", polyWarnRoi[i][j].x,polyWarnRoi[i][j].y);
+		printf("\n");
+	}
 
 	for(int i = 0; i < contours.size(); i++)
 	{

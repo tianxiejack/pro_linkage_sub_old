@@ -16,6 +16,7 @@ CPP_SRCS += \
 ../src/autoManualFindRelation.cpp \
 ../src/cuda_mem.cpp \
 ../src/process51.cpp \
+../src/sceneProcess.cpp \
 ../src/test_videoProcess.cpp \
 ../src/v4l2camera.cpp 
 
@@ -39,6 +40,7 @@ OBJS += \
 ./src/cuda.o \
 ./src/cuda_mem.o \
 ./src/process51.o \
+./src/sceneProcess.o \
 ./src/test_videoProcess.o \
 ./src/v4l2camera.o 
 
@@ -55,6 +57,7 @@ CPP_DEPS += \
 ./src/autoManualFindRelation.d \
 ./src/cuda_mem.d \
 ./src/process51.d \
+./src/sceneProcess.d \
 ./src/test_videoProcess.d \
 ./src/v4l2camera.d 
 

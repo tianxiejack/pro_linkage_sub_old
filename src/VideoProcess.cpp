@@ -318,14 +318,15 @@ void CVideoProcess::main_proc_func()
 				if(m_bAutoLink){
 
 					if( 0 == m_chSceneNum){
-						OSA_semWait(&m_mvObjSync,OSA_TIMEOUT_FOREVER);
-						m_sceInitRect.x = cur_targetRect_bak.x;
-						m_sceInitRect.y = cur_targetRect_bak.y;
-						m_sceInitRect.width = cur_targetRect_bak.width;
-						m_sceInitRect.height = cur_targetRect_bak.height;
-						pScene->sceneLockInit( frame_gray , m_sceInitRect );
-						m_chSceneNum = 1;	
-						m_mainObjDrawFlag = true;
+						if(!OSA_semWait(&m_mvObjSync,20)){
+							m_sceInitRect.x = cur_targetRect_bak.x;
+							m_sceInitRect.y = cur_targetRect_bak.y;
+							m_sceInitRect.width = cur_targetRect_bak.width;
+							m_sceInitRect.height = cur_targetRect_bak.height;
+							pScene->sceneLockInit( frame_gray , m_sceInitRect );
+							m_chSceneNum = 1;	
+							m_mainObjDrawFlag = true;
+						}
 					}
 		
 					if( 1 == m_chSceneNum){
@@ -368,7 +369,7 @@ bool CVideoProcess::judgeMainObjInOut(Rect2d inTarget)
 	bool retFlag = false;
 	if(distance>=mind){//TARGET_IN_POLYGON;
 		retFlag = true;
-	}else if(distance>-mind	&&	distance<mind){//TARGET_IN_EDGE;
+	}else if(distance>-mind	&& distance<mind){//TARGET_IN_EDGE;
 		retFlag = true;
 	}else if(distance<=	-mind){//TARGET_OUT_POLYGON;
 		retFlag = false;
@@ -3366,6 +3367,7 @@ void CVideoProcess::NotifyFunc(void *context, int chId)
 	proc->DrawMtd_Rigion_Target();
 	//pParent->m_display.m_bOsd = true;
 	//pThis->m_display.UpDateOsd(0);
+	return ;
 }
 #endif
 

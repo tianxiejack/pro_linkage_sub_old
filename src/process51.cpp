@@ -3119,8 +3119,9 @@ void CProcess::DrawMtd_Rigion_Target()
 		{			
 			cur_targetRect_bak = cur_targetRect;
 
-			if( m_bAutoLink && (0 == m_chSceneNum))
+			if( m_bAutoLink && (0 == m_chSceneNum)){
 				OSA_semSignal(&m_mvObjSync);
+			}
 
 			if(false == m_bAutoLink)
 				m_bAutoLink = true;

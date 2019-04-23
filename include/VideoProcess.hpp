@@ -487,6 +487,7 @@ public:
 		std::vector< std::vector< cv::Point > > edge_contours_notMap;
 		cv::Point jcenter_s;
 		int joys_click;
+		int mtd_init = 0;
 #endif
 
 public:

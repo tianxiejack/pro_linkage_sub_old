@@ -2721,10 +2721,13 @@ int CVideoProcess::init()
 //============================================
 	if(g_AppWorkMode == AUTO_LINK_MODE){
 		CMD_EXT Msg;
-		Msg.MtdState[Msg.SensorStat] = ipc_eImgAlg_Enable;	
+		Msg.SensorStat = msgextInCtrl->SensorStat;
+		Msg.MtdState[Msg.SensorStat] = ipc_eImgAlg_Enable;
 		app_ctrl_setMtdStat(&Msg);
 		MSGAPI_msgsend(mtd);
 	}
+	mtd_init = 1;
+
 //============================================
 	
 	return 0;

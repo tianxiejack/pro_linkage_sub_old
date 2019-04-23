@@ -367,7 +367,7 @@ void* recv_msg(SENDST *RS422)
 			{
 				pMsg->MtdState[pMsg->SensorStat] = ipc_eImgAlg_Disable;
 			}
-			if(MENU_TRIG_INTER_MODE != g_displayMode)
+			if((MENU_TRIG_INTER_MODE != g_displayMode) && proc->mtd_init)
 			{
 				app_ctrl_setMtdStat(pMsg);
 				MSGAPI_msgsend(mtd);

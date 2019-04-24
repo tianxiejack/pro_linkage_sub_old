@@ -121,6 +121,7 @@ void CVideoProcess::main_proc_func()
 	static UTC_ACQ_param acqRect;
 	CMD_EXT tmpCmd={0};
 	double value;
+	static unsigned int t1 ,tp0,tp1,tp2;
 
 #if 1
 	
@@ -330,12 +331,14 @@ void CVideoProcess::main_proc_func()
 					}
 		
 					if( 1 == m_chSceneNum){
+						tp0 = OSA_getCurTimeInMsec();
 						if(pScene->sceneLockProcess( frame_gray , m_sceInitRect ))
 							if(judgeMainObjInOut(m_sceInitRect))
 								m_sceInitRectBK = m_sceInitRect;
-							
+						printf("sceneLockProcess  cost time  : %d \n",OSA_getCurTimeInMsec() - tp0);
+						 
 						grid_autolinkage_moveball(m_sceInitRectBK.x + m_sceInitRectBK.width/2, 
-							m_sceInitRectBK.y + m_sceInitRectBK.height/2);				
+							m_sceInitRectBK.y + m_sceInitRectBK.height/2);	
 					}
 				}
 			}
@@ -1964,6 +1967,7 @@ void CVideoProcess::app_set_triangle_point(int x, int y)
 
 void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 {
+	static unsigned int t1=0;
 	SENDST trkmsg={0};
 	LinkagePos postmp;
 	Point2i inPoint, outPoint;
@@ -1979,6 +1983,10 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 		postmp.zoom = 0;
 		memcpy(&trkmsg.param,&postmp, sizeof(postmp));
 		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+
+		printf("during time : %u \n",OSA_getCurTimeInMsec() - t1);
+		t1 = OSA_getCurTimeInMsec();
+						
 	}
 	return ;
 }

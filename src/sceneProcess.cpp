@@ -12,8 +12,9 @@ bool sceneLost;
 CSceneProcess::CSceneProcess():m_lostHandleFlag(false)
 {
 	MedianFlowTracker::Params parameters;
-	parameters.pointsInGrid = 20;
-	m_mediaFlowObj = MedianFlowTracker::CreateMedianFlowTrk();
+	parameters.pointsInGrid = 10;
+	parameters.bZoomHalf = true;
+	m_mediaFlowObj = MedianFlowTracker::CreateMedianFlowTrk(parameters);
 }
 
 CSceneProcess::~CSceneProcess()

@@ -5618,7 +5618,7 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	if(msgId == MSGID_EXT_SETMTDSENSI)
 	{
 		if((pMenuStatus->osd_sensi < MIN_MTDSENSI) || (pMenuStatus->osd_sensi > MAX_MTDSENSI))
-			swprintf(m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d(超出范围%d~%d)", pMenuStatus->osd_sensi,MIN_MTDMINSIZE,MAX_MTDMAXSIZE);
+			swprintf(m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d(超出范围%d~%d)", pMenuStatus->osd_sensi,MIN_MTDSENSI,MAX_MTDSENSI);
 		else
 			swprintf(m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d", pMenuStatus->osd_sensi);
 	}

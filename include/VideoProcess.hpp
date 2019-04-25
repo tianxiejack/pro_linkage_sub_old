@@ -498,7 +498,7 @@ public:
 	int m_chSceneNum;
 	cv::Rect m_mainObjBK;
 	OSA_SemHndl m_mvObjSync;
-	
+	IMG_MAT m_TrkImage;
 
 };
 

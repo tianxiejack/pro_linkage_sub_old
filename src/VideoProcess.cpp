@@ -121,10 +121,8 @@ void CVideoProcess::main_proc_func()
 	static UTC_ACQ_param acqRect;
 	CMD_EXT tmpCmd={0};
 	double value;
-	static unsigned int t1 ,tp0,tp1,tp2;
 
 #if 1
-	
 	static int timeFlag = 2;
 	static int speedcount = 0;
 
@@ -132,9 +130,9 @@ void CVideoProcess::main_proc_func()
 	struct tm *p;  	
 	char file[128];
 	const int MvDetectAcqRectWidth  =  80;
-	const int MvDetectAcqRectHeight =  80;
-	
+	const int MvDetectAcqRectHeight =  80;	
 #endif
+
 	while(mainProcThrObj.exitProcThread ==  false)
 	{
 		OSA_semWait(&mainProcThrObj.procNotifySem, OSA_TIMEOUT_FOREVER);
@@ -164,7 +162,7 @@ void CVideoProcess::main_proc_func()
 		if(!OnPreProcess(chId, frame))
 			continue;
 
-		if(!m_bTrack && !m_bMtd &&!m_bMoveDetect){
+		if(!m_bMoveDetect){
 			OnProcess(chId, frame);
 			continue;
 		}
@@ -182,132 +180,10 @@ void CVideoProcess::main_proc_func()
 			extractUYVY2Gray(frame, frame_gray);
 		}
 		else
-		{
 			memcpy(frame_gray.data, frame.data, frame.cols * frame.rows*channel*sizeof(unsigned char));
-		}
+	
 
-		if(bTrack)
-		{
-		#if __TRACK__
-			iTrackStat = ReAcqTarget();
-			if(Movedetect&&(iTrackStat==0))
-				{
-				}
-			int64 trktime = 0;
-			if(algOsdRect == true)
-				trktime = getTickCount();//OSA_getCurTimeInMsec();
-			if(m_iTrackStat==2)
-			{
-				//m_searchmod=1;
-			}
-			else
-			{
-				m_searchmod=0;
-			}
-			m_iTrackStat = process_track(iTrackStat, frame_gray, frame_gray, m_rcTrack);
-
-			putText(m_display.m_imgOsd[msgextInCtrl->SensorStat],trkINFODisplay,
-				Point( 10, 25),
-				FONT_HERSHEY_TRIPLEX,0.8,
-				cvScalar(0,0,0,0), 1
-			);
-#if 0
-			sprintf(trkINFODisplay, "trkStatus:%u,trkErrorX=%f,trkErrorY=%f",
-				iTrackStat,m_rcTrack.x,m_rcTrack.y);
-			putText(m_display.m_imgOsd[msgextInCtrl->SensorStat],trkINFODisplay,
-				Point( 10, 25),
-				FONT_HERSHEY_TRIPLEX,0.8,
-				cvScalar(255,255,0,255), 1
-			);
-#endif
-			
-
-			UtcGetSceneMV(m_track, &speedx, &speedy);
-			UtcGetOptValue(m_track, &optValue);
-			
-			if(m_iTrackStat == 2)
-				m_iTrackLostCnt++;
-			else
-				m_iTrackLostCnt = 0;
-
-			if(m_iTrackStat == 2)
-			{								
-				if(m_iTrackLostCnt > 3)
-				{					
-				}
-				else
-				{
-					m_iTrackStat = 1;
-				}
-			}
-
-			if(m_display.disptimeEnable == 1)
-			{
-				putText(m_display.m_imgOsd[1],m_strDisplay,
-						Point( m_display.m_imgOsd[1].cols-450, 30),
-						FONT_HERSHEY_TRIPLEX,0.8,
-						cvScalar(0,0,0,0), 1
-						);
-				sprintf(m_strDisplay, "TrkStat=%d speedxy: (%0.2f,%0.2f)", m_iTrackStat, speedx,speedy);
-
-				putText(m_display.m_imgOsd[1],m_strDisplay,
-						Point( m_display.m_imgOsd[1].cols-450, 30),
-						FONT_HERSHEY_TRIPLEX,0.8,
-						cvScalar(255,255,0,255), 1
-						);
-			}
-			
-			//printf("********m_iTrackStat=%d\n",m_iTrackStat);
-			//OSA_printf("ALL-Trk: time = %d ms \n", OSA_getCurTimeInMsec() - trktime);
-			if(algOsdRect == true){
-				float time = ( (getTickCount() - trktime)/getTickFrequency())*1000;;//OSA_getCurTimeInMsec() - trktime;
-				static float totaltime = 0;
-				static int count11 = 1;
-				totaltime += time;
-				if((count11++)%100 == 0)
-				{
-					OSA_printf("ALL-TRK: time = %f ms \n", totaltime/100 );
-					count11 = 1;
-					totaltime = 0.0;
-				}
-			}
-		#endif
-		}
-		else if(bMtd)
-		{
-			tstart = getTickCount();
-
-			Rect roi;
-
-			if(tvzoomStat)
-				{
-					roi.x=frame_gray.cols/4;
-					roi.y=frame_gray.rows/4;
-					roi.width=frame_gray.cols/2;
-					roi.height=frame_gray.rows/2;
-					//OSA_printf("roiXY(%d,%d),WH(%d,%d)\n",roi.x,roi.y,roi.width,roi.height);
-				}
-			else
-				{
-					roi.x=0;
-					roi.y=0;
-					roi.width=frame_gray.cols;
-					roi.height=frame_gray.rows;
-				}
-		#if __MMT__
-			//m_MMTDObj.MMTDProcess(frame_gray, m_tgtBox, m_display.m_imgOsd[1], 0);
-			m_MMTDObj.MMTDProcessRect(frame_gray, m_tgtBox, roi, m_display.m_imgOsd[1], 0);
-			for(int i=0;i<MAX_TARGET_NUMBER;i++)
-			{
-				m_mtd[chId]->tg[i].cur_x=m_tgtBox[i].Box.x+m_tgtBox[i].Box.width/2;
-				m_mtd[chId]->tg[i].cur_y=m_tgtBox[i].Box.y+m_tgtBox[i].Box.height/2;
-				m_mtd[chId]->tg[i].valid=m_tgtBox[i].valid;
-				//OSA_printf("ALL-MTD: time  ID %d  valid=%d x=%d y=%d\n",i,m_tgtBox[i].valid,m_tgtBox[i].Box.x,m_tgtBox[i].Box.y);
-			}
-		#endif	
-		
-		}
-		else if (bMoveDetect)
+		if (bMoveDetect)
 		{
 		#if __MOVE_DETECT__
 			if(m_pMovDetector != NULL)
@@ -317,26 +193,46 @@ void CVideoProcess::main_proc_func()
 				}
 
 				if(m_bAutoLink){
-
 					if( 0 == m_chSceneNum){
 						if(!OSA_semWait(&m_mvObjSync,20)){
-							m_sceInitRect.x = cur_targetRect_bak.x;
-							m_sceInitRect.y = cur_targetRect_bak.y;
-							m_sceInitRect.width = cur_targetRect_bak.width;
-							m_sceInitRect.height = cur_targetRect_bak.height;
-							pScene->sceneLockInit( frame_gray , m_sceInitRect );
+							#if 1
+								m_rcTrack.x = cur_targetRect_bak.x;
+								m_rcTrack.y = cur_targetRect_bak.y;
+								m_rcTrack.width = cur_targetRect_bak.width;
+								m_rcTrack.height = cur_targetRect_bak.height;
+								m_iTrackStat = process_track(0, frame_gray, frame_gray, m_rcTrack);
+								m_sceInitRectBK.x = m_rcTrack.x;
+								m_sceInitRectBK.y = m_rcTrack.y;
+								m_sceInitRectBK.width = m_rcTrack.width;
+								m_sceInitRectBK.height = m_rcTrack.height;
+							#else
+								m_sceInitRect.x = cur_targetRect_bak.x;
+								m_sceInitRect.y = cur_targetRect_bak.y;
+								m_sceInitRect.width = cur_targetRect_bak.width;
+								m_sceInitRect.height = cur_targetRect_bak.height;
+								m_sceInitRectBK = m_sceInitRect;
+								pScene->sceneLockInit( frame_gray , m_sceInitRect );
+							#endif
 							m_chSceneNum = 1;	
 							m_mainObjDrawFlag = true;
 						}
 					}
-		
+
 					if( 1 == m_chSceneNum){
-						tp0 = OSA_getCurTimeInMsec();
-						if(pScene->sceneLockProcess( frame_gray , m_sceInitRect ))
+						
+						#if 1
+							m_iTrackStat = process_track(m_iTrackStat, frame_gray, frame_gray, m_rcTrack);
+							m_sceInitRect.x = m_rcTrack.x;
+							m_sceInitRect.y = m_rcTrack.y;
+							m_sceInitRect.width = m_rcTrack.width;
+							m_sceInitRect.height = m_rcTrack.height;
 							if(judgeMainObjInOut(m_sceInitRect))
 								m_sceInitRectBK = m_sceInitRect;
-						printf("sceneLockProcess  cost time  : %d \n",OSA_getCurTimeInMsec() - tp0);
-						 
+						#else
+							if(pScene->sceneLockProcess( frame_gray , m_sceInitRect ))
+								if(judgeMainObjInOut(m_sceInitRect))
+									m_sceInitRectBK = m_sceInitRect;
+						#endif						 
 						grid_autolinkage_moveball(m_sceInitRectBK.x + m_sceInitRectBK.width/2, 
 							m_sceInitRectBK.y + m_sceInitRectBK.height/2);	
 					}
@@ -1967,7 +1863,6 @@ void CVideoProcess::app_set_triangle_point(int x, int y)
 
 void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 {
-	static unsigned int t1=0;
 	SENDST trkmsg={0};
 	LinkagePos postmp;
 	Point2i inPoint, outPoint;
@@ -1982,11 +1877,7 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 		postmp.tilPos = outPoint.y;
 		postmp.zoom = 0;
 		memcpy(&trkmsg.param,&postmp, sizeof(postmp));
-		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
-
-		printf("during time : %u \n",OSA_getCurTimeInMsec() - t1);
-		t1 = OSA_getCurTimeInMsec();
-						
+		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);					
 	}
 	return ;
 }
@@ -2886,6 +2777,7 @@ int CVideoProcess::run()
 	
 	#if __TRACK__
 	m_track = CreateUtcTrk();
+	UtcSetAxisSech(m_track, false);
 	#endif
 	
 	for(int i=0; i<MAX_CHAN; i++){
@@ -3236,8 +3128,8 @@ int CVideoProcess::process_track(int trackStatus, Mat frame_gray, Mat frame_dis,
 	{
 		//printf("track********x=%f y=%f w=%f h=%f  ax=%d xy=%d\n",rcResult.x,rcResult.y,rcResult.width,rcResult.height);
 		UTC_ACQ_param acq;
-		acq.axisX 	=	msgextInCtrl->AvtPosX[m_curChId];// image.width/2;//m_ImageAxisx;//
-		acq.axisY 	=	msgextInCtrl->AvtPosY[m_curChId];//image.height/2;//m_ImageAxisy;//
+		acq.axisX 	=	image.width/2;//m_ImageAxisx;//
+		acq.axisY 	=	image.height/2;//m_ImageAxisy;//
 		acq.rcWin.x = 	(int)(rcResult.x);
 		acq.rcWin.y = 	(int)(rcResult.y);
 		acq.rcWin.width  = (int)(rcResult.width);
@@ -3307,6 +3199,8 @@ void	CVideoProcess::initMvDetect()
 	polyWarnRoi.resize(4);
 	edge_contours.resize(1);
 	edge_contours[0].resize(4);
+	pThis->edge_contours_notMap.resize(3);
+	pThis->edge_contours_notMap[0].resize(4);
 
 	for(i=0; i<MAX_CHAN; i++)
 	{

@@ -205,6 +205,7 @@ void CVideoProcess::main_proc_func()
 								m_sceInitRectBK.y = m_rcTrack.y;
 								m_sceInitRectBK.width = m_rcTrack.width;
 								m_sceInitRectBK.height = m_rcTrack.height;
+								judegeDirection();
 							#else
 								m_sceInitRect.x = cur_targetRect_bak.x;
 								m_sceInitRect.y = cur_targetRect_bak.y;
@@ -248,6 +249,28 @@ void CVideoProcess::main_proc_func()
 	}
 	OSA_printf("%s: Main Proc Tsk Is Exit...\n",__func__);
 }
+
+
+void CVideoProcess::judegeDirection()
+{
+	int x1,x2;
+	x1 = m_targetVectorBK[9].x + m_targetVectorBK[9].width/2;
+	x2 = m_targetVectorBK[0].x + m_targetVectorBK[0].width/2;
+	if(x1 > x2)
+		m_direction[0]= true;
+	else
+		m_direction[0]= false;
+
+	x1 = m_targetVectorBK[9].y + m_targetVectorBK[9].height/2;
+	x2 = m_targetVectorBK[0].y + m_targetVectorBK[0].height/2;
+	if(x1 > x2)
+		m_direction[1]= true;
+	else
+		m_direction[1]= false;
+	
+	return ;
+}
+
 
 bool CVideoProcess::judgeMainObjInOut(Rect2d inTarget)
 {
@@ -1861,6 +1884,49 @@ void CVideoProcess::app_set_triangle_point(int x, int y)
 }
 
 
+void CVideoProcess::preprocess2addPrePos(cv::Point2i & point )
+{
+	
+
+	return ;
+}
+
+
+void CVideoProcess::preprocess2pos(cv::Point2i & point )
+{
+	int tmp;
+
+	if(m_direction[0])
+		point.x = (point.x + m_xdirection)%36000;
+	else
+		point.x = (point.x - m_xdirection + 36000)%36000;
+	
+	if(m_direction[1]){
+		if(point.y < 32768)
+			point.y = point.y + m_ydirection;
+		else{
+			tmp = point.y - m_ydirection;
+			if(tmp < 32768)
+				point.y = 32768 - tmp;
+			else
+				point.y = tmp;
+		}
+	}else{
+		if(point.y < 32768){
+			tmp = point.y - m_ydirection;
+			if(tmp < 0)
+				point.y = 32768 - tmp;
+			else
+				point.y = tmp;
+		}
+		else
+			point.y = point.y + m_ydirection;
+	}
+
+	return ;
+}
+
+
 void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 {
 	SENDST trkmsg={0};
@@ -1873,6 +1939,7 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 
 	if( -1 != pThis->m_autofr.Point2getPos(inPoint, outPoint)){				
 		trkmsg.cmd_ID = speedloop;
+		preprocess2pos(outPoint);
 		postmp.panPos = outPoint.x;
 		postmp.tilPos = outPoint.y;
 		postmp.zoom = 0;

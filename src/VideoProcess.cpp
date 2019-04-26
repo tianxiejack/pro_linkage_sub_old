@@ -1887,6 +1887,10 @@ void CVideoProcess::app_set_triangle_point(int x, int y)
 void CVideoProcess::preprocess2addPrePos(cv::Point2i & point )
 {
 	int delta1,delta2,deltax,deltay;
+	std::vector<cv::Point2i> tmpvel;
+
+	float k= 0.5;
+	
 	if(m_vel.size() < 3)
 		m_vel.push_back(point);
 	else{
@@ -1894,23 +1898,39 @@ void CVideoProcess::preprocess2addPrePos(cv::Point2i & point )
 		m_vel.push_back(point);
 	}
 
-	if(m_vel.size() >= 3)
+	if(m_vel.size() == 3)
 	{
-		delta1 = m_vel[1].x - m_vel[0].x;
-		delta2 = m_vel[2].x - m_vel[1].x;
-		deltax = (delta1 + delta2) /2;
-
-		delta1 = m_vel[1].y - m_vel[0].y;
-		delta2 = m_vel[2].y - m_vel[1].y;
-		deltay = (delta1 + delta2) /2;
-
-
-		point.x = (point.x + deltax + 36000)%36000;
+		tmpvel = m_vel;
+		delta1 = tmpvel[1].x - tmpvel[0].x;
+		if(delta1 > 10000)
+			delta1 = 36000 - delta1;
+		else if(delta1 < -10000 )
+			delta1 = 36000 + delta1;
 		
+		delta2 = tmpvel[2].x - tmpvel[1].x;
+		if(delta1 > 10000)
+			delta2 = 36000 - delta2;
+		else if(delta1 < -10000 )
+			delta2 = 36000 + delta2;
+		
+		deltax = (1-k)*delta1 + k*delta2;
+
+
+		for(int i=0;i<tmpvel.size();i++)
+			if(tmpvel[i].y > 32768)
+				tmpvel[i].y = tmpvel[i].y - 32768;
+			
+		delta1 = tmpvel[1].y - tmpvel[0].y;	
+		delta2 = tmpvel[2].y - tmpvel[1].y;
+		deltay = (1-k)*delta1 + k*delta2;
+	
+		point.x = (point.x + deltax + 36000)%36000;
 		point.y = point.y + deltay;
-	
+		if(point.y < 0)
+			point.y = 32768 - point.y;
+		else if(point.y > 9000 && point.y < 32768)
+			point.y = point.y - 32768;
 	}
-	
 	
 	return ;
 }
@@ -1964,6 +1984,7 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 	if( -1 != pThis->m_autofr.Point2getPos(inPoint, outPoint)){				
 		trkmsg.cmd_ID = speedloop;
 		preprocess2pos(outPoint);
+		preprocess2addPrePos(outPoint);
 		postmp.panPos = outPoint.x;
 		postmp.tilPos = outPoint.y;
 		postmp.zoom = 0;

@@ -506,6 +506,7 @@ public:
 	OSA_SemHndl m_mvObjSync;
 	IMG_MAT m_TrkImage;
 	bool m_direction[2];
+	std::vector<cv::Point2i> m_vel;
 };
 
 

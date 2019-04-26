@@ -1887,7 +1887,7 @@ void CVideoProcess::app_set_triangle_point(int x, int y)
 void CVideoProcess::preprocess2addPrePos(cv::Point2i & point )
 {
 	int delta1,delta2,deltax,deltay;
-	if(m_xvel.size() < 3)
+	if(m_vel.size() < 3)
 		m_vel.push_back(point);
 	else{
 		m_vel.erase(m_vel.begin());

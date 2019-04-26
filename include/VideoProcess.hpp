@@ -494,7 +494,7 @@ public:
 	void preprocess2addPrePos(cv::Point2i & point );
 	void preprocess2pos(cv::Point2i & point );
 	void judegeDirection();
-	bool judgeMainObjInOut(Rect2d inTarget);.
+	bool judgeMainObjInOut(Rect2d inTarget);
 	const int m_xdirection = 160;
 	const int m_ydirection = 120;
 	CSceneProcess* pScene;

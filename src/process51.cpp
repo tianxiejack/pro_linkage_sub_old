@@ -4218,7 +4218,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 	char flag = 0;
 	CMD_EXT *pIStuts = extInCtrl;
 	CMD_EXT tmpCmd = {0};
-
+	cv::Point tmp,outPoint;
 	menu_param_t *pMenuStatus = &extMenuCtrl;
 	menu_param_t tmpMenuCmd = {0};
 
@@ -4240,11 +4240,6 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 	if(key == 'c'|| key == 'C')
 	{
-
-
-
-
-				
 	}
 
 	if(key == 'd'|| key == 'D')

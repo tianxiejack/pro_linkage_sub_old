@@ -1958,7 +1958,7 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 	Point2i inPoint, outPoint;
 	inPoint.x = x;
 	inPoint.y = y;
-	pThis->m_autofr.Point2getPos(inPoint, outPoint);
+	//pThis->m_autofr.Point2getPos(inPoint, outPoint);
 	//printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 
 	if( -1 != pThis->m_autofr.Point2getPos(inPoint, outPoint)){				

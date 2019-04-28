@@ -2095,18 +2095,6 @@ void CVideoProcess::process_trigmode_left_point(int x, int y)
 	else
 	{
 		start_twinkle(x, y);
-			
-		if(m_autofr.getcalibnum() < 4)
-			set_jos_mouse_mode(jos_mode);
-		else
-		{
-			cv::Point tmp;
-			tmp.x = x;
-			tmp.y = y;
-			pThis->mapout2inresol(&tmp);
-			grid_manuallinkage_moveball(tmp.x, tmp.y, 0);
-			app_set_triangle_point(x, y);
-		}
 	}
 }
 
@@ -2134,6 +2122,18 @@ void CVideoProcess::start_twinkle(int x, int y)
 	
 	dtimer.startTimer(pThis->twinkle_point_id, 500);
 	set_twinkle_flag(true);
+
+	if(m_autofr.getcalibnum() < 4)
+		set_jos_mouse_mode(jos_mode);
+	else
+	{
+		cv::Point tmp;
+		tmp.x = twinkle_point.x;
+		tmp.y = twinkle_point.y;
+		pThis->mapout2inresol(&tmp);
+		grid_manuallinkage_moveball(tmp.x, tmp.y, 0);
+		app_set_triangle_point(x, y);
+	}
 }
 
 void CVideoProcess::stoptwinkle()

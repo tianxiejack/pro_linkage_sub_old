@@ -2157,14 +2157,17 @@ void CProcess::Draw_point_triangle()
 	if(get_draw_point_triangle_stat())
 	{
 		point_triangle_bak = point_triangle;
-		m_autofr.draw_point_triangle(m_display.m_imgOsd[extInCtrl->SensorStat],  point_triangle_bak, m_back, pos, 1);
+		int status = m_autofr.draw_point_triangle(m_display.m_imgOsd[extInCtrl->SensorStat],  point_triangle_bak, m_back, pos, 1);
 
 		if(get_print_stat())
 		{
-			printf("\n\n%s,%d, input pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__,  point_triangle_bak.x,point_triangle_bak.y,pos.x,pos.y);
-			for(int i = 0; i < m_back.size(); i++)
+			if(status != -1)
 			{
-				printf("%s,%d, i=%d, pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__, i, m_back[i].pixel.x,m_back[i].pixel.y,m_back[i].pos.x,m_back[i].pos.y);
+				printf("\n\n%s,%d, input pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__,  point_triangle_bak.x,point_triangle_bak.y,pos.x,pos.y);
+				for(int i = 0; i < m_back.size(); i++)
+				{
+					printf("%s,%d, i=%d, pixel(%d,%d), pos(%d,%d)\n",__FILE__,__LINE__, i, m_back[i].pixel.x,m_back[i].pixel.y,m_back[i].pos.x,m_back[i].pos.y);
+				}
 			}
 			set_print_stat(false);
 		}

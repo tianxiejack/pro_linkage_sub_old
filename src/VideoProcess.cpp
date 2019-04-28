@@ -205,6 +205,7 @@ void CVideoProcess::main_proc_func()
 								m_sceInitRectBK.y = m_rcTrack.y;
 								m_sceInitRectBK.width = m_rcTrack.width;
 								m_sceInitRectBK.height = m_rcTrack.height;
+								judegeDirection();
 							#else
 								m_sceInitRect.x = cur_targetRect_bak.x;
 								m_sceInitRect.y = cur_targetRect_bak.y;
@@ -248,6 +249,28 @@ void CVideoProcess::main_proc_func()
 	}
 	OSA_printf("%s: Main Proc Tsk Is Exit...\n",__func__);
 }
+
+
+void CVideoProcess::judegeDirection()
+{
+	int x1,x2;
+	x1 = m_targetVectorBK[9].x + m_targetVectorBK[9].width/2;
+	x2 = m_targetVectorBK[0].x + m_targetVectorBK[0].width/2;
+	if(x1 > x2)
+		m_direction[0]= true;
+	else
+		m_direction[0]= false;
+
+	x1 = m_targetVectorBK[9].y + m_targetVectorBK[9].height/2;
+	x2 = m_targetVectorBK[0].y + m_targetVectorBK[0].height/2;
+	if(x1 > x2)
+		m_direction[1]= true;
+	else
+		m_direction[1]= false;
+	
+	return ;
+}
+
 
 bool CVideoProcess::judgeMainObjInOut(Rect2d inTarget)
 {
@@ -1861,6 +1884,93 @@ void CVideoProcess::app_set_triangle_point(int x, int y)
 }
 
 
+void CVideoProcess::preprocess2addPrePos(cv::Point2i & point )
+{
+	int delta1,delta2,deltax,deltay;
+	std::vector<cv::Point2i> tmpvel;
+
+	float k= 0.5;
+	
+	if(m_vel.size() < 3)
+		m_vel.push_back(point);
+	else{
+		m_vel.erase(m_vel.begin());
+		m_vel.push_back(point);
+	}
+
+	if(m_vel.size() == 3)
+	{
+		tmpvel = m_vel;
+		delta1 = tmpvel[1].x - tmpvel[0].x;
+		if(delta1 > 10000)
+			delta1 = 36000 - delta1;
+		else if(delta1 < -10000 )
+			delta1 = 36000 + delta1;
+		
+		delta2 = tmpvel[2].x - tmpvel[1].x;
+		if(delta1 > 10000)
+			delta2 = 36000 - delta2;
+		else if(delta1 < -10000 )
+			delta2 = 36000 + delta2;
+		
+		deltax = (1-k)*delta1 + k*delta2;
+
+
+		for(int i=0;i<tmpvel.size();i++)
+			if(tmpvel[i].y > 32768)
+				tmpvel[i].y = tmpvel[i].y - 32768;
+			
+		delta1 = tmpvel[1].y - tmpvel[0].y;	
+		delta2 = tmpvel[2].y - tmpvel[1].y;
+		deltay = (1-k)*delta1 + k*delta2;
+	
+		point.x = (point.x + deltax + 36000)%36000;
+		point.y = point.y + deltay;
+		if(point.y < 0)
+			point.y = 32768 - point.y;
+		else if(point.y > 9000 && point.y < 32768)
+			point.y = point.y - 32768;
+	}
+	
+	return ;
+}
+
+
+void CVideoProcess::preprocess2pos(cv::Point2i & point )
+{
+	int tmp;
+
+	if(m_direction[0])
+		point.x = (point.x + m_xdirection)%36000;
+	else
+		point.x = (point.x - m_xdirection + 36000)%36000;
+	
+	if(m_direction[1]){
+		if(point.y < 32768)
+			point.y = point.y + m_ydirection;
+		else{
+			tmp = point.y - m_ydirection;
+			if(tmp < 32768)
+				point.y = 32768 - tmp;
+			else
+				point.y = tmp;
+		}
+	}else{
+		if(point.y < 32768){
+			tmp = point.y - m_ydirection;
+			if(tmp < 0)
+				point.y = 32768 - tmp;
+			else
+				point.y = tmp;
+		}
+		else
+			point.y = point.y + m_ydirection;
+	}
+
+	return ;
+}
+
+
 void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 {
 	SENDST trkmsg={0};
@@ -1868,11 +1978,13 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 	Point2i inPoint, outPoint;
 	inPoint.x = x;
 	inPoint.y = y;
-	pThis->m_autofr.Point2getPos(inPoint, outPoint);
+	//pThis->m_autofr.Point2getPos(inPoint, outPoint);
 	//printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
 
 	if( -1 != pThis->m_autofr.Point2getPos(inPoint, outPoint)){				
 		trkmsg.cmd_ID = speedloop;
+		preprocess2pos(outPoint);
+		preprocess2addPrePos(outPoint);
 		postmp.panPos = outPoint.x;
 		postmp.tilPos = outPoint.y;
 		postmp.zoom = 0;

@@ -369,6 +369,24 @@ void CAutoManualFindRelation::updateSubdiv()
 	}
 }
 
+
+int CAutoManualFindRelation::findPosInKnowPoints(const Point2i inPoint,Point2i &result) 
+{
+	int ret = -1;
+	FEATUREPOINT_T tmp;
+	
+	for (std::vector<FEATUREPOINT_T>::iterator plist = fpassemble.begin();plist != fpassemble.end(); ++plist)
+	{
+		if (plist->pixel == inPoint)
+		{
+			result = plist->pos;
+			break;
+		}
+	}
+	return ret;
+}
+
+
 int CAutoManualFindRelation::Point2getPos(const Point2i inPoint,Point2i &result) 
 {
 	if(inPoint.x <= m_rect.x || inPoint.x >= m_rect.width || inPoint.y <= m_rect.y || inPoint.y >= m_rect.height)
@@ -378,19 +396,24 @@ int CAutoManualFindRelation::Point2getPos(const Point2i inPoint,Point2i &result)
 	vector<Point2i> triVertex;
 
 	getTriangleVertex(inPoint, triVertex);
-	for (std::vector<Point2i>::iterator plist = triVertex.begin();plist != triVertex.end(); ++plist)
-	{
-		if (plist->x <= 0 || plist->x > m_rect.width || plist->y <= 0
-				|| plist->y > m_rect.height)
-			ret = -1;
-		break;
+
+	if(triVertex.size()==3){
+		for (std::vector<Point2i>::iterator plist = triVertex.begin();plist != triVertex.end(); ++plist)
+		{
+			if (plist->x <= 0 || plist->x > m_rect.width || plist->y <= 0
+					|| plist->y > m_rect.height)
+				ret = -1;
+			break;
+		}
+
+		if (-1 == ret)
+			return ret;
+
+		vertex2pos( triVertex );
+		getPos(inPoint, result);
 	}
-
-	if (-1 == ret)
-		return ret;
-
-	vertex2pos( triVertex );
-	getPos(inPoint, result);
+	else
+		ret = findPosInKnowPoints(inPoint,result) ;
 	return ret;
 }
 
@@ -468,12 +491,24 @@ void CAutoManualFindRelation::calcNormalWay(Point2i inPoint , Point2i& result , 
 {
 	double d1, d2, d3;
 	double f1, f2, f3, dtmp;
+	double tmp1 , tmp2;
 	vector<double> area;
 
 	calcTriArea(inPoint , dis , area);
-	f1 = 1/ (1 + area[2]/area[1] + area[0]/area[1] );
-	f2 = area[2]/area[1] * f1;
+
+	if(area[1] < 0.0001 ){
+		 tmp1 = 0;
+		 tmp2 = 0;
+	}
+	else{
+		 tmp1 = area[2]/area[1];
+		 tmp2 = area[0]/area[1];
+	}
+	
+	f1 = 1/ (1 + tmp1 + tmp2 );
+	f2 = tmp1 * f1;
 	f3 = 1 - f1 - f2 ;
+	
 
 	result.x = f1 * m_calcPos[0].pos.x + f2 * m_calcPos[1].pos.x + f3 * m_calcPos[2].pos.x;
 	result.y = f1 * m_calcPos[0].pos.y + f2 * m_calcPos[1].pos.y + f3 * m_calcPos[2].pos.y;

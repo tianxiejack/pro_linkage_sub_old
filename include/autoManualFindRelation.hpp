@@ -99,6 +99,7 @@ public:
 	void findThreeNearestPointInCanUsedPoints2estimate( std::vector<FEATUREPOINT_T> featurPoints );
 	int getcalibnum();
 	int get_featurepoint(std::vector<FEATUREPOINT_T> &featurePoints);
+	int findPosInKnowPoints(const Point2i inPoint,Point2i &result);
 
 private:
 	pNOTIFYFUNC m_notifyFunc;

@@ -491,15 +491,22 @@ public:
 #endif
 
 public:
+	void preprocess2addPrePos(cv::Point2i & point );
+	void preprocess2pos(cv::Point2i & point );
+	void judegeDirection();
 	bool judgeMainObjInOut(Rect2d inTarget);
+	const int m_xdirection = 160;
+	const int m_ydirection = 120;
 	CSceneProcess* pScene;
 	bool m_bAutoLink,m_mainObjDrawFlag;
 	Rect2d m_sceInitRect,m_sceInitRectBK;
 	int m_chSceneNum;
 	cv::Rect m_mainObjBK;
+	cv::Rect m_targetVector[10],m_targetVectorBK[10];
 	OSA_SemHndl m_mvObjSync;
 	IMG_MAT m_TrkImage;
-
+	bool m_direction[2];
+	std::vector<cv::Point2i> m_vel;
 };
 
 

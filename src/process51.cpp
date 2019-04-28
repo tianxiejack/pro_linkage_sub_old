@@ -1599,6 +1599,7 @@ void CProcess::switchMvTargetForwad()
 	{
 		chooseDetect = mvListsum[index].number;
 		cur_targetRect = mvListsum[index].trkobj.targetRect;
+		memcpy(m_targetVectorBK,m_targetVector,sizeof(cv::Rect)*10);
 		losenumber = -1;
 	}
 	else
@@ -1705,6 +1706,7 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 					if((chooseDetect == (*pMvList).number) && (losenumber != (*pMvList).number))
 					{
 						cur_targetRect = (*pMvList).trkobj.targetRect;
+						memcpy(m_targetVector,(*pMvList).trkobj.targetVector,sizeof(cv::Rect)*10);
 					}
 					detect.erase(pDetect);
 					flag = 1;
@@ -1720,6 +1722,7 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 				{
 					losenumber = (*pMvList).number;
 					cur_targetRect = (*pMvList).trkobj.targetRect;
+					memcpy(m_targetVector,(*pMvList).trkobj.targetVector,sizeof(cv::Rect)*10);
 					chooseDetect = 10;
 				}
 				removeMvListValidNum((*pMvList).number);
@@ -2876,7 +2879,7 @@ void CProcess::DrawMtd_Rigion_Target()
 		if((mvListsum.size()>0) && cur_targetRect.width && cur_targetRect.height )		
 		{			
 			cur_targetRect_bak = cur_targetRect;
-
+			memcpy(m_targetVectorBK,m_targetVector,sizeof(cv::Rect)*10);
 			if( m_bAutoLink && (0 == m_chSceneNum)){
 				OSA_semSignal(&m_mvObjSync);
 			}
@@ -4215,7 +4218,7 @@ void CProcess::OnKeyDwn(unsigned char key)
 	char flag = 0;
 	CMD_EXT *pIStuts = extInCtrl;
 	CMD_EXT tmpCmd = {0};
-
+	cv::Point tmp,outPoint;
 	menu_param_t *pMenuStatus = &extMenuCtrl;
 	menu_param_t tmpMenuCmd = {0};
 
@@ -4237,11 +4240,6 @@ void CProcess::OnKeyDwn(unsigned char key)
 
 	if(key == 'c'|| key == 'C')
 	{
-
-
-
-
-				
 	}
 
 	if(key == 'd'|| key == 'D')

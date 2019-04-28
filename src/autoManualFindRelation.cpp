@@ -707,6 +707,9 @@ int CAutoManualFindRelation::draw_point_triangle(Mat& img, Point2i fp,vector<FEA
 
 	m_orgpointBK = orgpoint;
 
+	if(m_orgpointBK.size() < 3)
+		return -1;
+	
 	if (-1 == ret)
 		return ret;
 

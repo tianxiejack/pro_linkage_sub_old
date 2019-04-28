@@ -2132,7 +2132,7 @@ void CVideoProcess::start_twinkle(int x, int y)
 		tmp.y = twinkle_point.y;
 		pThis->mapout2inresol(&tmp);
 		grid_manuallinkage_moveball(tmp.x, tmp.y, 0);
-		app_set_triangle_point(x, y);
+		app_set_triangle_point(tmp.x, tmp.y);
 	}
 }
 

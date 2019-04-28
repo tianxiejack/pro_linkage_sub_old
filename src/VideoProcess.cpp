@@ -478,7 +478,7 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 
 CVideoProcess::CVideoProcess()
 	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_curNodeIndex(0),
-	m_xdirection(160),m_xdirection(120)
+	m_xdirection(160),m_ydirection(120)
 {
 	imageListForCalibra.clear();
 	pThis = this;
@@ -1927,36 +1927,28 @@ void CVideoProcess::preprocess2addPrePos(cv::Point2i point)
 		deltay = (1-k)*delta1 + k*delta2;
 
 
-		if(deltax >= -2 deltax <= 2)
-			m_xdirection = 0;
+		if(deltax >= -2 || deltax <= 2)
+			m_xdirection = 80;
 		else if(deltax > 2 && deltax <= 10){
-			m_xdirection = 160;
-			m_direction[0] = true;
+			m_xdirection = 260;
 		}else if(deltax >10){
-			m_xdirection = 240;
-			m_direction[0] = true;
+			m_xdirection = 360;
 		}else if(deltax < -2 && deltax >= -10){	
-			m_xdirection = 160;
-			m_direction[0] = false;
+			m_xdirection = 260;
 		}else if(deltax < -10){
-			m_xdirection = 240;
-			m_direction[0] = false;
+			m_xdirection = 360;
 		}
 
-		if(deltay >= -2 deltay <= 2)
-			m_ydirection = 0;
+		if(deltay >= -2 || deltay <= 2)
+			m_ydirection = 60;
 		else if(deltay > 2 && deltay <= 10){
-			m_ydirection = 160;
-			m_direction[1] = true;
+			m_ydirection = 260;
 		}else if(deltax >10){
-			m_ydirection = 240;
-			m_direction[0] = true;
+			m_ydirection = 320;
 		}else if(deltay < -2 && deltay >= -10){
-			m_xdirection = 160;
-			m_direction[0] = false;
+			m_ydirection = 260;
 		}else if(deltay < -10){
-			m_ydirection = 240;
-			m_direction[0] = false;
+			m_ydirection = 320;
 		}
 
 		#if 0

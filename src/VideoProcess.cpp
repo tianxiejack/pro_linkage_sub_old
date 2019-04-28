@@ -2074,14 +2074,16 @@ void CVideoProcess::grid_manuallinkage_moveball(int x, int y, int changezoom)
 
 	inPoint.x = x;
 	inPoint.y = y;
-	pThis->m_autofr.Point2getPos(inPoint, outPoint);
-	printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
-					
-	trkmsg.cmd_ID = acqPosAndZoom;
-	postmp.panPos = outPoint.x;
-	postmp.tilPos = outPoint.y;
-	memcpy(&trkmsg.param,&postmp, sizeof(postmp));
-	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	//pThis->m_autofr.Point2getPos(inPoint, outPoint);
+	if( -1 != pThis->m_autofr.Point2getPos(inPoint, outPoint))
+	{		
+		printf("%s, %d,grid inter mode: inPoint(%d,%d),outPos(%d,%d)\n", __FILE__,__LINE__,inPoint.x,inPoint.y,outPoint.x,outPoint.y);
+		trkmsg.cmd_ID = acqPosAndZoom;
+		postmp.panPos = outPoint.x;
+		postmp.tilPos = outPoint.y;
+		memcpy(&trkmsg.param,&postmp, sizeof(postmp));
+		ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	}
 
 
 }

@@ -1929,7 +1929,7 @@ void CVideoProcess::preprocess2addPrePos(cv::Point2i & point )
 		if(point.y < 0)
 			point.y = 32768 - point.y;
 		else if(point.y > 9000 && point.y < 32768)
-			point.y = point.y - 32768;
+			point.y = 32768 - point.y;
 	}
 	
 	return ;
@@ -1983,8 +1983,8 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 
 	if( -1 != pThis->m_autofr.Point2getPos(inPoint, outPoint)){				
 		trkmsg.cmd_ID = speedloop;
-		preprocess2pos(outPoint);
-		preprocess2addPrePos(outPoint);
+		//preprocess2pos(outPoint);
+		//preprocess2addPrePos(outPoint);
 		postmp.panPos = outPoint.x;
 		postmp.tilPos = outPoint.y;
 		postmp.zoom = 0;

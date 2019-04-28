@@ -380,6 +380,8 @@ int CAutoManualFindRelation::findPosInKnowPoints(const Point2i inPoint,Point2i &
 		if (plist->pixel == inPoint)
 		{
 			result = plist->pos;
+			if(plist->pos.y < 0)
+				plist->pos.y = 32768 - plist->pos.y;
 			break;
 		}
 	}

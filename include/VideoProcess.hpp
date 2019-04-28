@@ -491,12 +491,12 @@ public:
 #endif
 
 public:
-	void preprocess2addPrePos(cv::Point2i & point );
+	void preprocess2addPrePos(cv::Point2i point);
 	void preprocess2pos(cv::Point2i & point );
 	void judegeDirection();
 	bool judgeMainObjInOut(Rect2d inTarget);
-	const int m_xdirection = 160;
-	const int m_ydirection = 120;
+	int m_xdirection ;
+	int m_ydirection ;
 	CSceneProcess* pScene;
 	bool m_bAutoLink,m_mainObjDrawFlag;
 	Rect2d m_sceInitRect,m_sceInitRectBK;

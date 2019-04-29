@@ -477,7 +477,8 @@ CVideoProcess::CVideoProcess(int w, int h):m_ScreenWidth(w),m_ScreenHeight(h),
 }
 
 CVideoProcess::CVideoProcess()
-	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_curNodeIndex(0)		
+	:m_track(NULL),m_curChId(MAIN_CHID),m_curSubChId(-1),adaptiveThred(40),m_curNodeIndex(0),
+	m_xdirection(160),m_ydirection(120)
 {
 	imageListForCalibra.clear();
 	pThis = this;
@@ -1884,9 +1885,10 @@ void CVideoProcess::app_set_triangle_point(int x, int y)
 }
 
 
-void CVideoProcess::preprocess2addPrePos(cv::Point2i & point )
+void CVideoProcess::preprocess2addPrePos(cv::Point2i point)
 {
-	int delta1,delta2,deltax,deltay;
+	int delta1,delta2;
+	int deltax,deltay;
 	std::vector<cv::Point2i> tmpvel;
 
 	float k= 0.5;
@@ -1923,13 +1925,40 @@ void CVideoProcess::preprocess2addPrePos(cv::Point2i & point )
 		delta1 = tmpvel[1].y - tmpvel[0].y;	
 		delta2 = tmpvel[2].y - tmpvel[1].y;
 		deltay = (1-k)*delta1 + k*delta2;
-	
-		point.x = (point.x + deltax + 36000)%36000;
-		point.y = point.y + deltay;
-		if(point.y < 0)
-			point.y = 32768 - point.y;
-		else if(point.y > 9000 && point.y < 32768)
-			point.y = 32768 - point.y;
+
+
+		if(deltax >= -2 || deltax <= 2)
+			m_xdirection = 80;
+		else if(deltax > 2 && deltax <= 10){
+			m_xdirection = 260;
+		}else if(deltax >10){
+			m_xdirection = 360;
+		}else if(deltax < -2 && deltax >= -10){	
+			m_xdirection = 260;
+		}else if(deltax < -10){
+			m_xdirection = 360;
+		}
+
+		if(deltay >= -2 || deltay <= 2)
+			m_ydirection = 60;
+		else if(deltay > 2 && deltay <= 10){
+			m_ydirection = 260;
+		}else if(deltax >10){
+			m_ydirection = 320;
+		}else if(deltay < -2 && deltay >= -10){
+			m_ydirection = 260;
+		}else if(deltay < -10){
+			m_ydirection = 320;
+		}
+
+		#if 0
+			point.x = (point.x + deltax + 36000)%36000;
+			point.y = point.y + deltay;
+			if(point.y < 0)
+				point.y = 32768 - point.y;
+			else if(point.y > 9000 && point.y < 32768)
+				point.y = 32768 - point.y;
+		#endif
 	}
 	
 	return ;
@@ -1939,7 +1968,9 @@ void CVideoProcess::preprocess2addPrePos(cv::Point2i & point )
 void CVideoProcess::preprocess2pos(cv::Point2i & point )
 {
 	int tmp;
-
+	int deltax,deltay;
+	preprocess2addPrePos(point);
+	
 	if(m_direction[0])
 		point.x = (point.x + m_xdirection)%36000;
 	else
@@ -1983,8 +2014,7 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 
 	if( -1 != pThis->m_autofr.Point2getPos(inPoint, outPoint)){				
 		trkmsg.cmd_ID = speedloop;
-		//preprocess2pos(outPoint);
-		//preprocess2addPrePos(outPoint);
+		preprocess2pos(outPoint);
 		postmp.panPos = outPoint.x;
 		postmp.tilPos = outPoint.y;
 		postmp.zoom = 0;

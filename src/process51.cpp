@@ -1769,7 +1769,7 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_R
 }
 #endif
 
-bool CProcess::OnProcess(int chId, Mat &frame)
+bool CProcess::OnProcess()
 {				
 	int frcolor= extInCtrl->osdDrawColor;
 	int startx=0;
@@ -1784,7 +1784,7 @@ bool CProcess::OnProcess(int chId, Mat &frame)
 	int grid_height = (int)((float)(outputWHF[1]/12));
 	int grid_width = (int)((float)(outputWHF[0]/16));
 	static int changesensorCnt = 0;
-	
+
 	if(extInCtrl->changeSensorFlag == 1)
 		++changesensorCnt;
 	if(changesensorCnt == 3){
@@ -1835,14 +1835,6 @@ osdindex++;	//cross aim
 
 	}
 
-	
-#if __MOVE_DETECT__
-//mtd grid
-	DrawMtdYellowGrid();
-	DrawMtdRedGrid();
-	//DrawMtd_Rigion_Target(frame);
-
-#endif
 
 	osdindex++;
 	{		
@@ -2098,11 +2090,15 @@ else{
 	Drawfeaturepoints();
 	Draw_point_triangle();
 	Drawsubdiv();
-
+#if __MOVE_DETECT__
+	DrawMtdYellowGrid();
+#endif
 	static unsigned int count = 0;
 	if((count & 1) == 1)
 		OSA_semSignal(&(sThis->m_display.tskdisSemmain));
 	count++;
+
+
 	return true;
 }
 
@@ -2370,6 +2366,11 @@ void CProcess::DrawMtdYellowGrid()
 {
 	unsigned int drawmtdgridId; 
 	static int flag = 0;
+	cv::Rect tmp;
+
+	Osd_cvPoint start, end;
+	int interval_w = gun_resolu[0] / GRID_CNT_X;
+	int interval_h = gun_resolu[1] / GRID_CNT_Y;
 	
 	if(m_display.g_CurDisplayMode == MAIN_VIEW)
 	{			
@@ -2379,11 +2380,6 @@ void CProcess::DrawMtdYellowGrid()
 	{
 		drawmtdgridId = extInCtrl->SensorStat;
 	}
-	
-	Osd_cvPoint start, end;
-	int interval_w = gun_resolu[0] / GRID_CNT_X;
-	int interval_h = gun_resolu[1] / GRID_CNT_Y;
-
 
 	if(flag)
 	{
@@ -2403,6 +2399,21 @@ void CProcess::DrawMtdYellowGrid()
 			end.y = interval_h * j;
 			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,0,1);
 		}
+
+		for(int i = 0; i < GRID_CNT_X; i++)
+			for(int j = 0; j < GRID_CNT_Y; j++)
+			{
+				if(grid19x10_bak[i][j].state)
+				{
+					tmp.x = (i) * interval_w;
+					tmp.y = (j) * interval_h;
+					tmp.width = interval_w;
+					tmp.height = interval_h;
+					
+					rectangle(m_display.m_imgOsd[drawmtdgridId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,0,0),3,8);
+				}
+			}
+			
 		flag = 0;
 	}
 
@@ -2425,6 +2436,21 @@ void CProcess::DrawMtdYellowGrid()
 			end.y = interval_h * j;
 			DrawcvLine(m_display.m_imgOsd[drawmtdgridId],&start,&end,4,1);
 		}
+
+		memcpy(grid19x10_bak, grid19x10, sizeof(grid19x10_bak));
+		
+		for(int i = 0; i < GRID_CNT_X; i++)
+			for(int j = 0; j < GRID_CNT_Y; j++)
+			{
+				if(grid19x10_bak[i][j].state)
+				{
+					tmp.x = (i) * interval_w;
+					tmp.y = (j) * interval_h;
+					tmp.width = interval_w;
+					tmp.height = interval_h;
+					rectangle(m_display.m_imgOsd[drawmtdgridId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,255,255),3,8);
+				}
+			}
 		flag = 1;
 	}
 }
@@ -2691,65 +2717,6 @@ void CProcess::DrawSelectedCircle(bool drawFlag, int drawNodesCount)
 	else
 	{		
 		cv::circle(m_display.m_imgOsd[1],m_backNodePos,radius ,cvScalar(0,0,0,0),thickness,8,0);			
-	}
-}
-
-
-void CProcess::DrawMtdRedGrid()
-{
-	unsigned int drawmtdgridRectId; 
-	cv::Rect tmp;
-	static int flag = 0;
-
-	int interval_w = gun_resolu[0] / GRID_CNT_X;
-	int interval_h = gun_resolu[1] / GRID_CNT_Y;
-	
-	if(m_display.g_CurDisplayMode == MAIN_VIEW)
-	{			
-		drawmtdgridRectId = 1;
-	}
-	else
-	{
-		drawmtdgridRectId = extInCtrl->SensorStat;
-	}
-
-	if(flag)
-	{
-		for(int i = 0; i < GRID_CNT_X; i++)
-			for(int j = 0; j < GRID_CNT_Y; j++)
-			{
-				if(grid19x10_bak[i][j].state)
-				{
-					tmp.x = (i) * interval_w;
-					tmp.y = (j) * interval_h;
-					tmp.width = interval_w;
-					tmp.height = interval_h;
-					
-					rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,0,0),3,8);
-				}
-			}
-			
-		flag = 0;
-	}
-
-	if(setrigion_flagv20)
-	{
-		memcpy(grid19x10_bak, grid19x10, sizeof(grid19x10_bak));
-		
-		for(int i = 0; i < GRID_CNT_X; i++)
-			for(int j = 0; j < GRID_CNT_Y; j++)
-			{
-				if(grid19x10_bak[i][j].state)
-				{
-					tmp.x = (i) * interval_w;
-					tmp.y = (j) * interval_h;
-					tmp.width = interval_w;
-					tmp.height = interval_h;
-					rectangle(m_display.m_imgOsd[drawmtdgridRectId],Point(tmp.x,tmp.y),Point(tmp.x+tmp.width,tmp.y+tmp.height),cvScalar(0,0,255,255),3,8);
-				}
-			}
-
-		flag = 1;
 	}
 }
 

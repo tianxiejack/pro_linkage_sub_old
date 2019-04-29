@@ -163,7 +163,7 @@ void CVideoProcess::main_proc_func()
 			continue;
 
 		if(!m_bMoveDetect){
-			OnProcess(chId, frame);
+			OnProcess();
 			continue;
 		}
 
@@ -239,10 +239,11 @@ void CVideoProcess::main_proc_func()
 					}
 				}
 			}
+			
 		#endif
 		}
-		
-		OnProcess(chId, frame_gray);
+		else
+			OnProcess();
 		framecount++;
 
 	/************************* while ********************************/
@@ -3414,6 +3415,7 @@ void CVideoProcess::NotifyFunc(void *context, int chId)
 	pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect_arr[chId],chId);
 
 	proc->DrawMtd_Rigion_Target();
+	proc->OnProcess();
 	//pParent->m_display.m_bOsd = true;
 	//pThis->m_display.UpDateOsd(0);
 	return ;

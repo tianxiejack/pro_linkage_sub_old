@@ -206,7 +206,7 @@ public:
 	void OnStop();
 	void Ontimer();
 	bool OnPreProcess(int chId, Mat &frame);
-	bool OnProcess(int chId, Mat &frame);
+	bool OnProcess();
 	void OnMouseLeftDwn(int x, int y);
 	void OnKeyDwn(unsigned char key);
 	void OnSpecialKeyDwn(int key,int x, int y);
@@ -217,7 +217,6 @@ public:
 	void SetCtrlmode(int mode);
 
 	void DrawMtdYellowGrid();
-	void DrawMtdRedGrid();
 	void DrawMtd_Rigion_Target();
 	void DrawGridMap(int flag);
 	void DrawGridMap_16X12(int flag);

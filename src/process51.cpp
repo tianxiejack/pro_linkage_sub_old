@@ -5543,6 +5543,16 @@ int CProcess::usopencvapi2()
 	Mat dstImage = Mat::zeros(mask.size(),CV_8UC1);
 	drawContours(dstImage,contours, -1, Scalar(255,10,10));
 
+	if(contours.size() > 3)
+	{
+        	swprintf(m_display.disMtd[0][4], 33, L"错误，检测区域大于3个");
+		return -1;
+	}
+	else
+	{
+        	swprintf(m_display.disMtd[0][4], 33, L"检测区域:%d个", contours.size());
+	}
+
 	edge_contours = contours;
 	polyWarnRoi = contours;
 
@@ -5574,15 +5584,6 @@ int CProcess::usopencvapi2()
 			edge_contours[i][j].x = setx;
 			edge_contours[i][j].y = sety;
 		}
-	}
-
-	if(contours.size() > 3)
-	{
-        swprintf(m_display.disMtd[0][4], 33, L"错误，检测区域大于3个");
-	}
-	else
-	{
-        swprintf(m_display.disMtd[0][4], 33, L"检测区域:%d个", contours.size());
 	}
 
 	if(polyWarnRoi.size() != 0)

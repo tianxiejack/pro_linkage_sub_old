@@ -270,7 +270,7 @@ public:
 	virtual void OnStop(){};
 	virtual void Ontimer(){};
 	virtual bool OnPreProcess(int chId, Mat &frame){return true;}
-	virtual bool OnProcess(int chId, Mat &frame){return true;}
+	virtual bool OnProcess(){return true;}
 	virtual void OnMouseLeftDwn(int x, int y){};
 	virtual void OnKeyDwn(unsigned char key){};
 	virtual void OnSpecialKeyDwn(int key,int  x,int  y){};

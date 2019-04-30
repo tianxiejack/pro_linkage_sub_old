@@ -2098,6 +2098,7 @@ else{
 	Drawfeaturepoints();
 	Draw_point_triangle();
 	Drawsubdiv();
+	
 
 	static unsigned int count = 0;
 	if((count & 1) == 1)
@@ -4323,8 +4324,9 @@ void CProcess::OnKeyDwn(unsigned char key)
 		//printf("pIStuts->MtdState[pIStuts->SensorStat]  = %d\n",pIStuts->MtdState[pIStuts->SensorStat] );
 	}
 
-	if(key == 'l') {
-		m_display.changeDisplayMode(SIDE_BY_SIDE);
+	if (key == 'l' || key == 'L')
+	{
+		msgdriv_event(MSGID_EXT_PATTERNDETECT, NULL);
 	}
 		
 	if(key == 'M' || key == 'm' ) {
@@ -5425,8 +5427,15 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 		}
 		
 	}
-	
-	
+
+	if( msgId == MSGID_EXT_PATTERNDETECT )
+	{
+		if (m_bPatterDetect == eTrk_mode_acq)
+			dynamic_config(VP_CFG_PatterDetectEnable, 0);
+		else if(m_bPatterDetect == eTrk_mode_target)
+			dynamic_config(VP_CFG_PatterDetectEnable, 1);
+	}
+	return ;
 }
 
 int CProcess::updateredgrid()

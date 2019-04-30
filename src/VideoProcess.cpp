@@ -165,7 +165,7 @@ void CVideoProcess::main_proc_func()
 		if(!OnPreProcess(chId, frame))
 			continue;
 
-		if(!m_bMoveDetect){
+		if(!m_bMoveDetect && !m_bPatterDetect){
 			OnProcess();
 			continue;
 		}
@@ -253,8 +253,8 @@ void CVideoProcess::main_proc_func()
 		if(bPatternDetect)
 		{
 			#if __PATTERN_DETECT__
-				Rect roi=Rect(frame_gray.cols/4,frame_gray.rows/4,frame_gray.cols/2,frame_gray.rows/2);
-				detectornew->detectasync(frame_gray,roi,true);
+				Rect roi=Rect(frame.cols/4,frame.rows/4,frame.cols/2,frame.rows/2);
+				detectornew->detectasync(frame,roi,true);
 			#endif
 		}
 

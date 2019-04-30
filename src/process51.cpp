@@ -2090,7 +2090,8 @@ else{
 	Drawfeaturepoints();
 	Draw_point_triangle();
 	Drawsubdiv();
-
+	DrawMtdYellowGrid();
+	
 	static unsigned int count = 0;
 	if((count & 1) == 1)
 		OSA_semSignal(&(sThis->m_display.tskdisSemmain));

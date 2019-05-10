@@ -41,6 +41,8 @@ extern osdbuffer_t disOsdBufbak[32];
 extern wchar_t disOsd[32][33];
 vector<Mat> imageListForCalibra;
 
+bool CVideoProcess::m_bPatterDetect = false;
+
 extern bool showDetectCorners;
 extern OSA_SemHndl g_detectCorners;
 extern volatile bool cloneOneFrame;
@@ -144,6 +146,7 @@ void CVideoProcess::main_proc_func()
 		bool bMoveDetect = mainProcThrObj.cxt[mainProcThrObj.pp^1].bMoveDetect;
 		int chId = mainProcThrObj.cxt[mainProcThrObj.pp^1].chId;
 		int iTrackStat = mainProcThrObj.cxt[mainProcThrObj.pp^1].iTrackStat;
+		bool bPatternDetect = mainProcThrObj.cxt[mainProcThrObj.pp^1].bPatternDetect;
 
 		int channel = frame.channels();
 		Mat frame_gray;
@@ -163,7 +166,7 @@ void CVideoProcess::main_proc_func()
 		if(!OnPreProcess(chId, frame))
 			continue;
 
-		if(!m_bMoveDetect){
+		if(!m_bMoveDetect && !m_bPatterDetect){
 			OnProcess();
 			continue;
 		}
@@ -254,8 +257,18 @@ void CVideoProcess::main_proc_func()
 			
 		#endif
 		}
-		else
+
+		if(bPatternDetect)
+		{
+			#if __PATTERN_DETECT__
+				Rect roi=Rect(frame.cols/4,frame.rows/4,frame.cols/2,frame.rows/2);
+				detectornew->detectasync(frame,roi,true);
+			#endif
+		}
+
+		if(!bMoveDetect)
 			OnProcess();
+
 		framecount++;
 
 	/************************* while ********************************/
@@ -590,7 +603,26 @@ int CVideoProcess::creat()
 	
 #endif
 
+#if __PATTERN_DETECT__
+		OSA_mutexCreate(&m_algboxLock);
+		OSA_mutexCreate(&m_trackboxLock);
+
+		model.push_back(string("config/yolo_v3_tiny.yml"));
+		modelsize.push_back(Size(1920,1080));
 	
+		detectornew = DetectorFactory::getinstance()->createDetector(DetectorFactory::DEEPLEARNDETECTOR);
+	
+		detectornew->setparam(Detector::MAXTRACKNUM,20);
+		detectornew->init(model,modelsize);
+		detectornew->dynamicsetparam(Detector::DETECTSCALE100x,100);
+		detectornew->dynamicsetparam(Detector::DETECTMOD,1);
+		detectornew->dynamicsetparam(Detector::DETECTFREQUENCY,1);
+		detectornew->dynamicsetparam(Detector::DETECTNOTRACK,0);
+		detectornew->getversion();
+		detectornew->setasyncdetect(detectcall,trackcall);
+#endif
+
+
 	return 0;
 }
 
@@ -615,6 +647,12 @@ int CVideoProcess::destroy()
 	DeInitMvDetect();
 	delete pScene;
 #endif
+
+#if __PATTERN_DETECT__
+	OSA_mutexDelete(&m_algboxLock);
+	OSA_mutexDelete(&m_trackboxLock);
+#endif
+
 	if( eventLoop != NULL )
 	{
 		eventLoop->StopService();
@@ -2867,6 +2905,9 @@ int CVideoProcess::dynamic_config(int type, int iPrm, void* pPrm)
 			cur_targetRect.width = 0;
 		}
 		break;
+	case VP_CFG_PatterDetectEnable:
+		m_bPatterDetect = iPrm;
+		break;
 	default:
 		break;
 	}
@@ -3180,12 +3221,14 @@ int CVideoProcess::process_frame(int chId, int virchId, Mat frame)
 			mainProcThrObj.cxt[mainProcThrObj.pp].bMoveDetect = m_bMoveDetect;
 			mainProcThrObj.cxt[mainProcThrObj.pp].iTrackStat = m_iTrackStat;
 			mainProcThrObj.cxt[mainProcThrObj.pp].chId = chId;
+			mainProcThrObj.cxt[mainProcThrObj.pp].bPatternDetect = m_bPatterDetect;
 			if(mainProcThrObj.bFirst){
 				mainFrame[mainProcThrObj.pp^1] = frame;
 				mainProcThrObj.cxt[mainProcThrObj.pp^1].bTrack = m_bTrack;
 				mainProcThrObj.cxt[mainProcThrObj.pp^1].bMtd = m_bMtd;
 				mainProcThrObj.cxt[mainProcThrObj.pp^1].bMoveDetect = m_bMoveDetect;
 				mainProcThrObj.cxt[mainProcThrObj.pp^1].iTrackStat = m_iTrackStat;
+				mainProcThrObj.cxt[mainProcThrObj.pp^1].bPatternDetect = m_bPatterDetect;
 				mainProcThrObj.cxt[mainProcThrObj.pp^1].chId = chId;
 				mainProcThrObj.bFirst = false;
 			}
@@ -3649,3 +3692,22 @@ void CVideoProcess::get_featurepoint()
 {
 	pThis->m_autofr.get_featurepoint(pThis->app_recommendPoints);
 }
+
+
+void CVideoProcess::detectcall(vector<BoundingBox>& algbox)
+{
+
+	pThis->m_algbox.clear();
+	OSA_mutexLock(&pThis->m_algboxLock);
+	pThis->m_algbox.insert(pThis->m_algbox.begin(),algbox.begin(),algbox.end());
+	OSA_mutexUnlock(&pThis->m_algboxLock);
+}
+
+void CVideoProcess::trackcall(vector<BoundingBox>& trackbox)
+{
+	pThis->m_trackbox.clear();
+	OSA_mutexLock(&pThis->m_trackboxLock);
+	pThis->m_trackbox.insert(pThis->m_trackbox.begin(),trackbox.begin(),trackbox.end());
+	OSA_mutexUnlock(&pThis->m_trackboxLock);
+}
+

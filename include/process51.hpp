@@ -272,6 +272,7 @@ protected:
 	int updateredgridfrrectR();
 	int getmtdedge();
 	int usopencvapi2();
+	void drawPatternRect();
 
 	 static int  MSGAPI_initial(void);
 	 static void MSGAPI_init_device(long lParam );

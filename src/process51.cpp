@@ -2100,9 +2100,10 @@ else{
 	Drawfeaturepoints();
 	Draw_point_triangle();
 	Drawsubdiv();
-#if __MOVE_DETECT__
 	DrawMtdYellowGrid();
-#endif
+
+	drawPatternRect();
+	
 	static unsigned int count = 0;
 	if((count & 1) == 1)
 		OSA_semSignal(&(sThis->m_display.tskdisSemmain));
@@ -2111,6 +2112,36 @@ else{
 
 	return true;
 }
+
+
+void CProcess::drawPatternRect()
+{
+	static bool bdraw = false;
+	if(bdraw){
+		for(int i=0; i<algboxBK.size(); i++)
+		{
+			cv::Rect r = algboxBK[i];
+			rectangle(m_display.m_imgOsd[extInCtrl->SensorStat], r.tl(), r.br(), Scalar(0,0,0,0), 3);
+		}
+		bdraw = false;
+	}
+		
+	if(m_bPatterDetect){	
+		//algboxBK = trackbox;
+		algboxBK = m_algbox;
+		for(int i=0; i<algboxBK.size(); i++)
+		{
+			//if( 1 == algboxBK[i].trackstatus )
+			{
+				cv::Rect r = algboxBK[i];
+				rectangle(m_display.m_imgOsd[extInCtrl->SensorStat], r.tl(), r.br(), Scalar(255,0,0,255), 3);
+			}
+		}
+		bdraw = true;
+	}
+	return ;
+}
+
 
 
 void CProcess::Drawfeaturepoints()
@@ -4305,8 +4336,9 @@ void CProcess::OnKeyDwn(unsigned char key)
 		//printf("pIStuts->MtdState[pIStuts->SensorStat]  = %d\n",pIStuts->MtdState[pIStuts->SensorStat] );
 	}
 
-	if(key == 'l') {
-		m_display.changeDisplayMode(SIDE_BY_SIDE);
+	if (key == 'l' || key == 'L')
+	{
+		msgdriv_event(MSGID_EXT_PATTERNDETECT, NULL);
 	}
 		
 	if(key == 'M' || key == 'm' ) {
@@ -5407,8 +5439,15 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 		}
 		
 	}
-	
-	
+
+	if( msgId == MSGID_EXT_PATTERNDETECT )
+	{
+		if (m_bPatterDetect == eTrk_mode_acq)
+			dynamic_config(VP_CFG_PatterDetectEnable, 1);
+		else if(m_bPatterDetect == eTrk_mode_target)
+			dynamic_config(VP_CFG_PatterDetectEnable, 0);
+	}
+	return ;
 }
 
 int CProcess::updateredgrid()

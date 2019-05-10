@@ -22,6 +22,9 @@
 
 #include "sceneProcess.hpp"
 
+#include "DetecterFactory.hpp"
+#include "Detector.hpp"
+
 using namespace cr_automanualfindrelation;
 
 #define MAX_SUCCESS_IMAGES 160
@@ -69,6 +72,7 @@ typedef struct _main_thr_obj_cxt{
 	bool bTrack;
 	bool bMtd;
 	bool bMoveDetect;
+	bool bPatternDetect;
 	int chId;
 	int iTrackStat;
 	
@@ -242,6 +246,7 @@ public:
 		VP_CFG_MmtEnable,
 		VP_CFG_SubPicpChId,
 		VP_CFG_MvDetect,
+		VP_CFG_PatterDetectEnable,
 		VP_CFG_Max
 	}VP_CFG;
 	int dynamic_config(int type, int iPrm, void* pPrm = NULL);
@@ -508,6 +513,20 @@ public:
 	IMG_MAT m_TrkImage;
 	bool m_direction[2];
 	std::vector<cv::Point2i> m_vel;
+
+public:	
+	static bool m_bPatterDetect;
+	static void detectcall(vector<BoundingBox>& algbox);
+	static void trackcall(vector<BoundingBox>& trackbox);
+
+	OSA_MutexHndl m_algboxLock,m_trackboxLock;
+		
+	Detector * detectornew;
+	std::vector<BoundingBox> m_trackbox;
+	std::vector<BoundingBox> m_algbox;
+	std::vector<BoundingBox> algboxBK;
+	std::vector<std::string> model;
+	std::vector<cv::Size> modelsize;
 };
 
 

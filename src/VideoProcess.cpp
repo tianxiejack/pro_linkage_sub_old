@@ -199,7 +199,6 @@ void CVideoProcess::main_proc_func()
 					if( 0 == m_chSceneNum){
 						if(!OSA_semWait(&m_mvObjSync,20)){
 							#if 1
-								#if 0
 								m_rcTrack.x = cur_targetRect_bak.x;
 								m_rcTrack.y = cur_targetRect_bak.y;
 								m_rcTrack.width = cur_targetRect_bak.width;
@@ -209,9 +208,6 @@ void CVideoProcess::main_proc_func()
 								m_sceInitRectBK.y = m_rcTrack.y;
 								m_sceInitRectBK.width = m_rcTrack.width;
 								m_sceInitRectBK.height = m_rcTrack.height;
-								#else
-								
-								#endif
 								judegeDirection();
 							#else
 								m_sceInitRect.x = cur_targetRect_bak.x;

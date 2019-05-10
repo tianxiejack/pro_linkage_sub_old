@@ -172,6 +172,7 @@ public:
 	void app_manualInsertRecommendPoints(int x, int y);
 	void app_set_triangle_point(int x, int y);
 	void grid_autolinkage_moveball(int x, int y);
+	void grid_autolinkage_stopball(int x, int y);
 	void grid_manuallinkage_moveball(int x, int y, int changezoom);
 	void app_selectPoint(int x, int y);
 	void app_insertPos(int x, int y);

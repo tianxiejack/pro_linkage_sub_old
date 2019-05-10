@@ -359,7 +359,7 @@ private:
 	void removeMvListValidNum(char num);
 	char getMvListNextValidNum(char index);
 	void getTargetNearToCenter(std::vector<TRK_RECT_INFO> *pVec);
-	void mvIndexHandle(std::vector<TRK_INFO_APP> *mvList,std::vector<TRK_RECT_INFO> &detect,int detectNum);
+	void mvIndexHandle(std::vector<TRK_INFO_APP> &mvList,std::vector<TRK_RECT_INFO> &detect,int detectNum);
 	#endif
 	
 public:

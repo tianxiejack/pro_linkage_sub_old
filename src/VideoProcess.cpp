@@ -121,6 +121,7 @@ void CVideoProcess::main_proc_func()
 	static UTC_ACQ_param acqRect;
 	CMD_EXT tmpCmd={0};
 	double value;
+	static int stop_flg = 0;
 
 #if 1
 	static int timeFlag = 2;
@@ -193,6 +194,7 @@ void CVideoProcess::main_proc_func()
 				}
 
 				if(m_bAutoLink){
+					stop_flg = 0;
 					if( 0 == m_chSceneNum){
 						if(!OSA_semWait(&m_mvObjSync,20)){
 							#if 1
@@ -236,6 +238,16 @@ void CVideoProcess::main_proc_func()
 						#endif						 
 						grid_autolinkage_moveball(m_sceInitRectBK.x + m_sceInitRectBK.width/2, 
 							m_sceInitRectBK.y + m_sceInitRectBK.height/2);	
+					}
+				}
+				else{
+					if(mvListsum.size()==0)
+					{
+						if(stop_flg<6)
+						{
+							stop_flg++;
+							grid_autolinkage_stopball(40000, 40000);
+						}
 					}
 				}
 			}
@@ -2025,6 +2037,22 @@ void CVideoProcess::grid_autolinkage_moveball(int x, int y)
 	return ;
 }
 
+void CVideoProcess::grid_autolinkage_stopball(int x, int y)
+{
+	SENDST trkmsg={0};
+	LinkagePos postmp;
+			
+	trkmsg.cmd_ID = speedloop;
+	postmp.panPos = x;
+	postmp.tilPos = y;
+	postmp.zoom = 0;
+	memcpy(&trkmsg.param,&postmp, sizeof(postmp));
+	ipc_sendmsg(&trkmsg, IPC_FRIMG_MSG);
+	//printf("send speedloop 40000\n");
+		
+	return ;
+}
+
 void CVideoProcess::grid_manuallinkage_moveball(int x, int y, int changezoom)
 {
 	SENDST trkmsg={0};
@@ -2836,6 +2864,7 @@ int CVideoProcess::dynamic_config(int type, int iPrm, void* pPrm)
 			m_chSceneNum = 0;
 			m_bAutoLink = false;
 			m_mainObjDrawFlag = false;
+			cur_targetRect.width = 0;
 		}
 		break;
 	default:

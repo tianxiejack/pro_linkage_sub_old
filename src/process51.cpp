@@ -2100,7 +2100,11 @@ else{
 	Drawfeaturepoints();
 	Draw_point_triangle();
 	Drawsubdiv();
+#if __POLYGON_MTD_ROI__
+	DrawMtdPolygonRoi();
+#else
 	DrawMtdYellowGrid();
+#endif
 
 	drawPatternRect();
 	
@@ -2401,6 +2405,89 @@ void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, i
 {
 	CvScalar colour1=GetcvColour(colour);
 	cv::circle(frame, center, radius ,colour1, thickness, 8, 0);
+}
+
+void CProcess::DrawMtdPolygonRoi()
+{
+	unsigned int drawpolyRectId = extInCtrl->SensorStat;
+	Osd_cvPoint start;
+	Osd_cvPoint end;
+	int polycolor= 3;
+
+	static int flag = 0;
+
+	if(flag)
+	{
+		/*
+		if(1 == polyrectnbak[drawpolyRectId])
+		{
+			start.x = polyRectbak[drawpolyRectId][0].x;
+			start.y = polyRectbak[drawpolyRectId][0].y;
+			end.x = polytempXbak;
+			end.y = polytempYbak;
+			DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,0,0);
+		}
+		else */if(polyrectnbak[drawpolyRectId] > 1)
+		{
+			int i = 0;
+			for(i = 0; i < polyrectnbak[drawpolyRectId]-1; i++)
+			{
+				start.x = polyRectbak[drawpolyRectId][i].x;
+				start.y = polyRectbak[drawpolyRectId][i].y;
+				end.x = polyRectbak[drawpolyRectId][i+1].x;
+				end.y = polyRectbak[drawpolyRectId][i+1].y;
+				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,0,1);
+			
+			}
+			/*
+			start.x = polyRectbak[drawpolyRectId][i].x;
+			start.y = polyRectbak[drawpolyRectId][i].y;
+			end.x = polytempXbak;
+			end.y = polytempYbak;
+			DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,0,1);
+			*/
+		}
+	
+		flag = 0;
+	}
+
+	if(setrigion_flagv20)
+	{
+		memcpy(polyRectbak, polRect, sizeof(polRect));
+		memcpy(polyrectnbak, pol_rectn, sizeof(pol_rectn));
+		/*
+		polytempXbak = pol_tempX;
+		polytempYbak = pol_tempY;
+		if(1 == polyrectnbak[drawpolyRectId])
+		{
+			start.x = polyRectbak[drawpolyRectId][0].x;
+			start.y = polyRectbak[drawpolyRectId][0].y;
+			end.x = polytempXbak;
+			end.y = polytempYbak;
+			DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,polycolor,1);
+		}
+		else */if(polyrectnbak[drawpolyRectId] > 1)
+		{
+			int i = 0;
+			for(i = 0; i < polyrectnbak[drawpolyRectId]-1; i++)
+			{
+				start.x = polyRectbak[drawpolyRectId][i].x;
+				start.y = polyRectbak[drawpolyRectId][i].y;
+				end.x = polyRectbak[drawpolyRectId][i+1].x;
+				end.y = polyRectbak[drawpolyRectId][i+1].y;
+				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,polycolor,1);
+			
+			}
+			/*
+			start.x = polyRectbak[drawpolyRectId][i].x;
+			start.y = polyRectbak[drawpolyRectId][i].y;
+			end.x = polytempXbak;
+			end.y = polytempYbak;
+			DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,polycolor,1);
+			*/
+		}
+		flag = 1;
+	}
 }
 
 void CProcess::DrawMtdYellowGrid()
@@ -2820,9 +2907,12 @@ void CProcess::DrawMtd_Rigion_Target()
 	if(m_bMoveDetect)
 	{
 		color = 5;
+		//printf("1edge_contours_bak.size=%d\n", edge_contours_bak[0].size());
 		edge_contours_bak = edge_contours;
 		int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
+
 		for(int i = 0; i < cnt; i++)
+		{
 			for(int j = 0; j < edge_contours_bak[i].size(); j++)
 			{
 				polwarn_flag = (j+1)%edge_contours_bak[i].size();
@@ -2832,6 +2922,7 @@ void CProcess::DrawMtd_Rigion_Target()
 				endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
 				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,3);
 			}
+		}
 
 		detect_vect_arr_bak = detect_vect_arr;
 		mvListsum.clear();
@@ -5345,7 +5436,11 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	}
 	if(msgId == MSGID_EXT_SMR)
 	{
+#if __POLYGON_MTD_ROI__
+		save_polygon_roi();
+#else
 		getmtdedge();// press Enter
+#endif
 	}
 	if(msgId == MSGID_EXT_SETRESOL)
 	{
@@ -5502,6 +5597,69 @@ int CProcess::updateredgridfrrectR()
 	for(int i = mRectv20R.x1; i <= mRectv20R.x2; i++)
 		for(int j = mRectv20R.y1; j <= mRectv20R.y2; j++)
 			grid19x10[i][j].state= 0;
+}
+
+int CProcess::save_polygon_roi()
+{
+	unsigned int curId = m_curChId;
+	float floatx,floaty;
+	int setx, sety = 0;
+	int areanum = 1;
+	std::vector< std::vector< cv::Point > > polyWarnRoi;
+
+	if(pol_rectn[curId] >= 3)
+	{
+        	swprintf(m_display.disMtd[0][4], 33, L"点数:%d,保存成功", pol_rectn[curId]);
+	}
+	else
+	{
+        	swprintf(m_display.disMtd[0][4], 33, L"点数小于3,保存失败");
+		return -1;
+	}
+
+	polyWarnRoi.resize(areanum);
+	edge_contours.resize(areanum);
+
+	for(int i = 0; i < areanum; i++)
+	{
+		polyWarnRoi[i].resize(pol_rectn[curId]);
+		edge_contours[i].resize(pol_rectn[curId]);
+		for(int j = 0; j < pol_rectn[curId]; j++)
+		{
+			floatx = polRect[curId][j].x;
+			floaty = polRect[curId][j].y;
+			map1080p2normal_point(&floatx, &floaty);
+			mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+
+			setx = floatx;
+			sety = floaty;
+			polyWarnRoi[i][j] = cv::Point(setx, sety);
+
+			mapfullscreen2gun_pointv20(&setx, &sety);
+			edge_contours[i][j].x = setx;
+			edge_contours[i][j].y = sety;
+		}
+	}
+
+	if(polyWarnRoi.size() != 0)
+	{
+		SaveMtdSelectArea("SaveMtdArea.yml", polyWarnRoi);
+	}
+
+	printf("polygon mtd area num:%d\n", polyWarnRoi.size());
+	for(int i = 0; i< polyWarnRoi.size(); i++)
+	{
+		for(int j = 0; j < polyWarnRoi[i].size(); j++)
+			printf("(%d, %d),", polyWarnRoi[i][j].x,polyWarnRoi[i][j].y);
+		printf("\n");
+	}
+
+	for(int i = 0; i < areanum; i++)
+	{
+		m_pMovDetector->setWarningRoi(polyWarnRoi[i], i);
+	}
+
+	edge_contours_notMap = polyWarnRoi ; 
 }
 
 int CProcess::getmtdedge()

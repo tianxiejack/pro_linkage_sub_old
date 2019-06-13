@@ -552,6 +552,9 @@ CVideoProcess::CVideoProcess()
 	memset(grid19x10_bak, 0, sizeof(grid19x10_bak));
 #endif
 
+	memset(pol_rectn, 0, sizeof(pol_rectn));
+	memset(polRect, 0, sizeof(polRect));
+	
 	m_curChId = video_gaoqing ;
 	m_curSubChId = video_gaoqing0 ;
 	Set_SelectByRect = false ;
@@ -2415,7 +2418,11 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 	{
 		if(pThis->setrigion_flagv20)
 		{
+#if __POLYGON_MTD_ROI__
+			pThis->mouse_eventv_polygon(button, state, x, y);
+#else
 			pThis->mouse_eventv20(button, state, x, y);
+#endif
 			return;
 		}
 	}	
@@ -2624,6 +2631,30 @@ void CVideoProcess::draw_mouse_move(GLint xMouse, GLint yMouse)
 {
 	jos_mouse.x = xMouse;
 	jos_mouse.y = yMouse;
+}
+
+void CVideoProcess::mouse_eventv_polygon(int button, int state, int x, int y)
+{
+	unsigned int curId = pThis->m_curChId;
+	
+	float floatx,floaty;
+	floatx = x;
+	floaty = y;
+
+	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{		
+		if(pThis->pol_rectn[curId] > MAX_POLYGON_POINT_CNT)
+		{
+			printf("reach max point num:%d\n", MAX_POLYGON_POINT_CNT);
+			return;
+		}
+		pThis->map1080p2normal_point(&floatx, &floaty);
+		pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+						
+		pThis->polRect[curId][pThis->pol_rectn[curId]].x = floatx;
+		pThis->polRect[curId][pThis->pol_rectn[curId]].y = floaty;
+		pThis->pol_rectn[curId]++;
+	}
 }
 
 void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
@@ -3617,6 +3648,11 @@ void CVideoProcess::LoadMtdSelectArea(const char* filename, std::vector< std::ve
 			polyWarnRoi.push_back(std::vector<cv::Point>());
 			for(int j=0;j<IndexArray[i];j++)
 			{
+				if(j >= MAX_POLYGON_POINT_CNT)
+				{
+					printf("[LoadMtdSelectArea]polygon mtd poiny num > %d\n", MAX_POLYGON_POINT_CNT);
+					break;
+				}
 				int tmp_x =0,tmp_y=0;
 				memset(paramName,0,sizeof(paramName));
 				sprintf(paramName,"Point_%d_%d_x",i,j);				
@@ -3626,6 +3662,13 @@ void CVideoProcess::LoadMtdSelectArea(const char* filename, std::vector< std::ve
 				sprintf(paramName,"Point_%d_%d_y",i,j);				
 				m_fsReadMtd[paramName] >> tmp_y;
 				polyWarnRoi[i].push_back(cv::Point(tmp_x,tmp_y));
+
+				if(i == 0)
+				{
+					polRect[1][j].x= tmp_x;
+					polRect[1][j].y= tmp_y;
+					pol_rectn[1] ++;
+				}
 				mapfullscreen2gun_pointv20(&tmp_x, &tmp_y);
 				edge_contours[i].push_back(cv::Point(tmp_x,tmp_y));
 			}

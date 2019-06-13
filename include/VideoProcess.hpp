@@ -30,6 +30,7 @@ using namespace cr_automanualfindrelation;
 #define MAX_SUCCESS_IMAGES 160
 #define GRID_CNT_X 19
 #define GRID_CNT_Y 10
+#define MAX_POLYGON_POINT_CNT 100
 
 const int IMG_WIDTH = 1920;
 const int IMG_HEIGHT = 1080;
@@ -326,6 +327,9 @@ public:
 	RectfNode mRectv20L;
 	RectfNode mRectv20R;
 
+	PointNode polRect[MAX_CHAN][MAX_POLYGON_POINT_CNT];
+	int pol_rectn[MAX_CHAN];
+
 	cv::Point jos_mouse;
 	int mouse_show = 0;
 	bool twinkle_flag = false;
@@ -401,6 +405,7 @@ protected:
 	int map1080p2normal_rect(mouserectf *rect);
 	int mapnormal2curchannel_rect(mouserectf *rect, int w, int h);
 	static void mousemove_event(GLint xMouse, GLint yMouse);
+	void mouse_eventv_polygon(int button, int state, int x, int y);
 	void mouse_eventv20(int button, int state, int x, int y);
 	int InJoys(int x, int y);
 	void mapout2inresol(cv::Point *tmppoint);

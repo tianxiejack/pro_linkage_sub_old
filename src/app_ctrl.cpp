@@ -713,6 +713,14 @@ void app_ctrl_setnumber(char key)
 		g_displayMode = MENU_MAIN_VIEW;
 		memset(plat->m_display.disMtd[0][4], 0, sizeof(plat->m_display.disMenu[0][4]));
 	}
+#if __POLYGON_MTD_ROI__
+	else if((1 == pIStuts->MtdSetRigion) && (key == '1'))
+	{
+		memset(plat->pol_rectn, 0, sizeof(plat->pol_rectn));
+		memset(plat->polRect, 0, sizeof(plat->polRect));
+	}
+#endif
+
 	else if((submenu_mtd == pMenuStatus->MenuStat) && (pMenuStatus->mtdnum_deng == 1))
 	{
 		int offset = strlen(pMenuStatus->mtdnum_arr) * sizeof(char);

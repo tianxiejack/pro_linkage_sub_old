@@ -217,6 +217,7 @@ public:
 	void SetCtrlmode(int mode);
 
 	void DrawMtdYellowGrid();
+	void DrawMtdPolygonRoi();
 	void DrawMtd_Rigion_Target();
 	void DrawGridMap(int flag);
 	void DrawGridMap_16X12(int flag);
@@ -270,6 +271,7 @@ protected:
 	int updateredgrid();
 	int updateredgridfrrectL();
 	int updateredgridfrrectR();
+	int save_polygon_roi();
 	int getmtdedge();
 	int usopencvapi2();
 	void drawPatternRect();
@@ -378,6 +380,9 @@ public:
 
 	int mouse_show_id;
 	bool validMtdRecord[10];
+
+	PointNode polyRectbak[MAX_CHAN][MAX_POLYGON_POINT_CNT];
+	int polytempXbak, polytempYbak, polyrectnbak[MAX_CHAN];
 };
 
 

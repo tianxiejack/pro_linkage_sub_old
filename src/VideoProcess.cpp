@@ -298,6 +298,41 @@ void CVideoProcess::judegeDirection()
 }
 
 
+bool CVideoProcess::judgeObjIn(Rect2d inTarget, 	std::vector< std::vector< cv::Point > > edges)
+{
+	std::vector< cv::Point > counters;
+	cv::Point2f rc_center ;
+	rc_center = cv::Point2f(inTarget.x + inTarget.width/2,inTarget.y + inTarget.height/2);
+
+	double distance,tgw,tgh,diagd,maxd,mind;
+	bool retFlag;
+	for(int i=0 ; i<edges.size();i++)
+	{
+		distance	= cv::pointPolygonTest( edges[i], rc_center, true );///1.0
+
+		tgw	= inTarget.width;
+		tgh	= inTarget.height;
+		diagd	 = sqrt(tgw*tgw+tgh*tgh);
+		maxd	=  diagd*3/4;
+		mind	=	tgw>tgh?tgw/4:tgh/4;
+		maxd = maxd<60.0?60.0:maxd;
+		
+		retFlag = false;
+		if(distance>=mind){//TARGET_IN_POLYGON;
+			retFlag = true;
+		}else if(distance>-mind	&& distance<mind){//TARGET_IN_EDGE;
+			retFlag = true;
+		}else if(distance<=	-mind){//TARGET_OUT_POLYGON;
+			retFlag = false;
+		}else{//TARGET_NORAM;
+			retFlag = false;
+		}
+	}
+	
+	return retFlag;
+}
+
+
 bool CVideoProcess::judgeMainObjInOut(Rect2d inTarget)
 {
 	std::vector< cv::Point > counters;

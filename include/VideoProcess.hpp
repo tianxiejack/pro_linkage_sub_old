@@ -547,6 +547,7 @@ public:
 
 public:
 	void mouse_eventv_unPolygon(int button, int state, int x, int y);
+	bool judgeObjIn(Rect2d inTarget, 	std::vector< std::vector< cv::Point > > edges);
 
 };
 

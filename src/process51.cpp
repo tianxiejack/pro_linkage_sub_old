@@ -1735,33 +1735,46 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> &mvList,std::vector<TRK_R
 		}
 
 		i = 0;
+		Rect2d tmpTarget;
 		while(detect.size() > 0)
 		{	
 			if(mvList.size() >= detectNum)
 				break ;
 			if(i >= detect.size())
 				break;
+			i++;
+			tmpTarget.x = detect[i].targetRect.x;
+			tmpTarget.y = detect[i].targetRect.y;
+			if(judgeObjIn(tmpTarget,  edge_contours_un_origin))
+				continue;
 			pTmpMv.number = getMvListFirstUnusedNum();
 			if(pTmpMv.number < 10)
 			{
 				addMvListValidNum(pTmpMv.number);
-				memcpy((void*)&(pTmpMv.trkobj),(void *)&(detect[i++].targetRect),sizeof(TRK_RECT_INFO));
+				memcpy((void*)&(pTmpMv.trkobj),(void *)&(detect[i].targetRect),sizeof(TRK_RECT_INFO));
 				mvList.push_back(pTmpMv);	
 			}
 		}	
 	}
 	else
 	{
-		int tmpnum = detect.size() < detectNum ? detect.size() : detectNum ;
-		for(i =0 ; i < tmpnum ; i++)
+		Rect2d tmpTarget;
+		while( mvList.size()<detectNum &&  detect.size()>0 )
 		{
+			tmpTarget.x = detect[0].targetRect.x;
+			tmpTarget.y = detect[0].targetRect.y;
+			if(judgeObjIn(tmpTarget,  edge_contours_un_origin)){
+				detect.erase(detect.begin());
+				continue;
+			}
 			pTmpMv.number = getMvListFirstUnusedNum();
 			if(pTmpMv.number < 10)
 			{
 				addMvListValidNum(pTmpMv.number);
-				memcpy((void*)&(pTmpMv.trkobj),(void *)&(detect[i++].targetRect),sizeof(TRK_RECT_INFO));
+				memcpy((void*)&(pTmpMv.trkobj),(void *)&(detect[0].targetRect),sizeof(TRK_RECT_INFO));
 				mvList.push_back(pTmpMv);
 			}
+			detect.erase(detect.begin());
 		}
 	}
 
@@ -2861,7 +2874,7 @@ void CProcess::DrawMtd_Rigion_Target()
 				startwarnpoly.y = edge_contours_un_bak[i][j].y;
 				endwarnpoly.x  = edge_contours_un_bak[i][polwarn_flag].x;
 				endwarnpoly.y  =  edge_contours_un_bak[i][polwarn_flag].y;	
-				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,2);
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,1,2);
 			}
 
 		

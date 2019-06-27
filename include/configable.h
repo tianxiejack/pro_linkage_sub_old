@@ -85,7 +85,7 @@ typedef struct _SysParam{
 	cameraCalibrate cameracalibrate;
 }SysParam;
 
-#define MAX_SUBMENU 7
+#define MAX_SUBMENU 8
 
 class SingletonSysParam {
 	public:

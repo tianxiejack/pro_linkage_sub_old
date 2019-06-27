@@ -48,6 +48,7 @@ void app_ctrl_enter();
 void app_ctrl_upMenu();
 void app_ctrl_downMenu();
 void app_ctrl_savemtdrigion();
+void app_ctrl_saveunmtdrigion();
 void app_ctrl_setMenu_jos(int menu_state);
 void app_ctrl_settrig_inter(menu_param_t *pInCmd);
 void app_ctrl_save_trig_inter();

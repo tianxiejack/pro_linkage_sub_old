@@ -328,7 +328,10 @@ public:
 	RectfNode mRectv20R;
 
 	PointNode polRect[MAX_CHAN][MAX_POLYGON_POINT_CNT];
+	PointNode unpolRect[MAX_CHAN][MAX_POLYGON_POINT_CNT];
+
 	int pol_rectn[MAX_CHAN];
+	int unpol_rectn[MAX_CHAN];
 
 	cv::Point jos_mouse;
 	int mouse_show = 0;
@@ -340,6 +343,7 @@ public:
 	
 	void set_mouse_show(int param);
 	void SaveMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours);
+	void SaveunMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours);
 	void LoadMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > &edge_contours);
 
 protected:
@@ -496,6 +500,10 @@ public:
 		std::vector< std::vector< cv::Point > > edge_contours;
 		std::vector< std::vector< cv::Point > > edge_contours_bak;
 		std::vector< std::vector< cv::Point > > edge_contours_notMap;
+
+		std::vector< std::vector< cv::Point > > edge_contours_un;
+		std::vector< std::vector< cv::Point > > edge_contours_un_bak;
+
 		cv::Point jcenter_s;
 		int joys_click;
 		int mtd_init = 0;
@@ -532,6 +540,11 @@ public:
 	std::vector<BoundingBox> algboxBK;
 	std::vector<std::string> model;
 	std::vector<cv::Size> modelsize;
+
+
+public:
+	void mouse_eventv_unPolygon(int button, int state, int x, int y);
+
 };
 
 

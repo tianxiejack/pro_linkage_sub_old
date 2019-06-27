@@ -165,7 +165,7 @@ void CProcess::loadIPCParam()
 		memset(extMenuCtrl.Passwd, 0, sizeof(extMenuCtrl.Passwd));
 		memset(extMenuCtrl.disPasswd, 0, sizeof(extMenuCtrl.disPasswd));
 
-		int cnt[menumaxid] = {4,5,3,4,7,6,3,5,5,3}; //  "menubuf[menumaxid][7][128]" each element counts
+		int cnt[menumaxid] = {4,5,3,4,8,6,3,5,5,3}; 
 		memset(extMenuCtrl.menuarray, 0, sizeof(extMenuCtrl.menuarray));
 		for(int i = 0; i < menumaxid; i++)
 		{
@@ -2407,7 +2407,8 @@ void CProcess::DrawCircle(Mat frame, cv::Point center, int radius, int colour, i
 	cv::circle(frame, center, radius ,colour1, thickness, 8, 0);
 }
 
-void CProcess::DrawMtdPolygonRoi()
+
+void CProcess::DrawMtdPolygon_roi()
 {
 	unsigned int drawpolyRectId = extInCtrl->SensorStat;
 	Osd_cvPoint start;
@@ -2418,16 +2419,7 @@ void CProcess::DrawMtdPolygonRoi()
 
 	if(flag)
 	{
-		/*
-		if(1 == polyrectnbak[drawpolyRectId])
-		{
-			start.x = polyRectbak[drawpolyRectId][0].x;
-			start.y = polyRectbak[drawpolyRectId][0].y;
-			end.x = polytempXbak;
-			end.y = polytempYbak;
-			DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,0,0);
-		}
-		else */if(polyrectnbak[drawpolyRectId] > 1)
+		if(polyrectnbak[drawpolyRectId] > 1)
 		{
 			int i = 0;
 			for(i = 0; i < polyrectnbak[drawpolyRectId]-1; i++)
@@ -2437,36 +2429,16 @@ void CProcess::DrawMtdPolygonRoi()
 				end.x = polyRectbak[drawpolyRectId][i+1].x;
 				end.y = polyRectbak[drawpolyRectId][i+1].y;
 				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,0,1);
-			
 			}
-			/*
-			start.x = polyRectbak[drawpolyRectId][i].x;
-			start.y = polyRectbak[drawpolyRectId][i].y;
-			end.x = polytempXbak;
-			end.y = polytempYbak;
-			DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,0,1);
-			*/
 		}
-	
 		flag = 0;
 	}
 
-	if(setrigion_flagv20)
+	if( setrigion_flagv20 == 1 )
 	{
 		memcpy(polyRectbak, polRect, sizeof(polRect));
 		memcpy(polyrectnbak, pol_rectn, sizeof(pol_rectn));
-		/*
-		polytempXbak = pol_tempX;
-		polytempYbak = pol_tempY;
-		if(1 == polyrectnbak[drawpolyRectId])
-		{
-			start.x = polyRectbak[drawpolyRectId][0].x;
-			start.y = polyRectbak[drawpolyRectId][0].y;
-			end.x = polytempXbak;
-			end.y = polytempYbak;
-			DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,polycolor,1);
-		}
-		else */if(polyrectnbak[drawpolyRectId] > 1)
+		if(polyrectnbak[drawpolyRectId] > 1)
 		{
 			int i = 0;
 			for(i = 0; i < polyrectnbak[drawpolyRectId]-1; i++)
@@ -2476,19 +2448,68 @@ void CProcess::DrawMtdPolygonRoi()
 				end.x = polyRectbak[drawpolyRectId][i+1].x;
 				end.y = polyRectbak[drawpolyRectId][i+1].y;
 				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,polycolor,1);
-			
 			}
-			/*
-			start.x = polyRectbak[drawpolyRectId][i].x;
-			start.y = polyRectbak[drawpolyRectId][i].y;
-			end.x = polytempXbak;
-			end.y = polytempYbak;
-			DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,polycolor,1);
-			*/
 		}
 		flag = 1;
 	}
 }
+
+
+void CProcess::DrawMtdPolygon_unRoi()
+{
+	unsigned int drawpolyRectId = extInCtrl->SensorStat;
+	Osd_cvPoint start;
+	Osd_cvPoint end;
+	int polycolor= 3;
+
+	static int flag = 0;
+
+	if(flag)
+	{
+		if(unpolyrectnbak[drawpolyRectId] > 1)
+		{
+			int i = 0;
+			for(i = 0; i < unpolyrectnbak[drawpolyRectId]-1; i++)
+			{
+				start.x = unpolyRectbak[drawpolyRectId][i].x;
+				start.y = unpolyRectbak[drawpolyRectId][i].y;
+				end.x = unpolyRectbak[drawpolyRectId][i+1].x;
+				end.y = unpolyRectbak[drawpolyRectId][i+1].y;
+				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,0,1);
+			}
+		}
+		flag = 0;
+	}
+
+	if( setrigion_flagv20 == 2 )
+	{
+		memcpy(unpolyRectbak, unpolRect, sizeof(unpolRect));
+		memcpy(unpolyrectnbak, unpol_rectn, sizeof(unpol_rectn));
+		if(polyrectnbak[drawpolyRectId] > 1)
+		{
+			int i = 0;
+			for(i = 0; i < unpolyrectnbak[drawpolyRectId]-1; i++)
+			{
+				start.x = unpolyRectbak[drawpolyRectId][i].x;
+				start.y = unpolyRectbak[drawpolyRectId][i].y;
+				end.x = unpolyRectbak[drawpolyRectId][i+1].x;
+				end.y = unpolyRectbak[drawpolyRectId][i+1].y;
+				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,polycolor,1);
+			}
+		}
+		flag = 1;
+	}
+	return ;
+}
+
+
+void CProcess::DrawMtdPolygonRoi()
+{
+	DrawMtdPolygon_roi();
+	DrawMtdPolygon_unRoi();
+	return;
+}
+
 
 void CProcess::DrawMtdYellowGrid()
 {
@@ -5442,6 +5463,9 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 		getmtdedge();// press Enter
 #endif
 	}
+	if(msgId == MSGID_EXT_UNSMR)
+		save_polygon_unroi();
+	
 	if(msgId == MSGID_EXT_SETRESOL)
 	{
         unsigned char resolbuf[maxresolid][128] = {
@@ -5599,7 +5623,8 @@ int CProcess::updateredgridfrrectR()
 			grid19x10[i][j].state= 0;
 }
 
-int CProcess::save_polygon_roi()
+
+int CProcess::save_polygon_unroi()
 {
 	unsigned int curId = m_curChId;
 	float floatx,floaty;
@@ -5607,6 +5632,56 @@ int CProcess::save_polygon_roi()
 	int areanum = 1;
 	std::vector< std::vector< cv::Point > > polyWarnRoi;
 
+	if(unpol_rectn[curId] >= 3)
+	{
+        	swprintf(m_display.disMtd[0][4], 33, L"点数:%d,保存成功", unpol_rectn[curId]);
+	}
+	else
+	{
+        	swprintf(m_display.disMtd[0][4], 33, L"点数小于3,保存失败");
+		return -1;
+	}
+
+	polyWarnRoi.resize(areanum);
+	edge_contours_un.resize(areanum);
+
+	for(int i = 0; i < areanum; i++)
+	{
+		polyWarnRoi[i].resize(unpol_rectn[curId]);
+		edge_contours_un[i].resize(unpol_rectn[curId]);
+		for(int j = 0; j < unpol_rectn[curId]; j++)
+		{
+			floatx = unpolRect[curId][j].x;
+			floaty = unpolRect[curId][j].y;
+			map1080p2normal_point(&floatx, &floaty);
+			mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+
+			setx = floatx;
+			sety = floaty;
+			polyWarnRoi[i][j] = cv::Point(setx, sety);
+
+			mapfullscreen2gun_pointv20(&setx, &sety);
+			edge_contours_un[i][j].x = setx;
+			edge_contours_un[i][j].y = sety;
+		}
+	}
+
+	if(polyWarnRoi.size() != 0)
+	{
+		SaveunMtdSelectArea("SaveunMtdArea.yml", polyWarnRoi);
+	}
+
+}
+
+
+int CProcess::save_polygon_roi()
+{
+	unsigned int curId = m_curChId;
+	float floatx,floaty;
+	int setx, sety = 0;
+	int areanum = 1;
+	std::vector< std::vector< cv::Point > > polyWarnRoi;
+printf(" dian  count  = %d \n " ,  pol_rectn[curId]  );
 	if(pol_rectn[curId] >= 3)
 	{
         	swprintf(m_display.disMtd[0][4], 33, L"点数:%d,保存成功", pol_rectn[curId]);
@@ -5929,6 +6004,7 @@ int CProcess::writeshell(int resoltype)
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UPMENU,     MSGAPI_up_menu,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_DOWNMENU,     MSGAPI_down_menu,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SMR,     MSGAPI_save_mtdrigion,        	0);
+	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UNSMR,     MSGAPI_save_unmtdrigion,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SETRESOL,     MSGAPI_set_resol,        	0);
 	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SETBAUD, 	MSGAPI_set_baud,			0);
 	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SAVERESOL, 	MSGAPI_save_resol,			0);
@@ -6776,6 +6852,12 @@ void CProcess::MSGAPI_save_mtdrigion(long lParam)
 {
 	sThis->msgdriv_event(MSGID_EXT_SMR,NULL);
 }
+
+void CProcess::MSGAPI_save_unmtdrigion(long lParam)
+{
+	sThis->msgdriv_event(MSGID_EXT_UNSMR,NULL);
+}
+
 
 void CProcess::MSGAPI_set_resol(long lParam)
 {

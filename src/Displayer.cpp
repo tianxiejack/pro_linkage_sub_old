@@ -1864,7 +1864,7 @@ int CDisplayer::menu_init( )
 {
 	m_menuindex = -1;
 	memcpy(&dismenuarray, plat->extMenuCtrl.menuarray, sizeof(dismenuarray));
-	unsigned char menubuf[menumaxid][7][128] = {
+	unsigned char menubuf[menumaxid][8][128] = {
             {"请输入密码呼出菜单", "", "按回车确认", "按F2退出"},
             {"请输入密码呼出菜单", "密码输入错误，","按回车后再次输入", "按回车确认", "按F2退出"},
             /*{"内参标定","枪球画面标定","移动检测设置","画面设置","球机设定","固件升级","密码更改"},*/
@@ -1874,7 +1874,7 @@ int CDisplayer::menu_init( )
             /*{"枪机内参标定","球机内参标定","返回"},*/
             {"手动联动模式","自动联动模式","单控球机模式","返回"},
            /* {"   ","枪机画面网格标定","   "},*/
-            {"检测区域选择","目标个数     1","跟踪持续时间 1秒","最大目标面积 10000像素","最小目标面积 9像素","灵敏度       30","返回"},
+            {"检测区域选择","屏蔽区域选择","目标个数     1","跟踪持续时间 1秒","最大目标面积 10000像素","最小目标面积 9像素","灵敏度       30","返回"},
             {"扫描方式均为逐行扫描","格式 1920x1080@60Hz","应用","返回"},
             {"使用串口设置","使用网络设置","返回"},
             {"波特率     9600","球机地址   001","球机协议   PALCO-D","工作模式   485半双工","返回"},
@@ -1910,11 +1910,11 @@ int CDisplayer::menu_init( )
 
 //=====================================================================
 
-		swprintf(disMenu[submenu_mtd][1], 33, L"目标个数     %d", msgextMenuCtrl->osd_mudnum);
-		swprintf(disMenu[submenu_mtd][2], 33, L"跟踪持续时间 %d秒",msgextMenuCtrl->osd_trktime);
-		swprintf(disMenu[submenu_mtd][3], 33, L"最大目标面积 %d像素", msgextMenuCtrl->osd_maxsize);
-		swprintf(disMenu[submenu_mtd][4], 33, L"最小目标面积 %d像素", msgextMenuCtrl->osd_minsize);
-		swprintf(disMenu[submenu_mtd][5], 33, L"灵敏度       %d", msgextMenuCtrl->osd_sensi);
+		swprintf(disMenu[submenu_mtd][2], 33, L"目标个数     %d", msgextMenuCtrl->osd_mudnum);
+		swprintf(disMenu[submenu_mtd][3], 33, L"跟踪持续时间 %d秒",msgextMenuCtrl->osd_trktime);
+		swprintf(disMenu[submenu_mtd][4], 33, L"最大目标面积 %d像素", msgextMenuCtrl->osd_maxsize);
+		swprintf(disMenu[submenu_mtd][5], 33, L"最小目标面积 %d像素", msgextMenuCtrl->osd_minsize);
+		swprintf(disMenu[submenu_mtd][6], 33, L"灵敏度       %d", msgextMenuCtrl->osd_sensi);
 
 //=====================================================================
 

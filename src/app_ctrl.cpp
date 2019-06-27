@@ -720,7 +720,20 @@ void app_ctrl_setnumber(char key)
 		memset(plat->polRect, 0, sizeof(plat->polRect));
 	}
 #endif
-
+	else if((2 == pIStuts->MtdSetRigion) && (key == '2'))
+	{
+		CMD_EXT tmpCmd = {0};
+		tmpCmd.MtdSetRigion = 0;
+		app_ctrl_setMtdRigionStat(&tmpCmd);
+		app_ctrl_setMenuStat(submenu_mtd);
+		g_displayMode = MENU_MAIN_VIEW;
+		memset(plat->m_display.disMtd[0][4], 0, sizeof(plat->m_display.disMenu[0][4]));
+	}
+	else if((2 == pIStuts->MtdSetRigion) && (key == '1'))
+	{
+		memset(plat->unpol_rectn, 0, sizeof(plat->unpol_rectn));
+		memset(plat->unpolRect, 0, sizeof(plat->unpolRect));
+	}
 	else if((submenu_mtd == pMenuStatus->MenuStat) && (pMenuStatus->mtdnum_deng == 1))
 	{
 		int offset = strlen(pMenuStatus->mtdnum_arr) * sizeof(char);
@@ -807,8 +820,15 @@ void app_ctrl_enter()
 	}
 	else if(1 == pIStuts->MtdSetRigion)
 	{
+	printf(" mtd   11111111\n");
 		app_ctrl_savemtdrigion();
 	}
+	else if(2 == pIStuts->MtdSetRigion)
+	{
+		printf(" un  mtd   222222\n");
+		app_ctrl_saveunmtdrigion();
+	}
+
 	else if(mainmenu0 == pMenuStatus->MenuStat)
 	{
 		if(strcmp(init_passwd, pMenuStatus->Passwd))
@@ -891,58 +911,6 @@ void app_ctrl_enter()
 			plat->SetDefaultWorkMode(setting_WorkMode);
 		}
 	}
-/*
-	else if(submenu_gridMapCalibrate == pMenuStatus->MenuStat)
-	{
-		if(0 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer) 
-		{
-			
-		}
-		else if (1 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer)
-		{		
-			g_displayMode = MENU_GRID_MAP_VIEW;
-			SENDST trkmsg2={0};
-			trkmsg2.cmd_ID = enter_gridmap_view;
-			trkmsg2.param[0] = 1;
-			ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
-			//printf("\r\n[%s]:Send Message to Ctrl Process: Enter GridMap View!\r\n",__FUNCTION__);
-		
-		}
-		else if(2 == pMenuStatus->menuarray[submenu_gridMapCalibrate].pointer)
-		{
-			//SENDST trkmsg2={0};
-			//trkmsg2.cmd_ID = enter_gridmap_view;
-			//trkmsg2.param[0] = 0;
-			//ipc_sendmsg(&trkmsg2, IPC_FRIMG_MSG);
-			//app_ctrl_setMenuStat(mainmenu2);			
-			//g_displayMode = MENU_MAIN_VIEW;
-		}		
-	}
-
-	else if(submenu_handleMatchPoints == pMenuStatus->MenuStat)
-	{
-        if(0 == pMenuStatus->menuarray[submenu_handleMatchPoints].pointer){
-			CVideoProcess::m_camCalibra->Set_Handler_Calibra = true ;
-			plat->open_handleCalibra = true;
-		}
-        else if( 1 == pMenuStatus->menuarray[submenu_handleMatchPoints].pointer){
-			plat->open_handleCalibra = false;
-			CVideoProcess::m_camCalibra->start_cloneVideoSrc = true;
-			OSA_waitMsecs(1500);	
-			CVideoProcess::m_camCalibra->bool_Calibrate = true;
-			g_displayMode = MENU_MATCH_POINT_VIEW;
-		}
-        else if(2 == pMenuStatus->menuarray[submenu_handleMatchPoints].pointer)
-		{
-			CVideoProcess::m_camCalibra->start_cloneVideoSrc = false;
-			CVideoProcess::m_camCalibra->Set_Handler_Calibra = false ;
-			app_ctrl_setMenuStat(submenu_gridMapCalibrate);
-			g_displayMode = MENU_MAIN_VIEW;
-			
-		}
-
-	}
-	*/
 	else if(submenu_mtd == pMenuStatus->MenuStat)
 	{
 		if(0 == pMenuStatus->menuarray[submenu_mtd].pointer)
@@ -956,7 +924,15 @@ void app_ctrl_enter()
 				g_displayMode = MENU_GUN;
 			}
 		}
-		else if(1 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		if(1 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		{
+				CMD_EXT tmpCmd = {0};
+				tmpCmd.MtdSetRigion = 2;
+				mouse_workmode = SetMteRigion_Mode;
+				app_ctrl_setMtdRigionStat(&tmpCmd);
+				g_displayMode = MENU_GUN;
+		}
+		else if(2 == pMenuStatus->menuarray[submenu_mtd].pointer)
 		{
 			pMenuStatus->mtdnum_deng = !pMenuStatus->mtdnum_deng;
 			if(pMenuStatus->mtdnum_deng)
@@ -974,7 +950,7 @@ void app_ctrl_enter()
 				memset(pMenuStatus->mtdnum_arr, 0, sizeof(pMenuStatus->mtdnum_arr));
 			}
 		}
-		else if(2 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		else if(3 == pMenuStatus->menuarray[submenu_mtd].pointer)
 		{
 			pMenuStatus->trktime_deng = !pMenuStatus->trktime_deng;
 			if(pMenuStatus->trktime_deng)
@@ -992,7 +968,7 @@ void app_ctrl_enter()
 				memset(pMenuStatus->trktime_arr, 0, sizeof(pMenuStatus->trktime_arr));
 			}
 		}
-		else if(3 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		else if(4 == pMenuStatus->menuarray[submenu_mtd].pointer)
 		{
 			pMenuStatus->maxsize_deng = !pMenuStatus->maxsize_deng;
 			if(pMenuStatus->maxsize_deng)
@@ -1010,7 +986,7 @@ void app_ctrl_enter()
 				memset(pMenuStatus->maxsize_arr, 0, sizeof(pMenuStatus->maxsize_arr));
 			}
 		}
-		else if(4 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		else if(5 == pMenuStatus->menuarray[submenu_mtd].pointer)
 		{
 			pMenuStatus->minsize_deng = !pMenuStatus->minsize_deng;
 			if(pMenuStatus->minsize_deng)
@@ -1028,7 +1004,7 @@ void app_ctrl_enter()
 				memset(pMenuStatus->minsize_arr, 0, sizeof(pMenuStatus->minsize_arr));
 			}
 		}
-		else if(5 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		else if(6 == pMenuStatus->menuarray[submenu_mtd].pointer)
 		{
 			pMenuStatus->sensi_deng = !pMenuStatus->sensi_deng;
 			if(pMenuStatus->sensi_deng)
@@ -1047,7 +1023,7 @@ void app_ctrl_enter()
 			}
 		}
 		
-		else if(6 == pMenuStatus->menuarray[submenu_mtd].pointer)
+		else if(7 == pMenuStatus->menuarray[submenu_mtd].pointer)
 		{
 			app_ctrl_setMenuStat(mainmenu2);
 			storeMtdConfigFlag = true;
@@ -1286,6 +1262,17 @@ void app_ctrl_savemtdrigion()
 	if(pIStuts->MtdState[pIStuts->SensorStat] == 0)
 		MSGDRIV_send(MSGID_EXT_SMR, 0);
 }
+
+void app_ctrl_saveunmtdrigion()
+{
+	if(msgextInCtrl==NULL)
+		return;
+	CMD_EXT *pIStuts = msgextInCtrl;
+
+	if(pIStuts->MtdState[pIStuts->SensorStat] == 0)
+		MSGDRIV_send(MSGID_EXT_UNSMR, 0);
+}
+
 
 void app_ctrl_settrig_inter(menu_param_t *pInCmd)
 {

@@ -554,6 +554,9 @@ CVideoProcess::CVideoProcess()
 
 	memset(pol_rectn, 0, sizeof(pol_rectn));
 	memset(polRect, 0, sizeof(polRect));
+
+	memset(unpol_rectn, 0, sizeof(pol_rectn));
+	memset(unpolRect, 0, sizeof(polRect));
 	
 	m_curChId = video_gaoqing ;
 	m_curSubChId = video_gaoqing0 ;
@@ -2413,17 +2416,21 @@ void CVideoProcess::mouse_event(int button, int state, int x, int y)
 		pThis->jcenter_s = pThis->get_joycenter();
 		pThis->sendjoyevent(pThis->jcenter_s);
 	}
-	//else if(mouse_workmode == SetMteRigion_Mode)
-	else if( pThis->m_display.g_CurDisplayMode == GUN_FULL_SCREEN && 1 == pThis->setrigion_flagv20)
+	else if( pThis->m_display.g_CurDisplayMode == GUN_FULL_SCREEN &&  pThis->setrigion_flagv20)
 	{
-		if(pThis->setrigion_flagv20)
+		if(pThis->setrigion_flagv20 == 1)
 		{
-#if __POLYGON_MTD_ROI__
-			pThis->mouse_eventv_polygon(button, state, x, y);
-#else
-			pThis->mouse_eventv20(button, state, x, y);
-#endif
+			#if __POLYGON_MTD_ROI__
+				pThis->mouse_eventv_polygon(button, state, x, y);
+			#else
+				pThis->mouse_eventv20(button, state, x, y);
+			#endif
+			
 			return;
+		}
+		else if(pThis->setrigion_flagv20 == 2)
+		{
+			pThis->mouse_eventv_unPolygon(button, state, x, y);
 		}
 	}	
 	else if ( (pThis->m_display.g_CurDisplayMode == TEST_RESULT_VIEW) ) {
@@ -2633,6 +2640,33 @@ void CVideoProcess::draw_mouse_move(GLint xMouse, GLint yMouse)
 	jos_mouse.y = yMouse;
 }
 
+
+void CVideoProcess::mouse_eventv_unPolygon(int button, int state, int x, int y)
+{
+	unsigned int curId = pThis->m_curChId;
+		
+	float floatx,floaty;
+	floatx = x;
+	floaty = y;
+
+	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		if(pThis->unpol_rectn[curId] > MAX_POLYGON_POINT_CNT)
+		{
+			printf("reach max point num:%d\n", MAX_POLYGON_POINT_CNT);
+			return;
+		}
+		pThis->map1080p2normal_point(&floatx, &floaty);
+		pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
+						
+		pThis->unpolRect[curId][pThis->unpol_rectn[curId]].x = floatx;
+		pThis->unpolRect[curId][pThis->unpol_rectn[curId]].y = floaty;
+		pThis->unpol_rectn[curId]++;
+	}
+	return;
+}
+
+
 void CVideoProcess::mouse_eventv_polygon(int button, int state, int x, int y)
 {
 	unsigned int curId = pThis->m_curChId;
@@ -2655,6 +2689,7 @@ void CVideoProcess::mouse_eventv_polygon(int button, int state, int x, int y)
 		pThis->polRect[curId][pThis->pol_rectn[curId]].y = floaty;
 		pThis->pol_rectn[curId]++;
 	}
+	return;
 }
 
 void CVideoProcess::mouse_eventv20(int button, int state, int x, int y)
@@ -3571,6 +3606,49 @@ const bool CVideoProcess::getMtdState()
 {
 	return m_bMoveDetect;
 }
+
+
+
+void CVideoProcess::SaveunMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours)
+{
+	char paramName[40];
+	memset(paramName,0,sizeof(paramName));
+	m_fsWriteMtd.open(filename,FileStorage::WRITE);
+	if(m_fsWriteMtd.isOpened())
+	{		
+		memset(paramName,0,sizeof(paramName));
+		sprintf(paramName,"AreaCount");	
+		int total_size = edge_contours_un.size();
+		m_fsWriteMtd<< paramName  << total_size;
+
+	
+		for(int m = 0; m<edge_contours_un.size(); m++ )
+		{			
+			memset(paramName,0,sizeof(paramName));
+			sprintf(paramName,"AreaIndex_%d",m);
+			int count  =  edge_contours_un[m].size();
+			m_fsWriteMtd<< paramName << count;
+		}
+
+				
+		for(int i = 0; i < edge_contours_un.size(); i++)
+		{
+			for(int j = 0; j < edge_contours_un[i].size(); j++)
+			{
+				
+				sprintf(paramName,"Point_%d_%d_x",i,j);				
+				m_fsWriteMtd<<paramName <<edge_contours_un[i][j].x;
+				
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"Point_%d_%d_y",i,j);				
+				m_fsWriteMtd<<paramName <<edge_contours_un[i][j].y;		
+			}		
+		}		
+		m_fsWriteMtd.release();		
+		
+	}
+}
+
 
 void CVideoProcess::SaveMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours)
 {

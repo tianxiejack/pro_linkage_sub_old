@@ -272,6 +272,7 @@ protected:
 	int updateredgridfrrectL();
 	int updateredgridfrrectR();
 	int save_polygon_roi();
+	int save_polygon_unroi();
 	int getmtdedge();
 	int usopencvapi2();
 	void drawPatternRect();
@@ -314,6 +315,7 @@ protected:
 	 static void MSGAPI_setMtdSetRigionStat(long lParam);
 	 static void MSGAPI_setMtdSetRigion(long lParam);
 	 static void MSGAPI_save_mtdrigion(long lParam);
+	 static void MSGAPI_save_unmtdrigion(long lParam);
 	 static void MSGAPI_set_resol(long lParam);
 	 static void MSGAPI_set_baud(long lParam);
 	 static void MSGAPI_save_resol(long lParam);
@@ -365,6 +367,11 @@ private:
 	void mvIndexHandle(std::vector<TRK_INFO_APP> &mvList,std::vector<TRK_RECT_INFO> &detect,int detectNum);
 	#endif
 	
+
+	void DrawMtdPolygon_unRoi();
+	void DrawMtdPolygon_roi();
+
+
 public:
 	void update_param_alg();
 	void update_param_osd();
@@ -382,7 +389,10 @@ public:
 	bool validMtdRecord[10];
 
 	PointNode polyRectbak[MAX_CHAN][MAX_POLYGON_POINT_CNT];
+	PointNode unpolyRectbak[MAX_CHAN][MAX_POLYGON_POINT_CNT];
+
 	int polytempXbak, polytempYbak, polyrectnbak[MAX_CHAN];
+	int unpolyrectnbak[MAX_CHAN];
 };
 
 

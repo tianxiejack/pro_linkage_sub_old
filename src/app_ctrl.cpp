@@ -722,6 +722,7 @@ void app_ctrl_setnumber(char key)
 #endif
 	else if((2 == pIStuts->MtdSetRigion) && (key == '2'))
 	{
+		app_ctrl_saveunmtdrigion();
 		CMD_EXT tmpCmd = {0};
 		tmpCmd.MtdSetRigion = 0;
 		app_ctrl_setMtdRigionStat(&tmpCmd);
@@ -733,6 +734,8 @@ void app_ctrl_setnumber(char key)
 	{
 		memset(plat->unpol_rectn, 0, sizeof(plat->unpol_rectn));
 		memset(plat->unpolRect, 0, sizeof(plat->unpolRect));
+		plat->edge_contours_un_origin.clear();
+		plat->edge_contours_un.clear();
 	}
 	else if((submenu_mtd == pMenuStatus->MenuStat) && (pMenuStatus->mtdnum_deng == 1))
 	{
@@ -819,16 +822,9 @@ void app_ctrl_enter()
 		plat->app_getPT();
 	}
 	else if(1 == pIStuts->MtdSetRigion)
-	{
-	printf(" mtd   11111111\n");
 		app_ctrl_savemtdrigion();
-	}
 	else if(2 == pIStuts->MtdSetRigion)
-	{
-		printf(" un  mtd   222222\n");
-		app_ctrl_saveunmtdrigion();
-	}
-
+		app_ctrl_handle_unmtdRegion();	
 	else if(mainmenu0 == pMenuStatus->MenuStat)
 	{
 		if(strcmp(init_passwd, pMenuStatus->Passwd))
@@ -1253,6 +1249,13 @@ void app_ctrl_downMenu()
 	}
 }
 
+
+void	app_ctrl_handle_unmtdRegion()
+{
+	MSGDRIV_send(MSGID_EXT_UNMTDHDL, 0);
+}
+
+	
 void app_ctrl_savemtdrigion()
 {
 	if(msgextInCtrl==NULL)

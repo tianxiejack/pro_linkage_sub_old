@@ -316,6 +316,7 @@ protected:
 	 static void MSGAPI_setMtdSetRigion(long lParam);
 	 static void MSGAPI_save_mtdrigion(long lParam);
 	 static void MSGAPI_save_unmtdrigion(long lParam);
+	 static void unmtdrigion(long lParam);
 	 static void MSGAPI_set_resol(long lParam);
 	 static void MSGAPI_set_baud(long lParam);
 	 static void MSGAPI_save_resol(long lParam);
@@ -324,6 +325,7 @@ protected:
 	 static void MSGAPI_set_mtdmaxsize(long lParam);
 	 static void MSGAPI_set_mtdminsize(long lParam);
 	 static void MSGAPI_set_mtdsensi(long lParam);
+	 static void MSGAPI_handle_unmtdrigion(long lParam);
 
 private:
 	ACK_EXT extOutAck;
@@ -370,6 +372,8 @@ private:
 
 	void DrawMtdPolygon_unRoi();
 	void DrawMtdPolygon_roi();
+		
+	void unMtdRegionHandle();
 
 
 public:

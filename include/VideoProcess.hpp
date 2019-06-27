@@ -504,6 +504,9 @@ public:
 		std::vector< std::vector< cv::Point > > edge_contours_un;
 		std::vector< std::vector< cv::Point > > edge_contours_un_bak;
 
+		std::vector< std::vector< cv::Point > > edge_contours_un_origin;
+		std::vector< std::vector< cv::Point > > edge_contours_un_origin_bak;
+				
 		cv::Point jcenter_s;
 		int joys_click;
 		int mtd_init = 0;

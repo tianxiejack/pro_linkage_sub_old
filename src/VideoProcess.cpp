@@ -2658,7 +2658,7 @@ void CVideoProcess::mouse_eventv_unPolygon(int button, int state, int x, int y)
 		}
 		pThis->map1080p2normal_point(&floatx, &floaty);
 		pThis->mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
-						
+	
 		pThis->unpolRect[curId][pThis->unpol_rectn[curId]].x = floatx;
 		pThis->unpolRect[curId][pThis->unpol_rectn[curId]].y = floaty;
 		pThis->unpol_rectn[curId]++;

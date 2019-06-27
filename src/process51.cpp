@@ -1824,92 +1824,7 @@ bool CProcess::OnProcess()
 	Point start,end;
 	Osd_cvPoint start1,end1;	
 
-osdindex++;	//cross aim
-	{
-		if(changesensorCnt){
-			recIn.x=crossBak.x;
-	 		recIn.y=crossBak.y;
-			recIn.width = crossWHBak.x;
-			recIn.height = crossWHBak.y;
-			DrawCross(recIn,frcolor,extInCtrl->SensorStatpri,false);
-		}
-		
-	 	if(Osdflag[osdindex]==1){
-			recIn.x=crossBak.x;
-	 		recIn.y=crossBak.y;
-			recIn.width = crossWHBak.x;
-			recIn.height = crossWHBak.y;
-			DrawCross(recIn,frcolor,extInCtrl->SensorStat,false);
-			Osdflag[osdindex]=0;
- 		}
 
-	}
-
-
-	osdindex++;
-	{		
-		if( open_handleCalibra == true){  
-			sprintf(show_key[string_cnt1], "%d", string_cnt1);	
-			putText(m_display.m_imgOsd[1],show_key[string_cnt1],key1_pos,FONT_HERSHEY_TRIPLEX,0.8, cvScalar(255,0,0,255), 1);	
-			cv::circle( m_display.m_imgOsd[1], key1_pos, 3 , cvScalar(255,0,255,255), 2, 8, 0);
-			
-			sprintf(show_key2[string_cnt2], "%d", string_cnt2);
-			putText(m_display.m_imgOsd[1],show_key2[string_cnt2],key2_pos,FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,255,0,255), 1);	
-			cv::circle(m_display.m_imgOsd[1],key2_pos,3 ,cvScalar(0,255,255,255),2,8,0);
-			Osdflag[osdindex]=1;
-		}	
-		else{	
-			if(Osdflag[osdindex])
-			{
-				
-				if(key_point1_cnt!=0 || (key_point2_cnt!=0))
-				{
-					textPos1_backup[0] = key1_backup;
-					textPos2_backup[0] = key2_backup;
-					for(int m=0;m<=key_point1_cnt; m++){
-						textPos1_backup[m+1] = textPos1_record[m];
-					}
-					for(int m=0;m<=key_point2_cnt; m++){
-						textPos2_backup[m+1] = textPos2_record[m];
-					}
-					
-					for(int i=0; i<=key_point1_cnt; i++)
-					{
-						putText(m_display.m_imgOsd[1],show_key[i],textPos1_backup[i],FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);	
-						cv::circle(m_display.m_imgOsd[1],textPos1_backup[i],3 ,cvScalar(0,0,0,0),2,8,0);			
-					}
-
-					for(int i=0; i<=key_point2_cnt; i++)
-					{
-						putText(m_display.m_imgOsd[1],show_key2[i],textPos2_backup[i],FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);	
-						cv::circle(m_display.m_imgOsd[1],textPos2_backup[i],3 ,cvScalar(0,0,0,0),2,8,0);
-					}
-				}
-				Osdflag[osdindex] = 0;			
-			}			
-		}	
-	}
-//=========================Draw A Rectangle On Selected Picture ===============================
-{
-
-	/* Draw a rectangle  on selected picture  of saved calibration  pictures */
-#if 0
-	if(0){
-		int leftStartX = (m_display.getSelectPicIndex() % 10)*192;
-		int leftStartY = 540 - (m_display.getSelectPicIndex() /10)*108;
-		m_rectSelectPic = Rect(leftStartX,leftStartY,192,108);
-		rectangle (m_display.m_imgOsd[1],  m_rectSelectPic,cvScalar(0,0,255,255), 1, 8);
-	}
-#endif
-	/* Show how many pictures have been detected Corners when change diffrent ChessBoard Poses */	
-	if( (m_display.displayMode == CALIBRATE_CAPTURE) && (showDetectCorners == true)){		
-		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
-		sprintf(Bak_CString,"%d",captureCount);						
-		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,255,255,255), 1);
-	}else {
-		putText(m_display.m_imgOsd[1],Bak_CString,Point(245,423),FONT_HERSHEY_TRIPLEX,0.8, cvScalar(0,0,0,0), 1);
-	}	
-}
 
 //=============================================================================================
 
@@ -1958,74 +1873,34 @@ osdindex++;	//cross aim
 
 
 /***********************************************************************************/
-#if 0
-if(g_GridMapMode == 1)
-{
-	sprintf(str_mode, "GridMode");	
-	putText(m_display.m_imgOsd[1],str_mode,cv::Point(10,535),FONT_HERSHEY_TRIPLEX,0.4, cvScalar(255,255,0,255), 1);	
-
-
-}else
-{
-	putText(m_display.m_imgOsd[1],str_mode,cv::Point(10,535),FONT_HERSHEY_TRIPLEX,0.4, cvScalar(0,0,0,255), 1);	
-}
-#endif
 
 	if(m_bIsClickMode == true&&(g_displayMode == MENU_MAIN_VIEW))
 	{
-		#if 1
-			recIn.x=m_bakClickPoint.x;
-	 		recIn.y=m_bakClickPoint.y;
-			recIn.width = 60;
-			recIn.height = 60;
-			DrawCross(recIn,frcolor,1,false);
-			Osdflag[osdindex]=1;	
-			osdindex++;
-				
-			m_bakClickPoint = getCurrentMouseClickPoint();
-			recIn.x=m_bakClickPoint.x;
-	 		recIn.y=m_bakClickPoint.y;
-			recIn.width = 60;
-			recIn.height = 60;
-			DrawCross(recIn,frcolor,1,true);
-			Osdflag[osdindex]=1;	
-		#else
-			//GB_DrawCross(m_display.m_imgOsd[1],cv::Point(m_bakClickPoint.x, m_bakClickPoint.y), true);
-
-			cv::circle(m_display.m_imgOsd[1],m_bakClickPoint,3 ,cvScalar(0,0,0,0),2,8,0);
-			m_bakClickPoint = getCurrentMouseClickPoint();
-			cv::circle(m_display.m_imgOsd[1],m_bakballDestPoint,3 ,cvScalar(255,0,0,255),2,8,0);
-		#endif
-		
+		recIn.x=m_bakClickPoint.x;
+ 		recIn.y=m_bakClickPoint.y;
+		recIn.width = 60;
+		recIn.height = 60;
+		DrawCross(recIn,frcolor,1,false);
+		Osdflag[osdindex]=1;	
+		osdindex++;
+			
+		m_bakClickPoint = getCurrentMouseClickPoint();
+		recIn.x=m_bakClickPoint.x;
+ 		recIn.y=m_bakClickPoint.y;
+		recIn.width = 60;
+		recIn.height = 60;
+		DrawCross(recIn,frcolor,1,true);
+		Osdflag[osdindex]=1;		
 	}
 	else{
-		#if 1
-			recIn.x=m_bakClickPoint.x;
-	 		recIn.y=m_bakClickPoint.y;
-			recIn.width = 60;
-			recIn.height = 60;
-			DrawCross(recIn,frcolor,1,false);
-			Osdflag[osdindex]=1;	
-			osdindex++;
-		#else
-			//GB_DrawCross(m_display.m_imgOsd[1],cv::Point(m_bakClickPoint.x, m_bakClickPoint.y), false);
-			cv::circle(m_display.m_imgOsd[1],m_bakClickPoint,3 ,cvScalar(0,0,0,0),2,8,0);
-		#endif
+		recIn.x=m_bakClickPoint.x;
+ 		recIn.y=m_bakClickPoint.y;
+		recIn.width = 60;
+		recIn.height = 60;
+		DrawCross(recIn,frcolor,1,false);
+		Osdflag[osdindex]=1;	
+		osdindex++;
 	}
-//--------------------------------------------------------
-
-	if( m_display.g_CurDisplayMode == TEST_RESULT_VIEW)
-	{
-		cv::circle(m_display.m_imgOsd[1],m_bakballDestPoint,3 ,cvScalar(0,0,0,0),2,8,0);
-		m_bakballDestPoint = getBallImagePoint();
-		cv::circle(m_display.m_imgOsd[1],m_bakballDestPoint,3 ,cvScalar(255,0,0,255),2,8,0);		
-	}
-	else
-	{		
-		cv::circle(m_display.m_imgOsd[1],m_bakballDestPoint,3 ,cvScalar(0,0,0,0),2,8,0);
-	}
-	
-//--------------------------------------------------------
 {
 #if 0
 	sprintf(Bak_CString,"%s","=>");
@@ -2042,8 +1917,6 @@ if(show_circle_pointer &&
 	cv::circle(m_display.m_imgOsd[1],Point(backMenuposX,backMenuposY),8 ,cvScalar(0,0,255,255),-1,8,0);
 }
 else{	
-		//backMenuposX = 1460;	
-		//backMenuposY = m_display.m_currentMenuPos[m_display.m_currentFirstMenuIndex][m_display.m_currentSecondMenuIndex].posY +15;
 	cv::circle(m_display.m_imgOsd[1],Point(backMenuposX,backMenuposY),8 ,cvScalar(0,0,0,0),-1,8,0);
 }
 #endif
@@ -2092,7 +1965,6 @@ else{
 			m_time_flag = 0;
 		}
 	}
-
 //virtual joystick
 //	DrawJoys();
 	DrawMouse();
@@ -2463,9 +2335,20 @@ void CProcess::DrawMtdPolygon_unRoi()
 	int polycolor= 3;
 
 	static int flag = 0;
-
+	int tmp;
 	if(flag)
 	{
+		for(int i=0 ; i < edge_contours_un_origin_bak.size();i++)
+			for(int j=0; j< edge_contours_un_origin_bak[i].size();j++)
+			{
+				tmp = (j+1)%edge_contours_un_origin_bak[i].size();
+				start.x = edge_contours_un_origin_bak[i][j].x;
+				start.y = edge_contours_un_origin_bak[i][j].y;
+				end.x  = edge_contours_un_origin_bak[i][tmp].x;
+				end.y  =  edge_contours_un_origin_bak[i][tmp].y;	
+				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,0,1);
+			}
+
 		if(unpolyrectnbak[drawpolyRectId] > 1)
 		{
 			int i = 0;
@@ -2477,15 +2360,27 @@ void CProcess::DrawMtdPolygon_unRoi()
 				end.y = unpolyRectbak[drawpolyRectId][i+1].y;
 				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,0,1);
 			}
-		}
+		}	
+
 		flag = 0;
 	}
-
 	if( setrigion_flagv20 == 2 )
 	{
+		edge_contours_un_origin_bak = edge_contours_un_origin;
+		for(int i=0 ; i < edge_contours_un_origin_bak.size();i++)
+			for(int j=0; j< edge_contours_un_origin_bak[i].size();j++)
+			{
+				tmp = (j+1)%edge_contours_un_origin_bak[i].size();
+				start.x = edge_contours_un_origin_bak[i][j].x;
+				start.y = edge_contours_un_origin_bak[i][j].y;
+				end.x  = edge_contours_un_origin_bak[i][tmp].x;
+				end.y  =  edge_contours_un_origin_bak[i][tmp].y;	
+				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,polycolor,1);
+			}	
+
 		memcpy(unpolyRectbak, unpolRect, sizeof(unpolRect));
 		memcpy(unpolyrectnbak, unpol_rectn, sizeof(unpol_rectn));
-		if(polyrectnbak[drawpolyRectId] > 1)
+		if(unpolyrectnbak[drawpolyRectId] > 1)
 		{
 			int i = 0;
 			for(i = 0; i < unpolyrectnbak[drawpolyRectId]-1; i++)
@@ -2494,6 +2389,7 @@ void CProcess::DrawMtdPolygon_unRoi()
 				start.y = unpolyRectbak[drawpolyRectId][i].y;
 				end.x = unpolyRectbak[drawpolyRectId][i+1].x;
 				end.y = unpolyRectbak[drawpolyRectId][i+1].y;
+				printf("draw  (%d,%d ) to (%d , %d) \n" ,start.x,start.y,end.x,end.y  );
 				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,polycolor,1);
 			}
 		}
@@ -2877,7 +2773,7 @@ void CProcess::DrawMtd_Rigion_Target()
 	int polwarn_flag = 0;
 	static int flag = 0;
 	int color = 0;;
-	
+	int i ,j ,cnt;
 	if(m_display.g_CurDisplayMode == MAIN_VIEW)
 	{			
 		mtd_warningbox_Id = 1;
@@ -2890,16 +2786,27 @@ void CProcess::DrawMtd_Rigion_Target()
 	if(flag)
 	{
 		color = 0;
-		int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
-		for(int i = 0; i < cnt; i++)
-			for(int j = 0; j < edge_contours_bak[i].size(); j++)
+		cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
+		for( i = 0; i < cnt; i++)
+			for( j = 0; j < edge_contours_bak[i].size(); j++)
 			{
 				polwarn_flag = (j+1)%edge_contours_bak[i].size();
 				startwarnpoly.x = edge_contours_bak[i][j].x;
 				startwarnpoly.y = edge_contours_bak[i][j].y;
 				endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
 				endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
-				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,3);
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,2);
+			}
+
+		for(int i=0 ; i < edge_contours_un_bak.size();i++)
+			for(int j=0; j< edge_contours_un_bak[i].size();j++)
+			{
+				polwarn_flag = (j+1)%edge_contours_un_bak[i].size();
+				startwarnpoly.x = edge_contours_un_bak[i][j].x;
+				startwarnpoly.y = edge_contours_un_bak[i][j].y;
+				endwarnpoly.x  = edge_contours_un_bak[i][polwarn_flag].x;
+				endwarnpoly.y  =  edge_contours_un_bak[i][polwarn_flag].y;	
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,2);
 			}
 
 		cv::Rect tmp;
@@ -2931,20 +2838,33 @@ void CProcess::DrawMtd_Rigion_Target()
 		//printf("1edge_contours_bak.size=%d\n", edge_contours_bak[0].size());
 		edge_contours_bak = edge_contours;
 		int cnt = edge_contours_bak.size() > MAX_MTDRIGION_NUM ? MAX_MTDRIGION_NUM : edge_contours_bak.size();
-
-		for(int i = 0; i < cnt; i++)
+		int i =0,j =0;
+		for(i = 0; i < cnt; i++)
 		{
-			for(int j = 0; j < edge_contours_bak[i].size(); j++)
+			for(j = 0; j < edge_contours_bak[i].size(); j++)
 			{
 				polwarn_flag = (j+1)%edge_contours_bak[i].size();
 				startwarnpoly.x = edge_contours_bak[i][j].x;
 				startwarnpoly.y = edge_contours_bak[i][j].y;
 				endwarnpoly.x = edge_contours_bak[i][polwarn_flag].x;
 				endwarnpoly.y = edge_contours_bak[i][polwarn_flag].y;
-				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,3);
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,2);
 			}
 		}
 
+		edge_contours_un_bak = edge_contours_un;
+		for(int i=0 ; i < edge_contours_un_bak.size();i++)
+			for(int j=0; j< edge_contours_un_bak[i].size();j++)
+			{
+				polwarn_flag = (j+1)%edge_contours_un_bak[i].size();
+				startwarnpoly.x = edge_contours_un_bak[i][j].x;
+				startwarnpoly.y = edge_contours_un_bak[i][j].y;
+				endwarnpoly.x  = edge_contours_un_bak[i][polwarn_flag].x;
+				endwarnpoly.y  =  edge_contours_un_bak[i][polwarn_flag].y;	
+				DrawcvLine(m_display.m_imgOsd[mtd_warningbox_Id],&startwarnpoly,&endwarnpoly,color,2);
+			}
+
+		
 		detect_vect_arr_bak = detect_vect_arr;
 		mvListsum.clear();
 		int num = 0;
@@ -5455,14 +5375,9 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 			}
 		}
 	}
+	
 	if(msgId == MSGID_EXT_SMR)
-	{
-#if __POLYGON_MTD_ROI__
 		save_polygon_roi();
-#else
-		getmtdedge();// press Enter
-#endif
-	}
 	if(msgId == MSGID_EXT_UNSMR)
 		save_polygon_unroi();
 	
@@ -6005,6 +5920,8 @@ int CProcess::writeshell(int resoltype)
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_DOWNMENU,     MSGAPI_down_menu,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SMR,     MSGAPI_save_mtdrigion,        	0);
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UNSMR,     MSGAPI_save_unmtdrigion,        	0);
+	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_UNMTDHDL,     MSGAPI_handle_unmtdrigion,        	0);
+
 	MSGDRIV_attachMsgFun(handle,    MSGID_EXT_SETRESOL,     MSGAPI_set_resol,        	0);
 	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SETBAUD, 	MSGAPI_set_baud,			0);
 	MSGDRIV_attachMsgFun(handle,	MSGID_EXT_SAVERESOL, 	MSGAPI_save_resol,			0);
@@ -6856,6 +6773,42 @@ void CProcess::MSGAPI_save_mtdrigion(long lParam)
 void CProcess::MSGAPI_save_unmtdrigion(long lParam)
 {
 	sThis->msgdriv_event(MSGID_EXT_UNSMR,NULL);
+}
+
+void CProcess::MSGAPI_handle_unmtdrigion(long lParam)
+{
+	sThis->unMtdRegionHandle();
+}
+
+void CProcess::unMtdRegionHandle()
+{
+	int curId = m_curChId;
+
+	cv::Point point;
+	std::vector< cv::Point > tmpEdge , tmpEdgeGun;
+	float x,y;
+	for(int j=0 ; j< unpol_rectn[curId];j++)
+	{
+		x = unpolRect[curId][j].x;
+		y = unpolRect[curId][j].y;
+		map1080p2normal_point(&x, &y);
+		mapnormal2curchannel_point(&x, &y, vdisWH[curId][0], vdisWH[curId][1]);
+
+		point.x = (int)x;
+		point.y = (int)y;
+		tmpEdge.push_back(point);
+
+		mapfullscreen2gun_pointv20(&point.x, &point.y);
+		tmpEdgeGun.push_back(point);
+	}
+
+	edge_contours_un_origin.push_back(tmpEdge);
+	edge_contours_un.push_back(tmpEdgeGun);
+
+	unpol_rectn[curId] = 0;
+	memset(unpolRect[curId] , 0 , sizeof(unpolRect[curId]));
+	
+	return ;
 }
 
 

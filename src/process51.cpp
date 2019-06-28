@@ -2402,7 +2402,6 @@ void CProcess::DrawMtdPolygon_unRoi()
 				start.y = unpolyRectbak[drawpolyRectId][i].y;
 				end.x = unpolyRectbak[drawpolyRectId][i+1].x;
 				end.y = unpolyRectbak[drawpolyRectId][i+1].y;
-				printf("draw  (%d,%d ) to (%d , %d) \n" ,start.x,start.y,end.x,end.y  );
 				DrawcvLine(m_display.m_imgOsd[drawpolyRectId],&start,&end,polycolor,1);
 			}
 		}
@@ -5558,45 +5557,10 @@ int CProcess::save_polygon_unroi()
 	float floatx,floaty;
 	int setx, sety = 0;
 	int areanum = 1;
-	std::vector< std::vector< cv::Point > > polyWarnRoi;
 
-	if(unpol_rectn[curId] >= 3)
+	if(edge_contours_un.size() != 0)
 	{
-        	swprintf(m_display.disMtd[0][4], 33, L"点数:%d,保存成功", unpol_rectn[curId]);
-	}
-	else
-	{
-        	swprintf(m_display.disMtd[0][4], 33, L"点数小于3,保存失败");
-		return -1;
-	}
-
-	polyWarnRoi.resize(areanum);
-	edge_contours_un.resize(areanum);
-
-	for(int i = 0; i < areanum; i++)
-	{
-		polyWarnRoi[i].resize(unpol_rectn[curId]);
-		edge_contours_un[i].resize(unpol_rectn[curId]);
-		for(int j = 0; j < unpol_rectn[curId]; j++)
-		{
-			floatx = unpolRect[curId][j].x;
-			floaty = unpolRect[curId][j].y;
-			map1080p2normal_point(&floatx, &floaty);
-			mapnormal2curchannel_point(&floatx, &floaty, vdisWH[curId][0], vdisWH[curId][1]);
-
-			setx = floatx;
-			sety = floaty;
-			polyWarnRoi[i][j] = cv::Point(setx, sety);
-
-			mapfullscreen2gun_pointv20(&setx, &sety);
-			edge_contours_un[i][j].x = setx;
-			edge_contours_un[i][j].y = sety;
-		}
-	}
-
-	if(polyWarnRoi.size() != 0)
-	{
-		SaveunMtdSelectArea("SaveunMtdArea.yml", polyWarnRoi);
+		SaveunMtdSelectArea("SaveunMtdArea.yml");
 	}
 
 }

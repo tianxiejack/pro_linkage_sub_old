@@ -2914,7 +2914,7 @@ int CVideoProcess::init()
 #if __MOVE_DETECT__
 	LoadMtdSelectArea("SaveMtdArea.yml",edge_contours);
 #endif
-
+	LoadunMtdSelectArea("SaveunMtdArea.yml");
 	eventLoop = new EventLoop(proc);
 	if(eventLoop == NULL)
 	{
@@ -3644,39 +3644,40 @@ const bool CVideoProcess::getMtdState()
 
 
 
-void CVideoProcess::SaveunMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours)
+void CVideoProcess::SaveunMtdSelectArea(const char* filename)
 {
 	char paramName[40];
 	memset(paramName,0,sizeof(paramName));
 	m_fsWriteMtd.open(filename,FileStorage::WRITE);
+	printf("save  un mtd region \n");
 	if(m_fsWriteMtd.isOpened())
 	{		
 		memset(paramName,0,sizeof(paramName));
 		sprintf(paramName,"AreaCount");	
-		int total_size = edge_contours_un.size();
+		int total_size = edge_contours_un_origin.size();
 		m_fsWriteMtd<< paramName  << total_size;
 
 	
-		for(int m = 0; m<edge_contours_un.size(); m++ )
+		for(int m = 0; m<edge_contours_un_origin.size(); m++ )
 		{			
 			memset(paramName,0,sizeof(paramName));
 			sprintf(paramName,"AreaIndex_%d",m);
-			int count  =  edge_contours_un[m].size();
+			int count  =  edge_contours_un_origin[m].size();
 			m_fsWriteMtd<< paramName << count;
 		}
 
 				
-		for(int i = 0; i < edge_contours_un.size(); i++)
+		for(int i = 0; i < edge_contours_un_origin.size(); i++)
 		{
-			for(int j = 0; j < edge_contours_un[i].size(); j++)
+			for(int j = 0; j < edge_contours_un_origin[i].size(); j++)
 			{
 				
 				sprintf(paramName,"Point_%d_%d_x",i,j);				
-				m_fsWriteMtd<<paramName <<edge_contours_un[i][j].x;
+				m_fsWriteMtd<<paramName <<edge_contours_un_origin[i][j].x;
 				
 				memset(paramName,0,sizeof(paramName));
 				sprintf(paramName,"Point_%d_%d_y",i,j);				
-				m_fsWriteMtd<<paramName <<edge_contours_un[i][j].y;		
+				m_fsWriteMtd<<paramName <<edge_contours_un_origin[i][j].y;		
 			}		
 		}		
 		m_fsWriteMtd.release();		
@@ -3725,6 +3726,74 @@ void CVideoProcess::SaveMtdSelectArea(const char* filename, std::vector< std::ve
 		
 	}
 }
+
+
+void CVideoProcess::LoadunMtdSelectArea(const char* filename)
+{
+	std::vector< std::vector< cv::Point > > polyWarnRoi;
+	char paramName[40];
+	memset(paramName,0,sizeof(paramName));
+	int AreaCount=0;
+	int IndexArray[5];	
+	edge_contours_un_origin.clear(); 
+	edge_contours_un.clear();
+	int init_mtd = 0;
+
+	m_fsReadMtd.open(filename,FileStorage::READ);
+	if(m_fsReadMtd.isOpened())
+	{
+		memset(paramName,0,sizeof(paramName));
+		sprintf(paramName,"AreaCount");				
+		m_fsReadMtd[paramName] >>AreaCount;
+		if(AreaCount !=0)
+		{
+			for(int i=0; i< AreaCount;i++)
+			{
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"AreaIndex_%d",i);				
+				m_fsReadMtd[paramName] >>IndexArray[i];
+			}
+		}
+		edge_contours_un.resize(AreaCount);
+		edge_contours_un_origin.resize(AreaCount);
+
+		for(int i=0;i<AreaCount;i++)
+		{
+			edge_contours_un_origin.push_back(std::vector<cv::Point>());
+			polyWarnRoi.push_back(std::vector<cv::Point>());
+			for(int j=0;j<IndexArray[i];j++)
+			{
+				if(j >= MAX_POLYGON_POINT_CNT)
+				{
+					printf("[LoadMtdSelectArea]polygon mtd poiny num > %d\n", MAX_POLYGON_POINT_CNT);
+					break;
+				}
+				int tmp_x =0,tmp_y=0;
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"Point_%d_%d_x",i,j);				
+				m_fsReadMtd[paramName] >> tmp_x;
+
+				memset(paramName,0,sizeof(paramName));
+				sprintf(paramName,"Point_%d_%d_y",i,j);				
+				m_fsReadMtd[paramName] >> tmp_y;
+				polyWarnRoi[i].push_back(cv::Point(tmp_x,tmp_y));
+
+				if(i == 0)
+				{
+					polRect[1][j].x= tmp_x;
+					polRect[1][j].y= tmp_y;
+					pol_rectn[1] ++;
+				}
+				mapfullscreen2gun_pointv20(&tmp_x, &tmp_y);
+				edge_contours_un[i].push_back(cv::Point(tmp_x,tmp_y));
+			}
+		}
+	}
+	else
+		printf("%s, %d,open %s failed\n",__FILE__, __LINE__, filename);
+
+}
+
 
 void CVideoProcess::LoadMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > &edge_contours)
 {

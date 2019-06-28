@@ -343,7 +343,7 @@ public:
 	
 	void set_mouse_show(int param);
 	void SaveMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours);
-	void SaveunMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > edge_contours);
+	void SaveunMtdSelectArea(const char* filename);
 	void LoadMtdSelectArea(const char* filename, std::vector< std::vector< cv::Point > > &edge_contours);
 
 protected:
@@ -548,6 +548,9 @@ public:
 public:
 	void mouse_eventv_unPolygon(int button, int state, int x, int y);
 	bool judgeObjIn(Rect2d inTarget, 	std::vector< std::vector< cv::Point > > edges);
+
+	void LoadunMtdSelectArea(const char* filename);
+	
 
 };
 

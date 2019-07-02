@@ -601,12 +601,12 @@ void CProcess::Tcallback(void *p)
 		if(mtdnum_dianmie)
 		{
 			if((sThis->extMenuCtrl.osd_mudnum < MIN_MTDTARGET_NUM) || (sThis->extMenuCtrl.osd_mudnum > MAX_MTDTARGET_NUM))
-				swprintf(sThis->m_display.disMenu[submenu_mtd][1], 33, L"目标个数     %d(超出范围%d~%d)", sThis->extMenuCtrl.osd_mudnum,MIN_MTDTARGET_NUM,MAX_MTDTARGET_NUM);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][2], 33, L"目标个数     %d(超出范围%d~%d)", sThis->extMenuCtrl.osd_mudnum,MIN_MTDTARGET_NUM,MAX_MTDTARGET_NUM);
 			else
-				swprintf(sThis->m_display.disMenu[submenu_mtd][1], 33, L"目标个数     %d", sThis->extMenuCtrl.osd_mudnum);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][2], 33, L"目标个数     %d", sThis->extMenuCtrl.osd_mudnum);
 		}
 		else
-			swprintf(sThis->m_display.disMenu[submenu_mtd][1], 33, L"目标个数");
+			swprintf(sThis->m_display.disMenu[submenu_mtd][2], 33, L"目标个数");
 		mtdnum_dianmie = !mtdnum_dianmie;
 	}
 	else if(a == sThis->trktime_light_id)
@@ -614,12 +614,12 @@ void CProcess::Tcallback(void *p)
 		if(trktime_dianmie)
 		{
 			if((sThis->extMenuCtrl.osd_trktime < MIN_MTDTRKTIME) || (sThis->extMenuCtrl.osd_trktime > MAX_MTDTRKTIME))
-				swprintf(sThis->m_display.disMenu[submenu_mtd][2], 33, L"跟踪持续时间 %d秒(超出范围%d~%d秒)", sThis->extMenuCtrl.osd_trktime,MIN_MTDTRKTIME,MAX_MTDTRKTIME);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"跟踪持续时间 %d秒(超出范围%d~%d秒)", sThis->extMenuCtrl.osd_trktime,MIN_MTDTRKTIME,MAX_MTDTRKTIME);
 			else
-				swprintf(sThis->m_display.disMenu[submenu_mtd][2], 33, L"跟踪持续时间 %d秒", sThis->extMenuCtrl.osd_trktime);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"跟踪持续时间 %d秒", sThis->extMenuCtrl.osd_trktime);
 		}
 		else
-			swprintf(sThis->m_display.disMenu[submenu_mtd][2], 33, L"跟踪持续时间  秒");
+			swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"跟踪持续时间  秒");
 		trktime_dianmie = !trktime_dianmie;
 	}
 	else if(a == sThis->maxsize_light_id)
@@ -627,12 +627,12 @@ void CProcess::Tcallback(void *p)
 		if(maxsize_dianmie)
 		{
 			if((sThis->extMenuCtrl.osd_maxsize < sThis->minsize) || (sThis->extMenuCtrl.osd_maxsize > MAX_MTDMAXSIZE))
-				swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d(超出范围)", sThis->extMenuCtrl.osd_maxsize);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最大目标面积 %d(超出范围)", sThis->extMenuCtrl.osd_maxsize);
 			else
-				swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d", sThis->extMenuCtrl.osd_maxsize);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最大目标面积 %d", sThis->extMenuCtrl.osd_maxsize);
 		}
 		else
-			swprintf(sThis->m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积      ");
+			swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最大目标面积      ");
 		maxsize_dianmie = !maxsize_dianmie;
 	}
 	else if(a == sThis->minsize_light_id)
@@ -640,12 +640,12 @@ void CProcess::Tcallback(void *p)
 		if(minsize_dianmie)
 		{
 			if((sThis->extMenuCtrl.osd_minsize < MIN_MTDMINSIZE) || (sThis->extMenuCtrl.osd_minsize > sThis->maxsize))
-				swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d(超出范围)", sThis->extMenuCtrl.osd_minsize);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][5], 33, L"最小目标面积 %d(超出范围)", sThis->extMenuCtrl.osd_minsize);
 			else
-				swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d", sThis->extMenuCtrl.osd_minsize);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][5], 33, L"最小目标面积 %d", sThis->extMenuCtrl.osd_minsize);
 		}
 		else
-			swprintf(sThis->m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积  ");
+			swprintf(sThis->m_display.disMenu[submenu_mtd][5], 33, L"最小目标面积  ");
 		minsize_dianmie = !minsize_dianmie;
 	}
 	else if(a == sThis->sensi_light_id)
@@ -653,12 +653,12 @@ void CProcess::Tcallback(void *p)
 		if(sensi_dianmie)
 		{
 			if((sThis->extMenuCtrl.osd_sensi < MIN_MTDSENSI) || (sThis->extMenuCtrl.osd_sensi > MAX_MTDSENSI))
-				swprintf(sThis->m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d(超出范围%d~%d)", sThis->extMenuCtrl.osd_sensi,MIN_MTDSENSI,MAX_MTDSENSI);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][6], 33, L"灵敏度       %d(超出范围%d~%d)", sThis->extMenuCtrl.osd_sensi,MIN_MTDSENSI,MAX_MTDSENSI);
 			else
-				swprintf(sThis->m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d", sThis->extMenuCtrl.osd_sensi);
+				swprintf(sThis->m_display.disMenu[submenu_mtd][6], 33, L"灵敏度       %d", sThis->extMenuCtrl.osd_sensi);
 		}
 		else
-			swprintf(sThis->m_display.disMenu[submenu_mtd][5], 33, L"灵敏度");
+			swprintf(sThis->m_display.disMenu[submenu_mtd][6], 33, L"灵敏度");
 		sensi_dianmie = !sensi_dianmie;
 	}
 	else if( a == sThis->baud_light_id ){
@@ -1762,7 +1762,7 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> &mvList,std::vector<TRK_R
 		while( mvList.size()<detectNum &&  detect.size()>0 )
 		{
 			tmpTarget.x = detect[0].targetRect.x;
-			tmpTarget.y = detect[0].targetRect.y;
+			tmpTarget.y = detect[0].targetRect.y;			
 			if(judgeObjIn(tmpTarget,  edge_contours_un_origin)){
 				detect.erase(detect.begin());
 				continue;
@@ -5409,37 +5409,37 @@ void CProcess::msgdriv_event(MSG_PROC_ID msgId, void *prm)
 	if(msgId == MSGID_EXT_SETMTDNUM)
 	{
 		if((pMenuStatus->osd_mudnum < MIN_MTDTARGET_NUM) || (pMenuStatus->osd_mudnum > MAX_MTDTARGET_NUM))
-			swprintf(m_display.disMenu[submenu_mtd][1], 33, L"目标个数     %d(超出范围%d~%d)", pMenuStatus->osd_mudnum,MIN_MTDTARGET_NUM,MAX_MTDTARGET_NUM);
+			swprintf(m_display.disMenu[submenu_mtd][2], 33, L"目标个数     %d(超出范围%d~%d)", pMenuStatus->osd_mudnum,MIN_MTDTARGET_NUM,MAX_MTDTARGET_NUM);
 		else
-			swprintf(m_display.disMenu[submenu_mtd][1], 33, L"目标个数     %d", pMenuStatus->osd_mudnum);
+			swprintf(m_display.disMenu[submenu_mtd][2], 33, L"目标个数     %d", pMenuStatus->osd_mudnum);
 	}
 	if(msgId == MSGID_EXT_SETMTDTRKTIME)
 	{
 		if((pMenuStatus->osd_trktime < MIN_MTDTRKTIME) || (pMenuStatus->osd_trktime > MAX_MTDTRKTIME))
-			swprintf(m_display.disMenu[submenu_mtd][2], 33, L"跟踪持续时间 %d秒(超出范围%d~%d)", pMenuStatus->osd_trktime,MIN_MTDTRKTIME,MAX_MTDTRKTIME);
+			swprintf(m_display.disMenu[submenu_mtd][3], 33, L"跟踪持续时间 %d秒(超出范围%d~%d)", pMenuStatus->osd_trktime,MIN_MTDTRKTIME,MAX_MTDTRKTIME);
 		else
-			swprintf(m_display.disMenu[submenu_mtd][2], 33, L"跟踪持续时间 %d秒", pMenuStatus->osd_trktime);
+			swprintf(m_display.disMenu[submenu_mtd][3], 33, L"跟踪持续时间 %d秒", pMenuStatus->osd_trktime);
 	}
 	if(msgId == MSGID_EXT_SETMTDMAXSIZE)
 	{
 		if((pMenuStatus->osd_maxsize < minsize) || (pMenuStatus->osd_maxsize > MAX_MTDMAXSIZE))
-			swprintf(m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d(超出范围)", pMenuStatus->osd_maxsize);
+			swprintf(m_display.disMenu[submenu_mtd][4], 33, L"最大目标面积 %d(超出范围)", pMenuStatus->osd_maxsize);
 		else
-			swprintf(m_display.disMenu[submenu_mtd][3], 33, L"最大目标面积 %d", pMenuStatus->osd_maxsize);
+			swprintf(m_display.disMenu[submenu_mtd][4], 33, L"最大目标面积 %d", pMenuStatus->osd_maxsize);
 	}
 	if(msgId == MSGID_EXT_SETMTDMINSIZE)
 	{
 		if((pMenuStatus->osd_minsize < MIN_MTDMINSIZE) || (pMenuStatus->osd_minsize > maxsize))
-			swprintf(m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d(超出范围)", pMenuStatus->osd_minsize);
+			swprintf(m_display.disMenu[submenu_mtd][5], 33, L"最小目标面积 %d(超出范围)", pMenuStatus->osd_minsize);
 		else
-			swprintf(m_display.disMenu[submenu_mtd][4], 33, L"最小目标面积 %d", pMenuStatus->osd_minsize);
+			swprintf(m_display.disMenu[submenu_mtd][5], 33, L"最小目标面积 %d", pMenuStatus->osd_minsize);
 	}
 	if(msgId == MSGID_EXT_SETMTDSENSI)
 	{
 		if((pMenuStatus->osd_sensi < MIN_MTDSENSI) || (pMenuStatus->osd_sensi > MAX_MTDSENSI))
-			swprintf(m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d(超出范围%d~%d)", pMenuStatus->osd_sensi,MIN_MTDSENSI,MAX_MTDSENSI);
+			swprintf(m_display.disMenu[submenu_mtd][6], 33, L"灵敏度       %d(超出范围%d~%d)", pMenuStatus->osd_sensi,MIN_MTDSENSI,MAX_MTDSENSI);
 		else
-			swprintf(m_display.disMenu[submenu_mtd][5], 33, L"灵敏度       %d", pMenuStatus->osd_sensi);
+			swprintf(m_display.disMenu[submenu_mtd][6], 33, L"灵敏度       %d", pMenuStatus->osd_sensi);
 	}
 	
 	if(msgId == MSGID_EXT_SETBAUD){

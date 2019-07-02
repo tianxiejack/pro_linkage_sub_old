@@ -306,6 +306,11 @@ bool CVideoProcess::judgeObjIn(Rect2d inTarget, 	std::vector< std::vector< cv::P
 
 	double distance,tgw,tgh,diagd,maxd,mind;
 	bool retFlag;
+
+	for(int i=0; i< edges.size();i++)
+		if(edges[i].size() == 0 )
+			return false;
+	
 	for(int i=0 ; i<edges.size();i++)
 	{
 		distance	= cv::pointPolygonTest( edges[i], rc_center, true );///1.0
@@ -663,6 +668,13 @@ int CVideoProcess::creat()
 		detectornew->setasyncdetect(detectcall,trackcall);
 #endif
 
+	edge_contours.clear();
+	edge_contours_bak.clear();
+	edge_contours_notMap.clear();
+	edge_contours_un.clear();
+	edge_contours_un_bak.clear();
+	edge_contours_un_origin.clear();
+	edge_contours_un_origin_bak.clear();
 
 	return 0;
 }

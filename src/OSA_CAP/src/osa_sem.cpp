@@ -81,7 +81,7 @@ int GB_CondTimedWait(OSA_SemHndl *hndl, Uint32 timeout)
 			if(ret==ETIMEDOUT)
 			{
 				status = OSA_EFAIL;
-				OSA_printf(" %s time out !!!\r\n",__func__);
+				//OSA_printf(" %s time out !!!\r\n",__func__);
 				break;
 			}
 			else

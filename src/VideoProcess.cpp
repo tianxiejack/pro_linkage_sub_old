@@ -305,34 +305,38 @@ bool CVideoProcess::judgeObjIn(Rect2d inTarget, 	std::vector< std::vector< cv::P
 	rc_center = cv::Point2f(inTarget.x + inTarget.width/2,inTarget.y + inTarget.height/2);
 
 	double distance,tgw,tgh,diagd,maxd,mind;
-	bool retFlag;
+	bool retFlag = false;
 
 	for(int i=0; i< edges.size();i++)
-		if(edges[i].size() == 0 )
-			return false;
-	
-	for(int i=0 ; i<edges.size();i++)
 	{
-		distance	= cv::pointPolygonTest( edges[i], rc_center, true );///1.0
+		if(edges[i].size() == 0 )
+			;//
+		else
+		{
+			distance	= cv::pointPolygonTest( edges[i], rc_center, true );///1.0
 
-		tgw	= inTarget.width;
-		tgh	= inTarget.height;
-		diagd	 = sqrt(tgw*tgw+tgh*tgh);
-		maxd	=  diagd*3/4;
-		mind	=	tgw>tgh?tgw/4:tgh/4;
-		maxd = maxd<60.0?60.0:maxd;
-		
-		retFlag = false;
-		if(distance>=mind){//TARGET_IN_POLYGON;
-			retFlag = true;
-		}else if(distance>-mind	&& distance<mind){//TARGET_IN_EDGE;
-			retFlag = true;
-		}else if(distance<=	-mind){//TARGET_OUT_POLYGON;
+			tgw	= inTarget.width;
+			tgh	= inTarget.height;
+			diagd	= sqrt(tgw*tgw+tgh*tgh);
+			maxd	= diagd*3/4;
+			mind	= tgw>tgh?tgw/4:tgh/4;
+			maxd = maxd<60.0?60.0:maxd;
+			
 			retFlag = false;
-		}else{//TARGET_NORAM;
-			retFlag = false;
+			if(distance>=mind){//TARGET_IN_POLYGON;
+				retFlag = true;
+			}else if(distance>-mind	&& distance<mind){//TARGET_IN_EDGE;
+				retFlag = false;
+			}else if(distance<=	-mind){//TARGET_OUT_POLYGON;
+				retFlag = false;
+			}else{//TARGET_NORAM;
+				retFlag = true;
+			}
 		}
-	}
+
+		if(retFlag)
+			return retFlag;
+	}	
 	
 	return retFlag;
 }
@@ -3592,12 +3596,24 @@ void	CVideoProcess::DeInitMvDetect()
 		m_pMovDetector->destroy();
 }
 
+
 void CVideoProcess::NotifyFunc(void *context, int chId)
 {
 	CVideoProcess *pParent = (CVideoProcess*)context;
 	int cnt = pThis->detect_vect_arr.size() > 3 ? 3 : pThis->detect_vect_arr.size();
 	pThis->detect_vect_arr[chId].clear();
 	pThis->m_pMovDetector->getWarnTarget(pThis->detect_vect_arr[chId],chId);
+
+	Rect2d tmpTarget;
+	for(int i=0;i<pThis->detect_vect_arr[chId].size();)
+	{
+		tmpTarget.x = pThis->detect_vect_arr[chId][i].targetRect.x + pThis->detect_vect_arr[chId][i].targetRect.width/2;
+		tmpTarget.y = pThis->detect_vect_arr[chId][i].targetRect.y + pThis->detect_vect_arr[chId][i].targetRect.height/2;
+		if(pThis->judgeObjIn(tmpTarget, pThis->edge_contours_un_origin))
+			pThis->detect_vect_arr[chId].erase(pThis->detect_vect_arr[chId].begin()+i);
+		else
+			i++;
+	}
 
 	proc->DrawMtd_Rigion_Target();
 	proc->OnProcess();
@@ -3796,6 +3812,7 @@ void CVideoProcess::LoadunMtdSelectArea(const char* filename)
 					polRect[1][j].y= tmp_y;
 					pol_rectn[1] ++;
 				}
+				edge_contours_un_origin[i].push_back(cv::Point(tmp_x,tmp_y));
 				mapfullscreen2gun_pointv20(&tmp_x, &tmp_y);
 				edge_contours_un[i].push_back(cv::Point(tmp_x,tmp_y));
 			}

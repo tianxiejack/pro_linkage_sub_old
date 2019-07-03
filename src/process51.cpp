@@ -1745,8 +1745,6 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> &mvList,std::vector<TRK_R
 			i++;
 			tmpTarget.x = detect[i].targetRect.x;
 			tmpTarget.y = detect[i].targetRect.y;
-			if(judgeObjIn(tmpTarget,  edge_contours_un_origin))
-				continue;
 			pTmpMv.number = getMvListFirstUnusedNum();
 			if(pTmpMv.number < 10)
 			{
@@ -1763,10 +1761,6 @@ void CProcess::mvIndexHandle(std::vector<TRK_INFO_APP> &mvList,std::vector<TRK_R
 		{
 			tmpTarget.x = detect[0].targetRect.x;
 			tmpTarget.y = detect[0].targetRect.y;			
-			if(judgeObjIn(tmpTarget,  edge_contours_un_origin)){
-				detect.erase(detect.begin());
-				continue;
-			}
 			pTmpMv.number = getMvListFirstUnusedNum();
 			if(pTmpMv.number < 10)
 			{
@@ -2918,6 +2912,8 @@ void CProcess::DrawMtd_Rigion_Target()
 		cv::Rect tmp;
 		mouserect recttmp;
 		tmpNum = 0;
+		Rect2d tmpTarget;
+		OSA_printf("mvtarget size = %d \n",mvListsum.size());
 		for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
 		{	
 			color = 3;
@@ -2926,6 +2922,9 @@ void CProcess::DrawMtd_Rigion_Target()
 			recttmp.y = (*plist).trkobj.targetRect.y;
 			recttmp.w = (*plist).trkobj.targetRect.width;
 			recttmp.h = (*plist).trkobj.targetRect.height;
+			tmpTarget.x = recttmp.x + recttmp.w/2;
+			tmpTarget.y = recttmp.y + recttmp.h/2;
+			
 			recttmp = mapfullscreen2gunv20(recttmp);
 			tmp.x = recttmp.x;
 			tmp.y = recttmp.y;
@@ -2933,6 +2932,7 @@ void CProcess::DrawMtd_Rigion_Target()
 			tmp.height = recttmp.h;
 
 			DrawRect(m_display.m_imgOsd[mtd_warningbox_Id], tmp ,color);
+
 		}
 
 #if 1

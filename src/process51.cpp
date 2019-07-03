@@ -2913,7 +2913,7 @@ void CProcess::DrawMtd_Rigion_Target()
 		mouserect recttmp;
 		tmpNum = 0;
 		Rect2d tmpTarget;
-		OSA_printf("mvtarget size = %d \n",mvListsum.size());
+		//OSA_printf("mvtarget size = %d \n",mvListsum.size());
 		for(std::vector<TRK_INFO_APP>::iterator plist = mvListsum.begin(); plist != mvListsum.end(); ++plist)
 		{	
 			color = 3;
